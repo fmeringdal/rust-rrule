@@ -16,15 +16,15 @@ pub struct YearInfo {
     pub wnomask: Option<Vec<usize>>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, PartialOrd)]
 pub enum Frequenzy {
-    YEARLY,
-    MONTHLY,
-    WEEKLY,
-    DAILY,
-    HOURLY,
-    MINUTELY,
-    SECONDLY,
+    YEARLY = 0,
+    MONTHLY = 1,
+    WEEKLY = 2,
+    DAILY = 3,
+    HOURLY = 4,
+    MINUTELY = 5,
+    SECONDLY = 6,
 }
 
 #[derive(Debug)]

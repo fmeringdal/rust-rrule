@@ -1,3 +1,4 @@
+use crate::datetime::*;
 use crate::iterinfo::*;
 use crate::yearinfo::*;
 use chrono::prelude::*;
@@ -9,13 +10,13 @@ pub fn from_ordinal(ordinal: isize) -> DateTime<Utc> {
     DateTime::from_utc(naive, Utc)
 }
 
-pub fn buildPoslist(
-    bysetpost: Vec<isize>,
-    timeset: Vec<DateTime<Utc>>,
+pub fn build_poslist(
+    bysetpost: &Vec<usize>,
+    timeset: &Vec<Time>,
     start: usize,
     end: usize,
-    ii: IterInfo,
-    dayset: Vec<Option<isize>>,
+    ii: &IterInfo,
+    dayset: &Vec<Option<isize>>,
 ) -> Vec<DateTime<Utc>> {
     let mut poslist: Vec<DateTime<Utc>> = vec![];
 
@@ -24,10 +25,10 @@ pub fn buildPoslist(
         let timepos;
         let pos = bysetpost[j];
         if pos < 0 {
-            daypos = pos / timeset.len() as isize;
+            daypos = pos / timeset.len();
             timepos = pymod(pos as isize, timeset.len() as isize);
         } else {
-            daypos = (pos - 1) / timeset.len() as isize;
+            daypos = (pos - 1) / timeset.len();
             timepos = pymod(pos as isize - 1, timeset.len() as isize);
         }
 
@@ -41,19 +42,18 @@ pub fn buildPoslist(
 
         let i;
         if daypos < 0 {
-            let index = (tmp.len() as isize - daypos) as usize;
+            let index = (tmp.len() - daypos) as usize;
             i = &tmp[index];
         } else {
             i = &tmp[daypos as usize];
         }
 
-        let time = timeset[timepos as usize];
         let date = from_ordinal(ii.yearordinal().unwrap() + i);
         // const res = dateutil.combine(date, time)
         let res = Utc.ymd(date.year(), date.month(), date.day()).and_hms(
-            time.hour(),
-            time.minute(),
-            time.second(),
+            timeset[timepos as usize].hour as u32,
+            timeset[timepos as usize].minute as u32,
+            timeset[timepos as usize].second as u32,
         );
         // XXX: can this ever be in the array?
         // - compare the actual date instead?

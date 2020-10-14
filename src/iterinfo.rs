@@ -206,7 +206,7 @@ impl<'a> IterInfo<'a> {
 
     pub fn getdayset(
         &self,
-        freq: Frequenzy,
+        freq: &Frequenzy,
         year: isize,
         month: usize,
         day: usize,
@@ -222,7 +222,7 @@ impl<'a> IterInfo<'a> {
 
     pub fn gettimeset(
         &self,
-        freq: Frequenzy,
+        freq: &Frequenzy,
         hour: usize,
         minute: usize,
         second: usize,
