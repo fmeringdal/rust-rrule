@@ -60,7 +60,7 @@ fn get_year_len(year: i32) -> usize {
     365
 }
 
-fn to_ordinal(date: &DateTime<Utc>) -> isize {
+pub fn to_ordinal(date: &DateTime<Utc>) -> isize {
     (date.timestamp() / 60 / 60 / 24) as isize
 }
 

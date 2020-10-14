@@ -1,5 +1,7 @@
 use crate::monthinfo::*;
 use crate::yearinfo::*;
+use chrono::prelude::*;
+use chrono::*;
 
 struct IterInfo<'a> {
     pub yearinfo: Option<YearInfo>,
@@ -113,6 +115,74 @@ impl<'a> IterInfo<'a> {
         match &self.yearinfo {
             Some(info) => Some(&info.nmdaymask),
             None => None,
+        }
+    }
+
+    pub fn ydayset(&self) -> (Vec<usize>, usize, usize) {
+        let yearlen = self.yearlen().unwrap();
+        let mut v = Vec::with_capacity(yearlen);
+        for i in 0..yearlen {
+            v.push(i);
+        }
+        (v, 0, yearlen)
+    }
+
+    pub fn mdayset(&self, month: usize) -> (Vec<usize>, usize, usize) {
+        let mrange = self.mrange().unwrap();
+        let start = mrange[month - 1];
+        let end = mrange[month];
+        let mut set = vec![0; self.yearlen().unwrap()];
+        for i in start..end {
+            set[i] = 1;
+        }
+        (set, start, end)
+    }
+
+    pub fn wdayset(&self, year: isize, month: usize, day: usize) -> (Vec<usize>, usize, usize) {
+        let mut set = vec![0; self.yearlen().unwrap()];
+
+        // should it be month - 1 ??????
+        let mut i = (to_ordinal(
+            &Utc.ymd(year as i32, month as u32 - 1, day as u32)
+                .and_hms(0, 0, 0),
+        ) - self.yearordinal().unwrap()) as usize;
+
+        let start = i;
+        for _ in 0..7 {
+            set[i] = i;
+            i += 1;
+            if self.wdaymask().unwrap()[i] == self.options.wkst {
+                break;
+            }
+        }
+        (set, start, i)
+    }
+
+    pub fn ddayset(&self, year: isize, month: usize, day: usize) -> (Vec<usize>, usize, usize) {
+        let mut set = vec![0; self.yearlen().unwrap()];
+
+        // should it be month - 1 ??????
+        let mut i = (to_ordinal(
+            &Utc.ymd(year as i32, month as u32 - 1, day as u32)
+                .and_hms(0, 0, 0),
+        ) - self.yearordinal().unwrap()) as usize;
+
+        (set, i, i + 1)
+    }
+
+    pub fn getdayset(
+        &self,
+        freq: Frequenzy,
+        year: isize,
+        month: usize,
+        day: usize,
+    ) -> (Vec<usize>, usize, usize) {
+        match freq {
+            Frequenzy::YEARLY => self.ydayset(),
+            Frequenzy::MONTHLY => self.mdayset(month),
+            Frequenzy::WEEKLY => self.wdayset(year, month, day),
+            Frequenzy::DAILY => self.ddayset(year, month, day),
+            _ => self.ydayset(),
         }
     }
 }
