@@ -77,20 +77,21 @@ impl IterResult {
         return true;
     }
 
-    pub fn get_value(&self) -> Option<Vec<DateTime<Utc>>> {
-        match self.method {
-            QueryMethodTypes::ALL => None,
-            QueryMethodTypes::BETWEEN => Some(self._result.clone()),
-            QueryMethodTypes::BEFORE => None,
-            QueryMethodTypes::AFTER => None,
-        }
+    pub fn get_value(&self) -> Vec<DateTime<Utc>> {
+        self._result.clone()
+        //match self.method {
+        //QueryMethodTypes::BETWEEN => Some(self._result.clone()),
+        //_ => {
+        //if self._result.is_empty() {
+        //return None;
+        //}
+        //Some(vec![self._result[self._result.len() - 1].clone()])
+        //}
+        //}
     }
 }
 
-pub fn iter(
-    iter_result: &mut IterResult,
-    options: &mut ParsedOptions,
-) -> Option<Vec<DateTime<Utc>>> {
+pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<DateTime<Utc>> {
     if (options.count.is_some() && options.count.unwrap() == 0) || options.interval == 0 {
         return iter_result.get_value();
     }
@@ -100,9 +101,13 @@ pub fn iter(
     ii.rebuild(counter_date.year() as isize, counter_date.month() as usize);
 
     let mut timeset = make_timeset(&ii, &counter_date, options);
+    let mut count = match options.count {
+        Some(count) => count,
+        _ => 0,
+    };
 
     loop {
-        let (mut dayset, start, end) = ii.getdayset(
+        let (dayset, start, end) = ii.getdayset(
             &options.freq,
             counter_date.year() as isize,
             counter_date.month() as usize,
@@ -131,10 +136,9 @@ pub fn iter(
                         return iter_result.get_value();
                     }
 
-                    if options.count.is_some() {
-                        //options.count.unwrap() += 1;
-                        //options.count = Some(options.count.unwrap() - 1);
-                        if options.count.unwrap() == 0 {
+                    if count > 0 {
+                        count -= 1;
+                        if count == 0 {
                             return iter_result.get_value();
                         }
                     }
@@ -146,8 +150,8 @@ pub fn iter(
                 if current_day.is_none() {
                     continue;
                 }
-                let current_day = current_day.unwrap();
 
+                let current_day = current_day.unwrap();
                 let date = from_ordinal(ii.yearordinal().unwrap() + current_day);
                 for k in 0..timeset.len() {
                     let res = Utc.ymd(date.year(), date.month(), date.day()).and_hms(
@@ -161,13 +165,12 @@ pub fn iter(
                     if res >= options.dtstart {
                         //let rezoned_date = rezone_if_needed(&res, &options);
                         let rezoned_date = res.clone();
-                        if iter_result.accept(rezoned_date) {
+                        if !iter_result.accept(rezoned_date) {
                             return iter_result.get_value();
                         }
-                        if options.count.is_some() {
-                            //options.count.unwrap() += 1;
-                            //options.count = Some(options.count.unwrap() - 1);
-                            if options.count.unwrap() == 0 {
+                        if count > 0 {
+                            count -= 1;
+                            if count == 0 {
                                 return iter_result.get_value();
                             }
                         }
@@ -181,9 +184,9 @@ pub fn iter(
         }
 
         // Handle frequency and interval
-        increment_counter_date(&mut counter_date, options, filtered);
+        counter_date = increment_counter_date(counter_date, options, filtered);
 
-        if counter_date.year() > 9999 {
+        if counter_date.year() > 2200 {
             return iter_result.get_value();
         }
 
@@ -205,16 +208,16 @@ pub fn iter(
 }
 
 pub fn increment_counter_date(
-    counter_date: &mut DateTime<Utc>,
+    counter_date: DateTime<Utc>,
     options: &ParsedOptions,
     filtered: bool,
-) {
+) -> DateTime<Utc> {
     match options.freq {
-        Frequenzy::YEARLY => {
-            counter_date.with_year(counter_date.year() + options.interval as i32);
-        }
+        Frequenzy::YEARLY => counter_date
+            .with_year(counter_date.year() + options.interval as i32)
+            .unwrap(),
         Frequenzy::MONTHLY => {
-            let mut new_month = counter_date.month() + options.interval as u32;
+            let new_month = counter_date.month() + options.interval as u32;
             if new_month > 12 {
                 let mut year_div = new_month / 12;
                 let mut new_month = new_month % 12;
@@ -223,18 +226,28 @@ pub fn increment_counter_date(
                     year_div -= 1;
                 }
                 let new_year = counter_date.year() + year_div as i32;
-                counter_date
+                return counter_date
                     .with_month(new_month)
                     .unwrap()
                     .with_year(new_year)
                     .unwrap();
             } else {
-                counter_date.with_month(new_month);
+                return counter_date.with_month(new_month).unwrap();
             }
-            counter_date.with_year(counter_date.year() + options.interval as i32);
         }
-        _ => (),
-    };
+        Frequenzy::WEEKLY => {
+            let mut day_delta = 0;
+            let weekday = get_weekday_val(&counter_date.weekday());
+            if options.wkst > weekday {
+                day_delta += -((weekday + 1 + (6 - options.wkst)) as isize)
+                    + (options.interval as isize) * 7;
+            } else {
+                day_delta += -((weekday - options.wkst) as isize) + (options.interval as isize) * 7;
+            }
+            counter_date + Duration::days(day_delta as i64)
+        }
+        _ => panic!("hfoashfosa"),
+    }
 }
 
 pub fn includes<T>(v: &Vec<T>, el: &T) -> bool
@@ -254,7 +267,9 @@ pub fn is_filtered(ii: &IterInfo, current_day: usize, options: &ParsedOptions) -
         || (not_empty(&options.byweekno) && (ii.wnomask().unwrap()[current_day]) == 0)
         || (not_empty(&options.byweekday)
             && !includes(&options.byweekday, &ii.wdaymask().unwrap()[current_day]))
-        || (not_empty(ii.nwdaymask().unwrap()) && (ii.nwdaymask().unwrap()[current_day]) == 0)
+        || (ii.nwdaymask().is_some()
+            && not_empty(ii.nwdaymask().unwrap())
+            && (ii.nwdaymask().unwrap()[current_day]) == 0)
         || ((not_empty(&options.bymonthday) || not_empty(&options.bynmonthday))
             && !includes(&options.bymonthday, &ii.mdaymask().unwrap()[current_day])
             && !includes(&options.bynmonthday, &ii.nmdaymask().unwrap()[current_day]))
@@ -365,4 +380,65 @@ pub fn make_timeset(
         counter_date.second() as usize,
         counter_date.timestamp_subsec_millis() as usize,
     );
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn int_works() {
+        let iter_args = IterArgs {
+            inc: true,
+            before: Utc::now(),
+            after: Utc::now(),
+            dt: Utc::now(),
+            _value: Some(vec![]),
+        };
+        let mut iter_res = IterResult::new(QueryMethodTypes::ALL, iter_args);
+        let mut options = ParsedOptions {
+            freq: Frequenzy::MONTHLY,
+            dtstart: Utc.ymd(2012, 1, 1).and_hms(10, 30, 0),
+            until: None,
+            //until: Some(Utc.ymd(2012, 12, 31).and_hms(10, 30, 0)),
+            tzid: None,
+            interval: 5,
+            wkst: 0,
+            count: Some(5),
+            bysecond: vec![0],
+            byminute: vec![30],
+            byhour: vec![10],
+            bymonth: vec![],
+            bymonthday: vec![],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byyearday: vec![],
+            byweekday: vec![0, 4],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+        };
+        let mut options_2 = ParsedOptions {
+            freq: Frequenzy::WEEKLY,
+            dtstart: Utc.ymd(2012, 1, 1).and_hms(10, 30, 0),
+            until: None,
+            //until: Some(Utc.ymd(2012, 12, 31).and_hms(10, 30, 0)),
+            tzid: None,
+            interval: 5,
+            wkst: 0,
+            count: Some(5),
+            bysecond: vec![0],
+            byminute: vec![30],
+            byhour: vec![10],
+            bymonth: vec![6],
+            bymonthday: vec![],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byyearday: vec![],
+            byweekday: vec![0, 4],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+        };
+        let res = iter(&mut iter_res, &mut options);
+        println!("Res: {:?}", res);
+    }
 }

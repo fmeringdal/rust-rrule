@@ -134,22 +134,25 @@ impl<'a> IterInfo<'a> {
         let end = mrange[month];
         let mut set = vec![0; self.yearlen().unwrap()];
         for i in start..end {
-            set[i] = 1;
+            set[i] = i;
         }
         (set, start, end)
     }
 
     pub fn wdayset(&self, year: isize, month: usize, day: usize) -> (Vec<usize>, usize, usize) {
-        let mut set = vec![0; self.yearlen().unwrap()];
+        let year_len = self.yearlen().unwrap();
+        let mut set = vec![0; year_len];
 
-        // should it be month - 1 ??????
         let mut i = (to_ordinal(
-            &Utc.ymd(year as i32, month as u32 - 1, day as u32)
+            &Utc.ymd(year as i32, month as u32, day as u32)
                 .and_hms(0, 0, 0),
         ) - self.yearordinal().unwrap()) as usize;
 
         let start = i;
         for _ in 0..7 {
+            if i >= year_len {
+                break;
+            }
             set[i] = i;
             i += 1;
             if self.wdaymask().unwrap()[i] == self.options.wkst {
@@ -160,11 +163,10 @@ impl<'a> IterInfo<'a> {
     }
 
     pub fn ddayset(&self, year: isize, month: usize, day: usize) -> (Vec<usize>, usize, usize) {
-        let mut set = vec![0; self.yearlen().unwrap()];
+        let set = vec![0; self.yearlen().unwrap()];
 
-        // should it be month - 1 ??????
-        let mut i = (to_ordinal(
-            &Utc.ymd(year as i32, month as u32 - 1, day as u32)
+        let i = (to_ordinal(
+            &Utc.ymd(year as i32, month as u32, day as u32)
                 .and_hms(0, 0, 0),
         ) - self.yearordinal().unwrap()) as usize;
 

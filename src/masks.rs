@@ -45,7 +45,7 @@ impl Masks {
                 vec![9; 30],
                 vec![10; 31],
                 vec![11; 30],
-                vec![12, 31],
+                vec![12; 31],
                 vec![1; 7],
             ]
             .into_iter()
@@ -101,7 +101,7 @@ impl Masks {
                 vec![9; 30],
                 vec![10; 31],
                 vec![11; 30],
-                vec![12, 31],
+                vec![12; 31],
                 vec![1; 7],
             ]
             .into_iter()

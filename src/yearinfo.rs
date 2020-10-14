@@ -64,7 +64,7 @@ pub fn to_ordinal(date: &DateTime<Utc>) -> isize {
     (date.timestamp() / 60 / 60 / 24) as isize
 }
 
-fn get_weekday_val(wk: &Weekday) -> usize {
+pub fn get_weekday_val(wk: &Weekday) -> usize {
     match wk {
         Weekday::Mon => 0,
         Weekday::Tue => 1,
