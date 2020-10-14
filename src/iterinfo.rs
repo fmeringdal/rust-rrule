@@ -163,13 +163,14 @@ impl<'a> IterInfo<'a> {
     }
 
     pub fn ddayset(&self, year: isize, month: usize, day: usize) -> (Vec<usize>, usize, usize) {
-        let set = vec![0; self.yearlen().unwrap()];
+        let mut set = vec![0; self.yearlen().unwrap()];
 
         let i = (to_ordinal(
             &Utc.ymd(year as i32, month as u32, day as u32)
                 .and_hms(0, 0, 0),
         ) - self.yearordinal().unwrap()) as usize;
 
+        set[i] = i;
         (set, i, i + 1)
     }
 
@@ -218,7 +219,7 @@ impl<'a> IterInfo<'a> {
             Frequenzy::MONTHLY => self.mdayset(month),
             Frequenzy::WEEKLY => self.wdayset(year, month, day),
             Frequenzy::DAILY => self.ddayset(year, month, day),
-            _ => self.ydayset(),
+            _ => panic!("Invalid freq"),
         }
     }
 
@@ -234,7 +235,7 @@ impl<'a> IterInfo<'a> {
             Frequenzy::HOURLY => self.htimeset(hour, minute, second, millisecond),
             Frequenzy::MINUTELY => self.mtimeset(hour, minute, second, millisecond),
             Frequenzy::SECONDLY => self.stimeset(hour, minute, second, millisecond),
-            _ => self.htimeset(hour, minute, second, millisecond),
+            _ => panic!("Invalid freq"),
         }
     }
 }

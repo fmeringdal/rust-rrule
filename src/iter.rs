@@ -246,6 +246,7 @@ pub fn increment_counter_date(
             }
             counter_date + Duration::days(day_delta as i64)
         }
+        Frequenzy::DAILY => counter_date + Duration::days(options.interval as i64),
         _ => panic!("hfoashfosa"),
     }
 }
@@ -397,12 +398,11 @@ mod test {
         };
         let mut iter_res = IterResult::new(QueryMethodTypes::ALL, iter_args);
         let mut options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::DAILY,
             dtstart: Utc.ymd(2012, 1, 1).and_hms(10, 30, 0),
-            //until: None,
             until: Some(Utc.ymd(2012, 12, 31).and_hms(10, 30, 0)),
             tzid: None,
-            interval: 5,
+            interval: 1,
             wkst: 0,
             count: None,
             bysecond: vec![0],
@@ -413,7 +413,7 @@ mod test {
             bysetpos: vec![],
             byweekno: vec![],
             byyearday: vec![],
-            byweekday: vec![0, 4],
+            byweekday: vec![0, 1, 2, 3, 4, 5, 6],
             bynweekday: vec![],
             bynmonthday: vec![],
         };
