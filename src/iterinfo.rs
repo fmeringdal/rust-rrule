@@ -1,9 +1,10 @@
+use crate::datetime::*;
 use crate::monthinfo::*;
 use crate::yearinfo::*;
 use chrono::prelude::*;
 use chrono::*;
 
-struct IterInfo<'a> {
+pub struct IterInfo<'a> {
     pub yearinfo: Option<YearInfo>,
     pub monthinfo: Option<MonthInfo>,
     options: &'a ParsedOptions,
@@ -170,6 +171,39 @@ impl<'a> IterInfo<'a> {
         (set, i, i + 1)
     }
 
+    pub fn htimeset(&self, hour: usize, _: usize, second: usize, millisecond: usize) -> Vec<Time> {
+        let mut set = self
+            .options
+            .byminute
+            .iter()
+            .map(|minute| self.mtimeset(hour, *minute, second, millisecond))
+            .flatten()
+            .collect::<Vec<Time>>();
+        set.sort_by_key(|a| -1 * (a.getTime() as isize));
+        set
+    }
+
+    pub fn mtimeset(&self, hour: usize, minute: usize, _: usize, millisecond: usize) -> Vec<Time> {
+        let mut set = self
+            .options
+            .bysecond
+            .iter()
+            .map(|second| Time::new(hour, minute, *second, millisecond))
+            .collect::<Vec<Time>>();
+        set.sort_by_key(|a| -1 * (a.getTime() as isize));
+        set
+    }
+
+    pub fn stimeset(
+        &self,
+        hour: usize,
+        minute: usize,
+        second: usize,
+        millisecond: usize,
+    ) -> Vec<Time> {
+        vec![Time::new(hour, minute, second, millisecond)]
+    }
+
     pub fn getdayset(
         &self,
         freq: Frequenzy,
@@ -183,6 +217,22 @@ impl<'a> IterInfo<'a> {
             Frequenzy::WEEKLY => self.wdayset(year, month, day),
             Frequenzy::DAILY => self.ddayset(year, month, day),
             _ => self.ydayset(),
+        }
+    }
+
+    pub fn gettimeset(
+        &self,
+        freq: Frequenzy,
+        hour: usize,
+        minute: usize,
+        second: usize,
+        millisecond: usize,
+    ) -> Vec<Time> {
+        match freq {
+            Frequenzy::HOURLY => self.htimeset(hour, minute, second, millisecond),
+            Frequenzy::MINUTELY => self.mtimeset(hour, minute, second, millisecond),
+            Frequenzy::SECONDLY => self.stimeset(hour, minute, second, millisecond),
+            _ => self.htimeset(hour, minute, second, millisecond),
         }
     }
 }
