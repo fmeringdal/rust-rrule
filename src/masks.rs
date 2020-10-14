@@ -5,31 +5,31 @@
 // Every mask is 7 days longer to handle cross-year weekly periods.
 
 pub struct Masks {
-    pub WDAY: Vec<u32>,
-    pub M365: Vec<u32>,
-    pub M365RANGE: Vec<u32>,
-    pub M366: Vec<u32>,
-    pub M366RANGE: Vec<u32>,
-    pub MDAY365: Vec<u32>,
-    pub MDAY366: Vec<u32>,
-    pub NMDAY365: Vec<i32>,
-    pub NMDAY366: Vec<i32>,
+    pub WDAY: Vec<usize>,
+    pub M365: Vec<usize>,
+    pub M365RANGE: Vec<usize>,
+    pub M366: Vec<usize>,
+    pub M366RANGE: Vec<usize>,
+    pub MDAY365: Vec<usize>,
+    pub MDAY366: Vec<usize>,
+    pub NMDAY365: Vec<isize>,
+    pub NMDAY366: Vec<isize>,
 }
 
 impl Masks {
     pub fn new() -> Self {
-        let M28: Vec<u32> = (1..29).collect();
-        let M29: Vec<u32> = (1..30).collect();
-        let M30: Vec<u32> = (1..31).collect();
-        let M31: Vec<u32> = (1..32).collect();
+        let M28: Vec<usize> = (1..29).collect();
+        let M29: Vec<usize> = (1..30).collect();
+        let M30: Vec<usize> = (1..31).collect();
+        let M31: Vec<usize> = (1..32).collect();
 
-        let NM28: Vec<i32> = (-28..0).collect();
-        let NM29: Vec<i32> = (-29..0).collect();
-        let NM30: Vec<i32> = (-30..0).collect();
-        let NM31: Vec<i32> = (-31..0).collect();
+        let NM28: Vec<isize> = (-28..0).collect();
+        let NM29: Vec<isize> = (-29..0).collect();
+        let NM30: Vec<isize> = (-30..0).collect();
+        let NM31: Vec<isize> = (-31..0).collect();
 
         Self {
-            WDAY: vec![(0..7).collect::<Vec<u32>>(); 55]
+            WDAY: vec![(0..7).collect::<Vec<usize>>(); 55]
                 .into_iter()
                 .flatten()
                 .collect(),

@@ -2,24 +2,22 @@ use crate::masks::Masks;
 use chrono::prelude::*;
 use chrono::{DateTime, Duration};
 
-struct RRule {}
-
 #[derive(Debug)]
-struct YearInfo {
-    yearlen: usize,
-    nextyearlen: usize,
-    yearordinal: i64,
-    yearweekday: usize,
-    mmask: Vec<u32>,
-    mrange: Vec<u32>,
-    mdaymask: Vec<u32>,
-    nmdaymask: Vec<i32>,
-    wdaymask: Vec<u32>,
-    wnomask: Option<Vec<u32>>,
+pub struct YearInfo {
+    pub yearlen: usize,
+    pub nextyearlen: usize,
+    pub yearordinal: isize,
+    pub yearweekday: usize,
+    pub mmask: Vec<usize>,
+    pub mrange: Vec<usize>,
+    pub mdaymask: Vec<usize>,
+    pub nmdaymask: Vec<isize>,
+    pub wdaymask: Vec<usize>,
+    pub wnomask: Option<Vec<usize>>,
 }
 
-#[derive(Debug)]
-enum Frequenzy {
+#[derive(Debug, PartialEq)]
+pub enum Frequenzy {
     YEARLY,
     MONTHLY,
     WEEKLY,
@@ -30,24 +28,25 @@ enum Frequenzy {
 }
 
 #[derive(Debug)]
-struct ParsedOptions {
-    freq: Frequenzy,
-    interval: usize,
-    count: Option<u32>,
-    until: Option<DateTime<Utc>>,
-    tzid: Option<String>,
-    dtstart: DateTime<Utc>,
-    wkst: usize,
-    bysetpos: Vec<u32>,
-    bymonth: Vec<u32>,
-    bymonthday: Vec<u32>,
-    bynmonthday: Vec<u32>,
-    byyearday: Vec<u32>,
-    byweekno: Vec<isize>,
-    byweekday: Vec<u32>,
-    byhour: Vec<u32>,
-    byminute: Vec<u32>,
-    bysecond: Vec<u32>,
+pub struct ParsedOptions {
+    pub freq: Frequenzy,
+    pub interval: usize,
+    pub count: Option<u32>,
+    pub until: Option<DateTime<Utc>>,
+    pub tzid: Option<String>,
+    pub dtstart: DateTime<Utc>,
+    pub wkst: usize,
+    pub bysetpos: Vec<usize>,
+    pub bymonth: Vec<usize>,
+    pub bymonthday: Vec<usize>,
+    pub bynmonthday: Vec<isize>,
+    pub byyearday: Vec<usize>,
+    pub byweekno: Vec<isize>,
+    pub byweekday: Vec<usize>,
+    pub byhour: Vec<usize>,
+    pub byminute: Vec<usize>,
+    pub bysecond: Vec<usize>,
+    pub bynweekday: Vec<Vec<isize>>,
 }
 
 fn is_leap_year(year: i32) -> bool {
@@ -61,8 +60,8 @@ fn get_year_len(year: i32) -> usize {
     365
 }
 
-fn to_ordinal(date: &DateTime<Utc>) -> i64 {
-    date.timestamp() / 60 / 60 / 24
+fn to_ordinal(date: &DateTime<Utc>) -> isize {
+    (date.timestamp() / 60 / 60 / 24) as isize
 }
 
 fn get_weekday_val(wk: &Weekday) -> usize {
@@ -77,12 +76,12 @@ fn get_weekday_val(wk: &Weekday) -> usize {
     }
 }
 
-struct BaseMasks {
-    mmask: Vec<u32>,
-    mdaymask: Vec<u32>,
-    nmdaymask: Vec<i32>,
-    wdaymask: Vec<u32>,
-    mrange: Vec<u32>,
+pub struct BaseMasks {
+    mmask: Vec<usize>,
+    mdaymask: Vec<usize>,
+    nmdaymask: Vec<isize>,
+    wdaymask: Vec<usize>,
+    mrange: Vec<usize>,
 }
 
 fn base_year_masks(year: i32) -> BaseMasks {
@@ -119,7 +118,7 @@ pub fn pymod(a: isize, b: isize) -> isize {
     r
 }
 
-fn rebuild_year(year: i32, options: &ParsedOptions) -> YearInfo {
+pub fn rebuild_year(year: i32, options: &ParsedOptions) -> YearInfo {
     let firstyday = Utc.ymd(year, 1, 1).and_hms_milli(0, 0, 0, 0);
 
     let yearlen = get_year_len(year);
@@ -276,6 +275,7 @@ mod tests {
             byhour: vec![],
             byminute: vec![],
             bysecond: vec![],
+            bynweekday: vec![],
         };
         let res = rebuild_year(2020, &options);
         println!("Res: {:?}", res);
