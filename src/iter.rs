@@ -108,7 +108,6 @@ pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<Da
     };
 
     loop {
-        println!("Main loop");
         let (dayset, start, end) = ii.getdayset(
             &options.freq,
             counter_date.year() as isize,
@@ -120,10 +119,8 @@ pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<Da
             .into_iter()
             .map(|s| Some(s as isize))
             .collect::<Vec<Option<isize>>>();
-        println!("dayset: {:?}", dayset);
 
         let filtered = remove_filtered_days(&mut dayset, start, end, &ii, options);
-        println!("dayset: {:?}", dayset);
 
         if not_empty(&options.bysetpos) {
             let poslist = build_poslist(&options.bysetpos, &timeset, start, end, &ii, &dayset);
@@ -150,7 +147,6 @@ pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<Da
                 }
             }
         } else {
-            println!("start: {}, end: {}", start, end);
             for j in start..end {
                 let current_day = dayset[j];
                 if current_day.is_none() {
@@ -159,7 +155,6 @@ pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<Da
 
                 let current_day = current_day.unwrap();
                 let date = from_ordinal(ii.yearordinal().unwrap() + current_day);
-                println!("timeset: {}", timeset.len());
                 for k in 0..timeset.len() {
                     let res = Utc.ymd(date.year(), date.month(), date.day()).and_hms(
                         timeset[k].hour as u32,
@@ -270,10 +265,10 @@ pub fn not_empty<T>(v: &Vec<T>) -> bool {
 }
 
 pub fn is_filtered(ii: &IterInfo, current_day: usize, options: &ParsedOptions) -> bool {
-    println!(
-        "Was filtered here: {}",
-        (not_empty(&options.byweekno) && (ii.wnomask().unwrap()[current_day]) == 0)
-    );
+    //println!(
+    //"Filtered here: {}",
+    //(not_empty(&options.byweekno) && (ii.wnomask().unwrap()[current_day]) == 0)
+    //);
     return (not_empty(&options.bymonth)
         && !includes(&options.bymonth, &ii.mmask().unwrap()[current_day]))
         || (not_empty(&options.byweekno) && (ii.wnomask().unwrap()[current_day]) == 0)

@@ -115,7 +115,7 @@ pub fn rebuild_year(year: i32, options: &ParsedOptions) -> YearInfo {
     }
 
     let div = (wyearlen as f32 / 7.).round() as isize;
-    let year_mod = pymod(div, 7);
+    let year_mod = pymod(wyearlen, 7);
     //const numweeks = Math.floor(div + mod / 4)
     let numweeks = div + (year_mod / 4);
 
@@ -174,7 +174,7 @@ pub fn rebuild_year(year: i32, options: &ParsedOptions) -> YearInfo {
         // days from last year's last week number in
         // this year.
         let lnumweeks;
-        if options.byweekno.iter().any(|&weekno| weekno == -1) {
+        if !options.byweekno.iter().any(|&weekno| weekno == -1) {
             let lyearweekday = get_weekday_val(&Utc.ymd(year - 1, 1, 1).weekday());
 
             let lno1wkst = pymod((7 - lyearweekday + options.wkst) as isize, 7);
