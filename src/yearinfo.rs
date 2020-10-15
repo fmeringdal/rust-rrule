@@ -1,53 +1,7 @@
 use crate::masks::Masks;
+use crate::options::*;
 use chrono::prelude::*;
 use chrono::{DateTime, Duration};
-
-#[derive(Debug)]
-pub struct YearInfo {
-    pub yearlen: usize,
-    pub nextyearlen: usize,
-    pub yearordinal: isize,
-    pub yearweekday: usize,
-    pub mmask: Vec<usize>,
-    pub mrange: Vec<usize>,
-    pub mdaymask: Vec<usize>,
-    pub nmdaymask: Vec<isize>,
-    pub wdaymask: Vec<usize>,
-    pub wnomask: Option<Vec<usize>>,
-}
-
-#[derive(Debug, PartialEq, PartialOrd)]
-pub enum Frequenzy {
-    YEARLY = 0,
-    MONTHLY = 1,
-    WEEKLY = 2,
-    DAILY = 3,
-    HOURLY = 4,
-    MINUTELY = 5,
-    SECONDLY = 6,
-}
-
-#[derive(Debug)]
-pub struct ParsedOptions {
-    pub freq: Frequenzy,
-    pub interval: usize,
-    pub count: Option<u32>,
-    pub until: Option<DateTime<Utc>>,
-    pub tzid: Option<String>,
-    pub dtstart: DateTime<Utc>,
-    pub wkst: usize,
-    pub bysetpos: Vec<usize>,
-    pub bymonth: Vec<usize>,
-    pub bymonthday: Vec<usize>,
-    pub bynmonthday: Vec<isize>,
-    pub byyearday: Vec<usize>,
-    pub byweekno: Vec<isize>,
-    pub byweekday: Vec<usize>,
-    pub byhour: Vec<usize>,
-    pub byminute: Vec<usize>,
-    pub bysecond: Vec<usize>,
-    pub bynweekday: Vec<Vec<isize>>,
-}
 
 fn is_leap_year(year: i32) -> bool {
     year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)
@@ -249,36 +203,4 @@ pub fn rebuild_year(year: i32, options: &ParsedOptions) -> YearInfo {
     result.wnomask = Some(wnomask);
 
     result
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
-            interval: 1,
-            count: Some(10),
-            until: None,
-            tzid: None,
-            dtstart: Utc.ymd(2020, 1, 1).and_hms(0, 0, 0),
-            wkst: 0,
-            bysetpos: vec![],
-            bymonth: vec![],
-            bymonthday: vec![],
-            bynmonthday: vec![],
-            byyearday: vec![],
-            byweekno: vec![1],
-            byweekday: vec![],
-            byhour: vec![],
-            byminute: vec![],
-            bysecond: vec![],
-            bynweekday: vec![],
-        };
-        let res = rebuild_year(2020, &options);
-        println!("Res: {:?}", res);
-        assert_eq!(2 + 2, 4);
-    }
 }

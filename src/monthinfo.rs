@@ -1,4 +1,5 @@
 use crate::masks::Masks;
+use crate::options::*;
 use crate::yearinfo::*;
 use chrono::prelude::*;
 use chrono::{DateTime, Duration};
@@ -71,36 +72,4 @@ pub fn rebuild_month(
     }
 
     result
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
-            interval: 1,
-            count: Some(10),
-            until: None,
-            tzid: None,
-            dtstart: Utc.ymd(2020, 1, 1).and_hms(0, 0, 0),
-            wkst: 0,
-            bysetpos: vec![],
-            bymonth: vec![],
-            bymonthday: vec![],
-            bynmonthday: vec![],
-            byyearday: vec![],
-            byweekno: vec![1],
-            byweekday: vec![],
-            byhour: vec![],
-            byminute: vec![],
-            bysecond: vec![],
-            bynweekday: vec![],
-        };
-        let res = rebuild_month(2020, 1, 366, &vec![], &vec![], &options);
-        println!("Res: {:?}", res);
-        assert_eq!(2 + 2, 4);
-    }
 }

@@ -1,5 +1,6 @@
 use crate::datetime::*;
 use crate::iterinfo::*;
+use crate::options::*;
 use crate::poslist::*;
 use crate::yearinfo::*;
 use chrono::prelude::*;

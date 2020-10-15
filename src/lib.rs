@@ -5,5 +5,6 @@ pub mod iter;
 pub mod iterinfo;
 pub mod masks;
 pub mod monthinfo;
+pub mod options;
 pub mod poslist;
 pub mod yearinfo;
