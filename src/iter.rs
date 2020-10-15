@@ -123,6 +123,7 @@ pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<Da
         println!("dayset: {:?}", dayset);
 
         let filtered = remove_filtered_days(&mut dayset, start, end, &ii, options);
+        println!("dayset: {:?}", dayset);
 
         if not_empty(&options.bysetpos) {
             let poslist = build_poslist(&options.bysetpos, &timeset, start, end, &ii, &dayset);
