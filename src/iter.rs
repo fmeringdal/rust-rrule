@@ -108,6 +108,7 @@ pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<Da
     };
 
     loop {
+        println!("Main loop");
         let (dayset, start, end) = ii.getdayset(
             &options.freq,
             counter_date.year() as isize,
@@ -146,6 +147,7 @@ pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<Da
                 }
             }
         } else {
+            println!("start: {}, end: {}", start, end);
             for j in start..end {
                 let current_day = dayset[j];
                 if current_day.is_none() {

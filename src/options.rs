@@ -1,3 +1,4 @@
+use crate::yearinfo::*;
 use chrono::prelude::*;
 
 #[derive(Debug)]
@@ -47,18 +48,18 @@ pub struct ParsedOptions {
     pub bynweekday: Vec<Vec<isize>>,
 }
 impl ParsedOptions {
-    pub fn new(freq: Frequenzy, interval: usize, dtstart: &DateTime<Utc>) -> Self {
+    pub fn new(freq: Frequenzy, dtstart: &DateTime<Utc>) -> Self {
         Self {
             freq,
-            interval,
+            interval: 1,
             count: None,
             until: None,
             tzid: None,
             dtstart: dtstart.clone(),
             wkst: 0,
             bysetpos: vec![],
-            bymonth: vec![],
-            bymonthday: vec![],
+            bymonth: vec![dtstart.month() as usize],
+            bymonthday: vec![dtstart.day() as usize],
             bynmonthday: vec![],
             byyearday: vec![],
             byweekno: vec![],

@@ -21,7 +21,7 @@ mod test {
         Utc.ymd(year, month, day).and_hms(hour, minute, second)
     }
 
-    fn test_recurring(msg: &str, options: &mut ParsedOptions, expected_dates: &Vec<DateTime<Utc>>) {
+    fn test_recurring(options: &mut ParsedOptions, expected_dates: &Vec<DateTime<Utc>>) {
         let iter_args = IterArgs {
             inc: true,
             before: Utc::now(),
@@ -38,24 +38,39 @@ mod test {
             "Expected number of returned dates to be equal to the expected"
         );
 
+        println!("Acutal: {:?}", res);
         for (actual, exptected) in res.iter().zip(expected_dates) {
-            assert_eq!(actual, exptected, "{}", msg);
+            assert_eq!(actual, exptected);
         }
     }
 
     #[test]
     fn int_works() {
-        let mut options = ParsedOptions::new(Frequenzy::WEEKLY, 5, &ymd_hms(2012, 1, 1, 10, 30, 0))
+        let mut options = ParsedOptions::new(Frequenzy::WEEKLY, &ymd_hms(2012, 1, 1, 10, 30, 0))
+            .interval(5)
             .count(3)
             .byweekday(vec![0, 4])
             .bymonth(vec![6]);
         test_recurring(
-            "should work",
             &mut options,
             &vec![
                 ymd_hms(2012, 6, 18, 10, 30, 0),
                 ymd_hms(2012, 6, 22, 10, 30, 0),
                 ymd_hms(2013, 6, 3, 10, 30, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn yearly() {
+        let mut options =
+            ParsedOptions::new(Frequenzy::YEARLY, &ymd_hms(1997, 9, 2, 9, 0, 0)).count(3);
+        test_recurring(
+            &mut options,
+            &vec![
+                ymd_hms(1997, 9, 2, 9, 0, 0),
+                ymd_hms(1998, 9, 2, 9, 0, 0),
+                ymd_hms(1999, 9, 2, 9, 0, 0),
             ],
         );
     }

@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct Time {
     pub hour: usize,
     pub minute: usize,
