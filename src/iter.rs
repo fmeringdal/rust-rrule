@@ -115,10 +115,12 @@ pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<Da
             counter_date.month() as usize,
             counter_date.day() as usize,
         );
+
         let mut dayset = dayset
             .into_iter()
             .map(|s| Some(s as isize))
             .collect::<Vec<Option<isize>>>();
+        println!("dayset: {:?}", dayset);
 
         let filtered = remove_filtered_days(&mut dayset, start, end, &ii, options);
 
@@ -156,6 +158,7 @@ pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<Da
 
                 let current_day = current_day.unwrap();
                 let date = from_ordinal(ii.yearordinal().unwrap() + current_day);
+                println!("timeset: {}", timeset.len());
                 for k in 0..timeset.len() {
                     let res = Utc.ymd(date.year(), date.month(), date.day()).and_hms(
                         timeset[k].hour as u32,

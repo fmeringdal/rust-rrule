@@ -30,7 +30,7 @@ pub fn rebuild_month(
     let mut ranges: Vec<(isize, isize)> = vec![];
     if options.freq == Frequenzy::YEARLY {
         if options.bymonth.is_empty() {
-            ranges = vec![(0, year as isize)];
+            ranges = vec![(0, yearlen as isize)];
         } else {
             for j in 0..options.bymonth.len() {
                 let m = options.bymonth[j];
@@ -49,6 +49,9 @@ pub fn rebuild_month(
     // care about cross-year weekly periods.
     result.nwdaymask = vec![0; yearlen];
 
+    println!("{:?}", options.bynweekday);
+    println!("{:?}", ranges);
+
     for j in 0..ranges.len() {
         let rang = ranges[j];
         let first = rang.0;
@@ -60,9 +63,12 @@ pub fn rebuild_month(
             let n = options.bynweekday[k][1];
             if n < 0 {
                 i = last + (n + 1) * 7;
+                println!("n: {}, last: {}", n, last);
+                println!("i 1 is {}", i);
                 i -= pymod(wdaymask[i as usize] as isize - wday, 7);
             } else {
                 i = first + (n - 1) * 7;
+                println!("i 2 is {}", i);
                 i += pymod(7 - wdaymask[i as usize] as isize + wday, 7);
             }
             if first <= i && i <= last {
