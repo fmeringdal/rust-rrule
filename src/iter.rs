@@ -270,6 +270,10 @@ pub fn not_empty<T>(v: &Vec<T>) -> bool {
 }
 
 pub fn is_filtered(ii: &IterInfo, current_day: usize, options: &ParsedOptions) -> bool {
+    println!(
+        "Was filtered here: {}",
+        (not_empty(&options.byweekno) && (ii.wnomask().unwrap()[current_day]) == 0)
+    );
     return (not_empty(&options.bymonth)
         && !includes(&options.bymonth, &ii.mmask().unwrap()[current_day]))
         || (not_empty(&options.byweekno) && (ii.wnomask().unwrap()[current_day]) == 0)
