@@ -1,4 +1,4 @@
-use crate::masks::Masks;
+use crate::masks::MASKS;
 use crate::options::*;
 use chrono::prelude::*;
 use chrono::{DateTime, Duration};
@@ -39,7 +39,7 @@ pub struct BaseMasks {
 }
 
 fn base_year_masks(year: i32) -> BaseMasks {
-    let masks = Masks::new();
+    let masks = MASKS.clone();
     let firstyday = Utc.ymd(year, 1, 1).and_hms_milli(0, 0, 0, 0);
     let yearlen = get_year_len(year);
     let wday = get_weekday_val(&firstyday.weekday()) as usize;

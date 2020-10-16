@@ -30,6 +30,7 @@ mod test {
             _value: Some(vec![]),
         };
         let mut iter_res = IterResult::new(QueryMethodTypes::ALL, iter_args);
+
         let res = iter(&mut iter_res, options);
 
         assert_eq!(
