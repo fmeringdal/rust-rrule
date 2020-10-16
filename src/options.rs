@@ -35,7 +35,7 @@ pub struct ParsedOptions {
     pub tzid: Option<String>,
     pub dtstart: DateTime<Utc>,
     pub wkst: usize,
-    pub bysetpos: Vec<usize>,
+    pub bysetpos: Vec<isize>,
     pub bymonth: Vec<usize>,
     pub bymonthday: Vec<usize>,
     pub bynmonthday: Vec<isize>,
@@ -99,7 +99,7 @@ impl ParsedOptions {
         self.wkst = wkst;
         self
     }
-    pub fn bysetpos(mut self, bysetpos: Vec<usize>) -> Self {
+    pub fn bysetpos(mut self, bysetpos: Vec<isize>) -> Self {
         self.bysetpos = bysetpos;
         self
     }

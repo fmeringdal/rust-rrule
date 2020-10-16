@@ -114,7 +114,7 @@ pub fn rebuild_year(year: i32, options: &ParsedOptions) -> YearInfo {
         wyearlen = yearlen as isize - no1wkst;
     }
 
-    let div = (wyearlen as f32 / 7.).round() as isize;
+    let div = (wyearlen as f32 / 7.).floor() as isize;
     let year_mod = pymod(wyearlen, 7);
     //const numweeks = Math.floor(div + mod / 4)
     let numweeks = div + (year_mod / 4);

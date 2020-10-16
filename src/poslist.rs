@@ -11,7 +11,7 @@ pub fn from_ordinal(ordinal: isize) -> DateTime<Utc> {
 }
 
 pub fn build_poslist(
-    bysetpost: &Vec<usize>,
+    bysetpost: &Vec<isize>,
     timeset: &Vec<Time>,
     start: usize,
     end: usize,
@@ -25,10 +25,10 @@ pub fn build_poslist(
         let timepos;
         let pos = bysetpost[j];
         if pos < 0 {
-            daypos = pos / timeset.len();
+            daypos = (pos as f32 / timeset.len() as f32).floor() as isize;
             timepos = pymod(pos as isize, timeset.len() as isize);
         } else {
-            daypos = (pos - 1) / timeset.len();
+            daypos = ((pos - 1) as f32 / timeset.len() as f32) as isize;
             timepos = pymod(pos as isize - 1, timeset.len() as isize);
         }
 
@@ -42,8 +42,8 @@ pub fn build_poslist(
 
         let i;
         if daypos < 0 {
-            let index = (tmp.len() - daypos) as usize;
-            i = &tmp[index];
+            let index = tmp.len() as isize + daypos;
+            i = &tmp[index as usize];
         } else {
             i = &tmp[daypos as usize];
         }
@@ -62,7 +62,6 @@ pub fn build_poslist(
         }
     }
 
-    //poslist.sort();
     poslist.sort_by(|a, b| a.timestamp().cmp(&b.timestamp()));
 
     poslist

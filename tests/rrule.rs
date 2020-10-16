@@ -1,10 +1,10 @@
 extern crate chrono;
-extern crate rust_ical;
+extern crate rrule;
 
 use chrono::prelude::*;
-use rust_ical::iter::*;
-use rust_ical::options::*;
-use rust_ical::yearinfo::*;
+use rrule::iter::*;
+use rrule::options::*;
+use rrule::yearinfo::*;
 
 #[cfg(test)]
 mod test {
@@ -682,6 +682,294 @@ mod test {
                 ymd_hms(1997, 12, 28, 9, 0, 0),
                 ymd_hms(1999, 1, 3, 9, 0, 0),
                 ymd_hms(2000, 1, 2, 9, 0, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn yearly_by_weekno_and_weekday53_last() {
+        let mut options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(3),
+            bymonth: vec![],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![0],
+            byhour: vec![9],
+            bysetpos: vec![],
+            byweekno: vec![53],
+            byminute: vec![0],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+        };
+        test_recurring(
+            &mut options,
+            &vec![
+                ymd_hms(1998, 12, 28, 9, 0, 0),
+                ymd_hms(2004, 12, 27, 9, 0, 0),
+                ymd_hms(2009, 12, 28, 9, 0, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn yearly_by_hour() {
+        let mut options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(3),
+            bymonth: vec![9],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![6, 18],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![0],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![2],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+        };
+        test_recurring(
+            &mut options,
+            &vec![
+                ymd_hms(1997, 9, 2, 18, 0, 0),
+                ymd_hms(1998, 9, 2, 6, 0, 0),
+                ymd_hms(1998, 9, 2, 18, 0, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn yearly_by_minute() {
+        let mut options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(3),
+            bymonth: vec![9],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![9],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![6, 18],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![2],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+        };
+        test_recurring(
+            &mut options,
+            &vec![
+                ymd_hms(1997, 9, 2, 9, 6, 0),
+                ymd_hms(1997, 9, 2, 9, 18, 0),
+                ymd_hms(1998, 9, 2, 9, 6, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn yearly_by_second() {
+        let mut options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(3),
+            bymonth: vec![9],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![9],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![0],
+            bysecond: vec![6, 18],
+            byyearday: vec![],
+            bymonthday: vec![2],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+        };
+        test_recurring(
+            &mut options,
+            &vec![
+                ymd_hms(1997, 9, 2, 9, 0, 6),
+                ymd_hms(1997, 9, 2, 9, 0, 18),
+                ymd_hms(1998, 9, 2, 9, 0, 6),
+            ],
+        );
+    }
+
+    #[test]
+    fn yearly_by_hour_and_minute() {
+        let mut options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(3),
+            bymonth: vec![9],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![6, 18],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![6, 18],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![2],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+        };
+        test_recurring(
+            &mut options,
+            &vec![
+                ymd_hms(1997, 9, 2, 18, 6, 0),
+                ymd_hms(1997, 9, 2, 18, 18, 0),
+                ymd_hms(1998, 9, 2, 6, 6, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn yearly_by_hour_and_second() {
+        let mut options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(3),
+            bymonth: vec![9],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![6, 18],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![0],
+            bysecond: vec![6, 18],
+            byyearday: vec![],
+            bymonthday: vec![2],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+        };
+        test_recurring(
+            &mut options,
+            &vec![
+                ymd_hms(1997, 9, 2, 18, 0, 6),
+                ymd_hms(1997, 9, 2, 18, 0, 18),
+                ymd_hms(1998, 9, 2, 6, 0, 6),
+            ],
+        );
+    }
+
+    #[test]
+    fn yearly_by_minute_and_second() {
+        let mut options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(3),
+            bymonth: vec![9],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![9],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![6, 18],
+            bysecond: vec![6, 18],
+            byyearday: vec![],
+            bymonthday: vec![2],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+        };
+        test_recurring(
+            &mut options,
+            &vec![
+                ymd_hms(1997, 9, 2, 9, 6, 6),
+                ymd_hms(1997, 9, 2, 9, 6, 18),
+                ymd_hms(1997, 9, 2, 9, 18, 6),
+            ],
+        );
+    }
+
+    #[test]
+    fn yearly_by_hour_and_minute_and_second() {
+        let mut options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(3),
+            bymonth: vec![9],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![6, 18],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![6, 18],
+            bysecond: vec![6, 18],
+            byyearday: vec![],
+            bymonthday: vec![2],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+        };
+        test_recurring(
+            &mut options,
+            &vec![
+                ymd_hms(1997, 9, 2, 18, 6, 6),
+                ymd_hms(1997, 9, 2, 18, 6, 18),
+                ymd_hms(1997, 9, 2, 18, 18, 6),
+            ],
+        );
+    }
+
+    #[test]
+    fn yearly_by_setpos() {
+        let mut options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(3),
+            bymonth: vec![],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![6, 18],
+            bysetpos: vec![3, -3],
+            byweekno: vec![],
+            byminute: vec![0],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![15],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+        };
+        test_recurring(
+            &mut options,
+            &vec![
+                ymd_hms(1997, 11, 15, 18, 0, 0),
+                ymd_hms(1998, 2, 15, 6, 0, 0),
+                ymd_hms(1998, 11, 15, 18, 0, 0),
             ],
         );
     }
