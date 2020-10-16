@@ -141,8 +141,8 @@ impl<'a> IterInfo<'a> {
     }
 
     pub fn wdayset(&self, year: isize, month: usize, day: usize) -> (Vec<usize>, usize, usize) {
-        let year_len = self.yearlen().unwrap();
-        let mut set = vec![0; year_len];
+        let set_len = self.yearlen().unwrap() + 7;
+        let mut set = vec![0; set_len];
 
         let mut i = (to_ordinal(
             &Utc.ymd(year as i32, month as u32, day as u32)
@@ -151,7 +151,7 @@ impl<'a> IterInfo<'a> {
 
         let start = i;
         for _ in 0..7 {
-            if i >= year_len {
+            if i >= set_len {
                 break;
             }
             set[i] = i;
