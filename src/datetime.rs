@@ -16,7 +16,7 @@ impl Time {
         }
     }
 
-    pub fn getTime(&self) -> usize {
+    pub fn time(&self) -> usize {
         (self.hour * 60 * 60 + self.minute * 60 + self.second) * 1000 + self.millisecond
     }
 }

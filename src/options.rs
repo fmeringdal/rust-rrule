@@ -1,4 +1,4 @@
-use crate::yearinfo::*;
+
 use chrono::prelude::*;
 
 #[derive(Debug)]
@@ -55,7 +55,7 @@ impl ParsedOptions {
             count: None,
             until: None,
             tzid: None,
-            dtstart: dtstart.clone(),
+            dtstart: *dtstart,
             wkst: 0,
             bysetpos: vec![],
             bymonth: vec![dtstart.month() as usize],
@@ -80,7 +80,7 @@ impl ParsedOptions {
         self
     }
     pub fn until(mut self, until: &DateTime<Utc>) -> Self {
-        self.until = Some(until.clone());
+        self.until = Some(*until);
         self
     }
     pub fn tzid(mut self, tzid: &String) -> Self {

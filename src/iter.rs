@@ -67,7 +67,7 @@ impl IterResult {
             QueryMethodTypes::AFTER if too_early => true,
             QueryMethodTypes::AFTER => {
                 self.add(date);
-                return false;
+                false
             }
             _ => self.add(date),
         }
@@ -75,7 +75,7 @@ impl IterResult {
 
     pub fn add(&mut self, date: DateTime<Utc>) -> bool {
         self._result.push(date);
-        return true;
+        true
     }
 
     pub fn get_value(&self) -> Vec<DateTime<Utc>> {
@@ -97,7 +97,7 @@ pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<Da
         return iter_result.get_value();
     }
 
-    let mut counter_date = options.dtstart.clone();
+    let mut counter_date = options.dtstart;
     let mut ii = IterInfo::new(options);
     ii.rebuild(counter_date.year() as isize, counter_date.month() as usize);
 
@@ -133,7 +133,7 @@ pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<Da
 
                 if res >= options.dtstart {
                     //let rezoned_date = rezone_if_needed(&res, &options);
-                    let rezoned_date = res.clone();
+                    let rezoned_date = res;
                     if !iter_result.accept(rezoned_date) {
                         return iter_result.get_value();
                     }
@@ -166,7 +166,7 @@ pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<Da
                     }
                     if res >= options.dtstart {
                         //let rezoned_date = rezone_if_needed(&res, &options);
-                        let rezoned_date = res.clone();
+                        let rezoned_date = res;
                         if !iter_result.accept(rezoned_date) {
                             return iter_result.get_value();
                         }
@@ -212,7 +212,7 @@ pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<Da
 pub fn increment_counter_date(
     counter_date: DateTime<Utc>,
     options: &ParsedOptions,
-    filtered: bool,
+    _filtered: bool,
 ) -> DateTime<Utc> {
     match options.freq {
         Frequenzy::YEARLY => counter_date
@@ -228,13 +228,13 @@ pub fn increment_counter_date(
                     year_div -= 1;
                 }
                 let new_year = counter_date.year() + year_div as i32;
-                return counter_date
+                counter_date
                     .with_month(new_month)
                     .unwrap()
                     .with_year(new_year)
-                    .unwrap();
+                    .unwrap()
             } else {
-                return counter_date.with_month(new_month).unwrap();
+                counter_date.with_month(new_month).unwrap()
             }
         }
         Frequenzy::WEEKLY => {
@@ -261,7 +261,7 @@ where
 }
 
 pub fn not_empty<T>(v: &Vec<T>) -> bool {
-    return v.len() > 0;
+    !v.is_empty()
 }
 
 pub fn is_filtered(ii: &IterInfo, current_day: usize, options: &ParsedOptions) -> bool {
@@ -359,19 +359,19 @@ pub fn make_timeset(
     }
 
     if (options.freq >= Frequenzy::HOURLY
-        && options.byhour.len() > 0
+        && !options.byhour.is_empty()
         && !options
             .byhour
             .iter()
             .any(|&h| h == counter_date.hour() as usize))
         || (options.freq >= Frequenzy::MINUTELY
-            && options.byminute.len() > 0
+            && !options.byminute.is_empty()
             && !options
                 .byminute
                 .iter()
                 .any(|&m| m == counter_date.minute() as usize))
         || (options.freq >= Frequenzy::SECONDLY
-            && options.bysecond.len() > 0
+            && !options.bysecond.is_empty()
             && !options
                 .bysecond
                 .iter()
@@ -380,11 +380,11 @@ pub fn make_timeset(
         return vec![];
     }
 
-    return ii.gettimeset(
+    ii.gettimeset(
         &options.freq,
         counter_date.hour() as usize,
         counter_date.minute() as usize,
         counter_date.second() as usize,
         counter_date.timestamp_subsec_millis() as usize,
-    );
+    )
 }

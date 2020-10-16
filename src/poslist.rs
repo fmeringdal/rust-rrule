@@ -2,7 +2,7 @@ use crate::datetime::*;
 use crate::iterinfo::*;
 use crate::yearinfo::*;
 use chrono::prelude::*;
-use chrono::*;
+
 
 pub fn from_ordinal(ordinal: isize) -> DateTime<Utc> {
     let timestamp = ordinal * 24 * 60 * 60;
@@ -62,7 +62,7 @@ pub fn build_poslist(
         }
     }
 
-    poslist.sort_by(|a, b| a.timestamp().cmp(&b.timestamp()));
+    poslist.sort_by_key(|a| a.timestamp());
 
     poslist
 }

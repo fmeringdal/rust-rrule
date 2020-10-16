@@ -1,7 +1,7 @@
 use crate::masks::MASKS;
 use crate::options::*;
 use chrono::prelude::*;
-use chrono::{DateTime, Duration};
+use chrono::{DateTime};
 
 fn is_leap_year(year: i32) -> bool {
     year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)
@@ -46,20 +46,20 @@ fn base_year_masks(year: i32) -> BaseMasks {
 
     if yearlen == 365 {
         return BaseMasks {
-            mmask: masks.M365,
-            mdaymask: masks.MDAY365,
-            nmdaymask: masks.NMDAY365,
-            mrange: masks.M365RANGE,
-            wdaymask: Vec::from(&masks.WDAY[wday..]),
+            mmask: masks.m365,
+            mdaymask: masks.mday365,
+            nmdaymask: masks.nmday365,
+            mrange: masks.m365range,
+            wdaymask: Vec::from(&masks.wday[wday..]),
         };
     }
 
     BaseMasks {
-        mmask: masks.M366,
-        mdaymask: masks.MDAY366,
-        nmdaymask: masks.NMDAY366,
-        mrange: masks.M366RANGE,
-        wdaymask: Vec::from(&masks.WDAY[wday..]),
+        mmask: masks.m366,
+        mdaymask: masks.mday366,
+        nmdaymask: masks.nmday366,
+        mrange: masks.m366range,
+        wdaymask: Vec::from(&masks.wday[wday..]),
     }
 }
 

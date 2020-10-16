@@ -4,7 +4,7 @@ extern crate rrule;
 use chrono::prelude::*;
 use rrule::iter::*;
 use rrule::options::*;
-use rrule::yearinfo::*;
+
 
 #[cfg(test)]
 mod test {
