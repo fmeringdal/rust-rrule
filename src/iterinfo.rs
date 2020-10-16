@@ -219,7 +219,7 @@ impl<'a> IterInfo<'a> {
             Frequenzy::MONTHLY => self.mdayset(month),
             Frequenzy::WEEKLY => self.wdayset(year, month, day),
             Frequenzy::DAILY => self.ddayset(year, month, day),
-            _ => panic!("Invalid freq"),
+            _ => self.ddayset(year, month, day),
         }
     }
 

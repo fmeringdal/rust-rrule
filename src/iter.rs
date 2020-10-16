@@ -249,7 +249,9 @@ pub fn increment_counter_date(
             counter_date + Duration::days(day_delta as i64)
         }
         Frequenzy::DAILY => counter_date + Duration::days(options.interval as i64),
-        _ => panic!("hfoashfosa"),
+        Frequenzy::HOURLY => counter_date + Duration::hours(options.interval as i64),
+        Frequenzy::MINUTELY => counter_date + Duration::minutes(options.interval as i64),
+        Frequenzy::SECONDLY => counter_date + Duration::seconds(options.interval as i64),
     }
 }
 
