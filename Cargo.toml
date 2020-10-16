@@ -1,5 +1,5 @@
 [package]
-name = "rust_ical"
+name = "rrule"
 version = "0.1.0"
 authors = ["Fredrik Meringdal <fmeringdal@hotmail.com>"]
 edition = "2018"

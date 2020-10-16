@@ -653,4 +653,36 @@ mod test {
             ],
         );
     }
+
+    #[test]
+    fn yearly_by_weekno_and_weekday_last() {
+        let mut options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(3),
+            bymonth: vec![],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![6],
+            byhour: vec![9],
+            bysetpos: vec![],
+            byweekno: vec![-1],
+            byminute: vec![0],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+        };
+        test_recurring(
+            &mut options,
+            &vec![
+                ymd_hms(1997, 12, 28, 9, 0, 0),
+                ymd_hms(1999, 1, 3, 9, 0, 0),
+                ymd_hms(2000, 1, 2, 9, 0, 0),
+            ],
+        );
+    }
 }
