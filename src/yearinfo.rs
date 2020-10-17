@@ -1,7 +1,7 @@
 use crate::masks::MASKS;
 use crate::options::*;
 use chrono::prelude::*;
-use chrono::{DateTime};
+use chrono::DateTime;
 
 fn is_leap_year(year: i32) -> bool {
     year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)
@@ -32,7 +32,7 @@ pub fn get_weekday_val(wk: &Weekday) -> usize {
 
 pub struct BaseMasks {
     mmask: Vec<usize>,
-    mdaymask: Vec<usize>,
+    mdaymask: Vec<isize>,
     nmdaymask: Vec<isize>,
     wdaymask: Vec<usize>,
     mrange: Vec<usize>,

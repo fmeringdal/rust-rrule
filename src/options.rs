@@ -8,7 +8,7 @@ pub struct YearInfo {
     pub yearweekday: usize,
     pub mmask: Vec<usize>,
     pub mrange: Vec<usize>,
-    pub mdaymask: Vec<usize>,
+    pub mdaymask: Vec<isize>,
     pub nmdaymask: Vec<isize>,
     pub wdaymask: Vec<usize>,
     pub wnomask: Option<Vec<usize>>,
@@ -36,7 +36,7 @@ pub struct ParsedOptions {
     pub wkst: usize,
     pub bysetpos: Vec<isize>,
     pub bymonth: Vec<usize>,
-    pub bymonthday: Vec<usize>,
+    pub bymonthday: Vec<isize>,
     pub bynmonthday: Vec<isize>,
     pub byyearday: Vec<isize>,
     pub byweekno: Vec<isize>,
@@ -60,7 +60,7 @@ impl ParsedOptions {
             wkst: 0,
             bysetpos: vec![],
             bymonth: vec![dtstart.month() as usize],
-            bymonthday: vec![dtstart.day() as usize],
+            bymonthday: vec![dtstart.day() as isize],
             bynmonthday: vec![],
             byyearday: vec![],
             byweekno: vec![],
@@ -109,7 +109,7 @@ impl ParsedOptions {
         self.bymonth = bymonth;
         self
     }
-    pub fn bymonthday(mut self, bymonthday: Vec<usize>) -> Self {
+    pub fn bymonthday(mut self, bymonthday: Vec<isize>) -> Self {
         self.bymonthday = bymonthday;
         self
     }

@@ -15,8 +15,8 @@ pub struct Masks {
     pub m365range: Vec<usize>,
     pub m366: Vec<usize>,
     pub m366range: Vec<usize>,
-    pub mday365: Vec<usize>,
-    pub mday366: Vec<usize>,
+    pub mday365: Vec<isize>,
+    pub mday366: Vec<isize>,
     pub nmday365: Vec<isize>,
     pub nmday366: Vec<isize>,
 }
@@ -74,6 +74,7 @@ impl Default for Masks {
             ]
             .into_iter()
             .flatten()
+            .map(|d| d as isize)
             .collect(),
             m366range: vec![0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366],
             mday365: vec![
@@ -93,6 +94,7 @@ impl Default for Masks {
             ]
             .into_iter()
             .flatten()
+            .map(|d| d as isize)
             .collect(),
             m366: vec![
                 vec![1; 31],

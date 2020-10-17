@@ -120,7 +120,7 @@ impl<'a> IterInfo<'a> {
             None => None,
         }
     }
-    pub fn mdaymask(&self) -> Option<&Vec<usize>> {
+    pub fn mdaymask(&self) -> Option<&Vec<isize>> {
         match &self.yearinfo {
             Some(info) => Some(&info.mdaymask),
             None => None,

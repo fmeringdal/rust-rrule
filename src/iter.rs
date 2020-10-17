@@ -257,7 +257,6 @@ pub fn increment_counter_date(
         Frequenzy::HOURLY => {
             let mut new_hours = counter_date.hour() as usize;
             if filtered {
-                println!("yeaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaah");
                 new_hours += ((23 - new_hours) as f32 / options.interval as f32).floor() as usize
                     * options.interval;
             }
@@ -270,7 +269,6 @@ pub fn increment_counter_date(
                         .iter()
                         .any(|bh| *bh == (new_hours % 24) as usize)
                 {
-                    println!("Broke at new hours: {}", new_hours);
                     break;
                 }
             }
@@ -293,10 +291,6 @@ pub fn not_empty<T>(v: &Vec<T>) -> bool {
 }
 
 pub fn is_filtered(ii: &IterInfo, current_day: usize, options: &ParsedOptions) -> bool {
-    //println!(
-    //"Filtered here: {}",
-    //(not_empty(&options.byweekno) && (ii.wnomask().unwrap()[current_day]) == 0)
-    //);
     return (not_empty(&options.bymonth)
         && !includes(&options.bymonth, &ii.mmask().unwrap()[current_day]))
         || (not_empty(&options.byweekno) && (ii.wnomask().unwrap()[current_day]) == 0)
