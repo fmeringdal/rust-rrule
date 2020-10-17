@@ -182,7 +182,7 @@ impl<'a> IterInfo<'a> {
             .map(|minute| self.mtimeset(hour, *minute, second, millisecond))
             .flatten()
             .collect::<Vec<Time>>();
-        set.sort_by_key(|a| -1 * (a.time() as isize));
+        set.sort_by_key(|a| a.time());
         set
     }
 
@@ -193,7 +193,7 @@ impl<'a> IterInfo<'a> {
             .iter()
             .map(|second| Time::new(hour, minute, *second, millisecond))
             .collect::<Vec<Time>>();
-        set.sort_by_key(|a| -1 * (a.time() as isize));
+        set.sort_by_key(|a| a.time());
         set
     }
 

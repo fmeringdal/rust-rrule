@@ -4172,4 +4172,35 @@ mod test {
             ],
         );
     }
+    #[test]
+    fn hourly_by_minute() {
+        let mut options = ParsedOptions {
+            freq: Frequenzy::HOURLY,
+            count: Some(3),
+            bymonth: vec![],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![6, 18],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+        };
+        test_recurring(
+            &mut options,
+            &vec![
+                ymd_hms(1997, 9, 2, 9, 6, 0),
+                ymd_hms(1997, 9, 2, 9, 18, 0),
+                ymd_hms(1997, 9, 2, 10, 6, 0),
+            ],
+        );
+    }
 }

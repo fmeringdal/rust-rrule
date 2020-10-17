@@ -106,8 +106,10 @@ pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<Da
         Some(count) => count,
         _ => 0,
     };
+    println!("Timeset: {:?}", timeset);
 
     loop {
+        println!("Counter date in loop: {}", counter_date);
         let (dayset, start, end) = ii.getdayset(
             &options.freq,
             counter_date.year() as isize,
@@ -186,7 +188,9 @@ pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<Da
         }
 
         // Handle frequency and interval
+        println!("Before counter add: {}", counter_date);
         counter_date = increment_counter_date(counter_date, options, filtered);
+        println!("After counter add: {}", counter_date);
 
         if counter_date.year() > 2200 {
             return iter_result.get_value();
@@ -196,6 +200,7 @@ pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<Da
             || options.freq == Frequenzy::MINUTELY
             || options.freq == Frequenzy::SECONDLY
         {
+            println!("Getting timeset for counter date: {:?}", counter_date);
             timeset = ii.gettimeset(
                 &options.freq,
                 counter_date.hour() as usize,
@@ -252,6 +257,7 @@ pub fn increment_counter_date(
         Frequenzy::HOURLY => {
             let mut new_hours = counter_date.hour() as usize;
             if filtered {
+                println!("yeaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaah");
                 new_hours += ((23 - new_hours) as f32 / options.interval as f32).floor() as usize
                     * options.interval;
             }
@@ -264,6 +270,7 @@ pub fn increment_counter_date(
                         .iter()
                         .any(|bh| *bh == (new_hours % 24) as usize)
                 {
+                    println!("Broke at new hours: {}", new_hours);
                     break;
                 }
             }
