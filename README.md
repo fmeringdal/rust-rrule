@@ -1,5 +1,5 @@
 # RRule implemented in Rust for speed
-[![Actions Status](https://github.com/fmeringdal/rust_rrule/workflows/Rust/badge.svg)](https://github.com/fmeringdal/rust_rrule/actions)
+![Build](https://github.com/fmeringdal/rust_rrule/workflows/Build/badge.svg)
 
 Fast implementation of rrule
 
