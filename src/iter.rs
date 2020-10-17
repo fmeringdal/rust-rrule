@@ -305,6 +305,8 @@ pub fn is_filtered(ii: &IterInfo, current_day: usize, options: &ParsedOptions) -
         || (ii.nwdaymask().is_some()
             && not_empty(ii.nwdaymask().unwrap())
             && (ii.nwdaymask().unwrap()[current_day]) == 0)
+        || (options.byeaster.is_some()
+            && !(includes(ii.eastermask().unwrap(), &(current_day as isize))))
         || ((not_empty(&options.bymonthday) || not_empty(&options.bynmonthday))
             && !includes(&options.bymonthday, &ii.mdaymask().unwrap()[current_day])
             && !includes(&options.bynmonthday, &ii.nmdaymask().unwrap()[current_day]))

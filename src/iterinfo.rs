@@ -1,4 +1,5 @@
 use crate::datetime::*;
+use crate::easter::*;
 use crate::monthinfo::*;
 use crate::options::*;
 use crate::yearinfo::*;
@@ -7,6 +8,7 @@ use chrono::prelude::*;
 pub struct IterInfo<'a> {
     pub yearinfo: Option<YearInfo>,
     pub monthinfo: Option<MonthInfo>,
+    pub eastermask: Option<Vec<isize>>,
     options: &'a ParsedOptions,
 }
 
@@ -16,6 +18,7 @@ impl<'a> IterInfo<'a> {
             options,
             yearinfo: None,
             monthinfo: None,
+            eastermask: None,
         }
     }
 
@@ -38,6 +41,10 @@ impl<'a> IterInfo<'a> {
                     self.options,
                 ));
             }
+        }
+
+        if let Some(byeaster) = self.options.byeaster {
+            self.eastermask = Some(easter(year, byeaster));
         }
     }
 
@@ -68,6 +75,13 @@ impl<'a> IterInfo<'a> {
     pub fn mrange(&self) -> Option<&Vec<usize>> {
         match &self.yearinfo {
             Some(info) => Some(&info.mrange),
+            None => None,
+        }
+    }
+
+    pub fn eastermask(&self) -> Option<&Vec<isize>> {
+        match &self.eastermask {
+            Some(mask) => Some(&mask),
             None => None,
         }
     }

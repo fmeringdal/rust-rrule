@@ -45,7 +45,9 @@ pub struct ParsedOptions {
     pub byminute: Vec<usize>,
     pub bysecond: Vec<usize>,
     pub bynweekday: Vec<Vec<isize>>,
+    pub byeaster: Option<isize>,
 }
+
 impl ParsedOptions {
     pub fn new(freq: Frequenzy, dtstart: &DateTime<Utc>) -> Self {
         Self {
@@ -67,6 +69,7 @@ impl ParsedOptions {
             byhour: vec![dtstart.hour() as usize],
             byminute: vec![dtstart.minute() as usize],
             bysecond: vec![dtstart.second() as usize],
+            byeaster: None,
         }
     }
 
