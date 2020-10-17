@@ -201,7 +201,7 @@ pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<Da
                 counter_date.hour() as usize,
                 counter_date.minute() as usize,
                 counter_date.second() as usize,
-                counter_date.timestamp_subsec_millis() as usize,
+                0,
             );
         }
 
@@ -212,7 +212,7 @@ pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<Da
 pub fn increment_counter_date(
     counter_date: DateTime<Utc>,
     options: &ParsedOptions,
-    _filtered: bool,
+    filtered: bool,
 ) -> DateTime<Utc> {
     match options.freq {
         Frequenzy::YEARLY => counter_date
@@ -249,7 +249,26 @@ pub fn increment_counter_date(
             counter_date + Duration::days(day_delta as i64)
         }
         Frequenzy::DAILY => counter_date + Duration::days(options.interval as i64),
-        Frequenzy::HOURLY => counter_date + Duration::hours(options.interval as i64),
+        Frequenzy::HOURLY => {
+            let mut new_hours = counter_date.hour() as usize;
+            if filtered {
+                new_hours += ((23 - new_hours) as f32 / options.interval as f32).floor() as usize
+                    * options.interval;
+            }
+
+            loop {
+                new_hours += options.interval;
+                if options.byhour.is_empty()
+                    || options
+                        .byhour
+                        .iter()
+                        .any(|bh| *bh == (new_hours % 24) as usize)
+                {
+                    break;
+                }
+            }
+            counter_date.with_hour(0).unwrap() + Duration::hours(new_hours as i64)
+        }
         Frequenzy::MINUTELY => counter_date + Duration::minutes(options.interval as i64),
         Frequenzy::SECONDLY => counter_date + Duration::seconds(options.interval as i64),
     }
