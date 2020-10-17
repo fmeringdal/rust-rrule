@@ -38,7 +38,7 @@ pub struct ParsedOptions {
     pub bymonth: Vec<usize>,
     pub bymonthday: Vec<usize>,
     pub bynmonthday: Vec<isize>,
-    pub byyearday: Vec<usize>,
+    pub byyearday: Vec<isize>,
     pub byweekno: Vec<isize>,
     pub byweekday: Vec<usize>,
     pub byhour: Vec<usize>,
@@ -114,7 +114,7 @@ impl ParsedOptions {
         self.bynmonthday = bynmonthday;
         self
     }
-    pub fn byyearday(mut self, byyearday: Vec<usize>) -> Self {
+    pub fn byyearday(mut self, byyearday: Vec<isize>) -> Self {
         self.byyearday = byyearday;
         self
     }

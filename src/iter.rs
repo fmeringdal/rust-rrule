@@ -310,7 +310,7 @@ pub fn is_filtered(ii: &IterInfo, current_day: usize, options: &ParsedOptions) -
             && !includes(&options.bynmonthday, &ii.nmdaymask().unwrap()[current_day]))
         || (not_empty(&options.byyearday)
             && ((current_day < ii.yearlen().unwrap()
-                && !includes(&options.byyearday, &(current_day + 1))
+                && !includes(&options.byyearday, &(current_day as isize + 1))
                 && !includes(
                     &options.byyearday.iter().map(|v| *v as isize).collect(),
                     &(-(ii.yearlen().unwrap() as isize) + current_day as isize),
@@ -318,7 +318,7 @@ pub fn is_filtered(ii: &IterInfo, current_day: usize, options: &ParsedOptions) -
                 || (current_day >= ii.yearlen().unwrap()
                     && !includes(
                         &options.byyearday,
-                        &(current_day + 1 - ii.yearlen().unwrap()),
+                        &((current_day + 1 - ii.yearlen().unwrap()) as isize),
                     )
                     && !includes(
                         &options.byyearday.iter().map(|v| *v as isize).collect(),
