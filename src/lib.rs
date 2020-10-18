@@ -9,4 +9,6 @@ pub mod masks;
 pub mod monthinfo;
 pub mod options;
 pub mod poslist;
+pub mod rrule;
+pub mod rrule_set;
 pub mod yearinfo;
