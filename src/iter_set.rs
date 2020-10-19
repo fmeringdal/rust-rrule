@@ -16,7 +16,6 @@ pub fn eval_exdate(
     exdate_hash: &mut HashMap<i64, bool>,
 ) {
     for rrule in exrule.iter_mut() {
-        println!("was here?");
         for date in rrule.between(after, before, true) {
             exdate_hash.insert(date.timestamp(), true);
         }
@@ -29,6 +28,8 @@ fn accept_1(
     exrule: &mut Vec<RRule>,
     iter_res: &mut IterResult,
 ) -> bool {
+    println!("Accept 1");
+    println!("Exdates: {:?}", exdate_hash);
     let dt = date.timestamp();
     if !exdate_hash.contains_key(&dt) {
         eval_exdate(
@@ -93,15 +94,16 @@ pub fn iter_set(
 
     for date in &rdate {
         let zoned_date = date.with_timezone(&tzid);
+        println!("Zoned date: {:?}", zoned_date);
 
         match iter_res.method {
             QueryMethodTypes::BETWEEN => {
-                if accept_2(zoned_date, &mut exdate_hash, iter_res) {
+                if !accept_2(zoned_date, &mut exdate_hash, iter_res) {
                     break;
                 }
             }
             _ => {
-                if accept_1(zoned_date, &mut exdate_hash, &mut exrule, iter_res) {
+                if !accept_1(zoned_date, &mut exdate_hash, &mut exrule, iter_res) {
                     break;
                 }
             }
@@ -206,6 +208,12 @@ pub fn iter_v2(
                         //let rezoned_date = rezone_if_needed(&res, &options);
                         let rezoned_date = UTC.timestamp(res.timestamp(), 0);
 
+                        if rezoned_date.day() == 2 {
+                            println!("yoooooooooooooooooooooooo");
+                            println!("iter date ts: {}", rezoned_date.timestamp());
+                            println!("Ex dates: {:?}", exdate_hash);
+                        }
+
                         let accepted = match iter_result.method {
                             QueryMethodTypes::BETWEEN => {
                                 accept_2(rezoned_date, exdate_hash, iter_result)
@@ -258,8 +266,43 @@ pub fn iter_v2(
 mod test_iter_set {
     use super::*;
 
+    fn ymd_hms(
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+    ) -> DateTime<Utc> {
+        Utc.ymd(year, month, day).and_hms(hour, minute, second)
+    }
+
+    fn ymd_hms_2(
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+    ) -> DateTime<Tz> {
+        UTC.ymd(year, month, day).and_hms(hour, minute, second)
+    }
+
+    fn test_recurring(actual_dates: Vec<DateTime<Tz>>, expected_dates: Vec<DateTime<Tz>>) {
+        assert_eq!(
+            actual_dates.len(),
+            expected_dates.len(),
+            "Expected number of returned dates to be equal to the expected"
+        );
+
+        println!("Acutal: {:?}", actual_dates);
+        for (actual, exptected) in actual_dates.into_iter().zip(expected_dates) {
+            assert_eq!(actual, exptected);
+        }
+    }
+
     #[test]
-    fn it_works() {
+    fn rrule_and_exrule() {
         let iter_args = IterArgs {
             inc: true,
             before: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
@@ -322,6 +365,166 @@ mod test_iter_set {
             vec![],
             None,
         );
-        println!("{:?}", res);
+        test_recurring(
+            res,
+            vec![
+                ymd_hms_2(1997, 9, 2, 9, 0, 0),
+                ymd_hms_2(1997, 9, 9, 9, 0, 0),
+                ymd_hms_2(1997, 9, 16, 9, 0, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn setdate_and_exdate() {
+        let iter_args = IterArgs {
+            inc: true,
+            before: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+            after: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+            dt: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+            _value: Some(vec![]),
+        };
+        let mut iter_res = IterResult::new(QueryMethodTypes::ALL, iter_args);
+
+        let res = iter_set(
+            &mut iter_res,
+            vec![],
+            vec![],
+            vec![
+                ymd_hms(1997, 9, 2, 9, 0, 0),
+                ymd_hms(1997, 9, 4, 9, 0, 0),
+                ymd_hms(1997, 9, 9, 9, 0, 0),
+                ymd_hms(1997, 9, 11, 9, 0, 0),
+                ymd_hms(1997, 9, 16, 9, 0, 0),
+                ymd_hms(1997, 9, 18, 9, 0, 0),
+            ],
+            vec![
+                ymd_hms(1997, 9, 4, 9, 0, 0),
+                ymd_hms(1997, 9, 11, 9, 0, 0),
+                ymd_hms(1997, 9, 18, 9, 0, 0),
+            ],
+            None,
+        );
+        test_recurring(
+            res,
+            vec![
+                ymd_hms_2(1997, 9, 2, 9, 0, 0),
+                ymd_hms_2(1997, 9, 9, 9, 0, 0),
+                ymd_hms_2(1997, 9, 16, 9, 0, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn setdate_and_exrule() {
+        let iter_args = IterArgs {
+            inc: true,
+            before: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+            after: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+            dt: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+            _value: Some(vec![]),
+        };
+        let mut iter_res = IterResult::new(QueryMethodTypes::ALL, iter_args);
+
+        let mut options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(3),
+            bymonth: vec![],
+            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            byweekday: vec![3],
+            byhour: vec![9],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![0],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+            byeaster: None,
+        };
+        let exrrule = RRule::new(options);
+        let res = iter_set(
+            &mut iter_res,
+            vec![],
+            vec![exrrule],
+            vec![
+                ymd_hms(1997, 9, 2, 9, 0, 0),
+                ymd_hms(1997, 9, 4, 9, 0, 0),
+                ymd_hms(1997, 9, 9, 9, 0, 0),
+                ymd_hms(1997, 9, 11, 9, 0, 0),
+                ymd_hms(1997, 9, 16, 9, 0, 0),
+                ymd_hms(1997, 9, 18, 9, 0, 0),
+            ],
+            vec![],
+            None,
+        );
+        test_recurring(
+            res,
+            vec![
+                ymd_hms_2(1997, 9, 2, 9, 0, 0),
+                ymd_hms_2(1997, 9, 9, 9, 0, 0),
+                ymd_hms_2(1997, 9, 16, 9, 0, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn rrule_and_exdate() {
+        let iter_args = IterArgs {
+            inc: true,
+            before: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+            after: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+            dt: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+            _value: Some(vec![]),
+        };
+        let mut iter_res = IterResult::new(QueryMethodTypes::ALL, iter_args);
+
+        let mut options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(6),
+            bymonth: vec![],
+            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            byweekday: vec![1, 3],
+            byhour: vec![9],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![0],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+            byeaster: None,
+        };
+        let rrule = RRule::new(options);
+        let res = iter_set(
+            &mut iter_res,
+            vec![rrule],
+            vec![],
+            vec![],
+            vec![
+                ymd_hms(1997, 9, 2, 9, 0, 0),
+                ymd_hms(1997, 9, 4, 9, 0, 0),
+                ymd_hms(1997, 9, 9, 9, 0, 0),
+            ],
+            None,
+        );
+        test_recurring(
+            res,
+            vec![
+                ymd_hms_2(1997, 9, 11, 9, 0, 0),
+                ymd_hms_2(1997, 9, 16, 9, 0, 0),
+                ymd_hms_2(1997, 9, 18, 9, 0, 0),
+            ],
+        );
     }
 }
