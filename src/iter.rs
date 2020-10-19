@@ -5,6 +5,7 @@ use crate::poslist::*;
 use crate::yearinfo::*;
 use chrono::prelude::*;
 use chrono::Duration;
+use chrono_tz::{Tz, UTC};
 
 pub enum QueryMethodTypes {
     ALL,
@@ -15,18 +16,18 @@ pub enum QueryMethodTypes {
 
 pub struct IterArgs {
     pub inc: bool,
-    pub before: DateTime<Utc>,
-    pub after: DateTime<Utc>,
-    pub dt: DateTime<Utc>,
+    pub before: DateTime<Tz>,
+    pub after: DateTime<Tz>,
+    pub dt: DateTime<Tz>,
     pub _value: Option<Vec<DateTime<Utc>>>,
 }
 
 pub struct IterResult {
     pub method: QueryMethodTypes,
     pub args: IterArgs,
-    pub min_date: Option<DateTime<Utc>>,
-    pub max_date: Option<DateTime<Utc>>,
-    pub _result: Vec<DateTime<Utc>>,
+    pub min_date: Option<DateTime<Tz>>,
+    pub max_date: Option<DateTime<Tz>>,
+    pub _result: Vec<DateTime<Tz>>,
     pub total: usize,
 }
 
@@ -55,7 +56,7 @@ impl IterResult {
         }
     }
 
-    pub fn accept(&mut self, date: DateTime<Utc>) -> bool {
+    pub fn accept(&mut self, date: DateTime<Tz>) -> bool {
         self.total += 1;
         let too_early = self.min_date.is_some() && date < self.min_date.unwrap();
         let too_late = self.max_date.is_some() && date > self.max_date.unwrap();
@@ -73,12 +74,12 @@ impl IterResult {
         }
     }
 
-    pub fn add(&mut self, date: DateTime<Utc>) -> bool {
+    pub fn add(&mut self, date: DateTime<Tz>) -> bool {
         self._result.push(date);
         true
     }
 
-    pub fn get_value(&self) -> Vec<DateTime<Utc>> {
+    pub fn get_value(&self) -> Vec<DateTime<Tz>> {
         self._result.clone()
         //match self.method {
         //QueryMethodTypes::BETWEEN => Some(self._result.clone()),
@@ -92,7 +93,7 @@ impl IterResult {
     }
 }
 
-pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<DateTime<Utc>> {
+pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<DateTime<Tz>> {
     if (options.count.is_some() && options.count.unwrap() == 0) || options.interval == 0 {
         return iter_result.get_value();
     }
@@ -106,10 +107,8 @@ pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<Da
         Some(count) => count,
         _ => 0,
     };
-    println!("Timeset: {:?}", timeset);
 
     loop {
-        println!("Counter date in loop: {}", counter_date);
         let (dayset, start, end) = ii.getdayset(
             &options.freq,
             counter_date.year() as isize,
@@ -136,7 +135,7 @@ pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<Da
                 if res >= options.dtstart {
                     //let rezoned_date = rezone_if_needed(&res, &options);
                     let rezoned_date = res;
-                    if !iter_result.accept(rezoned_date) {
+                    if !iter_result.accept(UTC.timestamp(rezoned_date.timestamp(), 0)) {
                         return iter_result.get_value();
                     }
 
@@ -169,7 +168,7 @@ pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<Da
                     if res >= options.dtstart {
                         //let rezoned_date = rezone_if_needed(&res, &options);
                         let rezoned_date = res;
-                        if !iter_result.accept(rezoned_date) {
+                        if !iter_result.accept(UTC.timestamp(rezoned_date.timestamp(), 0)) {
                             return iter_result.get_value();
                         }
                         if count > 0 {
@@ -188,9 +187,7 @@ pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<Da
         }
 
         // Handle frequency and interval
-        println!("Before counter add: {}", counter_date);
         counter_date = increment_counter_date(counter_date, options, filtered);
-        println!("After counter add: {}", counter_date);
 
         if counter_date.year() > 2200 {
             return iter_result.get_value();
@@ -200,7 +197,6 @@ pub fn iter(iter_result: &mut IterResult, options: &mut ParsedOptions) -> Vec<Da
             || options.freq == Frequenzy::MINUTELY
             || options.freq == Frequenzy::SECONDLY
         {
-            println!("Getting timeset for counter date: {:?}", counter_date);
             timeset = ii.gettimeset(
                 &options.freq,
                 counter_date.hour() as usize,

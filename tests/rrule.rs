@@ -1,7 +1,9 @@
 extern crate chrono;
+extern crate chrono_tz;
 extern crate rrule;
 
 use chrono::prelude::*;
+use chrono_tz::UTC;
 use rrule::iter::*;
 use rrule::options::*;
 
@@ -23,9 +25,9 @@ mod test {
     fn test_recurring(options: &mut ParsedOptions, expected_dates: &Vec<DateTime<Utc>>) {
         let iter_args = IterArgs {
             inc: true,
-            before: Utc::now(),
-            after: Utc::now(),
-            dt: Utc::now(),
+            before: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+            after: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+            dt: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
             _value: Some(vec![]),
         };
         let mut iter_res = IterResult::new(QueryMethodTypes::ALL, iter_args);
