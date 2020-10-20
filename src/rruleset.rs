@@ -1,5 +1,10 @@
 use crate::rrule::*;
 use chrono::prelude::*;
+use chrono_tz::{Tz, UTC};
+use crate::options::*;
+use crate::iter_set::iter_v2;
+use crate::iter::*;
+use std::collections::HashMap;
 
 struct RRuleSet {
     rrule: Vec<RRule>,
@@ -7,6 +12,11 @@ struct RRuleSet {
     exrule: Vec<RRule>,
     exdate: Vec<DateTime<Utc>>,
     dtstart: Option<DateTime<Utc>>,
+    exdate_hash: HashMap<i64, ()>
+}
+
+struct RRuleIter {
+    
 }
 
 impl RRuleSet {
@@ -17,6 +27,7 @@ impl RRuleSet {
             exrule: vec![],
             exdate: vec![],
             dtstart: None,
+            exdate_hash: HashMap::new()
         }
     }
 
@@ -34,6 +45,19 @@ impl RRuleSet {
 
     pub fn exdate(&mut self, exdate: DateTime<Utc>) {
         self.exdate.push(exdate);
+    }
+
+    pub fn all(&mut self) -> Vec<DateTime<Tz>> {
+
+        let iter_args = IterArgs {
+            inc: true,
+            before: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+            after: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+            dt: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+        };
+        let mut iter_res = IterResult::new(QueryMethodTypes::ALL, iter_args);
+
+        self.iter(&mut iter_res, None)
     }
 
     pub fn value_of(&mut self) -> Vec<String> {
@@ -71,5 +95,329 @@ impl RRuleSet {
         }
 
         result
+    }
+
+    pub fn eval_exdate(
+        &mut self,
+        after: &DateTime<Tz>,
+        before: &DateTime<Tz>,
+    ) {
+        for rrule in self.exrule.iter_mut() {
+            for date in rrule.between(after, before, true) {
+                self.exdate_hash.insert(date.timestamp(), ());
+            }
+        }
+    }
+
+
+    fn accept_2(
+        &mut self,
+        date: DateTime<Tz>,
+        iter_res: &mut IterResult,
+    ) -> bool {
+        let dt = date.timestamp();
+        if !self.exdate_hash.contains_key(&dt) {
+            self.eval_exdate(
+                &UTC.timestamp(dt - 1, 0),
+                &UTC.timestamp(dt + 1, 0),
+            );
+            if !self.exdate_hash.contains_key(&dt) {
+                self.exdate_hash.insert(dt, ());
+                return iter_res.accept(date.clone());
+            }
+        }
+    
+        true
+    }
+    
+    fn accept_1(
+        &mut self,
+        date: DateTime<Tz>,
+        iter_res: &mut IterResult,
+    ) -> bool {
+        let dt = date.timestamp();
+        if !self.exdate_hash.contains_key(&dt) {
+            if !self.exdate_hash.contains_key(&dt) {
+                self.exdate_hash.insert(dt, ());
+                return iter_res.accept(date.clone());
+            }
+        }
+    
+        true
+    }
+
+    fn accept(
+        &mut self,
+        date: DateTime<Tz>,
+        iter_res: &mut IterResult) -> bool {
+        match &iter_res.method {
+            QueryMethodTypes::BETWEEN => self.accept_1(date, iter_res),
+            _ => self.accept_2(date, iter_res),
+        }
+    }
+
+
+    fn iter(
+        &mut self, 
+        iter_res: &mut IterResult,
+        tzid: Option<String>,
+    ) -> Vec<DateTime<Tz>> {
+        let tzid: Tz = tzid.unwrap_or(String::from("UTC")).parse().unwrap_or(UTC);
+    
+        for date in &self.exdate {
+            let zoned_date = date.with_timezone(&tzid);
+            self.exdate_hash.insert(zoned_date.timestamp(), ());
+        }
+    
+        match iter_res.method {
+            QueryMethodTypes::BETWEEN => {
+                self.eval_exdate(
+                    &iter_res.args.after,
+                    &iter_res.args.before,
+                );
+            }
+            _ => (),
+        };
+    
+        for date in &self.rdate.clone() {
+            let zoned_date = date.with_timezone(&tzid);
+            if !self.accept(zoned_date, iter_res){
+                break;
+            }
+        }
+    
+        for rule in self.rrule.clone().iter_mut() {
+            iter_v2(iter_res, &mut rule.options, |date: DateTime<Tz>, iter_res: &mut IterResult| {
+                self.accept(date, iter_res)
+            });
+        }
+    
+        let mut res = iter_res.get_value();
+        res.sort();
+        res
+    }
+}
+
+
+#[cfg(test)]
+mod test_iter_set {
+    use super::*;
+
+    fn ymd_hms(
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+    ) -> DateTime<Utc> {
+        Utc.ymd(year, month, day).and_hms(hour, minute, second)
+    }
+
+    fn ymd_hms_2(
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+    ) -> DateTime<Tz> {
+        UTC.ymd(year, month, day).and_hms(hour, minute, second)
+    }
+
+    fn test_recurring(actual_dates: Vec<DateTime<Tz>>, expected_dates: Vec<DateTime<Tz>>) {
+        assert_eq!(
+            actual_dates.len(),
+            expected_dates.len(),
+            "Expected number of returned dates to be equal to the expected"
+        );
+
+        println!("Acutal: {:?}", actual_dates);
+        for (actual, exptected) in actual_dates.into_iter().zip(expected_dates) {
+            assert_eq!(actual, exptected);
+        }
+    }
+
+    #[test]
+    fn rrule_and_exrule() {
+
+        let mut set = RRuleSet::new();
+
+        let mut options1 = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(6),
+            bymonth: vec![],
+            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            byweekday: vec![1, 3],
+            byhour: vec![9],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![0],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+            byeaster: None,
+        };
+        let rrule = RRule::new(options1);
+        set.rrule(rrule);
+        let mut options2 = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(3),
+            bymonth: vec![],
+            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            byweekday: vec![3],
+            byhour: vec![9],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![0],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+            byeaster: None,
+        };
+        let exrule = RRule::new(options2);
+        set.exrule(exrule);
+    
+        test_recurring(
+            set.all(),
+            vec![
+                ymd_hms_2(1997, 9, 2, 9, 0, 0),
+                ymd_hms_2(1997, 9, 9, 9, 0, 0),
+                ymd_hms_2(1997, 9, 16, 9, 0, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn setdate_and_exdate() {
+
+        let mut set = RRuleSet::new();
+
+        set.rdate(ymd_hms(1997, 9, 2, 9, 0, 0));
+        set.rdate(ymd_hms(1997, 9, 4, 9, 0, 0));
+        set.rdate(ymd_hms(1997, 9, 9, 9, 0, 0));
+        set.rdate(ymd_hms(1997, 9, 11, 9, 0, 0));
+        set.rdate(ymd_hms(1997, 9, 16, 9, 0, 0));
+        set.rdate(ymd_hms(1997, 9, 18, 9, 0, 0));
+        
+        set.exdate(ymd_hms(1997, 9, 4, 9, 0, 0));
+        set.exdate(ymd_hms(1997, 9, 11, 9, 0, 0));
+        set.exdate(ymd_hms(1997, 9, 18, 9, 0, 0));
+    
+
+        test_recurring(
+            set.all(),
+            vec![
+                ymd_hms_2(1997, 9, 2, 9, 0, 0),
+                ymd_hms_2(1997, 9, 9, 9, 0, 0),
+                ymd_hms_2(1997, 9, 16, 9, 0, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn setdate_and_exrule() {
+
+
+
+        let mut set = RRuleSet::new();
+
+        set.rdate(ymd_hms(1997, 9, 2, 9, 0, 0));
+        set.rdate(ymd_hms(1997, 9, 4, 9, 0, 0));
+        set.rdate(ymd_hms(1997, 9, 9, 9, 0, 0));
+        set.rdate(ymd_hms(1997, 9, 11, 9, 0, 0));
+        set.rdate(ymd_hms(1997, 9, 16, 9, 0, 0));
+        set.rdate(ymd_hms(1997, 9, 18, 9, 0, 0));
+
+
+        let mut options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(3),
+            bymonth: vec![],
+            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            byweekday: vec![3],
+            byhour: vec![9],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![0],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+            byeaster: None,
+        };
+        let exrrule = RRule::new(options);
+        set.exrule(exrrule);
+
+        test_recurring(
+            set.all(),
+            vec![
+                ymd_hms_2(1997, 9, 2, 9, 0, 0),
+                ymd_hms_2(1997, 9, 9, 9, 0, 0),
+                ymd_hms_2(1997, 9, 16, 9, 0, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn rrule_and_exdate() {
+
+
+        let mut set = RRuleSet::new();
+
+        let mut options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(6),
+            bymonth: vec![],
+            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            byweekday: vec![1, 3],
+            byhour: vec![9],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![0],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+            byeaster: None,
+        };
+        let rrule = RRule::new(options);
+        set.rrule(rrule);
+        
+        set.exdate(ymd_hms(1997, 9, 2, 9, 0, 0));
+        set.exdate(ymd_hms(1997, 9, 4, 9, 0, 0));
+        set.exdate(ymd_hms(1997, 9, 9, 9, 0, 0));
+
+
+        test_recurring(
+            set.all(),
+            vec![
+                ymd_hms_2(1997, 9, 11, 9, 0, 0),
+                ymd_hms_2(1997, 9, 16, 9, 0, 0),
+                ymd_hms_2(1997, 9, 18, 9, 0, 0),
+            ],
+        );
     }
 }

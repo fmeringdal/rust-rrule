@@ -18,8 +18,7 @@ pub struct IterArgs {
     pub inc: bool,
     pub before: DateTime<Tz>,
     pub after: DateTime<Tz>,
-    pub dt: DateTime<Tz>,
-    pub _value: Option<Vec<DateTime<Utc>>>,
+    pub dt: DateTime<Tz>
 }
 
 pub struct IterResult {
@@ -27,7 +26,7 @@ pub struct IterResult {
     pub args: IterArgs,
     pub min_date: Option<DateTime<Tz>>,
     pub max_date: Option<DateTime<Tz>>,
-    pub _result: Vec<DateTime<Tz>>,
+    pub result: Vec<DateTime<Tz>>,
     pub total: usize,
 }
 
@@ -52,7 +51,7 @@ impl IterResult {
             min_date,
             max_date,
             total: 0,
-            _result: vec![],
+            result: vec![],
         }
     }
 
@@ -75,12 +74,12 @@ impl IterResult {
     }
 
     pub fn add(&mut self, date: DateTime<Tz>) -> bool {
-        self._result.push(date);
+        self.result.push(date);
         true
     }
 
     pub fn get_value(&self) -> Vec<DateTime<Tz>> {
-        self._result.clone()
+        self.result.clone()
         //match self.method {
         //QueryMethodTypes::BETWEEN => Some(self._result.clone()),
         //_ => {

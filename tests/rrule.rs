@@ -28,7 +28,6 @@ mod test {
             before: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
             after: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
             dt: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
-            _value: Some(vec![]),
         };
         let mut iter_res = IterResult::new(QueryMethodTypes::ALL, iter_args);
 

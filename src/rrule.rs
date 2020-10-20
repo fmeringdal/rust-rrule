@@ -3,6 +3,7 @@ use crate::options::*;
 use chrono::prelude::*;
 use chrono_tz::{Tz, UTC};
 
+#[derive(Clone, Debug)]
 pub struct RRule {
     cache: bool,
     pub options: ParsedOptions,
@@ -26,7 +27,6 @@ impl RRule {
             before: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
             after: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
             dt: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
-            _value: Some(vec![]),
         };
         let mut iter_res = IterResult::new(QueryMethodTypes::ALL, iter_args);
 
@@ -45,7 +45,6 @@ impl RRule {
             before: before.clone(),
             after: after.clone(),
             dt: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
-            _value: Some(vec![]),
         };
         let mut iter_res = IterResult::new(QueryMethodTypes::ALL, iter_args);
 

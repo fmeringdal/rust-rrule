@@ -14,7 +14,7 @@ pub struct YearInfo {
     pub wnomask: Option<Vec<usize>>,
 }
 
-#[derive(Debug, PartialEq, PartialOrd)]
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub enum Frequenzy {
     YEARLY = 0,
     MONTHLY = 1,
@@ -25,7 +25,7 @@ pub enum Frequenzy {
     SECONDLY = 6,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ParsedOptions {
     pub freq: Frequenzy,
     pub interval: usize,
