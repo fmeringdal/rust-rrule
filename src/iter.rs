@@ -1,8 +1,8 @@
 use crate::datetime::*;
+use crate::iter_set::TIterResult;
 use crate::iterinfo::*;
 use crate::options::*;
 use crate::poslist::*;
-use crate::iter_set::TIterResult;
 use crate::yearinfo::*;
 use chrono::prelude::*;
 use chrono::Duration;
@@ -19,7 +19,7 @@ pub struct IterArgs {
     pub inc: bool,
     pub before: DateTime<Tz>,
     pub after: DateTime<Tz>,
-    pub dt: DateTime<Tz>
+    pub dt: DateTime<Tz>,
 }
 
 pub struct IterResult {
@@ -62,7 +62,6 @@ impl IterResult {
     }
 }
 
-
 impl TIterResult for IterResult {
     fn accept(&mut self, date: DateTime<Tz>) -> bool {
         self.total += 1;
@@ -95,7 +94,6 @@ impl TIterResult for IterResult {
         //}
     }
 }
-
 
 pub fn increment_counter_date(
     counter_date: DateTime<Utc>,

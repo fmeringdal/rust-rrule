@@ -9,20 +9,15 @@ use chrono::{DateTime, Duration, Utc};
 use chrono_tz::*;
 use std::collections::HashMap;
 
-
-
 pub trait TIterResult {
     fn accept(&mut self, date: DateTime<Tz>) -> bool;
     fn get_value(&self) -> Vec<DateTime<Tz>>;
 }
 
-
-
 pub fn iter_v2<T: TIterResult>(
     iter_result: &mut T,
-    options: &mut ParsedOptions
+    options: &mut ParsedOptions,
 ) -> Vec<DateTime<Tz>> {
-
     if (options.count.is_some() && options.count.unwrap() == 0) || options.interval == 0 {
         return iter_result.get_value();
     }
@@ -140,4 +135,3 @@ pub fn iter_v2<T: TIterResult>(
         ii.rebuild(counter_date.year() as isize, counter_date.month() as usize);
     }
 }
-

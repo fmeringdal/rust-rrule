@@ -1,5 +1,5 @@
-use crate::iter_set::iter_v2;
 use crate::iter::*;
+use crate::iter_set::iter_v2;
 use crate::options::*;
 use chrono::prelude::*;
 use chrono_tz::{Tz, UTC};
@@ -9,7 +9,6 @@ pub struct RRule {
     cache: bool,
     pub options: ParsedOptions,
 }
-
 
 impl RRule {
     pub fn new(options: ParsedOptions) -> Self {

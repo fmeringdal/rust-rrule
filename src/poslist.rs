@@ -3,7 +3,6 @@ use crate::iterinfo::*;
 use crate::yearinfo::*;
 use chrono::prelude::*;
 
-
 pub fn from_ordinal(ordinal: isize) -> DateTime<Utc> {
     let timestamp = ordinal * 24 * 60 * 60;
     let naive = NaiveDateTime::from_timestamp(timestamp as i64, 0);

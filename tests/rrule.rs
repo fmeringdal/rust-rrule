@@ -4,8 +4,8 @@ extern crate rrule;
 
 use chrono::prelude::*;
 use chrono_tz::UTC;
-use rrule::rrule::RRule;
 use rrule::options::*;
+use rrule::rrule::RRule;
 
 #[cfg(test)]
 mod test {
@@ -23,7 +23,6 @@ mod test {
     }
 
     fn test_recurring(options: ParsedOptions, expected_dates: &Vec<DateTime<Utc>>) {
-
         let mut rrule = RRule::new(options);
         let res = rrule.all();
 
@@ -41,8 +40,7 @@ mod test {
 
     #[test]
     fn yearly() {
-        let options =
-            ParsedOptions::new(Frequenzy::YEARLY, &ymd_hms(1997, 9, 2, 9, 0, 0)).count(3);
+        let options = ParsedOptions::new(Frequenzy::YEARLY, &ymd_hms(1997, 9, 2, 9, 0, 0)).count(3);
         test_recurring(
             options,
             &vec![
