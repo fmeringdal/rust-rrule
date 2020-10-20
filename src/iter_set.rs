@@ -9,10 +9,18 @@ use chrono::{DateTime, Duration, Utc};
 use chrono_tz::*;
 use std::collections::HashMap;
 
-pub fn iter_v2<F: FnMut(DateTime<Tz>, &mut IterResult) -> bool>(
-    iter_result: &mut IterResult,
-    options: &mut ParsedOptions,
-    mut accept: F
+
+
+pub trait TIterResult {
+    fn accept(&mut self, date: DateTime<Tz>) -> bool;
+    fn get_value(&self) -> Vec<DateTime<Tz>>;
+}
+
+
+
+pub fn iter_v2<T: TIterResult>(
+    iter_result: &mut T,
+    options: &mut ParsedOptions
 ) -> Vec<DateTime<Tz>> {
 
     if (options.count.is_some() && options.count.unwrap() == 0) || options.interval == 0 {
@@ -57,7 +65,7 @@ pub fn iter_v2<F: FnMut(DateTime<Tz>, &mut IterResult) -> bool>(
                     //let rezoned_date = rezone_if_needed(&res, &options);
                     let rezoned_date = UTC.timestamp(res.timestamp(), 0);
 
-                    if !accept(rezoned_date, iter_result) {
+                    if !iter_result.accept(rezoned_date) {
                         return iter_result.get_value();
                     }
 
@@ -91,7 +99,7 @@ pub fn iter_v2<F: FnMut(DateTime<Tz>, &mut IterResult) -> bool>(
                         //let rezoned_date = rezone_if_needed(&res, &options);
                         let rezoned_date = UTC.timestamp(res.timestamp(), 0);
 
-                        if !accept(rezoned_date, iter_result) {
+                        if !iter_result.accept(rezoned_date) {
                             return iter_result.get_value();
                         }
                         if count > 0 {

@@ -2,7 +2,7 @@ use crate::rrule::*;
 use chrono::prelude::*;
 use chrono_tz::{Tz, UTC};
 use crate::options::*;
-use crate::iter_set::iter_v2;
+use crate::iter_set::{iter_v2, TIterResult};
 use crate::iter::*;
 use std::collections::HashMap;
 
@@ -15,9 +15,132 @@ struct RRuleSet {
     exdate_hash: HashMap<i64, ()>
 }
 
-struct RRuleIter {
-    
+struct RRuleSetIter<'a> {
+    exdate_hash: HashMap<i64, ()>,
+    iter_res: IterResult,
+    rrule_set: &'a mut RRuleSet
+
 }
+
+
+impl<'a> RRuleSetIter<'a> {
+
+    pub fn new(rrule_set: &'a mut RRuleSet) -> Self {
+
+        let iter_args = IterArgs {
+            inc: true,
+            before: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+            after: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+            dt: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+        };
+        let mut iter_res = IterResult::new(QueryMethodTypes::ALL, iter_args);
+
+        Self {
+            exdate_hash: HashMap::new(),
+            iter_res,
+            rrule_set
+        }
+    }
+
+    pub fn eval_exdate(
+        &mut self,
+        after: &DateTime<Tz>,
+        before: &DateTime<Tz>,
+    ) {
+        for rrule in self.rrule_set.exrule.iter_mut() {
+            for date in rrule.between(after, before, true) {
+                self.exdate_hash.insert(date.timestamp(), ());
+            }
+        }
+    }
+
+    fn accept_2(
+        &mut self,
+        date: DateTime<Tz>
+    ) -> bool {
+        let dt = date.timestamp();
+        if !self.exdate_hash.contains_key(&dt) {
+            self.eval_exdate(
+                &UTC.timestamp(dt - 1, 0),
+                &UTC.timestamp(dt + 1, 0),
+            );
+            if !self.exdate_hash.contains_key(&dt) {
+                self.exdate_hash.insert(dt, ());
+                return self.iter_res.accept(date.clone());
+            }
+        }
+    
+        true
+    }
+    
+    fn accept_1(
+        &mut self,
+        date: DateTime<Tz>
+    ) -> bool {
+        let dt = date.timestamp();
+        if !self.exdate_hash.contains_key(&dt) {
+            if !self.exdate_hash.contains_key(&dt) {
+                self.exdate_hash.insert(dt, ());
+                return self.iter_res.accept(date.clone());
+            }
+        }
+    
+        true
+    }
+
+    pub fn iter(&mut self, tzid: Option<String>) -> Vec<DateTime<Tz>> {
+
+        let tzid: Tz = tzid.unwrap_or(String::from("UTC")).parse().unwrap_or(UTC);
+    
+        for date in &self.rrule_set.exdate {
+            let zoned_date = date.with_timezone(&tzid);
+            self.exdate_hash.insert(zoned_date.timestamp(), ());
+        }
+    
+        match &self.iter_res.method {
+            QueryMethodTypes::BETWEEN => {
+                self.eval_exdate(
+                    &self.iter_res.args.after.clone(),
+                    &self.iter_res.args.before.clone(),
+                );
+            }
+            _ => (),
+        };
+    
+        for date in &self.rrule_set.rdate.clone() {
+            let zoned_date = date.with_timezone(&tzid);
+            if !self.accept(zoned_date){
+                break;
+            }
+        }
+    
+        for rule in self.rrule_set.rrule.clone().iter_mut() {
+            iter_v2(self, &mut rule.options);
+        }
+    
+        let mut res = self.iter_res.get_value();
+        res.sort();
+        res
+    }
+}
+
+impl<'a> TIterResult for RRuleSetIter<'a> {
+    fn accept(
+        &mut self,
+        date: DateTime<Tz>) -> bool {
+        match &self.iter_res.method {
+            QueryMethodTypes::BETWEEN => self.accept_1(date),
+            _ => self.accept_2(date),
+        }
+    }
+
+    fn get_value(&self) -> Vec<DateTime<Tz>> {
+        self.iter_res.get_value()
+    }
+}
+
+
+
 
 impl RRuleSet {
     pub fn new() -> Self {
@@ -49,15 +172,9 @@ impl RRuleSet {
 
     pub fn all(&mut self) -> Vec<DateTime<Tz>> {
 
-        let iter_args = IterArgs {
-            inc: true,
-            before: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
-            after: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
-            dt: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
-        };
-        let mut iter_res = IterResult::new(QueryMethodTypes::ALL, iter_args);
-
-        self.iter(&mut iter_res, None)
+        let mut iter = RRuleSetIter::new(self);
+        // self.iter(&mut iter_res, None)
+        iter.iter(None)
     }
 
     pub fn value_of(&mut self) -> Vec<String> {
@@ -95,106 +212,6 @@ impl RRuleSet {
         }
 
         result
-    }
-
-    pub fn eval_exdate(
-        &mut self,
-        after: &DateTime<Tz>,
-        before: &DateTime<Tz>,
-    ) {
-        for rrule in self.exrule.iter_mut() {
-            for date in rrule.between(after, before, true) {
-                self.exdate_hash.insert(date.timestamp(), ());
-            }
-        }
-    }
-
-
-    fn accept_2(
-        &mut self,
-        date: DateTime<Tz>,
-        iter_res: &mut IterResult,
-    ) -> bool {
-        let dt = date.timestamp();
-        if !self.exdate_hash.contains_key(&dt) {
-            self.eval_exdate(
-                &UTC.timestamp(dt - 1, 0),
-                &UTC.timestamp(dt + 1, 0),
-            );
-            if !self.exdate_hash.contains_key(&dt) {
-                self.exdate_hash.insert(dt, ());
-                return iter_res.accept(date.clone());
-            }
-        }
-    
-        true
-    }
-    
-    fn accept_1(
-        &mut self,
-        date: DateTime<Tz>,
-        iter_res: &mut IterResult,
-    ) -> bool {
-        let dt = date.timestamp();
-        if !self.exdate_hash.contains_key(&dt) {
-            if !self.exdate_hash.contains_key(&dt) {
-                self.exdate_hash.insert(dt, ());
-                return iter_res.accept(date.clone());
-            }
-        }
-    
-        true
-    }
-
-    fn accept(
-        &mut self,
-        date: DateTime<Tz>,
-        iter_res: &mut IterResult) -> bool {
-        match &iter_res.method {
-            QueryMethodTypes::BETWEEN => self.accept_1(date, iter_res),
-            _ => self.accept_2(date, iter_res),
-        }
-    }
-
-
-    fn iter(
-        &mut self, 
-        iter_res: &mut IterResult,
-        tzid: Option<String>,
-    ) -> Vec<DateTime<Tz>> {
-        let tzid: Tz = tzid.unwrap_or(String::from("UTC")).parse().unwrap_or(UTC);
-    
-        for date in &self.exdate {
-            let zoned_date = date.with_timezone(&tzid);
-            self.exdate_hash.insert(zoned_date.timestamp(), ());
-        }
-    
-        match iter_res.method {
-            QueryMethodTypes::BETWEEN => {
-                self.eval_exdate(
-                    &iter_res.args.after,
-                    &iter_res.args.before,
-                );
-            }
-            _ => (),
-        };
-    
-        for date in &self.rdate.clone() {
-            let zoned_date = date.with_timezone(&tzid);
-            if !self.accept(zoned_date, iter_res){
-                break;
-            }
-        }
-    
-        for rule in self.rrule.clone().iter_mut() {
-            iter_v2(iter_res, &mut rule.options, |date: DateTime<Tz>, iter_res: &mut IterResult| {
-                self.accept(date, iter_res)
-            });
-        }
-    
-        let mut res = iter_res.get_value();
-        res.sort();
-        res
     }
 }
 

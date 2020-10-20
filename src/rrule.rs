@@ -1,3 +1,4 @@
+use crate::iter_set::iter_v2;
 use crate::iter::*;
 use crate::options::*;
 use chrono::prelude::*;
@@ -8,6 +9,7 @@ pub struct RRule {
     cache: bool,
     pub options: ParsedOptions,
 }
+
 
 impl RRule {
     pub fn new(options: ParsedOptions) -> Self {
@@ -30,7 +32,7 @@ impl RRule {
         };
         let mut iter_res = IterResult::new(QueryMethodTypes::ALL, iter_args);
 
-        let res = iter(&mut iter_res, &mut self.options);
+        let res = iter_v2(&mut iter_res, &mut self.options);
         res
     }
 
@@ -48,7 +50,7 @@ impl RRule {
         };
         let mut iter_res = IterResult::new(QueryMethodTypes::ALL, iter_args);
 
-        let res = iter(&mut iter_res, &mut self.options);
+        let res = iter_v2(&mut iter_res, &mut self.options);
         res
     }
 }
