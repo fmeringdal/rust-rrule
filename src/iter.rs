@@ -81,17 +81,17 @@ impl IterResult for RRuleIterRes {
         }
     }
 
+    /// before and after returns only one date whereas all and between an array
     fn get_value(&self) -> Vec<DateTime<Tz>> {
-        self.result.clone()
-        //match self.method {
-        //QueryMethodTypes::BETWEEN => Some(self._result.clone()),
-        //_ => {
-        //if self._result.is_empty() {
-        //return None;
-        //}
-        //Some(vec![self._result[self._result.len() - 1].clone()])
-        //}
-        //}
+        match self.method {
+            QueryMethodTypes::BETWEEN | QueryMethodTypes::ALL => self.result.clone(),
+            _ => {
+                if self.result.is_empty() {
+                    return vec![];
+                }
+                vec![self.result[self.result.len() - 1].clone()]
+            }
+        }
     }
 }
 

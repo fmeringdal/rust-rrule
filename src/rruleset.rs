@@ -38,6 +38,55 @@ impl<'a> RRuleSetIter<'a> {
         }
     }
 
+    pub fn from_before(rrule_set: &'a mut RRuleSet, dt: DateTime<Tz>, inc: bool) -> Self {
+        let iter_args = IterArgs {
+            inc,
+            before: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+            after: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+            dt,
+        };
+        let iter_res = RRuleIterRes::new(QueryMethodTypes::BEFORE, iter_args);
+
+        Self {
+            exdate_hash: HashMap::new(),
+            iter_res,
+            rrule_set,
+        }
+    }
+
+    pub fn from_after(rrule_set: &'a mut RRuleSet, dt: DateTime<Tz>, inc: bool) -> Self {
+        let iter_args = IterArgs {
+            inc,
+            before: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+            after: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+            dt,
+        };
+        let iter_res = RRuleIterRes::new(QueryMethodTypes::AFTER, iter_args);
+
+        Self {
+            exdate_hash: HashMap::new(),
+            iter_res,
+            rrule_set,
+        }
+    }
+
+
+    pub fn from_between(rrule_set: &'a mut RRuleSet, after: DateTime<Tz>, before: DateTime<Tz>, inc: bool) -> Self {
+        let iter_args = IterArgs {
+            inc,
+            before,
+            after,
+            dt: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+        };
+        let iter_res = RRuleIterRes::new(QueryMethodTypes::BETWEEN, iter_args);
+
+        Self {
+            exdate_hash: HashMap::new(),
+            iter_res,
+            rrule_set,
+        }
+    }
+
     pub fn eval_exdate(&mut self, after: &DateTime<Tz>, before: &DateTime<Tz>) {
         for rrule in self.rrule_set.exrule.iter_mut() {
             for date in rrule.between(after, before, true) {
@@ -153,6 +202,34 @@ impl RRuleSet {
         iter.iter(None)
     }
 
+    /// Returns the last recurrence before the given datetime instance.
+    /// The inc keyword defines what happens if dt is an occurrence.
+    /// With inc == true, if dt itself is an occurrence, it will be returned.
+    pub fn before(&mut self, date: DateTime<Tz>, inc: bool) -> Vec<DateTime<Tz>> {
+        let mut iter = RRuleSetIter::from_before(self, date, inc);
+        // self.iter(&mut iter_res, None)
+        iter.iter(None)
+    }
+
+    /// Returns the last recurrence after the given datetime instance.
+    /// The inc keyword defines what happens if dt is an occurrence.
+    /// With inc == true, if dt itself is an occurrence, it will be returned.
+    pub fn after(&mut self, date: DateTime<Tz>, inc: bool) -> Vec<DateTime<Tz>> {
+        let mut iter = RRuleSetIter::from_after(self, date, inc);
+        // self.iter(&mut iter_res, None)
+        iter.iter(None)
+    }
+
+    /// Returns all the occurrences of the rrule between after and before.
+    /// The inc keyword defines what happens if after and/or before are
+    /// themselves occurrences. With inc == True, they will be included in the
+    /// list, if they are found in the recurrence set.
+    pub fn between(&mut self, after: DateTime<Tz>, before: DateTime<Tz>, inc: bool) -> Vec<DateTime<Tz>> {
+        let mut iter = RRuleSetIter::from_between(self, after, before, inc);
+        // self.iter(&mut iter_res, None)
+        iter.iter(None)
+    }
+
     pub fn value_of(&mut self) -> Vec<String> {
         let mut result = vec![];
 
@@ -218,13 +295,13 @@ mod test_iter_set {
     }
 
     fn test_recurring(actual_dates: Vec<DateTime<Tz>>, expected_dates: Vec<DateTime<Tz>>) {
+        println!("Acutal: {:?}", actual_dates);
         assert_eq!(
             actual_dates.len(),
             expected_dates.len(),
             "Expected number of returned dates to be equal to the expected"
         );
 
-        println!("Acutal: {:?}", actual_dates);
         for (actual, exptected) in actual_dates.into_iter().zip(expected_dates) {
             assert_eq!(actual, exptected);
         }
@@ -234,7 +311,7 @@ mod test_iter_set {
     fn rrule_and_exrule() {
         let mut set = RRuleSet::new();
 
-        let mut options1 = ParsedOptions {
+        let options1 = ParsedOptions {
             freq: Frequenzy::YEARLY,
             count: Some(6),
             bymonth: vec![],
@@ -257,7 +334,7 @@ mod test_iter_set {
         };
         let rrule = RRule::new(options1);
         set.rrule(rrule);
-        let mut options2 = ParsedOptions {
+        let options2 = ParsedOptions {
             freq: Frequenzy::YEARLY,
             count: Some(3),
             bymonth: vec![],
@@ -327,7 +404,7 @@ mod test_iter_set {
         set.rdate(ymd_hms(1997, 9, 16, 9, 0, 0));
         set.rdate(ymd_hms(1997, 9, 18, 9, 0, 0));
 
-        let mut options = ParsedOptions {
+        let options = ParsedOptions {
             freq: Frequenzy::YEARLY,
             count: Some(3),
             bymonth: vec![],
@@ -365,7 +442,7 @@ mod test_iter_set {
     fn rrule_and_exdate() {
         let mut set = RRuleSet::new();
 
-        let mut options = ParsedOptions {
+        let options = ParsedOptions {
             freq: Frequenzy::YEARLY,
             count: Some(6),
             bymonth: vec![],
@@ -399,6 +476,293 @@ mod test_iter_set {
                 ymd_hms_2(1997, 9, 11, 9, 0, 0),
                 ymd_hms_2(1997, 9, 16, 9, 0, 0),
                 ymd_hms_2(1997, 9, 18, 9, 0, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn rrule_and_exyearly_yearly_big() {
+        let mut set = RRuleSet::new();
+
+        let options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(13),
+            bymonth: vec![9],
+            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![9],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![0],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![2],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+            byeaster: None,
+        };
+        let rrule = RRule::new(options);
+        set.rrule(rrule);
+
+
+        let options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(10),
+            bymonth: vec![9],
+            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![9],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![0],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![2],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+            byeaster: None,
+        };
+        let rrule = RRule::new(options);
+        set.exrule(rrule);
+
+        test_recurring(
+            set.all(),
+            vec![
+                ymd_hms_2(2007, 9, 2, 9, 0, 0),
+                ymd_hms_2(2008, 9, 2, 9, 0, 0),
+                ymd_hms_2(2009, 9, 2, 9, 0, 0),
+            ],
+        );
+    }
+
+
+    #[test]
+    fn before() {
+        let mut set = RRuleSet::new();
+
+        let options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: None,
+            bymonth: vec![9],
+            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![9],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![0],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![2],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+            byeaster: None,
+        };
+        let rrule = RRule::new(options);
+        set.rrule(rrule);
+
+
+        let options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(10),
+            bymonth: vec![9],
+            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![9],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![0],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![2],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+            byeaster: None,
+        };
+        let rrule = RRule::new(options);
+        set.exrule(rrule);
+
+        test_recurring(
+            set.before(ymd_hms_2(2015, 9, 2, 9, 0,0), false),
+            vec![
+                ymd_hms_2(2014, 9, 2, 9, 0, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn after() {
+        let mut set = RRuleSet::new();
+
+        let options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: None,
+            bymonth: vec![9],
+            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![9],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![0],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![2],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+            byeaster: None,
+        };
+        let rrule = RRule::new(options);
+        set.rrule(rrule);
+
+
+        let options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(10),
+            bymonth: vec![9],
+            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![9],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![0],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![2],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+            byeaster: None,
+        };
+        let rrule = RRule::new(options);
+        set.exrule(rrule);
+
+        test_recurring(
+            set.after(ymd_hms_2(2000, 9, 2, 9, 0,0), false),
+            vec![
+                ymd_hms_2(2007, 9, 2, 9, 0, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn between() {
+        let mut set = RRuleSet::new();
+
+        let options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: None,
+            bymonth: vec![9],
+            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![9],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![0],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![2],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+            byeaster: None,
+        };
+        let rrule = RRule::new(options);
+        set.rrule(rrule);
+
+
+        let options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(10),
+            bymonth: vec![9],
+            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![9],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![0],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![2],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+            byeaster: None,
+        };
+        let rrule = RRule::new(options);
+        set.exrule(rrule);
+
+        test_recurring(
+            set.between(ymd_hms_2(2000, 9, 2, 9, 0,0),ymd_hms_2(2010, 9, 2, 9, 0,0), false),
+            vec![
+                ymd_hms_2(2007, 9, 2, 9, 0, 0),
+                ymd_hms_2(2008, 9, 2, 9, 0, 0),
+                ymd_hms_2(2009, 9, 2, 9, 0, 0),
+            ],
+        );
+    }
+
+
+    #[test]
+    fn before_70s() {
+        let mut set = RRuleSet::new();
+
+        let options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(2),
+            bymonth: vec![1],
+            dtstart: Utc.ymd(1960, 1, 1).and_hms(9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![9],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![0],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![1],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+            byeaster: None,
+        };
+        let rrule = RRule::new(options);
+        set.rrule(rrule);
+
+        test_recurring(
+            set.all(),
+            vec![
+                ymd_hms_2(1960, 1, 1, 9, 0, 0),
+                ymd_hms_2(1961, 1, 1, 9, 0, 0),
             ],
         );
     }
