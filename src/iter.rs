@@ -1,5 +1,5 @@
 use crate::datetime::*;
-use crate::iter_set::TIterResult;
+use crate::iter_set::IterResult;
 use crate::iterinfo::*;
 use crate::options::*;
 use crate::poslist::*;
@@ -22,7 +22,7 @@ pub struct IterArgs {
     pub dt: DateTime<Tz>,
 }
 
-pub struct IterResult {
+pub struct RRuleIterRes {
     pub method: QueryMethodTypes,
     pub args: IterArgs,
     pub min_date: Option<DateTime<Tz>>,
@@ -31,7 +31,7 @@ pub struct IterResult {
     pub total: usize,
 }
 
-impl IterResult {
+impl RRuleIterRes {
     pub fn new(method: QueryMethodTypes, args: IterArgs) -> Self {
         let (max_date, min_date) = match method {
             QueryMethodTypes::BETWEEN if args.inc => (Some(args.before), Some(args.after)),
@@ -62,7 +62,7 @@ impl IterResult {
     }
 }
 
-impl TIterResult for IterResult {
+impl IterResult for RRuleIterRes {
     fn accept(&mut self, date: DateTime<Tz>) -> bool {
         self.total += 1;
         let too_early = self.min_date.is_some() && date < self.min_date.unwrap();

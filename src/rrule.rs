@@ -29,7 +29,7 @@ impl RRule {
             after: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
             dt: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
         };
-        let mut iter_res = IterResult::new(QueryMethodTypes::ALL, iter_args);
+        let mut iter_res = RRuleIterRes::new(QueryMethodTypes::ALL, iter_args);
 
         let res = iter_v2(&mut iter_res, &mut self.options);
         res
@@ -47,7 +47,7 @@ impl RRule {
             after: after.clone(),
             dt: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
         };
-        let mut iter_res = IterResult::new(QueryMethodTypes::ALL, iter_args);
+        let mut iter_res = RRuleIterRes::new(QueryMethodTypes::ALL, iter_args);
 
         let res = iter_v2(&mut iter_res, &mut self.options);
         res

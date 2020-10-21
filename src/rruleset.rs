@@ -1,5 +1,5 @@
 use crate::iter::*;
-use crate::iter_set::{iter_v2, TIterResult};
+use crate::iter_set::{iter_v2, IterResult};
 use crate::options::*;
 use crate::rrule::*;
 use chrono::prelude::*;
@@ -17,7 +17,7 @@ struct RRuleSet {
 
 struct RRuleSetIter<'a> {
     exdate_hash: HashMap<i64, ()>,
-    iter_res: IterResult,
+    iter_res: RRuleIterRes,
     rrule_set: &'a mut RRuleSet,
 }
 
@@ -29,7 +29,7 @@ impl<'a> RRuleSetIter<'a> {
             after: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
             dt: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
         };
-        let iter_res = IterResult::new(QueryMethodTypes::ALL, iter_args);
+        let iter_res = RRuleIterRes::new(QueryMethodTypes::ALL, iter_args);
 
         Self {
             exdate_hash: HashMap::new(),
@@ -106,7 +106,7 @@ impl<'a> RRuleSetIter<'a> {
     }
 }
 
-impl<'a> TIterResult for RRuleSetIter<'a> {
+impl<'a> IterResult for RRuleSetIter<'a> {
     fn accept(&mut self, date: DateTime<Tz>) -> bool {
         match &self.iter_res.method {
             QueryMethodTypes::BETWEEN => self.accept_1(date),
@@ -211,7 +211,7 @@ mod test_iter_set {
         month: u32,
         day: u32,
         hour: u32,
-        minute: u32,
+        minute: u32,    
         second: u32,
     ) -> DateTime<Tz> {
         UTC.ymd(year, month, day).and_hms(hour, minute, second)

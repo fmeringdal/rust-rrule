@@ -9,12 +9,12 @@ use chrono::{DateTime, Duration, Utc};
 use chrono_tz::*;
 use std::collections::HashMap;
 
-pub trait TIterResult {
+pub trait IterResult {
     fn accept(&mut self, date: DateTime<Tz>) -> bool;
     fn get_value(&self) -> Vec<DateTime<Tz>>;
 }
 
-pub fn iter_v2<T: TIterResult>(
+pub fn iter_v2<T: IterResult>(
     iter_result: &mut T,
     options: &mut ParsedOptions,
 ) -> Vec<DateTime<Tz>> {
