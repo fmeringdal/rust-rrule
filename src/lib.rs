@@ -1,6 +1,7 @@
 extern crate chrono;
 extern crate chrono_tz;
 extern crate once_cell;
+extern crate regex;
 
 mod datetime;
 mod easter;
@@ -10,6 +11,7 @@ mod iterinfo;
 mod masks;
 mod monthinfo;
 mod poslist;
+mod rrulestr;
 mod yearinfo;
 
 pub mod options;

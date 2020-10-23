@@ -6,13 +6,13 @@ use chrono::prelude::*;
 use chrono_tz::{Tz, UTC};
 use std::collections::HashMap;
 
-struct RRuleSet {
+#[derive(Debug)]
+pub struct RRuleSet {
     rrule: Vec<RRule>,
     rdate: Vec<DateTime<Utc>>,
     exrule: Vec<RRule>,
     exdate: Vec<DateTime<Utc>>,
-    dtstart: Option<DateTime<Utc>>,
-    exdate_hash: HashMap<i64, ()>,
+    pub dtstart: Option<DateTime<Utc>>,
 }
 
 struct RRuleSetIter<'a> {
@@ -25,9 +25,9 @@ impl<'a> RRuleSetIter<'a> {
     pub fn new(rrule_set: &'a mut RRuleSet) -> Self {
         let iter_args = IterArgs {
             inc: true,
-            before: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
-            after: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
-            dt: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+            before: None,
+            after: None,
+            dt: None,
         };
         let iter_res = RRuleIterRes::new(QueryMethodTypes::ALL, iter_args);
 
@@ -41,9 +41,9 @@ impl<'a> RRuleSetIter<'a> {
     pub fn from_before(rrule_set: &'a mut RRuleSet, dt: DateTime<Tz>, inc: bool) -> Self {
         let iter_args = IterArgs {
             inc,
-            before: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
-            after: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
-            dt,
+            before: None,
+            after: None,
+            dt: Some(dt),
         };
         let iter_res = RRuleIterRes::new(QueryMethodTypes::BEFORE, iter_args);
 
@@ -57,9 +57,9 @@ impl<'a> RRuleSetIter<'a> {
     pub fn from_after(rrule_set: &'a mut RRuleSet, dt: DateTime<Tz>, inc: bool) -> Self {
         let iter_args = IterArgs {
             inc,
-            before: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
-            after: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
-            dt,
+            before: None,
+            after: None,
+            dt: Some(dt),
         };
         let iter_res = RRuleIterRes::new(QueryMethodTypes::AFTER, iter_args);
 
@@ -70,13 +70,17 @@ impl<'a> RRuleSetIter<'a> {
         }
     }
 
-
-    pub fn from_between(rrule_set: &'a mut RRuleSet, after: DateTime<Tz>, before: DateTime<Tz>, inc: bool) -> Self {
+    pub fn from_between(
+        rrule_set: &'a mut RRuleSet,
+        after: DateTime<Tz>,
+        before: DateTime<Tz>,
+        inc: bool,
+    ) -> Self {
         let iter_args = IterArgs {
             inc,
-            before,
-            after,
-            dt: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+            before: Some(before),
+            after: Some(after),
+            dt: None,
         };
         let iter_res = RRuleIterRes::new(QueryMethodTypes::BETWEEN, iter_args);
 
@@ -131,8 +135,8 @@ impl<'a> RRuleSetIter<'a> {
         match &self.iter_res.method {
             QueryMethodTypes::BETWEEN => {
                 self.eval_exdate(
-                    &self.iter_res.args.after.clone(),
-                    &self.iter_res.args.before.clone(),
+                    &self.iter_res.args.after.unwrap().clone(),
+                    &self.iter_res.args.before.unwrap().clone(),
                 );
             }
             _ => (),
@@ -176,7 +180,6 @@ impl RRuleSet {
             exrule: vec![],
             exdate: vec![],
             dtstart: None,
-            exdate_hash: HashMap::new(),
         }
     }
 
@@ -198,7 +201,6 @@ impl RRuleSet {
 
     pub fn all(&mut self) -> Vec<DateTime<Tz>> {
         let mut iter = RRuleSetIter::new(self);
-        // self.iter(&mut iter_res, None)
         iter.iter(None)
     }
 
@@ -207,7 +209,6 @@ impl RRuleSet {
     /// With inc == true, if dt itself is an occurrence, it will be returned.
     pub fn before(&mut self, date: DateTime<Tz>, inc: bool) -> Vec<DateTime<Tz>> {
         let mut iter = RRuleSetIter::from_before(self, date, inc);
-        // self.iter(&mut iter_res, None)
         iter.iter(None)
     }
 
@@ -216,7 +217,6 @@ impl RRuleSet {
     /// With inc == true, if dt itself is an occurrence, it will be returned.
     pub fn after(&mut self, date: DateTime<Tz>, inc: bool) -> Vec<DateTime<Tz>> {
         let mut iter = RRuleSetIter::from_after(self, date, inc);
-        // self.iter(&mut iter_res, None)
         iter.iter(None)
     }
 
@@ -224,9 +224,13 @@ impl RRuleSet {
     /// The inc keyword defines what happens if after and/or before are
     /// themselves occurrences. With inc == True, they will be included in the
     /// list, if they are found in the recurrence set.
-    pub fn between(&mut self, after: DateTime<Tz>, before: DateTime<Tz>, inc: bool) -> Vec<DateTime<Tz>> {
+    pub fn between(
+        &mut self,
+        after: DateTime<Tz>,
+        before: DateTime<Tz>,
+        inc: bool,
+    ) -> Vec<DateTime<Tz>> {
         let mut iter = RRuleSetIter::from_between(self, after, before, inc);
-        // self.iter(&mut iter_res, None)
         iter.iter(None)
     }
 
@@ -234,7 +238,6 @@ impl RRuleSet {
         let mut result = vec![];
 
         if !self.rrule.is_empty() && self.dtstart.is_some() {
-            //result = result.concat(optionsToString({ dtstart: this._dtstart }))
             result.push(String::from("yeah"));
         }
 
@@ -288,7 +291,7 @@ mod test_iter_set {
         month: u32,
         day: u32,
         hour: u32,
-        minute: u32,    
+        minute: u32,
         second: u32,
     ) -> DateTime<Tz> {
         UTC.ymd(year, month, day).and_hms(hour, minute, second)
@@ -508,7 +511,6 @@ mod test_iter_set {
         let rrule = RRule::new(options);
         set.rrule(rrule);
 
-
         let options = ParsedOptions {
             freq: Frequenzy::YEARLY,
             count: Some(10),
@@ -543,7 +545,6 @@ mod test_iter_set {
         );
     }
 
-
     #[test]
     fn before() {
         let mut set = RRuleSet::new();
@@ -572,7 +573,6 @@ mod test_iter_set {
         let rrule = RRule::new(options);
         set.rrule(rrule);
 
-
         let options = ParsedOptions {
             freq: Frequenzy::YEARLY,
             count: Some(10),
@@ -598,10 +598,8 @@ mod test_iter_set {
         set.exrule(rrule);
 
         test_recurring(
-            set.before(ymd_hms_2(2015, 9, 2, 9, 0,0), false),
-            vec![
-                ymd_hms_2(2014, 9, 2, 9, 0, 0),
-            ],
+            set.before(ymd_hms_2(2015, 9, 2, 9, 0, 0), false),
+            vec![ymd_hms_2(2014, 9, 2, 9, 0, 0)],
         );
     }
 
@@ -633,7 +631,6 @@ mod test_iter_set {
         let rrule = RRule::new(options);
         set.rrule(rrule);
 
-
         let options = ParsedOptions {
             freq: Frequenzy::YEARLY,
             count: Some(10),
@@ -659,10 +656,8 @@ mod test_iter_set {
         set.exrule(rrule);
 
         test_recurring(
-            set.after(ymd_hms_2(2000, 9, 2, 9, 0,0), false),
-            vec![
-                ymd_hms_2(2007, 9, 2, 9, 0, 0),
-            ],
+            set.after(ymd_hms_2(2000, 9, 2, 9, 0, 0), false),
+            vec![ymd_hms_2(2007, 9, 2, 9, 0, 0)],
         );
     }
 
@@ -694,7 +689,6 @@ mod test_iter_set {
         let rrule = RRule::new(options);
         set.rrule(rrule);
 
-
         let options = ParsedOptions {
             freq: Frequenzy::YEARLY,
             count: Some(10),
@@ -720,7 +714,11 @@ mod test_iter_set {
         set.exrule(rrule);
 
         test_recurring(
-            set.between(ymd_hms_2(2000, 9, 2, 9, 0,0),ymd_hms_2(2010, 9, 2, 9, 0,0), false),
+            set.between(
+                ymd_hms_2(2000, 9, 2, 9, 0, 0),
+                ymd_hms_2(2010, 9, 2, 9, 0, 0),
+                false,
+            ),
             vec![
                 ymd_hms_2(2007, 9, 2, 9, 0, 0),
                 ymd_hms_2(2008, 9, 2, 9, 0, 0),
@@ -728,7 +726,6 @@ mod test_iter_set {
             ],
         );
     }
-
 
     #[test]
     fn before_70s() {

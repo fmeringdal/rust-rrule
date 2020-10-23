@@ -6,7 +6,7 @@ use crate::poslist::*;
 use crate::yearinfo::*;
 use chrono::prelude::*;
 use chrono::Duration;
-use chrono_tz::{Tz, UTC};
+use chrono_tz::Tz;
 
 pub enum QueryMethodTypes {
     ALL,
@@ -17,9 +17,9 @@ pub enum QueryMethodTypes {
 
 pub struct IterArgs {
     pub inc: bool,
-    pub before: DateTime<Tz>,
-    pub after: DateTime<Tz>,
-    pub dt: DateTime<Tz>,
+    pub before: Option<DateTime<Tz>>,
+    pub after: Option<DateTime<Tz>>,
+    pub dt: Option<DateTime<Tz>>,
 }
 
 pub struct RRuleIterRes {
@@ -34,15 +34,17 @@ pub struct RRuleIterRes {
 impl RRuleIterRes {
     pub fn new(method: QueryMethodTypes, args: IterArgs) -> Self {
         let (max_date, min_date) = match method {
-            QueryMethodTypes::BETWEEN if args.inc => (Some(args.before), Some(args.after)),
+            QueryMethodTypes::BETWEEN if args.inc => {
+                (Some(args.before.unwrap()), Some(args.after.unwrap()))
+            }
             QueryMethodTypes::BETWEEN => (
-                Some(args.before - Duration::milliseconds(1)),
-                Some(args.after + Duration::milliseconds(1)),
+                Some(args.before.unwrap() - Duration::milliseconds(1)),
+                Some(args.after.unwrap() + Duration::milliseconds(1)),
             ),
-            QueryMethodTypes::BEFORE if args.inc => (Some(args.dt), None),
-            QueryMethodTypes::BEFORE => (Some(args.dt - Duration::milliseconds(1)), None),
-            QueryMethodTypes::AFTER if args.inc => (None, Some(args.dt)),
-            QueryMethodTypes::AFTER => (None, Some(args.dt + Duration::milliseconds(1))),
+            QueryMethodTypes::BEFORE if args.inc => (Some(args.dt.unwrap()), None),
+            QueryMethodTypes::BEFORE => (Some(args.dt.unwrap() - Duration::milliseconds(1)), None),
+            QueryMethodTypes::AFTER if args.inc => (None, Some(args.dt.unwrap())),
+            QueryMethodTypes::AFTER => (None, Some(args.dt.unwrap() + Duration::milliseconds(1))),
             _ => (None, None),
         };
 

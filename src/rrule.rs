@@ -25,9 +25,9 @@ impl RRule {
     pub fn all(&mut self) -> Vec<DateTime<Tz>> {
         let iter_args = IterArgs {
             inc: true,
-            before: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
-            after: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
-            dt: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+            before: None,
+            after: None,
+            dt: None,
         };
         let mut iter_res = RRuleIterRes::new(QueryMethodTypes::ALL, iter_args);
 
@@ -43,9 +43,9 @@ impl RRule {
     ) -> Vec<DateTime<Tz>> {
         let iter_args = IterArgs {
             inc,
-            before: before.clone(),
-            after: after.clone(),
-            dt: UTC.ymd(2020, 1, 1).and_hms(0, 0, 0),
+            before: Some(before.clone()),
+            after: Some(after.clone()),
+            dt: None,
         };
         let mut iter_res = RRuleIterRes::new(QueryMethodTypes::ALL, iter_args);
 
