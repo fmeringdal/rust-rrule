@@ -15,7 +15,6 @@ script:
     - cargo build --verbose $CARGO_OPTIONS
     - cargo test --verbose $CARGO_OPTIONS
     - ls -la
-    - echo "sup"
     - ls -la target/debug
     - |
       ./grcov ./target/debug -s . -t lcov --llvm --branch --ignore-not-existing --ignore "/*" -o lcov.info;
