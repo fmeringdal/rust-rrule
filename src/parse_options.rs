@@ -6,13 +6,13 @@ use crate::options::{ParsedOptions, Frequenzy};
 pub fn parse_options(options: &PartialOptions) -> ParsedOptions {
     let mut default_partial_options = PartialOptions::new();
     default_partial_options.interval = Some(1);
-    default_partial_options.freq = Some(Frequenzy::YEARLY);
+    default_partial_options.freq = Some(Frequenzy::Yearly);
     default_partial_options.wkst = Some(0);
 
     let mut partial_options = PartialOptions::concat(&default_partial_options, options);
 
     if partial_options.byeaster.is_some() {
-        partial_options.freq = Some(Frequenzy::YEARLY);
+        partial_options.freq = Some(Frequenzy::Yearly);
     }
     let freq = partial_options.freq.unwrap();
 
@@ -43,16 +43,16 @@ pub fn parse_options(options: &PartialOptions) -> ParsedOptions {
         partial_options.byeaster.is_some()
     ) { 
         match &freq {
-            Frequenzy::YEARLY => {
+            Frequenzy::Yearly => {
                 if let Some(bymonth) = partial_options.bymonth {
                     partial_options.bymonth = Some(vec![partial_options.dtstart.unwrap().month() as usize]);
                 }
                 partial_options.bymonthday = Some(vec![partial_options.dtstart.unwrap().day() as isize]);
             },
-            Frequenzy::MONTHLY => {
+            Frequenzy::Monthly => {
                 partial_options.bymonthday = Some(vec![partial_options.dtstart.unwrap().day() as isize]); 
             },
-            Frequenzy::WEEKLY => {
+            Frequenzy::Weekly => {
                 partial_options.byweekday = Some(vec![partial_options.dtstart.unwrap().weekday() as usize]);
             },
             _ => unreachable!("Shouldnt be reached")
@@ -83,18 +83,18 @@ pub fn parse_options(options: &PartialOptions) -> ParsedOptions {
     }
 
   // byhour
-  if partial_options.byhour.is_none() && freq < Frequenzy::HOURLY {
+  if partial_options.byhour.is_none() && freq < Frequenzy::Hourly {
         partial_options.byhour = Some(vec![partial_options.dtstart.unwrap().hour() as usize]);
   }
 
   // byminute
-  if partial_options.byminute.is_none() && freq < Frequenzy::MINUTELY {
+  if partial_options.byminute.is_none() && freq < Frequenzy::Minutely {
     partial_options.byminute = Some(vec![partial_options.dtstart.unwrap().minute() as usize]);
 }
 
 
   // bysecond
-  if partial_options.bysecond.is_none() && freq < Frequenzy::SECONDLY {
+  if partial_options.bysecond.is_none() && freq < Frequenzy::Secondly {
     partial_options.bysecond = Some(vec![partial_options.dtstart.unwrap().second() as usize]);
   }
 

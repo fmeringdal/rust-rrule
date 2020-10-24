@@ -23,7 +23,7 @@ pub fn rebuild_month(
     };
 
     let mut ranges: Vec<(isize, isize)> = vec![];
-    if options.freq == Frequenzy::YEARLY {
+    if options.freq == Frequenzy::Yearly {
         if options.bymonth.is_empty() {
             ranges = vec![(0, yearlen as isize)];
         } else {
@@ -32,7 +32,7 @@ pub fn rebuild_month(
                 ranges.push((mrange[m - 1] as isize, mrange[m] as isize))
             }
         }
-    } else if options.freq == Frequenzy::MONTHLY {
+    } else if options.freq == Frequenzy::Monthly {
         ranges.push((mrange[month - 1] as isize, mrange[month] as isize));
     }
 

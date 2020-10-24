@@ -119,9 +119,9 @@ pub fn iter_v2<T: IterResult>(
             return iter_result.get_value();
         }
 
-        if options.freq == Frequenzy::HOURLY
-            || options.freq == Frequenzy::MINUTELY
-            || options.freq == Frequenzy::SECONDLY
+        if options.freq == Frequenzy::Hourly
+            || options.freq == Frequenzy::Minutely
+            || options.freq == Frequenzy::Secondly
         {
             timeset = ii.gettimeset(
                 &options.freq,

@@ -6,6 +6,32 @@ use chrono::prelude::*;
 use chrono_tz::{Tz, UTC};
 use std::collections::HashMap;
 
+/// A type that produces instances of a given a RFC1241 string representation.
+///
+/// The first element is traditionally the path of the executable, but it can be
+/// set to arbitrary text, and may not even exist. This means this property should
+/// not be relied upon for security purposes.
+///
+/// On Unix systems shell usually expands unquoted arguments with glob patterns
+/// (such as `*` and `?`). On Windows this is not done, and such arguments are
+/// passed as-is.
+///
+/// # Panics
+///
+/// The returned iterator will panic during iteration if any argument to the
+/// process is not valid unicode. If this is not desired,
+/// use the [`args_os`] function instead.
+///
+/// # Examples
+///
+/// ```
+/// use std::env;
+///
+/// // Prints each argument on a separate line
+/// for argument in env::args() {
+///     println!("{}", argument);
+/// }
+/// ```
 #[derive(Debug)]
 pub struct RRuleSet {
     rrule: Vec<RRule>,
@@ -315,7 +341,7 @@ mod test_iter_set {
         let mut set = RRuleSet::new();
 
         let options1 = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(6),
             bymonth: vec![],
             dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
@@ -338,7 +364,7 @@ mod test_iter_set {
         let rrule = RRule::new(options1);
         set.rrule(rrule);
         let options2 = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![],
             dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
@@ -408,7 +434,7 @@ mod test_iter_set {
         set.rdate(ymd_hms(1997, 9, 18, 9, 0, 0));
 
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![],
             dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
@@ -446,7 +472,7 @@ mod test_iter_set {
         let mut set = RRuleSet::new();
 
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(6),
             bymonth: vec![],
             dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
@@ -488,7 +514,7 @@ mod test_iter_set {
         let mut set = RRuleSet::new();
 
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(13),
             bymonth: vec![9],
             dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
@@ -512,7 +538,7 @@ mod test_iter_set {
         set.rrule(rrule);
 
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(10),
             bymonth: vec![9],
             dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
@@ -550,7 +576,7 @@ mod test_iter_set {
         let mut set = RRuleSet::new();
 
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: None,
             bymonth: vec![9],
             dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
@@ -574,7 +600,7 @@ mod test_iter_set {
         set.rrule(rrule);
 
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(10),
             bymonth: vec![9],
             dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
@@ -608,7 +634,7 @@ mod test_iter_set {
         let mut set = RRuleSet::new();
 
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: None,
             bymonth: vec![9],
             dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
@@ -632,7 +658,7 @@ mod test_iter_set {
         set.rrule(rrule);
 
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(10),
             bymonth: vec![9],
             dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
@@ -666,7 +692,7 @@ mod test_iter_set {
         let mut set = RRuleSet::new();
 
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: None,
             bymonth: vec![9],
             dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
@@ -690,7 +716,7 @@ mod test_iter_set {
         set.rrule(rrule);
 
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(10),
             bymonth: vec![9],
             dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
@@ -732,7 +758,7 @@ mod test_iter_set {
         let mut set = RRuleSet::new();
 
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(2),
             bymonth: vec![1],
             dtstart: Utc.ymd(1960, 1, 1).and_hms(9, 0, 0),

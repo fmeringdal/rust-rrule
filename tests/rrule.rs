@@ -41,7 +41,7 @@ mod test {
     #[test]
     fn yearly() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![9],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -74,7 +74,7 @@ mod test {
     #[test]
     fn yearly_interval() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![9],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -107,7 +107,7 @@ mod test {
     #[test]
     fn yearly_interval_large() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![9],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -140,7 +140,7 @@ mod test {
     #[test]
     fn yearly_by_easter() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -173,7 +173,7 @@ mod test {
     #[test]
     fn yearly_by_easterpos() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -206,7 +206,7 @@ mod test {
     #[test]
     fn yearly_by_easterpos_neg() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -239,7 +239,7 @@ mod test {
     #[test]
     fn yearly_by_month() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -272,7 +272,7 @@ mod test {
     #[test]
     fn yearly_by_monthday() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -305,7 +305,7 @@ mod test {
     #[test]
     fn yearly_by_month_and_monthday() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -338,7 +338,7 @@ mod test {
     #[test]
     fn yearly_by_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -371,7 +371,7 @@ mod test {
     #[test]
     fn yearly_by_nweekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -404,7 +404,7 @@ mod test {
     #[test]
     fn yearly_by_nweekday_large() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -437,7 +437,7 @@ mod test {
     #[test]
     fn yearly_by_month_and_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -470,7 +470,7 @@ mod test {
     #[test]
     fn yearly_by_month_and_nweekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -503,7 +503,7 @@ mod test {
     #[test]
     fn yearly_by_month_and_nweekday_large() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -536,7 +536,7 @@ mod test {
     #[test]
     fn yearly_by_monthday_and_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -569,7 +569,7 @@ mod test {
     #[test]
     fn yearly_by_month_and_monthday_and_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -602,7 +602,7 @@ mod test {
     #[test]
     fn yearly_by_yearday() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(4),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -636,7 +636,7 @@ mod test {
     #[test]
     fn yearly_by_yeardayneg() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(4),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -670,7 +670,7 @@ mod test {
     #[test]
     fn yearly_by_month_and_yearday() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(4),
             bymonth: vec![4, 7],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -704,7 +704,7 @@ mod test {
     #[test]
     fn yearly_by_weekno() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -737,7 +737,7 @@ mod test {
     #[test]
     fn yearly_by_weekno_and_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -770,7 +770,7 @@ mod test {
     #[test]
     fn yearly_by_weekno_and_weekday_large() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -803,7 +803,7 @@ mod test {
     #[test]
     fn yearly_by_weekno_and_weekday_last() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -836,7 +836,7 @@ mod test {
     #[test]
     fn yearly_by_weekno_and_weekday53_last() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -869,7 +869,7 @@ mod test {
     #[test]
     fn yearly_by_hour() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![9],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -902,7 +902,7 @@ mod test {
     #[test]
     fn yearly_by_minute() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![9],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -935,7 +935,7 @@ mod test {
     #[test]
     fn yearly_by_second() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![9],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -968,7 +968,7 @@ mod test {
     #[test]
     fn yearly_by_hour_and_minute() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![9],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1001,7 +1001,7 @@ mod test {
     #[test]
     fn yearly_by_hour_and_second() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![9],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1034,7 +1034,7 @@ mod test {
     #[test]
     fn yearly_by_minute_and_second() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![9],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1067,7 +1067,7 @@ mod test {
     #[test]
     fn yearly_by_hour_and_minute_and_second() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![9],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1100,7 +1100,7 @@ mod test {
     #[test]
     fn yearly_by_setpos() {
         let options = ParsedOptions {
-            freq: Frequenzy::YEARLY,
+            freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1133,7 +1133,7 @@ mod test {
     #[test]
     fn monthly() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1166,7 +1166,7 @@ mod test {
     #[test]
     fn monthly_interval() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1199,7 +1199,7 @@ mod test {
     #[test]
     fn monthly_interval_large() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1232,7 +1232,7 @@ mod test {
     #[test]
     fn monthly_by_easter() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1265,7 +1265,7 @@ mod test {
     #[test]
     fn monthly_by_easterpos() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1298,7 +1298,7 @@ mod test {
     #[test]
     fn monthly_by_easterpos_neg() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1331,7 +1331,7 @@ mod test {
     #[test]
     fn monthly_neg_by_monthday_janfeb_for_nonleapyear() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(4),
             bymonth: vec![],
             dtstart: ymd_hms(2013, 12, 1, 9, 0, 0),
@@ -1365,7 +1365,7 @@ mod test {
     #[test]
     fn monthly_neg_by_monthday_janfeb_for_leapyear() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(4),
             bymonth: vec![],
             dtstart: ymd_hms(2015, 12, 1, 9, 0, 0),
@@ -1399,7 +1399,7 @@ mod test {
     #[test]
     fn monthly_neg_monthday() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(6),
             bymonth: vec![],
             dtstart: ymd_hms(2015, 12, 1, 9, 0, 0),
@@ -1435,7 +1435,7 @@ mod test {
     #[test]
     fn monthly_by_month() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1468,7 +1468,7 @@ mod test {
     #[test]
     fn monthly_by_monthday() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1501,7 +1501,7 @@ mod test {
     #[test]
     fn monthly_by_month_and_monthday() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1534,7 +1534,7 @@ mod test {
     #[test]
     fn monthly_by_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1567,7 +1567,7 @@ mod test {
     #[test]
     fn monthly_by_nweekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1600,7 +1600,7 @@ mod test {
     #[test]
     fn monthly_by_nweekday_large() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1633,7 +1633,7 @@ mod test {
     #[test]
     fn monthly_by_month_and_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1666,7 +1666,7 @@ mod test {
     #[test]
     fn monthly_by_month_and_nweekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1699,7 +1699,7 @@ mod test {
     #[test]
     fn monthly_by_month_and_nweekday_large() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1732,7 +1732,7 @@ mod test {
     #[test]
     fn monthly_by_monthday_and_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1765,7 +1765,7 @@ mod test {
     #[test]
     fn monthly_by_month_and_monthday_and_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1798,7 +1798,7 @@ mod test {
     #[test]
     fn monthly_by_yearday() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(4),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1832,7 +1832,7 @@ mod test {
     #[test]
     fn monthly_by_yeardayneg() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(4),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1866,7 +1866,7 @@ mod test {
     #[test]
     fn monthly_by_month_and_yearday() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(4),
             bymonth: vec![4, 7],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1900,7 +1900,7 @@ mod test {
     #[test]
     fn monthly_by_weekno() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1935,7 +1935,7 @@ mod test {
     #[test]
     fn monthly_by_weekno_and_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1970,7 +1970,7 @@ mod test {
     #[test]
     fn monthly_by_weekno_and_weekday_large() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2003,7 +2003,7 @@ mod test {
     #[test]
     fn monthly_by_weekno_and_weekday_last() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2036,7 +2036,7 @@ mod test {
     #[test]
     fn monthly_by_weekno_and_weekday53() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2069,7 +2069,7 @@ mod test {
     #[test]
     fn monthly_by_hour() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2102,7 +2102,7 @@ mod test {
     #[test]
     fn monthly_by_minute() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2135,7 +2135,7 @@ mod test {
     #[test]
     fn monthly_by_second() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2168,7 +2168,7 @@ mod test {
     #[test]
     fn monthly_by_hour_and_minute() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2201,7 +2201,7 @@ mod test {
     #[test]
     fn monthly_by_hour_and_second() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2234,7 +2234,7 @@ mod test {
     #[test]
     fn monthly_by_minute_and_second() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2267,7 +2267,7 @@ mod test {
     #[test]
     fn monthly_by_hour_and_minute_and_second() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2300,7 +2300,7 @@ mod test {
     #[test]
     fn monthly_by_setpos() {
         let options = ParsedOptions {
-            freq: Frequenzy::MONTHLY,
+            freq: Frequenzy::Monthly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2333,7 +2333,7 @@ mod test {
     #[test]
     fn weekly() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2366,7 +2366,7 @@ mod test {
     #[test]
     fn weekly_interval() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2399,7 +2399,7 @@ mod test {
     #[test]
     fn weekly_interval_large() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2432,7 +2432,7 @@ mod test {
     #[test]
     fn weekly_by_month() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(6),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2468,7 +2468,7 @@ mod test {
     #[test]
     fn weekly_by_monthday() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2501,7 +2501,7 @@ mod test {
     #[test]
     fn weekly_by_month_and_monthday() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2534,7 +2534,7 @@ mod test {
     #[test]
     fn weekly_by_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2568,7 +2568,7 @@ mod test {
     #[test]
     fn weekly_by_nweekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2601,7 +2601,7 @@ mod test {
     #[test]
     fn weekly_by_month_and_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2634,7 +2634,7 @@ mod test {
     #[test]
     fn weekly_by_monthday_and_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2667,7 +2667,7 @@ mod test {
     #[test]
     fn weekly_by_month_monthday_and_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2700,7 +2700,7 @@ mod test {
     #[test]
     fn weekly_by_yearday() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(4),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2734,7 +2734,7 @@ mod test {
     #[test]
     fn weekly_by_yeardayneg() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(4),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2768,7 +2768,7 @@ mod test {
     #[test]
     fn weekly_by_month_yearday() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(4),
             bymonth: vec![1, 7],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2802,7 +2802,7 @@ mod test {
     #[test]
     fn weekly_by_weekno() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2835,7 +2835,7 @@ mod test {
     #[test]
     fn weekly_by_weekno_and_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2868,7 +2868,7 @@ mod test {
     #[test]
     fn weekly_by_weekno_and_weekday_large() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2901,7 +2901,7 @@ mod test {
     #[test]
     fn weekly_by_weekno_and_weekday_last() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2934,7 +2934,7 @@ mod test {
     #[test]
     fn weekly_by_weekno_and_weekday53() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2967,7 +2967,7 @@ mod test {
     #[test]
     fn weekly_by_hour() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3000,7 +3000,7 @@ mod test {
     #[test]
     fn weekly_by_minute() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3033,7 +3033,7 @@ mod test {
     #[test]
     fn weekly_by_second() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3066,7 +3066,7 @@ mod test {
     #[test]
     fn weekly_by_hour_and_minute() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3099,7 +3099,7 @@ mod test {
     #[test]
     fn weekly_by_hour_and_second() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3132,7 +3132,7 @@ mod test {
     #[test]
     fn weekly_by_minute_and_second() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3165,7 +3165,7 @@ mod test {
     #[test]
     fn weekly_by_hour_and_minute_and_second() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(5),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3200,7 +3200,7 @@ mod test {
     #[test]
     fn weekly_by_setpos() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3233,7 +3233,7 @@ mod test {
     #[test]
     fn daily() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3266,7 +3266,7 @@ mod test {
     #[test]
     fn daily_interval() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3299,7 +3299,7 @@ mod test {
     #[test]
     fn daily_interval_large() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3332,7 +3332,7 @@ mod test {
     #[test]
     fn daily_by_month() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3365,7 +3365,7 @@ mod test {
     #[test]
     fn daily_by_monthday() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3398,7 +3398,7 @@ mod test {
     #[test]
     fn daily_by_month_and_monthday() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3431,7 +3431,7 @@ mod test {
     #[test]
     fn daily_by_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3464,7 +3464,7 @@ mod test {
     #[test]
     fn daily_by_month_and_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3497,7 +3497,7 @@ mod test {
     #[test]
     fn daily_by_monthday_and_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3530,7 +3530,7 @@ mod test {
     #[test]
     fn daily_by_month_and_monthday_and_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3563,7 +3563,7 @@ mod test {
     #[test]
     fn daily_by_yearday() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(4),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3597,7 +3597,7 @@ mod test {
     #[test]
     fn daily_by_yeardayneg() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(4),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3631,7 +3631,7 @@ mod test {
     #[test]
     fn daily_by_month_and_yearday() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(4),
             bymonth: vec![1, 7],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3665,7 +3665,7 @@ mod test {
     #[test]
     fn daily_by_weekno() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3700,7 +3700,7 @@ mod test {
     #[test]
     fn daily_by_weekno_and_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3735,7 +3735,7 @@ mod test {
     #[test]
     fn daily_by_weekno_and_weekday_large() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3768,7 +3768,7 @@ mod test {
     #[test]
     fn daily_by_weekno_and_weekday_last() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3801,7 +3801,7 @@ mod test {
     #[test]
     fn daily_by_weekno_and_weekday53() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3834,7 +3834,7 @@ mod test {
     #[test]
     fn daily_by_hour() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3867,7 +3867,7 @@ mod test {
     #[test]
     fn daily_by_minute() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3900,7 +3900,7 @@ mod test {
     #[test]
     fn daily_by_second() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3933,7 +3933,7 @@ mod test {
     #[test]
     fn daily_by_hour_and_minute() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3966,7 +3966,7 @@ mod test {
     #[test]
     fn daily_by_hour_and_second() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3999,7 +3999,7 @@ mod test {
     #[test]
     fn daily_by_minute_and_second() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4032,7 +4032,7 @@ mod test {
     #[test]
     fn daily_by_hour_and_minute_and_second() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4065,7 +4065,7 @@ mod test {
     #[test]
     fn daily_by_setpos() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4098,7 +4098,7 @@ mod test {
     #[test]
     fn hourly() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4131,7 +4131,7 @@ mod test {
     #[test]
     fn hourly_interval() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4164,7 +4164,7 @@ mod test {
     #[test]
     fn hourly_interval_large() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4197,7 +4197,7 @@ mod test {
     #[test]
     fn hourly_by_month() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(3),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4230,7 +4230,7 @@ mod test {
     #[test]
     fn hourly_by_monthday() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4263,7 +4263,7 @@ mod test {
     #[test]
     fn hourly_by_month_and_monthday() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(3),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4296,7 +4296,7 @@ mod test {
     #[test]
     fn hourly_by_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(5),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4331,7 +4331,7 @@ mod test {
     #[test]
     fn hourly_by_month_and_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(3),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4364,7 +4364,7 @@ mod test {
     #[test]
     fn hourly_by_monthday_and_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4397,7 +4397,7 @@ mod test {
     #[test]
     fn hourly_by_month_and_monthday_and_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(3),
             bymonth: vec![1, 3],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4430,7 +4430,7 @@ mod test {
     #[test]
     fn hourly_by_yearday() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(8),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4468,7 +4468,7 @@ mod test {
     #[test]
     fn hourly_by_yeardayneg() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(8),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4506,7 +4506,7 @@ mod test {
     #[test]
     fn hourly_by_month_and_yearday() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(4),
             bymonth: vec![4, 7],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4540,7 +4540,7 @@ mod test {
     #[test]
     fn hourly_by_weekno() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4573,7 +4573,7 @@ mod test {
     #[test]
     fn hourly_by_weekno_and_weekday() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4606,7 +4606,7 @@ mod test {
     #[test]
     fn hourly_by_weekno_and_weekday_large() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4639,7 +4639,7 @@ mod test {
     #[test]
     fn hourly_by_weekno_and_weekday_last() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4672,7 +4672,7 @@ mod test {
     #[test]
     fn hourly_by_weekno_and_weekday53() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4705,7 +4705,7 @@ mod test {
     #[test]
     fn hourly_by_hour() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4738,7 +4738,7 @@ mod test {
     #[test]
     fn hourly_by_minute() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4771,7 +4771,7 @@ mod test {
     #[test]
     fn hourly_by_second() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4804,7 +4804,7 @@ mod test {
     #[test]
     fn hourly_by_hour_and_minute() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4837,7 +4837,7 @@ mod test {
     #[test]
     fn hourly_by_hour_and_second() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4870,7 +4870,7 @@ mod test {
     #[test]
     fn hourly_by_minute_and_second() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4903,7 +4903,7 @@ mod test {
     #[test]
     fn hourly_by_hour_and_minute_and_second() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(5),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4938,7 +4938,7 @@ mod test {
     #[test]
     fn hourly_by_setpos() {
         let options = ParsedOptions {
-            freq: Frequenzy::HOURLY,
+            freq: Frequenzy::Hourly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -4971,7 +4971,7 @@ mod test {
     #[test]
     fn until_not_matching() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -5004,7 +5004,7 @@ mod test {
     #[test]
     fn until_matching() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(4),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -5037,7 +5037,7 @@ mod test {
     #[test]
     fn until_single() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(1),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -5063,7 +5063,7 @@ mod test {
     #[test]
     fn until_empty() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(1),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -5089,7 +5089,7 @@ mod test {
     #[test]
     fn until_with_date() {
         let options = ParsedOptions {
-            freq: Frequenzy::DAILY,
+            freq: Frequenzy::Daily,
             count: Some(4),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -5122,7 +5122,7 @@ mod test {
     #[test]
     fn wkst_interval_mo() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -5155,7 +5155,7 @@ mod test {
     #[test]
     fn wkst_interval_su() {
         let options = ParsedOptions {
-            freq: Frequenzy::WEEKLY,
+            freq: Frequenzy::Weekly,
             count: Some(3),
             bymonth: vec![],
             dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),

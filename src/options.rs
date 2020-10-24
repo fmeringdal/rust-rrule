@@ -16,13 +16,13 @@ pub struct YearInfo {
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub enum Frequenzy {
-    YEARLY = 0,
-    MONTHLY = 1,
-    WEEKLY = 2,
-    DAILY = 3,
-    HOURLY = 4,
-    MINUTELY = 5,
-    SECONDLY = 6,
+    Yearly = 0,
+    Monthly = 1,
+    Weekly = 2,
+    Daily = 3,
+    Hourly = 4,
+    Minutely = 5,
+    Secondly = 6,
 }
 
 #[derive(Debug, Clone)]

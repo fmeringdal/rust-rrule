@@ -229,10 +229,10 @@ impl<'a> IterInfo<'a> {
         day: usize,
     ) -> (Vec<usize>, usize, usize) {
         match freq {
-            Frequenzy::YEARLY => self.ydayset(),
-            Frequenzy::MONTHLY => self.mdayset(month),
-            Frequenzy::WEEKLY => self.wdayset(year, month, day),
-            Frequenzy::DAILY => self.ddayset(year, month, day),
+            Frequenzy::Yearly => self.ydayset(),
+            Frequenzy::Monthly => self.mdayset(month),
+            Frequenzy::Weekly => self.wdayset(year, month, day),
+            Frequenzy::Daily => self.ddayset(year, month, day),
             _ => self.ddayset(year, month, day),
         }
     }
@@ -246,9 +246,9 @@ impl<'a> IterInfo<'a> {
         millisecond: usize,
     ) -> Vec<Time> {
         match freq {
-            Frequenzy::HOURLY => self.htimeset(hour, minute, second, millisecond),
-            Frequenzy::MINUTELY => self.mtimeset(hour, minute, second, millisecond),
-            Frequenzy::SECONDLY => self.stimeset(hour, minute, second, millisecond),
+            Frequenzy::Hourly => self.htimeset(hour, minute, second, millisecond),
+            Frequenzy::Minutely => self.mtimeset(hour, minute, second, millisecond),
+            Frequenzy::Secondly => self.stimeset(hour, minute, second, millisecond),
             _ => panic!("Invalid freq"),
         }
     }

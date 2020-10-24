@@ -103,10 +103,10 @@ pub fn increment_counter_date(
     filtered: bool,
 ) -> DateTime<Utc> {
     match options.freq {
-        Frequenzy::YEARLY => counter_date
+        Frequenzy::Yearly => counter_date
             .with_year(counter_date.year() + options.interval as i32)
             .unwrap(),
-        Frequenzy::MONTHLY => {
+        Frequenzy::Monthly => {
             let new_month = counter_date.month() + options.interval as u32;
             if new_month > 12 {
                 let mut year_div = new_month / 12;
@@ -125,7 +125,7 @@ pub fn increment_counter_date(
                 counter_date.with_month(new_month).unwrap()
             }
         }
-        Frequenzy::WEEKLY => {
+        Frequenzy::Weekly => {
             let mut day_delta = 0;
             let weekday = get_weekday_val(&counter_date.weekday());
             if options.wkst > weekday {
@@ -136,8 +136,8 @@ pub fn increment_counter_date(
             }
             counter_date + Duration::days(day_delta as i64)
         }
-        Frequenzy::DAILY => counter_date + Duration::days(options.interval as i64),
-        Frequenzy::HOURLY => {
+        Frequenzy::Daily => counter_date + Duration::days(options.interval as i64),
+        Frequenzy::Hourly => {
             let mut new_hours = counter_date.hour() as usize;
             if filtered {
                 new_hours += ((23 - new_hours) as f32 / options.interval as f32).floor() as usize
@@ -157,8 +157,8 @@ pub fn increment_counter_date(
             }
             counter_date.with_hour(0).unwrap() + Duration::hours(new_hours as i64)
         }
-        Frequenzy::MINUTELY => counter_date + Duration::minutes(options.interval as i64),
-        Frequenzy::SECONDLY => counter_date + Duration::seconds(options.interval as i64),
+        Frequenzy::Minutely => counter_date + Duration::minutes(options.interval as i64),
+        Frequenzy::Secondly => counter_date + Duration::seconds(options.interval as i64),
     }
 }
 
@@ -232,10 +232,10 @@ pub fn remove_filtered_days(
 pub fn build_timeset(options: &ParsedOptions) -> Vec<Time> {
     let millisecond_mod = (options.dtstart.timestamp_millis() & 1000) as usize;
 
-    if !(options.freq == Frequenzy::DAILY
-        || options.freq == Frequenzy::MONTHLY
-        || options.freq == Frequenzy::WEEKLY
-        || options.freq == Frequenzy::YEARLY)
+    if !(options.freq == Frequenzy::Daily
+        || options.freq == Frequenzy::Monthly
+        || options.freq == Frequenzy::Weekly
+        || options.freq == Frequenzy::Yearly)
     {
         return vec![];
     }
@@ -257,27 +257,27 @@ pub fn make_timeset(
     counter_date: &DateTime<Utc>,
     options: &ParsedOptions,
 ) -> Vec<Time> {
-    if options.freq == Frequenzy::DAILY
-        || options.freq == Frequenzy::MONTHLY
-        || options.freq == Frequenzy::WEEKLY
-        || options.freq == Frequenzy::YEARLY
+    if options.freq == Frequenzy::Daily
+        || options.freq == Frequenzy::Monthly
+        || options.freq == Frequenzy::Weekly
+        || options.freq == Frequenzy::Yearly
     {
         return build_timeset(options);
     }
 
-    if (options.freq >= Frequenzy::HOURLY
+    if (options.freq >= Frequenzy::Hourly
         && !options.byhour.is_empty()
         && !options
             .byhour
             .iter()
             .any(|&h| h == counter_date.hour() as usize))
-        || (options.freq >= Frequenzy::MINUTELY
+        || (options.freq >= Frequenzy::Minutely
             && !options.byminute.is_empty()
             && !options
                 .byminute
                 .iter()
                 .any(|&m| m == counter_date.minute() as usize))
-        || (options.freq >= Frequenzy::SECONDLY
+        || (options.freq >= Frequenzy::Secondly
             && !options.bysecond.is_empty()
             && !options
                 .bysecond
