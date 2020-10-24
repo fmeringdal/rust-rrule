@@ -1,10 +1,13 @@
 [package]
 name = "rrule"
-description = "Partial implementation of the ical specs"
+description = "A pure Rust (partial) implementation of recurrence rules as defined in the iCalendar RFC."
 license = "MIT"
-version = "0.1.0"
-authors = ["Fredrik Meringdal <fmeringdal@hotmail.com>"]
+version = "0.2.0"
+authors = ["Fredrik Meringdal"]
 edition = "2018"
+
+keywords = ["calendar", "rrule", "ical"]
+categories = ["Date and time"]
 
 [dependencies]
 chrono = "0.4.19"

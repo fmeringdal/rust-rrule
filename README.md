@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/gh/fmeringdal/rust_rrule/branch/main/graph/badge.svg)](https://codecov.io/gh/fmeringdal/rust_rrule)
 [![crates.io](https://img.shields.io/crates/v/rrule.svg)](https://crates.io/crates/rrule)
 
-A pure Rust partial implementation of recurrence rules as defined in the iCalendar RFC.
+A pure Rust (partial) implementation of recurrence rules as defined in the iCalendar RFC.
 
 # Usage
 
