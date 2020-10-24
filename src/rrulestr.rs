@@ -1,5 +1,6 @@
 use crate::options::*;
 use crate::parse_options::parse_options;
+use crate::rrule::RRule;
 use crate::rruleset::RRuleSet;
 use chrono::prelude::*;
 use chrono::DateTime;
@@ -432,7 +433,7 @@ fn parse_rdate(rdateval: &str, params: Vec<String>) -> Vec<DateTime<Utc>> {
     rdateval.split(",").map(|datestr| datestring_to_date(datestr)).collect()
 }
 
-fn build_rule(s: &str) -> RRuleSet {
+pub fn build_rule(s: &str) -> RRuleSet {
     let ParsedInput {
         mut rrule_vals,
         rdate_vals,
@@ -443,8 +444,10 @@ fn build_rule(s: &str) -> RRuleSet {
         ..
     } = parse_input(s);
 
+
     let mut rset = RRuleSet::new();
-    if rrule_vals.len() > 1 ||
+    
+    if !rrule_vals.is_empty() ||
         !rdate_vals.is_empty() ||
         !exrule_vals.is_empty() ||
         !exdate_vals.is_empty() {
@@ -455,9 +458,9 @@ fn build_rule(s: &str) -> RRuleSet {
         for rruleval in rrule_vals.iter_mut() {
             rruleval.tzid = tzid.clone();
             rruleval.dtstart = dtstart;
-
-            // let rrule = RRule::new(rruleval.clone());
-            // rset.rrule(rrule);
+            let parsed_opts = parse_options(&rruleval);
+            let rrule = RRule::new(parsed_opts);
+            rset.rrule(rrule);
         }
     
         for rdate in rdate_vals {
@@ -468,8 +471,9 @@ fn build_rule(s: &str) -> RRuleSet {
             exrule.tzid = tzid.clone();
             exrule.dtstart = dtstart;
 
-            // let exrule = RRule::new(exrule.clone());
-            // rset.rrule(exrule);        
+            let parsed_opts = parse_options(&exrule);
+            let exrule = RRule::new(parsed_opts);
+            rset.rrule(exrule);        
         }
     
         for exdate in exdate_vals {
@@ -498,9 +502,11 @@ mod test {
 
     #[test]
     fn it_works_2() {
-        let options = build_rule("RRULE:UNTIL=19990404T110000Z;DTSTART=19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE");
+        let mut options = build_rule("RRULE:UNTIL=19990404T110000Z;DTSTART=19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE");
         println!("?????????????=================?????????????");
         println!("{:?}", options);
+        println!("?????????????=== ALLL    ==============?????????????");
+        println!("{:?}", options.all());
     }
 
     #[test]

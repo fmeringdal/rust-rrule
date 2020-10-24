@@ -5,7 +5,7 @@ extern crate rrule;
 use chrono::prelude::*;
 use chrono_tz::UTC;
 use rrule::options::*;
-use rrule::rrule::RRule;
+use rrule::{RRule, ParsedOptions, Frequenzy};
 
 #[cfg(test)]
 mod test {

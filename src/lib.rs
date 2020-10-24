@@ -14,7 +14,12 @@ mod poslist;
 mod rrulestr;
 mod parse_options;
 mod yearinfo;
+mod options;
+mod rrule;
+mod rruleset;
 
-pub mod options;
-pub mod rrule;
-pub mod rruleset;
+pub use rrulestr::build_rule;
+pub use rrule::RRule;
+pub use rruleset::RRuleSet;
+pub use options::{Frequenzy, ParsedOptions};
+pub use rrulestr::PartialOptions;
