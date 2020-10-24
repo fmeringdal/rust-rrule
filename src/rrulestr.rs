@@ -1,5 +1,5 @@
 use crate::options::*;
-use crate::rrule::RRule;
+use crate::parse_options::parse_options;
 use crate::rruleset::RRuleSet;
 use chrono::prelude::*;
 use chrono::DateTime;
@@ -371,11 +371,9 @@ fn parse_input(s: &str) -> ParsedInput {
     } = parse_dtstart(s).unwrap();
 
 
-    let mut lines: Vec<&str> = s.split("\n").collect();
+    let lines: Vec<&str> = s.split("\n").collect();
     for line in &lines {
         let parsed_line = break_down_line(line);
-        println!("Parsed line: {:?}", parsed_line);
-
         match parsed_line.name.to_uppercase().as_str() {
             "RRULE" => {
                 if !parsed_line.params.is_empty() {
@@ -410,16 +408,6 @@ fn parse_input(s: &str) -> ParsedInput {
     return ParsedInput {
         dtstart,
         tzid,
-        // fn it_works_2() {
-        //     let options = build_rule("DTSTART:19970902T090000Z\nRRULE:FREQ=YEARLY;COUNT=3\n");
-        //     println!("?????????????=================?????????????");
-        //     println!("{:?}", options);
-        // }
-        // fn it_works_2() {
-        //     let options = build_rule("DTSTART:19970902T090000Z\nRRULE:FREQ=YEARLY;COUNT=3\n");
-        //     println!("?????????????=================?????????????");
-        //     println!("{:?}", options);
-        // }
         rrule_vals,
         rdate_vals,
         exrule_vals,
@@ -515,10 +503,24 @@ mod test {
     //     println!("{:?}", options);
     // }
 
+    // #[test]
+    // fn it_works() {
+    //     let options = build_rule("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/New_York:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE");
+    //     let parsed_opts = parse_options(&options);
+    //     println!("?????????????=================?????????????");
+    //     println!("{:?}", options);
+    // }
+
     #[test]
     fn it_works() {
-        let options = build_rule("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/New_York:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE");
+        let options = parse_string("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/New_York:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE");
+        let parsed_opts = parse_options(&options);
         println!("?????????????=================?????????????");
         println!("{:?}", options);
+        println!("?????????????=== PARSED ==============?????????????");
+        println!("{:?}", parsed_opts);
+        let all = crate::rrule::RRule::new(parsed_opts).all();
+        println!("------------------ alll ----------------");
+        println!("{:?}", all);
     }
 }

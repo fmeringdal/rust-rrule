@@ -12,6 +12,7 @@ mod masks;
 mod monthinfo;
 mod poslist;
 mod rrulestr;
+mod parse_options;
 mod yearinfo;
 
 pub mod options;
