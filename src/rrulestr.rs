@@ -489,30 +489,29 @@ fn build_rule(s: &str) -> RRuleSet {
 mod test {
     use super::*;
 
-    // #[test]
-    // fn it_works_2() {
-    //     let options = build_rule("DTSTART:19970902T090000Z\nRRULE:FREQ=YEARLY;COUNT=3\n");
-    //     println!("?????????????=================?????????????");
-    //     println!("{:?}", options);
-    // }
-
-    // #[test]
-    // fn it_works() {
-    //     let options = build_rule("RRULE:UNTIL=19990404T110000Z;DTSTART=19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE");
-    //     println!("?????????????=================?????????????");
-    //     println!("{:?}", options);
-    // }
-
-    // #[test]
-    // fn it_works() {
-    //     let options = build_rule("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/New_York:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE");
-    //     let parsed_opts = parse_options(&options);
-    //     println!("?????????????=================?????????????");
-    //     println!("{:?}", options);
-    // }
+    #[test]
+    fn it_works_1() {
+        let options = build_rule("DTSTART:19970902T090000Z\nRRULE:FREQ=YEARLY;COUNT=3\n");
+        println!("?????????????=================?????????????");
+        println!("{:?}", options);
+    }
 
     #[test]
-    fn it_works() {
+    fn it_works_2() {
+        let options = build_rule("RRULE:UNTIL=19990404T110000Z;DTSTART=19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE");
+        println!("?????????????=================?????????????");
+        println!("{:?}", options);
+    }
+
+    #[test]
+    fn it_works_3() {
+        let options = build_rule("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/New_York:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE");
+        println!("?????????????=================?????????????");
+        println!("{:?}", options);
+    }
+
+    #[test]
+    fn it_works_4() {
         let options = parse_string("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/New_York:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE");
         let parsed_opts = parse_options(&options);
         println!("?????????????=================?????????????");

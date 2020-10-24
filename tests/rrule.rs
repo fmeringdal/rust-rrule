@@ -40,7 +40,27 @@ mod test {
 
     #[test]
     fn yearly() {
-        let options = ParsedOptions::new(Frequenzy::YEARLY, &ymd_hms(1997, 9, 2, 9, 0, 0)).count(3);
+        let options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(3),
+            bymonth: vec![9],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![9],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![0],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![2],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 1,
+            byeaster: None,
+        };
         test_recurring(
             options,
             &vec![
@@ -53,9 +73,27 @@ mod test {
 
     #[test]
     fn yearly_interval() {
-        let options = ParsedOptions::new(Frequenzy::YEARLY, &ymd_hms(1997, 9, 2, 9, 0, 0))
-            .count(3)
-            .interval(2);
+        let options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(3),
+            bymonth: vec![9],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![9],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![0],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![2],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 2,
+            byeaster: None,
+        };
         test_recurring(
             options,
             &vec![
@@ -68,9 +106,27 @@ mod test {
 
     #[test]
     fn yearly_interval_large() {
-        let options = ParsedOptions::new(Frequenzy::YEARLY, &ymd_hms(1997, 9, 2, 9, 0, 0))
-            .count(3)
-            .interval(40);
+        let options = ParsedOptions {
+            freq: Frequenzy::YEARLY,
+            count: Some(3),
+            bymonth: vec![9],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![9],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![0],
+            bysecond: vec![0],
+            byyearday: vec![],
+            bymonthday: vec![2],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: None,
+            interval: 40,
+            byeaster: None,
+        };
         test_recurring(
             options,
             &vec![
