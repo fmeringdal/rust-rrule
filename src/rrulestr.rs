@@ -4,7 +4,6 @@ use crate::rrule::RRule;
 use crate::rruleset::RRuleSet;
 use chrono::prelude::*;
 use chrono::DateTime;
-use chrono_tz::{Tz, UTC};
 use once_cell::sync::Lazy;
 use regex::Regex;
 
@@ -356,7 +355,7 @@ fn parse_rdate(rdateval: &str, params: Vec<String>) -> Vec<DateTime<Utc>> {
 }
 
 
-pub fn build_rule(s: &str) -> RRuleSet {
+pub fn build_rruleset(s: &str) -> RRuleSet {
     let ParsedInput {
         mut rrule_vals,
         rdate_vals,
@@ -411,21 +410,38 @@ pub fn build_rule(s: &str) -> RRuleSet {
     rset
 }
 
+pub fn build_rrule(s: &str) -> RRule {
+    let ParsedInput {
+        mut rrule_vals,
+        tzid,
+        dtstart,
+        ..
+    } = parse_input(s);
+
+    rrule_vals[0].tzid = tzid;
+    rrule_vals[0].dtstart = dtstart;
+
+    let parsed_opts = parse_options(&rrule_vals[0]);
+
+    RRule::new(parsed_opts)
+}
+
 
 #[cfg(test)]
 mod test {
     use super::*;
+    use chrono_tz::{Tz, UTC};
 
     #[test]
     fn it_works_1() {
-        let options = build_rule("DTSTART:19970902T090000Z\nRRULE:FREQ=YEARLY;COUNT=3\n");
+        let options = build_rruleset("DTSTART:19970902T090000Z\nRRULE:FREQ=YEARLY;COUNT=3\n");
         println!("?????????????=================?????????????");
         println!("{:?}", options);
     }
 
     #[test]
     fn it_works_2() {
-        let mut options = build_rule("RRULE:UNTIL=19990404T110000Z;DTSTART=19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE");
+        let mut options = build_rruleset("RRULE:UNTIL=19990404T110000Z;DTSTART=19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE");
         println!("?????????????=================?????????????");
         println!("{:?}", options);
         println!("?????????????=== ALLL    ==============?????????????");
@@ -434,7 +450,7 @@ mod test {
 
     #[test]
     fn it_works_3() {
-        let mut options = build_rule("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/Denver:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE");
+        let mut options = build_rruleset("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/Denver:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE");
         println!("?????????????=================?????????????");
         println!("{:?}", options);
         let tzid: Tz = "America/Denver".parse().unwrap();

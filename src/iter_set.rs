@@ -4,7 +4,7 @@ use crate::options::*;
 use crate::poslist::*;
 use chrono::offset::TimeZone;
 use chrono::prelude::*;
-use chrono::{DateTime, Utc};
+use chrono::DateTime;
 use chrono_tz::*;
 
 pub trait IterResult {

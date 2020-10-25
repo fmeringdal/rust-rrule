@@ -19,14 +19,16 @@ let mut rrule_set = build_rule("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=Americ
 let occurences = rrule_set.all();
 ```
 
+# Documentation and more examples
+
+[Documentation and more examples](https://docs.rs/rrule)
+
 # Inspired by
 
 - [python-dateutil library](http://labix.org/python-dateutil/)
 - [rrule.js](https://github.com/jakubroztocil/rrule)
 
-# todos
+# Todos
 
 - tests for minutes and seconds FREQ
-- timezone
-- subseconds
 - cache

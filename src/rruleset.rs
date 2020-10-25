@@ -1,6 +1,5 @@
 use crate::iter::*;
 use crate::iter_set::{iter_v2, IterResult};
-use crate::options::*;
 use crate::rrule::*;
 use chrono::prelude::*;
 use chrono_tz::{Tz, UTC};
@@ -93,7 +92,7 @@ impl<'a> RRuleSetIter<'a> {
 
     pub fn eval_exdate(&mut self, after: &DateTime<Tz>, before: &DateTime<Tz>) {
         for rrule in self.rrule_set.exrule.iter_mut() {
-            for date in rrule.between(after, before, true) {
+            for date in rrule.between(after.clone(), before.clone(), true) {
                 self.exdate_hash.insert(date.timestamp(), ());
             }
         }
@@ -238,6 +237,7 @@ impl RRuleSet {
 #[cfg(test)]
 mod test_iter_set {
     use super::*;
+    use crate::options::*;
 
     fn ymd_hms(
         year: i32,
