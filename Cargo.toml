@@ -7,7 +7,7 @@ authors = ["Fredrik Meringdal"]
 edition = "2018"
 
 keywords = ["calendar", "rrule", "ical"]
-categories = ["Date and time"]
+categories = ["date-and-time"]
 
 [dependencies]
 chrono = "0.4.19"
