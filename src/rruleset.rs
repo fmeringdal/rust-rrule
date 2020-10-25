@@ -21,7 +21,7 @@ struct RRuleSetIter<'a> {
 }
 
 impl<'a> RRuleSetIter<'a> {
-    pub fn new(rrule_set: &'a mut RRuleSet) -> Self {
+    pub fn all(rrule_set: &'a mut RRuleSet) -> Self {
         let iter_args = IterArgs {
             inc: true,
             before: None,
@@ -37,7 +37,7 @@ impl<'a> RRuleSetIter<'a> {
         }
     }
 
-    pub fn from_before(rrule_set: &'a mut RRuleSet, dt: DateTime<Tz>, inc: bool) -> Self {
+    pub fn before(rrule_set: &'a mut RRuleSet, dt: DateTime<Tz>, inc: bool) -> Self {
         let iter_args = IterArgs {
             inc,
             before: None,
@@ -53,7 +53,7 @@ impl<'a> RRuleSetIter<'a> {
         }
     }
 
-    pub fn from_after(rrule_set: &'a mut RRuleSet, dt: DateTime<Tz>, inc: bool) -> Self {
+    pub fn after(rrule_set: &'a mut RRuleSet, dt: DateTime<Tz>, inc: bool) -> Self {
         let iter_args = IterArgs {
             inc,
             before: None,
@@ -69,7 +69,7 @@ impl<'a> RRuleSetIter<'a> {
         }
     }
 
-    pub fn from_between(
+    pub fn between(
         rrule_set: &'a mut RRuleSet,
         after: DateTime<Tz>,
         before: DateTime<Tz>,
@@ -98,10 +98,10 @@ impl<'a> RRuleSetIter<'a> {
         }
     }
 
-    fn accept_2(&mut self, date: DateTime<Tz>) -> bool {
+    fn accept_when_unknown_bounds(&mut self, date: DateTime<Tz>) -> bool {
         let dt = date.timestamp();
         if !self.exdate_hash.contains_key(&dt) {
-            self.eval_exdate(&UTC.timestamp(dt - 1, 0), &UTC.timestamp(dt + 1, 0));
+            self.eval_exdate(&date.timezone().timestamp(dt - 1, 0), &date.timezone().timestamp(dt + 1, 0));
             if !self.exdate_hash.contains_key(&dt) {
                 self.exdate_hash.insert(dt, ());
                 return self.iter_res.accept(date.clone());
@@ -111,13 +111,11 @@ impl<'a> RRuleSetIter<'a> {
         true
     }
 
-    fn accept_1(&mut self, date: DateTime<Tz>) -> bool {
+    fn accept_when_known_bounds(&mut self, date: DateTime<Tz>) -> bool {
         let dt = date.timestamp();
         if !self.exdate_hash.contains_key(&dt) {
-            if !self.exdate_hash.contains_key(&dt) {
-                self.exdate_hash.insert(dt, ());
-                return self.iter_res.accept(date.clone());
-            }
+            self.exdate_hash.insert(dt, ());
+            return self.iter_res.accept(date.clone());
         }
 
         true
@@ -161,8 +159,8 @@ impl<'a> RRuleSetIter<'a> {
 impl<'a> IterResult for RRuleSetIter<'a> {
     fn accept(&mut self, date: DateTime<Tz>) -> bool {
         match &self.iter_res.method {
-            QueryMethodTypes::Between => self.accept_1(date),
-            _ => self.accept_2(date),
+            QueryMethodTypes::Between => self.accept_when_known_bounds(date),
+            _ => self.accept_when_unknown_bounds(date),
         }
     }
 
@@ -199,7 +197,7 @@ impl RRuleSet {
     }
 
     pub fn all(&mut self) -> Vec<DateTime<Tz>> {
-        let mut iter = RRuleSetIter::new(self);
+        let mut iter = RRuleSetIter::all(self);
         iter.iter(None)
     }
 
@@ -207,7 +205,7 @@ impl RRuleSet {
     /// The inc keyword defines what happens if dt is an occurrence.
     /// With inc == true, if dt itself is an occurrence, it will be returned.
     pub fn before(&mut self, date: DateTime<Tz>, inc: bool) -> Vec<DateTime<Tz>> {
-        let mut iter = RRuleSetIter::from_before(self, date, inc);
+        let mut iter = RRuleSetIter::before(self, date, inc);
         iter.iter(None)
     }
 
@@ -215,7 +213,7 @@ impl RRuleSet {
     /// The inc keyword defines what happens if dt is an occurrence.
     /// With inc == true, if dt itself is an occurrence, it will be returned.
     pub fn after(&mut self, date: DateTime<Tz>, inc: bool) -> Vec<DateTime<Tz>> {
-        let mut iter = RRuleSetIter::from_after(self, date, inc);
+        let mut iter = RRuleSetIter::after(self, date, inc);
         iter.iter(None)
     }
 
@@ -229,7 +227,7 @@ impl RRuleSet {
         before: DateTime<Tz>,
         inc: bool,
     ) -> Vec<DateTime<Tz>> {
-        let mut iter = RRuleSetIter::from_between(self, after, before, inc);
+        let mut iter = RRuleSetIter::between(self, after, before, inc);
         iter.iter(None)
     }
 }
