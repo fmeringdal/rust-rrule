@@ -3,6 +3,21 @@ use crate::options::*;
 use chrono::prelude::*;
 use chrono::DateTime;
 
+
+#[derive(Debug)]
+pub struct YearInfo {
+    pub yearlen: usize,
+    pub nextyearlen: usize,
+    pub yearordinal: isize,
+    pub yearweekday: usize,
+    pub mmask: Vec<usize>,
+    pub mrange: Vec<usize>,
+    pub mdaymask: Vec<isize>,
+    pub nmdaymask: Vec<isize>,
+    pub wdaymask: Vec<usize>,
+    pub wnomask: Option<Vec<usize>>,
+}
+
 fn is_leap_year(year: i32) -> bool {
     year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)
 }

@@ -1,6 +1,5 @@
 use chrono::prelude::*;
-use crate::rrulestr::PartialOptions;
-use crate::options::{ParsedOptions, Frequenzy};
+use crate::options::{ParsedOptions, Frequenzy, PartialOptions};
 
 // TODO: make this method on partialoptions struct
 pub fn parse_options(options: &PartialOptions) -> ParsedOptions {
