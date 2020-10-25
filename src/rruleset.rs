@@ -29,7 +29,7 @@ impl<'a> RRuleSetIter<'a> {
             after: None,
             dt: None,
         };
-        let iter_res = RRuleIterRes::new(QueryMethodTypes::ALL, iter_args);
+        let iter_res = RRuleIterRes::new(QueryMethodTypes::All, iter_args);
 
         Self {
             exdate_hash: HashMap::new(),
@@ -45,7 +45,7 @@ impl<'a> RRuleSetIter<'a> {
             after: None,
             dt: Some(dt),
         };
-        let iter_res = RRuleIterRes::new(QueryMethodTypes::BEFORE, iter_args);
+        let iter_res = RRuleIterRes::new(QueryMethodTypes::Before, iter_args);
 
         Self {
             exdate_hash: HashMap::new(),
@@ -61,7 +61,7 @@ impl<'a> RRuleSetIter<'a> {
             after: None,
             dt: Some(dt),
         };
-        let iter_res = RRuleIterRes::new(QueryMethodTypes::AFTER, iter_args);
+        let iter_res = RRuleIterRes::new(QueryMethodTypes::After, iter_args);
 
         Self {
             exdate_hash: HashMap::new(),
@@ -82,7 +82,7 @@ impl<'a> RRuleSetIter<'a> {
             after: Some(after),
             dt: None,
         };
-        let iter_res = RRuleIterRes::new(QueryMethodTypes::BETWEEN, iter_args);
+        let iter_res = RRuleIterRes::new(QueryMethodTypes::Between, iter_args);
 
         Self {
             exdate_hash: HashMap::new(),
@@ -133,7 +133,7 @@ impl<'a> RRuleSetIter<'a> {
         }
 
         match &self.iter_res.method {
-            QueryMethodTypes::BETWEEN => {
+            QueryMethodTypes::Between => {
                 self.eval_exdate(
                     &self.iter_res.args.after.unwrap().clone(),
                     &self.iter_res.args.before.unwrap().clone(),
@@ -162,7 +162,7 @@ impl<'a> RRuleSetIter<'a> {
 impl<'a> IterResult for RRuleSetIter<'a> {
     fn accept(&mut self, date: DateTime<Tz>) -> bool {
         match &self.iter_res.method {
-            QueryMethodTypes::BETWEEN => self.accept_1(date),
+            QueryMethodTypes::Between => self.accept_1(date),
             _ => self.accept_2(date),
         }
     }
@@ -233,42 +233,6 @@ impl RRuleSet {
         let mut iter = RRuleSetIter::from_between(self, after, before, inc);
         iter.iter(None)
     }
-
-    pub fn value_of(&mut self) -> Vec<String> {
-        let mut result = vec![];
-
-        if !self.rrule.is_empty() && self.dtstart.is_some() {
-            result.push(String::from("yeah"));
-        }
-
-        for rrule in &self.rrule {
-            // result = result.concat(rrule.toString().split('\n'))
-            result.push(String::from("test"));
-        }
-
-        for exrule in &self.exrule {
-            //result = result.concat(
-            //exrule.toString().split('\n')
-            //.map(line => line.replace(/^RRULE:/, 'EXRULE:'))
-            //.filter(line => !/^DTSTART/.test(line))
-            //)
-            result.push(String::from("hi"));
-        }
-
-        if !self.rdate.is_empty() {
-            //result.push(
-            //rdatesToString('RDATE', this._rdate, this.tzid())
-            //)
-        }
-
-        if !self.exdate.is_empty() {
-            //result.push(
-            //rdatesToString('EXDATE', this._exdate, this.tzid())
-            //)
-        }
-
-        result
-    }
 }
 
 #[cfg(test)]
@@ -331,7 +295,7 @@ mod test_iter_set {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -354,7 +318,7 @@ mod test_iter_set {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -424,7 +388,7 @@ mod test_iter_set {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -462,7 +426,7 @@ mod test_iter_set {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -504,7 +468,7 @@ mod test_iter_set {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -528,7 +492,7 @@ mod test_iter_set {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -566,7 +530,7 @@ mod test_iter_set {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -590,7 +554,7 @@ mod test_iter_set {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -624,7 +588,7 @@ mod test_iter_set {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -648,7 +612,7 @@ mod test_iter_set {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -682,7 +646,7 @@ mod test_iter_set {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -706,7 +670,7 @@ mod test_iter_set {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -748,7 +712,7 @@ mod test_iter_set {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };

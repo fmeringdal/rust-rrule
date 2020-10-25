@@ -1,5 +1,6 @@
 use chrono::prelude::*;
 use crate::options::{ParsedOptions, Frequenzy, PartialOptions};
+use chrono_tz::{Tz, UTC};
 
 // TODO: make this method on partialoptions struct
 pub fn parse_options(options: &PartialOptions) -> ParsedOptions {
@@ -7,6 +8,12 @@ pub fn parse_options(options: &PartialOptions) -> ParsedOptions {
     default_partial_options.interval = Some(1);
     default_partial_options.freq = Some(Frequenzy::Yearly);
     default_partial_options.wkst = Some(0);
+
+    let tzid: Tz = if options.tzid.is_some() {
+        options.tzid.clone().unwrap().parse().unwrap()
+    } else {
+        UTC
+    };
 
     let mut partial_options = PartialOptions::concat(&default_partial_options, options);
 
@@ -43,7 +50,7 @@ pub fn parse_options(options: &PartialOptions) -> ParsedOptions {
     ) { 
         match &freq {
             Frequenzy::Yearly => {
-                if let Some(bymonth) = partial_options.bymonth {
+                if partial_options.bymonth.is_none() {
                     partial_options.bymonth = Some(vec![partial_options.dtstart.unwrap().month() as usize]);
                 }
                 partial_options.bymonthday = Some(vec![partial_options.dtstart.unwrap().day() as isize]);
@@ -103,7 +110,7 @@ pub fn parse_options(options: &PartialOptions) -> ParsedOptions {
     interval: partial_options.interval.unwrap(),
     count: partial_options.count,
     until: partial_options.until,
-    tzid: partial_options.tzid,
+    tzid,
     dtstart: partial_options.dtstart.unwrap(),
     wkst: partial_options.wkst.unwrap(),
     bysetpos: partial_options.bysetpos.unwrap_or(vec![]),

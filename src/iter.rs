@@ -2,17 +2,16 @@ use crate::datetime::*;
 use crate::iter_set::IterResult;
 use crate::iterinfo::*;
 use crate::options::*;
-use crate::poslist::*;
 use crate::yearinfo::*;
 use chrono::prelude::*;
 use chrono::Duration;
 use chrono_tz::Tz;
 
 pub enum QueryMethodTypes {
-    ALL,
-    BETWEEN,
-    BEFORE,
-    AFTER,
+    All,
+    Between,
+    Before,
+    After,
 }
 
 pub struct IterArgs {
@@ -34,17 +33,17 @@ pub struct RRuleIterRes {
 impl RRuleIterRes {
     pub fn new(method: QueryMethodTypes, args: IterArgs) -> Self {
         let (max_date, min_date) = match method {
-            QueryMethodTypes::BETWEEN if args.inc => {
+            QueryMethodTypes::Between if args.inc => {
                 (Some(args.before.unwrap()), Some(args.after.unwrap()))
             }
-            QueryMethodTypes::BETWEEN => (
+            QueryMethodTypes::Between => (
                 Some(args.before.unwrap() - Duration::milliseconds(1)),
                 Some(args.after.unwrap() + Duration::milliseconds(1)),
             ),
-            QueryMethodTypes::BEFORE if args.inc => (Some(args.dt.unwrap()), None),
-            QueryMethodTypes::BEFORE => (Some(args.dt.unwrap() - Duration::milliseconds(1)), None),
-            QueryMethodTypes::AFTER if args.inc => (None, Some(args.dt.unwrap())),
-            QueryMethodTypes::AFTER => (None, Some(args.dt.unwrap() + Duration::milliseconds(1))),
+            QueryMethodTypes::Before if args.inc => (Some(args.dt.unwrap()), None),
+            QueryMethodTypes::Before => (Some(args.dt.unwrap() - Duration::milliseconds(1)), None),
+            QueryMethodTypes::After if args.inc => (None, Some(args.dt.unwrap())),
+            QueryMethodTypes::After => (None, Some(args.dt.unwrap() + Duration::milliseconds(1))),
             _ => (None, None),
         };
 
@@ -71,11 +70,11 @@ impl IterResult for RRuleIterRes {
         let too_late = self.max_date.is_some() && date > self.max_date.unwrap();
 
         match self.method {
-            QueryMethodTypes::BETWEEN if too_early => true,
-            QueryMethodTypes::BETWEEN if too_late => false,
-            QueryMethodTypes::BEFORE if too_late => false,
-            QueryMethodTypes::AFTER if too_early => true,
-            QueryMethodTypes::AFTER => {
+            QueryMethodTypes::Between if too_early => true,
+            QueryMethodTypes::Between if too_late => false,
+            QueryMethodTypes::Before if too_late => false,
+            QueryMethodTypes::After if too_early => true,
+            QueryMethodTypes::After => {
                 self.add(date);
                 false
             }
@@ -86,7 +85,7 @@ impl IterResult for RRuleIterRes {
     // before and after returns only one date whereas all and between an array
     fn get_value(&self) -> Vec<DateTime<Tz>> {
         match self.method {
-            QueryMethodTypes::BETWEEN | QueryMethodTypes::ALL => self.result.clone(),
+            QueryMethodTypes::Between | QueryMethodTypes::All => self.result.clone(),
             _ => {
                 if self.result.is_empty() {
                     return vec![];
@@ -232,11 +231,7 @@ pub fn remove_filtered_days(
 pub fn build_timeset(options: &ParsedOptions) -> Vec<Time> {
     let millisecond_mod = (options.dtstart.timestamp_millis() & 1000) as usize;
 
-    if !(options.freq == Frequenzy::Daily
-        || options.freq == Frequenzy::Monthly
-        || options.freq == Frequenzy::Weekly
-        || options.freq == Frequenzy::Yearly)
-    {
+    if options.freq > Frequenzy::Daily {
         return vec![];
     }
 
@@ -257,11 +252,7 @@ pub fn make_timeset(
     counter_date: &DateTime<Utc>,
     options: &ParsedOptions,
 ) -> Vec<Time> {
-    if options.freq == Frequenzy::Daily
-        || options.freq == Frequenzy::Monthly
-        || options.freq == Frequenzy::Weekly
-        || options.freq == Frequenzy::Yearly
-    {
+    if options.freq < Frequenzy::Hourly {
         return build_timeset(options);
     }
 

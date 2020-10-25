@@ -56,7 +56,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -89,7 +89,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 2,
             byeaster: None,
         };
@@ -122,7 +122,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 40,
             byeaster: None,
         };
@@ -155,7 +155,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: Some(0),
         };
@@ -188,7 +188,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: Some(1),
         };
@@ -221,7 +221,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: Some(-2),
         };
@@ -254,7 +254,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -287,7 +287,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -320,7 +320,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -353,7 +353,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -386,7 +386,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -419,7 +419,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -452,7 +452,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -485,7 +485,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -518,7 +518,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -551,7 +551,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -584,7 +584,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -617,7 +617,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -651,7 +651,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -685,7 +685,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -719,7 +719,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -752,7 +752,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -785,7 +785,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -818,7 +818,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -851,7 +851,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -884,7 +884,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -917,7 +917,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -950,7 +950,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -983,7 +983,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1016,7 +1016,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1049,7 +1049,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1082,7 +1082,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1115,7 +1115,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1148,7 +1148,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1181,7 +1181,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 2,
             byeaster: None,
         };
@@ -1214,7 +1214,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 18,
             byeaster: None,
         };
@@ -1247,7 +1247,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: Some(0),
         };
@@ -1280,7 +1280,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: Some(1),
         };
@@ -1313,7 +1313,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: Some(-2),
         };
@@ -1346,7 +1346,7 @@ mod test {
             bynmonthday: vec![-1],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1380,7 +1380,7 @@ mod test {
             bynmonthday: vec![-1],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1414,7 +1414,7 @@ mod test {
             bynmonthday: vec![-1, -3],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1450,7 +1450,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1483,7 +1483,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1516,7 +1516,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1549,7 +1549,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1582,7 +1582,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1615,7 +1615,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1648,7 +1648,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1681,7 +1681,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1714,7 +1714,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1747,7 +1747,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1780,7 +1780,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1813,7 +1813,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1847,7 +1847,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1881,7 +1881,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1915,7 +1915,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1950,7 +1950,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -1985,7 +1985,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2018,7 +2018,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2051,7 +2051,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2084,7 +2084,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2117,7 +2117,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2150,7 +2150,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2183,7 +2183,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2216,7 +2216,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2249,7 +2249,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2282,7 +2282,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2315,7 +2315,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2348,7 +2348,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2381,7 +2381,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 2,
             byeaster: None,
         };
@@ -2414,7 +2414,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 20,
             byeaster: None,
         };
@@ -2447,7 +2447,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2483,7 +2483,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2516,7 +2516,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2549,7 +2549,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2583,7 +2583,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2616,7 +2616,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2649,7 +2649,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2682,7 +2682,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2715,7 +2715,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2749,7 +2749,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2783,7 +2783,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2817,7 +2817,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2850,7 +2850,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2883,7 +2883,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2916,7 +2916,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2949,7 +2949,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -2982,7 +2982,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3015,7 +3015,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3048,7 +3048,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3081,7 +3081,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3114,7 +3114,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3147,7 +3147,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3180,7 +3180,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3215,7 +3215,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3248,7 +3248,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3281,7 +3281,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 2,
             byeaster: None,
         };
@@ -3314,7 +3314,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 92,
             byeaster: None,
         };
@@ -3347,7 +3347,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3380,7 +3380,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3413,7 +3413,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3446,7 +3446,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3479,7 +3479,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3512,7 +3512,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3545,7 +3545,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3578,7 +3578,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3612,7 +3612,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3646,7 +3646,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3680,7 +3680,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3715,7 +3715,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3750,7 +3750,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3783,7 +3783,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3816,7 +3816,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3849,7 +3849,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3882,7 +3882,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3915,7 +3915,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3948,7 +3948,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -3981,7 +3981,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4014,7 +4014,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4047,7 +4047,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4080,7 +4080,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4113,7 +4113,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4146,7 +4146,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 2,
             byeaster: None,
         };
@@ -4179,7 +4179,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 769,
             byeaster: None,
         };
@@ -4212,7 +4212,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4245,7 +4245,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4278,7 +4278,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4311,7 +4311,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 5,
             byeaster: None,
         };
@@ -4346,7 +4346,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4379,7 +4379,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4412,7 +4412,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4445,7 +4445,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 12,
             byeaster: None,
         };
@@ -4483,7 +4483,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 12,
             byeaster: None,
         };
@@ -4521,7 +4521,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4555,7 +4555,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4588,7 +4588,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4621,7 +4621,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4654,7 +4654,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4687,7 +4687,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4720,7 +4720,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4753,7 +4753,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4786,7 +4786,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4819,7 +4819,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4852,7 +4852,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4885,7 +4885,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4918,7 +4918,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4953,7 +4953,7 @@ mod test {
             bynmonthday: vec![],
             until: None,
             wkst: 0,
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -4986,7 +4986,7 @@ mod test {
             bymonthday: vec![],
             bynweekday: vec![],
             bynmonthday: vec![],
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -5019,7 +5019,7 @@ mod test {
             bymonthday: vec![],
             bynweekday: vec![],
             bynmonthday: vec![],
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -5052,7 +5052,7 @@ mod test {
             bymonthday: vec![],
             bynweekday: vec![],
             bynmonthday: vec![],
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -5078,7 +5078,7 @@ mod test {
             bymonthday: vec![],
             bynweekday: vec![],
             bynmonthday: vec![],
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -5104,7 +5104,7 @@ mod test {
             bymonthday: vec![],
             bynweekday: vec![],
             bynmonthday: vec![],
-            tzid: None,
+            tzid: UTC,
             interval: 1,
             byeaster: None,
         };
@@ -5137,7 +5137,7 @@ mod test {
             bymonthday: vec![],
             bynweekday: vec![],
             bynmonthday: vec![],
-            tzid: None,
+            tzid: UTC,
             interval: 2,
             byeaster: None,
         };
@@ -5170,7 +5170,7 @@ mod test {
             bymonthday: vec![],
             bynweekday: vec![],
             bynmonthday: vec![],
-            tzid: None,
+            tzid: UTC,
             interval: 2,
             byeaster: None,
         };

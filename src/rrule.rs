@@ -23,7 +23,7 @@ impl RRule {
             after: None,
             dt: None,
         };
-        let mut iter_res = RRuleIterRes::new(QueryMethodTypes::ALL, iter_args);
+        let mut iter_res = RRuleIterRes::new(QueryMethodTypes::All, iter_args);
 
         let res = iter_v2(&mut iter_res, &mut self.options);
         res
@@ -41,7 +41,7 @@ impl RRule {
             after: Some(after.clone()),
             dt: None,
         };
-        let mut iter_res = RRuleIterRes::new(QueryMethodTypes::ALL, iter_args);
+        let mut iter_res = RRuleIterRes::new(QueryMethodTypes::All, iter_args);
 
         let res = iter_v2(&mut iter_res, &mut self.options);
         res

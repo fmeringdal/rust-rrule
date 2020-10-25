@@ -1,4 +1,5 @@
 use chrono::prelude::*;
+use chrono_tz::Tz;
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub enum Frequenzy {
@@ -17,7 +18,7 @@ pub struct ParsedOptions {
     pub interval: usize,
     pub count: Option<u32>,
     pub until: Option<DateTime<Utc>>,
-    pub tzid: Option<String>,
+    pub tzid: Tz,
     pub dtstart: DateTime<Utc>,
     pub wkst: usize,
     pub bysetpos: Vec<isize>,

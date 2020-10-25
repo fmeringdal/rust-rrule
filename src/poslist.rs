@@ -2,6 +2,7 @@ use crate::datetime::*;
 use crate::iterinfo::*;
 use crate::yearinfo::*;
 use chrono::prelude::*;
+use chrono_tz::Tz;
 
 pub fn from_ordinal(ordinal: isize) -> DateTime<Utc> {
     let timestamp = ordinal * 24 * 60 * 60;
@@ -16,8 +17,9 @@ pub fn build_poslist(
     end: usize,
     ii: &IterInfo,
     dayset: &Vec<Option<isize>>,
-) -> Vec<DateTime<Utc>> {
-    let mut poslist: Vec<DateTime<Utc>> = vec![];
+    tz: &Tz
+) -> Vec<DateTime<Tz>> {
+    let mut poslist = vec![];
 
     for j in 0..bysetpost.len() {
         let daypos;
@@ -48,8 +50,7 @@ pub fn build_poslist(
         }
 
         let date = from_ordinal(ii.yearordinal().unwrap() + i);
-        // const res = dateutil.combine(date, time)
-        let res = Utc.ymd(date.year(), date.month(), date.day()).and_hms(
+        let res = tz.ymd(date.year(), date.month(), date.day()).and_hms(
             timeset[timepos as usize].hour as u32,
             timeset[timepos as usize].minute as u32,
             timeset[timepos as usize].second as u32,

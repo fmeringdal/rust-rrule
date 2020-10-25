@@ -4,7 +4,7 @@ use crate::rrule::RRule;
 use crate::rruleset::RRuleSet;
 use chrono::prelude::*;
 use chrono::DateTime;
-use chrono_tz::Tz;
+use chrono_tz::{Tz, UTC};
 use once_cell::sync::Lazy;
 use regex::Regex;
 
@@ -13,7 +13,7 @@ static DATESTR_RE: Lazy<Regex> =
 static DTSTART_RE: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"(?m)DTSTART(?:;TZID=([^:=]+?))?(?::|=)([^;\s]+)").unwrap());
 
-static RRUle_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?m)^(?:RRULE|EXRULE):").unwrap());
+static RRULE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?m)^(?:RRULE|EXRULE):").unwrap());
 
 
 
@@ -75,7 +75,7 @@ fn parse_rrule(line: &str) -> PartialOptions {
 
     let mut options = parse_dtstart(stripped_line).unwrap_or(PartialOptions::new());
 
-    let attrs = RRUle_RE.replace(line, "");
+    let attrs = RRULE_RE.replace(line, "");
     let attrs = attrs.split(";");
 
     for attr in attrs {
@@ -434,9 +434,14 @@ mod test {
 
     #[test]
     fn it_works_3() {
-        let options = build_rule("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/New_York:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE");
+        let mut options = build_rule("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/Denver:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE");
         println!("?????????????=================?????????????");
         println!("{:?}", options);
+        let tzid: Tz = "America/Denver".parse().unwrap();
+        println!("?????????????=== ALLL    ==============?????????????");
+        println!("{:?}", options.all().into_iter().take(2).collect::<Vec<DateTime<Tz>>>());
+        println!("{:?}", options.all().iter().take(2).map(|d| d.with_timezone(&UTC)).collect::<Vec<DateTime<Tz>>>());
+        println!("Diff : {:?}", options.all()[0].timestamp() - options.all()[0].with_timezone(&UTC).timestamp());
     }
 
     #[test]
