@@ -1,100 +1,151 @@
-use crate::datetime::*;
-use crate::iter_set::IterResult;
-use crate::iterinfo::*;
+mod yearinfo;
+use yearinfo::get_weekday_val;
+
+mod monthinfo;
+
+mod iterinfo;
+use iterinfo::IterInfo;
+
+mod poslist;
+use poslist::build_poslist;
+
 use crate::options::*;
-use crate::yearinfo::*;
+use crate::datetime::{Time, from_ordinal};
+use chrono::offset::TimeZone;
 use chrono::prelude::*;
-use chrono::Duration;
-use chrono_tz::Tz;
+use chrono::{DateTime, Duration};
+use chrono_tz::*;
 
-pub enum QueryMethodTypes {
-    All,
-    Between,
-    Before,
-    After,
+pub trait IterResult {
+    fn accept(&mut self, date: DateTime<Tz>) -> bool;
+    fn get_value(&self) -> Vec<DateTime<Tz>>;
 }
 
-pub struct IterArgs {
-    pub inc: bool,
-    pub before: Option<DateTime<Tz>>,
-    pub after: Option<DateTime<Tz>>,
-    pub dt: Option<DateTime<Tz>>,
-}
+pub fn iter<T: IterResult>(
+    iter_result: &mut T,
+    options: &mut ParsedOptions,
+) -> Vec<DateTime<Tz>> {
 
-pub struct RRuleIterRes {
-    pub method: QueryMethodTypes,
-    pub args: IterArgs,
-    pub min_date: Option<DateTime<Tz>>,
-    pub max_date: Option<DateTime<Tz>>,
-    pub result: Vec<DateTime<Tz>>,
-    pub total: usize,
-}
-
-impl RRuleIterRes {
-    pub fn new(method: QueryMethodTypes, args: IterArgs) -> Self {
-        let (max_date, min_date) = match method {
-            QueryMethodTypes::Between if args.inc => {
-                (Some(args.before.unwrap()), Some(args.after.unwrap()))
-            }
-            QueryMethodTypes::Between => (
-                Some(args.before.unwrap() - Duration::milliseconds(1)),
-                Some(args.after.unwrap() + Duration::milliseconds(1)),
-            ),
-            QueryMethodTypes::Before if args.inc => (Some(args.dt.unwrap()), None),
-            QueryMethodTypes::Before => (Some(args.dt.unwrap() - Duration::milliseconds(1)), None),
-            QueryMethodTypes::After if args.inc => (None, Some(args.dt.unwrap())),
-            QueryMethodTypes::After => (None, Some(args.dt.unwrap() + Duration::milliseconds(1))),
-            _ => (None, None),
-        };
-
-        Self {
-            method,
-            args,
-            min_date,
-            max_date,
-            total: 0,
-            result: vec![],
-        }
+    if (options.count.is_some() && options.count.unwrap() == 0) || options.interval == 0 {
+        return iter_result.get_value();
     }
 
-    pub fn add(&mut self, date: DateTime<Tz>) -> bool {
-        self.result.push(date);
-        true
-    }
-}
+    let mut counter_date = options.dtstart;
+    let mut ii = IterInfo::new(options);
+    ii.rebuild(counter_date.year() as isize, counter_date.month() as usize);
 
-impl IterResult for RRuleIterRes {
-    fn accept(&mut self, date: DateTime<Tz>) -> bool {
-        self.total += 1;
-        let too_early = self.min_date.is_some() && date < self.min_date.unwrap();
-        let too_late = self.max_date.is_some() && date > self.max_date.unwrap();
+    let mut timeset = make_timeset(&ii, &counter_date, options);
+    let mut count = match options.count {
+        Some(count) => count,
+        _ => 0,
+    };
 
-        match self.method {
-            QueryMethodTypes::Between if too_early => true,
-            QueryMethodTypes::Between if too_late => false,
-            QueryMethodTypes::Before if too_late => false,
-            QueryMethodTypes::After if too_early => true,
-            QueryMethodTypes::After => {
-                self.add(date);
-                false
-            }
-            _ => self.add(date),
-        }
-    }
+    loop {
+        let (dayset, start, end) = ii.getdayset(
+            &options.freq,
+            counter_date.year() as isize,
+            counter_date.month() as usize,
+            counter_date.day() as usize,
+        );
 
-    // before and after returns only one date whereas all and between an array
-    fn get_value(&self) -> Vec<DateTime<Tz>> {
-        match self.method {
-            QueryMethodTypes::Between | QueryMethodTypes::All => self.result.clone(),
-            _ => {
-                if self.result.is_empty() {
-                    return vec![];
+        let mut dayset = dayset
+            .into_iter()
+            .map(|s| Some(s as isize))
+            .collect::<Vec<Option<isize>>>();
+
+        let filtered = remove_filtered_days(&mut dayset, start, end, &ii, options);
+
+        if not_empty(&options.bysetpos) {
+            let poslist = build_poslist(&options.bysetpos, &timeset, start, end, &ii, &dayset, &options.tzid);
+
+            for j in 0..poslist.len() {
+                let res = poslist[j];
+                if options.until.is_some() && res > options.until.unwrap() {
+                    return iter_result.get_value();
                 }
-                vec![self.result[self.result.len() - 1].clone()]
+
+                if res >= options.dtstart {
+                    //let rezoned_date = rezone_if_needed(&res, &options);
+                    // let rezoned_date = UTC.timestamp(res.timestamp(), 0);
+
+                    if !iter_result.accept(res) {
+                        return iter_result.get_value();
+                    }
+
+                    if count > 0 {
+                        count -= 1;
+                        if count == 0 {
+                            return iter_result.get_value();
+                        }
+                    }
+                }
+            }
+        } else {
+            for j in start..end {
+                let current_day = dayset[j];
+                if current_day.is_none() {
+                    continue;
+                }
+
+                let current_day = current_day.unwrap();
+                let date = from_ordinal(ii.yearordinal().unwrap() + current_day);
+                for k in 0..timeset.len() {
+                    let res = options.tzid.ymd(date.year(), date.month(), date.day()).and_hms(
+                        timeset[k].hour as u32,
+                        timeset[k].minute as u32,
+                        timeset[k].second as u32,
+                    );
+                    if options.until.is_some() && res > options.until.unwrap() {
+                        return iter_result.get_value();
+                    }
+                    if res >= options.dtstart {
+                        //let rezoned_date = rezone_if_needed(&res, &options);
+                        // let rezoned_date = UTC.timestamp(res.timestamp(), 0);
+                        // let rezoned_date = tzid.from_utc_datetime(&res.naive_utc());
+                        // let rezoned_date = res.with_timezone(&options.tzid);
+
+                        if !iter_result.accept(res) {
+                            return iter_result.get_value();
+                        }
+                        if count > 0 {
+                            count -= 1;
+                            if count == 0 {
+                                return iter_result.get_value();
+                            }
+                        }
+                    }
+                }
             }
         }
+
+        if options.interval == 0 {
+            return iter_result.get_value();
+        }
+
+        // Handle frequency and interval
+        counter_date = increment_counter_date(counter_date, options, filtered);
+
+        if counter_date.year() > 2200 {
+            return iter_result.get_value();
+        }
+
+        if options.freq == Frequenzy::Hourly
+            || options.freq == Frequenzy::Minutely
+            || options.freq == Frequenzy::Secondly
+        {
+            timeset = ii.gettimeset(
+                &options.freq,
+                counter_date.hour() as usize,
+                counter_date.minute() as usize,
+                counter_date.second() as usize,
+                0,
+            );
+        }
+
+        ii.rebuild(counter_date.year() as isize, counter_date.month() as usize);
     }
 }
+
 
 pub fn increment_counter_date(
     counter_date: DateTime<Utc>,

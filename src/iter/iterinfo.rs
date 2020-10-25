@@ -1,8 +1,8 @@
 use crate::datetime::*;
 use crate::easter::*;
-use crate::monthinfo::*;
+use crate::iter::monthinfo::{MonthInfo, rebuild_month};
+use crate::iter::yearinfo::{YearInfo, rebuild_year};
 use crate::options::*;
-use crate::yearinfo::*;
 use chrono::prelude::*;
 
 pub struct IterInfo<'a> {

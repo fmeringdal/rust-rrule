@@ -1,7 +1,7 @@
 use crate::masks::MASKS;
 use crate::options::*;
 use chrono::prelude::*;
-use chrono::DateTime;
+use crate::datetime::to_ordinal;
 
 
 #[derive(Debug)]
@@ -27,10 +27,6 @@ fn get_year_len(year: i32) -> usize {
         return 366;
     }
     365
-}
-
-pub fn to_ordinal(date: &DateTime<Utc>) -> isize {
-    (date.timestamp() / 60 / 60 / 24) as isize
 }
 
 pub fn get_weekday_val(wk: &Weekday) -> usize {

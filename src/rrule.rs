@@ -1,5 +1,5 @@
-use crate::iter::*;
-use crate::iter_set::iter_v2;
+use crate::iter::iter;
+use crate::rrule_iter::*;
 use crate::options::*;
 use chrono::prelude::*;
 use chrono_tz::Tz;
@@ -25,7 +25,7 @@ impl RRule {
         };
         let mut iter_res = RRuleIterRes::new(QueryMethodTypes::All, iter_args);
 
-        let res = iter_v2(&mut iter_res, &mut self.options);
+        let res = iter(&mut iter_res, &mut self.options);
         res
     }
 
@@ -38,7 +38,7 @@ impl RRule {
         };
         let mut iter_res = RRuleIterRes::new(QueryMethodTypes::Before, iter_args);
 
-        iter_v2(&mut iter_res, &mut self.options)
+        iter(&mut iter_res, &mut self.options)
     }
 
     pub fn after(&mut self, dt: DateTime<Tz>, inc: bool) -> Vec<DateTime<Tz>> {
@@ -50,7 +50,7 @@ impl RRule {
         };
         let mut iter_res = RRuleIterRes::new(QueryMethodTypes::After, iter_args);
 
-        iter_v2(&mut iter_res, &mut self.options)
+        iter(&mut iter_res, &mut self.options)
     }
 
     pub fn between(
@@ -67,6 +67,6 @@ impl RRule {
         };
         let mut iter_res = RRuleIterRes::new(QueryMethodTypes::Between, iter_args);
 
-        iter_v2(&mut iter_res, &mut self.options)
+        iter(&mut iter_res, &mut self.options)
     }
 }
