@@ -38,9 +38,7 @@ extern crate once_cell;
 extern crate regex;
 
 mod datetime;
-mod easter;
 mod iter;
-mod masks;
 mod parse_options;
 mod options;
 mod rrulestr;

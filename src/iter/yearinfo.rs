@@ -1,7 +1,8 @@
-use crate::masks::MASKS;
+use crate::iter::masks::MASKS;
 use crate::options::*;
 use chrono::prelude::*;
-use crate::datetime::to_ordinal;
+use crate::datetime::{to_ordinal, get_year_len, get_weekday_val};
+use crate::iter::utils::pymod;
 
 
 #[derive(Debug)]
@@ -16,29 +17,6 @@ pub struct YearInfo {
     pub nmdaymask: Vec<isize>,
     pub wdaymask: Vec<usize>,
     pub wnomask: Option<Vec<usize>>,
-}
-
-fn is_leap_year(year: i32) -> bool {
-    year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)
-}
-
-fn get_year_len(year: i32) -> usize {
-    if is_leap_year(year) {
-        return 366;
-    }
-    365
-}
-
-pub fn get_weekday_val(wk: &Weekday) -> usize {
-    match wk {
-        Weekday::Mon => 0,
-        Weekday::Tue => 1,
-        Weekday::Wed => 2,
-        Weekday::Thu => 3,
-        Weekday::Fri => 4,
-        Weekday::Sat => 5,
-        Weekday::Sun => 6,
-    }
 }
 
 pub struct BaseMasks {
@@ -72,15 +50,6 @@ fn base_year_masks(year: i32) -> BaseMasks {
         mrange: masks.m366range,
         wdaymask: Vec::from(&masks.wday[wday..]),
     }
-}
-
-pub fn pymod(a: isize, b: isize) -> isize {
-    let r = a % b;
-    // If r and b differ in sign, add b to wrap the result to the correct sign.
-    if (r > 0 && b < 0) || (r < 0 && b > 0) {
-        return r + b;
-    }
-    r
 }
 
 pub fn rebuild_year(year: i32, options: &ParsedOptions) -> YearInfo {

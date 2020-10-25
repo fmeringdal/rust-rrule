@@ -2,7 +2,7 @@ use chrono::prelude::*;
 use crate::options::{ParsedOptions, Frequenzy, PartialOptions};
 use chrono_tz::{Tz, UTC};
 
-// TODO: make this method on partialoptions struct
+// TODO: Validation
 pub fn parse_options(options: &PartialOptions) -> ParsedOptions {
     let mut default_partial_options = PartialOptions::new();
     default_partial_options.interval = Some(1);

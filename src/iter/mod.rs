@@ -1,16 +1,15 @@
 mod yearinfo;
-use yearinfo::get_weekday_val;
-
 mod monthinfo;
-
 mod iterinfo;
 use iterinfo::IterInfo;
-
 mod poslist;
 use poslist::build_poslist;
+mod easter;
+mod masks;
+mod utils;
 
 use crate::options::*;
-use crate::datetime::{Time, from_ordinal};
+use crate::datetime::{Time, from_ordinal, get_weekday_val};
 use chrono::offset::TimeZone;
 use chrono::prelude::*;
 use chrono::{DateTime, Duration};

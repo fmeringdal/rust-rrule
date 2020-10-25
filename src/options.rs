@@ -35,6 +35,7 @@ pub struct ParsedOptions {
     pub byeaster: Option<isize>,
 }
 
+// TODO: PartialOptions shouldnt have all of these fields
 #[derive(Debug, Clone)]
 pub struct PartialOptions {
     pub freq: Option<Frequenzy>,
@@ -83,6 +84,7 @@ impl PartialOptions {
         }
     }
 
+    // TODO: better name
     fn is_some_or_none<'a, T>(prop1: &'a Option<T>, prop2: &'a Option<T>) -> &'a Option<T> {
         if prop2.is_some() {
             return prop2;
