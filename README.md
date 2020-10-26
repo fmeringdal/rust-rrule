@@ -6,18 +6,18 @@
   <a href="https://crates.io/crates/rrule"><img src="https://img.shields.io/crates/v/rrule.svg" /></a>
 </p>
 
-
-# Usage
+# :zap: Quick start
 
 ```rust
 extern crate rrule;
 
 use rrule::build_rrule;
 
-let mut rrule_set = build_rule("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/New_York:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE");
+let mut rrule = build_rrule("DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3");
 
-// Get all occurrences of the rrule set
-let occurences = rrule_set.all();
+// Get all occurrences of the rrule
+let occurences = rrule.all();
+assert_eq!(occurences.len(), 3);
 ```
 
 # Documentation and more examples
