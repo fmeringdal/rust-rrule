@@ -1,10 +1,12 @@
 <h1 align="center">RRule.rs</h1>
 <p align="center">A pure Rust and efficient implementation (partial)  of recurrence rules as defined in the iCalendar RFC..</p>
 <br>
+<p align="center">
+  <a href="https://travis-ci.com/fmeringdal/rust_rrule"><img src="https://travis-ci.com/fmeringdal/rust_rrule.svg?branch=main" /></a>
+  <a href="https://codecov.io/gh/fmeringdal/rust_rrule"><img src="https://codecov.io/gh/fmeringdal/rust_rrule/branch/main/graph/badge.svg" /></a>
+  <a href="https://crates.io/crates/rrule"><img src="https://img.shields.io/crates/v/rrule.svg" /></a>
+</p>
 
-[![Build](https://travis-ci.com/fmeringdal/rust_rrule.svg?branch=main)](https://travis-ci.com/fmeringdal/rust_rrule)
-[![codecov](https://codecov.io/gh/fmeringdal/rust_rrule/branch/main/graph/badge.svg)](https://codecov.io/gh/fmeringdal/rust_rrule)
-[![crates.io](https://img.shields.io/crates/v/rrule.svg)](https://crates.io/crates/rrule)
 
 # Usage
 
