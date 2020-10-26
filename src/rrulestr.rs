@@ -71,7 +71,7 @@ fn parse_date_param(s: &str, reg: Lazy<Regex>) -> ParsedDateParam {
     }
 }
 
-fn parse_dtstart(s: &str) -> Option<PartialOptions> {
+fn parse_dtstart(s: &str) -> Option<Options> {
     let caps = DTSTART_RE.captures(s);
     
 
@@ -83,7 +83,7 @@ fn parse_dtstart(s: &str) -> Option<PartialOptions> {
                 UTC
             };
 
-            let mut options = PartialOptions::new();
+            let mut options = Options::new();
             options.dtstart = Some(datestring_to_date(caps.get(2).unwrap().as_str(), &tzid));
             options.tzid = Some(tzid);
             Some(options)
@@ -105,7 +105,7 @@ fn from_str_to_freq(s: &str) -> Option<Frequenzy> {
     }
 }
 
-fn parse_rrule(line: &str) -> PartialOptions {
+fn parse_rrule(line: &str) -> Options {
     let stripped_line = if line.starts_with("RRULE:") {
         &line[6..]
     } else {
@@ -113,7 +113,7 @@ fn parse_rrule(line: &str) -> PartialOptions {
     };
 
     println!("Stripped line: {}", stripped_line);
-    let mut options = parse_dtstart(stripped_line).unwrap_or(PartialOptions::new());
+    let mut options = parse_dtstart(stripped_line).unwrap_or(Options::new());
     println!("Options from dtstart: {:?}", options);
 
     let attrs = RRULE_RE.replace(line, "");
@@ -229,7 +229,7 @@ fn parse_weekday(val: &str) -> Vec<usize> {
     }).collect()
 }
 
-fn parse_line(rfc_string: &str) -> Option<PartialOptions> {
+fn parse_line(rfc_string: &str) -> Option<Options> {
     println!("Parse line: {}", rfc_string);
     let re = Regex::new(r"(?m)^\s+|\s+$").unwrap();
     let rfc_string = re.replace(rfc_string, "");
@@ -298,8 +298,8 @@ fn extract_name(line: String) -> LineName {
     }
 } 
 
-fn parse_string(rfc_string: &str) -> PartialOptions {
-    let options: Vec<PartialOptions> = rfc_string.split("\n").map(|l| parse_line(l)).filter(|x| x.is_some())
+fn parse_string(rfc_string: &str) -> Options {
+    let options: Vec<Options> = rfc_string.split("\n").map(|l| parse_line(l)).filter(|x| x.is_some())
     .map(|o| o.unwrap())
     .collect();
 
@@ -307,14 +307,14 @@ fn parse_string(rfc_string: &str) -> PartialOptions {
         return options[0].clone();
     }
 
-    PartialOptions::concat(&options[0], &options[1])
+    Options::concat(&options[0], &options[1])
 }
 
 #[derive(Debug)]
 struct ParsedInput {
-    rrule_vals: Vec<PartialOptions>,
+    rrule_vals: Vec<Options>,
     rdate_vals: Vec<DTime>,
-    exrule_vals: Vec<PartialOptions>,
+    exrule_vals: Vec<Options>,
     exdate_vals: Vec<DTime>,
     dtstart: Option<DTime>,
     tzid: Option<Tz>,
@@ -326,7 +326,7 @@ fn parse_input(s: &str) -> ParsedInput {
     let mut exrule_vals = vec![];
     let mut exdate_vals = vec![];
 
-    let PartialOptions {
+    let Options {
         dtstart,
         tzid,
         ..

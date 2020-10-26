@@ -12,6 +12,7 @@ pub type DTime = DateTime<Tz>;
 
 pub fn from_ordinal(ordinal: isize, tz: &Tz) -> DTime {
     let timestamp = ordinal * 24 * 60 * 60;
+    let s = tz.timestamp(timestamp as i64, 0);
     tz.timestamp(timestamp as i64, 0)
 }
 

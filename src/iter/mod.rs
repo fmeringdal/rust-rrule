@@ -63,9 +63,6 @@ pub fn iter<T: IterResult>(
                 }
 
                 if res >= options.dtstart {
-                    //let rezoned_date = rezone_if_needed(&res, &options);
-                    // let rezoned_date = UTC.timestamp(res.timestamp(), 0);
-
                     if !iter_result.accept(res) {
                         return iter_result.get_value();
                     }
@@ -97,11 +94,6 @@ pub fn iter<T: IterResult>(
                         return iter_result.get_value();
                     }
                     if res >= options.dtstart {
-                        //let rezoned_date = rezone_if_needed(&res, &options);
-                        // let rezoned_date = UTC.timestamp(res.timestamp(), 0);
-                        // let rezoned_date = tzid.from_utc_datetime(&res.naive_utc());
-                        // let rezoned_date = res.with_timezone(&options.tzid);
-
                         if !iter_result.accept(res) {
                             return iter_result.get_value();
                         }

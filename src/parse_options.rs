@@ -1,21 +1,21 @@
 use chrono::prelude::*;
-use crate::options::{ParsedOptions, Frequenzy, PartialOptions};
+use crate::options::{ParsedOptions, Frequenzy, Options};
 use chrono_tz::{Tz, UTC};
 
 // TODO: Validation
-pub fn parse_options(options: &PartialOptions) -> ParsedOptions {
-    let mut default_partial_options = PartialOptions::new();
+pub fn parse_options(options: &Options) -> ParsedOptions {
+    let mut default_partial_options = Options::new();
     default_partial_options.interval = Some(1);
     default_partial_options.freq = Some(Frequenzy::Yearly);
     default_partial_options.wkst = Some(0);
-
+    
     let tzid: Tz = if options.tzid.is_some() {
         options.tzid.clone().unwrap()
     } else {
         UTC
     };
 
-    let mut partial_options = PartialOptions::concat(&default_partial_options, options);
+    let mut partial_options = Options::concat(&default_partial_options, options);
 
     if partial_options.byeaster.is_some() {
         partial_options.freq = Some(Frequenzy::Yearly);

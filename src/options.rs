@@ -1,6 +1,7 @@
 use chrono::prelude::*;
 use chrono_tz::Tz;
-use crate::datetime::DTime;
+use crate::datetime::{DTime, get_weekday_val};
+use crate::parse_options::parse_options;
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub enum Frequenzy {
@@ -38,7 +39,7 @@ pub struct ParsedOptions {
 
 // TODO: PartialOptions shouldnt have all of these fields
 #[derive(Debug, Clone)]
-pub struct PartialOptions {
+pub struct Options {
     pub freq: Option<Frequenzy>,
     pub interval: Option<usize>,
     pub count: Option<u32>,
@@ -60,7 +61,7 @@ pub struct PartialOptions {
     pub byeaster: Option<isize>,
 }
 
-impl PartialOptions {
+impl Options {
     pub fn new() -> Self {
         Self {
             freq: None,
@@ -115,5 +116,91 @@ impl PartialOptions {
             bynweekday: Self::is_some_or_none(&opt1.bynweekday, &opt2.bynweekday).clone(),
             byeaster: Self::is_some_or_none(&opt1.byeaster, &opt2.byeaster).clone(),
         }
+    }
+
+    pub fn freq(mut self, freq: Frequenzy) -> Self {
+        self.freq = Some(freq);
+        self
+    }
+
+    pub fn interval(mut self, interval: usize) -> Self {
+        self.interval = Some(interval);
+        self
+    }
+
+    pub fn count(mut self, count: u32) -> Self {
+        self.count = Some(count);
+        self
+    }
+
+    pub fn until(mut self, until: DTime) -> Self {
+        self.until = Some(until);
+        self
+    }
+
+    pub fn dtstart(mut self, dtstart: DTime) -> Self {
+        self.dtstart = Some(dtstart);
+        self.tzid = Some(dtstart.timezone());
+        self
+    }
+
+    pub fn wkst(mut self, wkst: Weekday) -> Self {
+        self.wkst = Some(get_weekday_val(&wkst));
+        self
+    }
+
+    pub fn bysetpos(mut self, bysetpos: Vec<isize>) -> Self {
+        self.bysetpos = Some(bysetpos);
+        self
+    }
+
+    pub fn bymonth(mut self, bymonth: Vec<usize>) -> Self {
+        self.bymonth = Some(bymonth);
+        self
+    }
+
+    pub fn bymonthday(mut self, bymonthday: Vec<isize>) -> Self {
+        self.bymonthday = Some(bymonthday);
+        self
+    }
+
+    pub fn byyearday(mut self, byyearday: Vec<isize>) -> Self {
+        self.byyearday = Some(byyearday);
+        self
+    }
+
+    pub fn byweekno(mut self, byweekno: Vec<isize>) -> Self {
+        self.byweekno = Some(byweekno);
+        self
+    }
+
+    pub fn byweekday(mut self, byweekday: Vec<Weekday>) -> Self {
+        let byweekday = byweekday.iter().map(|w| get_weekday_val(w)).collect(); 
+        self.byweekday = Some(byweekday);
+        self
+    }
+
+    pub fn byhour(mut self, byhour: Vec<usize>) -> Self {
+        self.byhour = Some(byhour);
+        self
+    }
+
+    pub fn byminute(mut self, byminute: Vec<usize>) -> Self {
+        self.byminute = Some(byminute);
+        self
+    }
+
+    pub fn bysecond(mut self, bysecond: Vec<usize>) -> Self {
+        self.bysecond = Some(bysecond);
+        self
+    }
+
+    pub fn byeaster(mut self, byeaster: isize) -> Self {
+        self.byeaster = Some(byeaster);
+        self
+    }
+
+    pub fn build(self) -> ParsedOptions {
+        parse_options(&self)
     }
 }

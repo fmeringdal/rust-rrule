@@ -122,12 +122,11 @@ impl<'a> RRuleSetIter<'a> {
     }
 
     pub fn iter(&mut self, tzid: Option<String>) -> Vec<DateTime<Tz>> {
-        let tzid: Tz = tzid.unwrap_or(String::from("UTC")).parse().unwrap_or(UTC);
 
         // Add all exdates to exdate_hash
         for date in &self.rrule_set.exdate {
-            let zoned_date = date.with_timezone(&tzid);
-            self.exdate_hash.insert(zoned_date.timestamp(), ());
+            println!("Exdate timestamp: {}", date.timestamp());
+            self.exdate_hash.insert(date.timestamp(), ());
         }
 
         // Small performance improvement by computing all exdates between
@@ -146,8 +145,7 @@ impl<'a> RRuleSetIter<'a> {
         };
 
         for date in &self.rrule_set.rdate.clone() {
-            let zoned_date = date.with_timezone(&tzid);
-            if !self.accept(zoned_date) {
+            if !self.accept(date.clone()) {
                 break;
             }
         }

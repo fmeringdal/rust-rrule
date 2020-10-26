@@ -30,5 +30,6 @@ let occurences = rrule_set.all();
 
 # Todos
 
-- tests for minutes and seconds FREQ
+- Validations
+- tests for minutes and seconds frequencies
 - cache
