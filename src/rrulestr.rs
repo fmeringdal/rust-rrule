@@ -20,30 +20,6 @@ static RRULE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?m)^(?:RRULE|EXRULE):"
 
 fn datestring_to_date(dt: &str, tz: &Tz) -> DTime {
     let bits = DATESTR_RE.captures(dt).unwrap();
-    println!("Bits: {:?}", bits);
-    let t = tz
-    .ymd(
-        bits.get(1).unwrap().as_str().parse::<i32>().unwrap(),
-        bits.get(2).unwrap().as_str().parse::<u32>().unwrap(),
-        bits.get(3).unwrap().as_str().parse::<u32>().unwrap(),
-    )
-    .and_hms(
-        bits.get(5).unwrap().as_str().parse::<u32>().unwrap(),
-        bits.get(6).unwrap().as_str().parse::<u32>().unwrap(),
-        bits.get(7).unwrap().as_str().parse::<u32>().unwrap(),
-    );
-    let u = UTC
-    .ymd(
-        bits.get(1).unwrap().as_str().parse::<i32>().unwrap(),
-        bits.get(2).unwrap().as_str().parse::<u32>().unwrap(),
-        bits.get(3).unwrap().as_str().parse::<u32>().unwrap(),
-    )
-    .and_hms(
-        bits.get(5).unwrap().as_str().parse::<u32>().unwrap(),
-        bits.get(6).unwrap().as_str().parse::<u32>().unwrap(),
-        bits.get(7).unwrap().as_str().parse::<u32>().unwrap(),
-    );
-    println!("Diiference : {}",  t.timestamp_millis() - u.timestamp_millis());
     return tz
         .ymd(
             bits.get(1).unwrap().as_str().parse::<i32>().unwrap(),
