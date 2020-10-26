@@ -5,6 +5,10 @@ use crate::rrule_iter::*;
 use std::collections::HashMap;
 use chrono_tz::{Tz, UTC};
 
+/// Result iterator for the RRuleSet type. It mostly just wraps
+/// `RRuleIterRes` and also before accepting any date makes sure that
+/// it does not collide with any exdates provided by either the exdates property
+/// or produced by the exrule rules.
 pub struct RRuleSetIter<'a> {
     exdate_hash: HashMap<i64, ()>,
     iter_res: RRuleIterRes,
@@ -81,6 +85,8 @@ impl<'a> RRuleSetIter<'a> {
         }
     }
 
+    /// Computes all exdates between after and before `DateTime`s for all the exrules and inserts them into
+    /// the exdate_hash.
     pub fn eval_exdate(&mut self, after: &DateTime<Tz>, before: &DateTime<Tz>) {
         for rrule in self.rrule_set.exrule.iter_mut() {
             for date in rrule.between(after.clone(), before.clone(), true) {
@@ -89,24 +95,27 @@ impl<'a> RRuleSetIter<'a> {
         }
     }
 
+    /// Here it is required to recompute exrules to see if some of the occurences will collide with the provided date.
     fn accept_when_unknown_bounds(&mut self, date: DateTime<Tz>) -> bool {
         let dt = date.timestamp();
         if !self.exdate_hash.contains_key(&dt) {
             self.eval_exdate(&date.timezone().timestamp(dt - 1, 0), &date.timezone().timestamp(dt + 1, 0));
             if !self.exdate_hash.contains_key(&dt) {
                 self.exdate_hash.insert(dt, ());
-                return self.iter_res.accept(date.clone());
+                return self.iter_res.accept(date);
             }
         }
 
         true
     }
 
+    /// No need to recompute exrules as it has already beeen computed in the start of the iter method
+    /// because the bounds where known.
     fn accept_when_known_bounds(&mut self, date: DateTime<Tz>) -> bool {
         let dt = date.timestamp();
         if !self.exdate_hash.contains_key(&dt) {
             self.exdate_hash.insert(dt, ());
-            return self.iter_res.accept(date.clone());
+            return self.iter_res.accept(date);
         }
 
         true
@@ -115,11 +124,17 @@ impl<'a> RRuleSetIter<'a> {
     pub fn iter(&mut self, tzid: Option<String>) -> Vec<DateTime<Tz>> {
         let tzid: Tz = tzid.unwrap_or(String::from("UTC")).parse().unwrap_or(UTC);
 
+        // Add all exdates to exdate_hash
         for date in &self.rrule_set.exdate {
             let zoned_date = date.with_timezone(&tzid);
             self.exdate_hash.insert(zoned_date.timestamp(), ());
         }
 
+        // Small performance improvement by computing all exdates between
+        // before and after dates when. For all the other `QueryMethodTypes`
+        // the iter has to eval_exdate for every DateTime value produced by rdate or rrule
+        // to check if it conflicts with any exrule or exdate rules, this is because
+        // All, Before, After QueryMethodTypes has no time bounds and all the exdates can not be known beforehand.
         match &self.iter_res.method {
             QueryMethodTypes::Between => {
                 self.eval_exdate(
