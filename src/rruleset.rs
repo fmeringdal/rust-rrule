@@ -1,16 +1,16 @@
-use crate::iter::{iter, IterResult};
 use chrono::prelude::*;
 use chrono_tz::{Tz, UTC};
 use crate::rrule::RRule;
+use crate::datetime::DTime;
 use crate::rruleset_iter::RRuleSetIter;
 
 #[derive(Debug)]
 pub struct RRuleSet {
     pub rrule: Vec<RRule>,
-    pub rdate: Vec<DateTime<Utc>>,
+    pub rdate: Vec<DTime>,
     pub exrule: Vec<RRule>,
-    pub exdate: Vec<DateTime<Utc>>,
-    pub dtstart: Option<DateTime<Utc>>,
+    pub exdate: Vec<DTime>,
+    pub dtstart: Option<DTime>,
 }
 
 impl RRuleSet {
@@ -32,11 +32,11 @@ impl RRuleSet {
         self.exrule.push(rrule);
     }
 
-    pub fn rdate(&mut self, rdate: DateTime<Utc>) {
+    pub fn rdate(&mut self, rdate: DTime) {
         self.rdate.push(rdate);
     }
 
-    pub fn exdate(&mut self, exdate: DateTime<Utc>) {
+    pub fn exdate(&mut self, exdate: DTime) {
         self.exdate.push(exdate);
     }
 
@@ -88,8 +88,8 @@ mod test_iter_set {
         hour: u32,
         minute: u32,
         second: u32,
-    ) -> DateTime<Utc> {
-        Utc.ymd(year, month, day).and_hms(hour, minute, second)
+    ) -> DTime {
+        UTC.ymd(year, month, day).and_hms(hour, minute, second)
     }
 
     fn ymd_hms_2(
@@ -124,7 +124,7 @@ mod test_iter_set {
             freq: Frequenzy::Yearly,
             count: Some(6),
             bymonth: vec![],
-            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
             byweekday: vec![1, 3],
             byhour: vec![9],
             bysetpos: vec![],
@@ -147,7 +147,7 @@ mod test_iter_set {
             freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![],
-            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
             byweekday: vec![3],
             byhour: vec![9],
             bysetpos: vec![],
@@ -217,7 +217,7 @@ mod test_iter_set {
             freq: Frequenzy::Yearly,
             count: Some(3),
             bymonth: vec![],
-            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
             byweekday: vec![3],
             byhour: vec![9],
             bysetpos: vec![],
@@ -255,7 +255,7 @@ mod test_iter_set {
             freq: Frequenzy::Yearly,
             count: Some(6),
             bymonth: vec![],
-            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
             byweekday: vec![1, 3],
             byhour: vec![9],
             bysetpos: vec![],
@@ -297,7 +297,7 @@ mod test_iter_set {
             freq: Frequenzy::Yearly,
             count: Some(13),
             bymonth: vec![9],
-            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
             byweekday: vec![],
             byhour: vec![9],
             bysetpos: vec![],
@@ -321,7 +321,7 @@ mod test_iter_set {
             freq: Frequenzy::Yearly,
             count: Some(10),
             bymonth: vec![9],
-            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
             byweekday: vec![],
             byhour: vec![9],
             bysetpos: vec![],
@@ -359,7 +359,7 @@ mod test_iter_set {
             freq: Frequenzy::Yearly,
             count: None,
             bymonth: vec![9],
-            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
             byweekday: vec![],
             byhour: vec![9],
             bysetpos: vec![],
@@ -383,7 +383,7 @@ mod test_iter_set {
             freq: Frequenzy::Yearly,
             count: Some(10),
             bymonth: vec![9],
-            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
             byweekday: vec![],
             byhour: vec![9],
             bysetpos: vec![],
@@ -417,7 +417,7 @@ mod test_iter_set {
             freq: Frequenzy::Yearly,
             count: None,
             bymonth: vec![9],
-            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
             byweekday: vec![],
             byhour: vec![9],
             bysetpos: vec![],
@@ -441,7 +441,7 @@ mod test_iter_set {
             freq: Frequenzy::Yearly,
             count: Some(10),
             bymonth: vec![9],
-            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
             byweekday: vec![],
             byhour: vec![9],
             bysetpos: vec![],
@@ -475,7 +475,7 @@ mod test_iter_set {
             freq: Frequenzy::Yearly,
             count: None,
             bymonth: vec![9],
-            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
             byweekday: vec![],
             byhour: vec![9],
             bysetpos: vec![],
@@ -499,7 +499,7 @@ mod test_iter_set {
             freq: Frequenzy::Yearly,
             count: Some(10),
             bymonth: vec![9],
-            dtstart: Utc.ymd(1997, 9, 2).and_hms(9, 0, 0),
+            dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
             byweekday: vec![],
             byhour: vec![9],
             bysetpos: vec![],
@@ -541,7 +541,7 @@ mod test_iter_set {
             freq: Frequenzy::Yearly,
             count: Some(2),
             bymonth: vec![1],
-            dtstart: Utc.ymd(1960, 1, 1).and_hms(9, 0, 0),
+            dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
             byweekday: vec![],
             byhour: vec![9],
             bysetpos: vec![],

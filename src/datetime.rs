@@ -4,11 +4,17 @@ use chrono_tz::Tz;
 
 pub type DTime = DateTime<Tz>;
 
-pub fn from_ordinal(ordinal: isize) -> DateTime<Utc> {
+// pub fn from_ordinal(ordinal: isize) -> DateTime<Utc> {
+//     let timestamp = ordinal * 24 * 60 * 60;
+//     let naive = NaiveDateTime::from_timestamp(timestamp as i64, 0);
+//     DateTime::from_utc(naive, Utc)
+// }
+
+pub fn from_ordinal(ordinal: isize, tz: &Tz) -> DTime {
     let timestamp = ordinal * 24 * 60 * 60;
-    let naive = NaiveDateTime::from_timestamp(timestamp as i64, 0);
-    DateTime::from_utc(naive, Utc)
+    tz.timestamp(timestamp as i64, 0)
 }
+
 
 pub fn to_ordinal(date: &DateTime<Utc>) -> isize {
     (date.timestamp() / 60 / 60 / 24) as isize

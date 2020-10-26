@@ -1,5 +1,6 @@
 use chrono::prelude::*;
 use chrono_tz::Tz;
+use crate::datetime::DTime;
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub enum Frequenzy {
@@ -17,9 +18,9 @@ pub struct ParsedOptions {
     pub freq: Frequenzy,
     pub interval: usize,
     pub count: Option<u32>,
-    pub until: Option<DateTime<Utc>>,
+    pub until: Option<DTime>,
     pub tzid: Tz,
-    pub dtstart: DateTime<Utc>,
+    pub dtstart: DTime,
     pub wkst: usize,
     pub bysetpos: Vec<isize>,
     pub bymonth: Vec<usize>,
@@ -41,9 +42,9 @@ pub struct PartialOptions {
     pub freq: Option<Frequenzy>,
     pub interval: Option<usize>,
     pub count: Option<u32>,
-    pub until: Option<DateTime<Utc>>,
-    pub tzid: Option<String>,
-    pub dtstart: Option<DateTime<Utc>>,
+    pub until: Option<DTime>,
+    pub tzid: Option<Tz>,
+    pub dtstart: Option<DTime>,
     pub wkst: Option<usize>,
     pub bysetpos: Option<Vec<isize>>,
     pub bymonth: Option<Vec<usize>>,

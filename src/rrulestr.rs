@@ -1,9 +1,11 @@
 use crate::options::*;
 use crate::parse_options::parse_options;
 use crate::rrule::RRule;
+use crate::datetime::DTime;
 use crate::rruleset::RRuleSet;
 use chrono::prelude::*;
 use chrono::DateTime;
+use chrono_tz::{UTC, Tz};
 use once_cell::sync::Lazy;
 use regex::Regex;
 
@@ -16,9 +18,33 @@ static RRULE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?m)^(?:RRULE|EXRULE):"
 
 
 
-fn datestring_to_date(dt: &str) -> DateTime<Utc> {
+fn datestring_to_date(dt: &str, tz: &Tz) -> DTime {
     let bits = DATESTR_RE.captures(dt).unwrap();
-    return Utc
+    println!("Bits: {:?}", bits);
+    let t = tz
+    .ymd(
+        bits.get(1).unwrap().as_str().parse::<i32>().unwrap(),
+        bits.get(2).unwrap().as_str().parse::<u32>().unwrap(),
+        bits.get(3).unwrap().as_str().parse::<u32>().unwrap(),
+    )
+    .and_hms(
+        bits.get(5).unwrap().as_str().parse::<u32>().unwrap(),
+        bits.get(6).unwrap().as_str().parse::<u32>().unwrap(),
+        bits.get(7).unwrap().as_str().parse::<u32>().unwrap(),
+    );
+    let u = UTC
+    .ymd(
+        bits.get(1).unwrap().as_str().parse::<i32>().unwrap(),
+        bits.get(2).unwrap().as_str().parse::<u32>().unwrap(),
+        bits.get(3).unwrap().as_str().parse::<u32>().unwrap(),
+    )
+    .and_hms(
+        bits.get(5).unwrap().as_str().parse::<u32>().unwrap(),
+        bits.get(6).unwrap().as_str().parse::<u32>().unwrap(),
+        bits.get(7).unwrap().as_str().parse::<u32>().unwrap(),
+    );
+    println!("Diiference : {}",  t.timestamp_millis() - u.timestamp_millis());
+    return tz
         .ymd(
             bits.get(1).unwrap().as_str().parse::<i32>().unwrap(),
             bits.get(2).unwrap().as_str().parse::<u32>().unwrap(),
@@ -31,20 +57,35 @@ fn datestring_to_date(dt: &str) -> DateTime<Utc> {
         );
 }
 
+struct ParsedDateParam {
+    datetime: DateTime<Tz>,
+    timezone: Tz,
+}
+
+fn parse_date_param(s: &str, reg: Lazy<Regex>) -> ParsedDateParam {
+    let caps = reg.captures(s);
+
+    ParsedDateParam {
+        datetime: UTC.timestamp_nanos(0),
+        timezone: UTC
+    }
+}
+
 fn parse_dtstart(s: &str) -> Option<PartialOptions> {
     let caps = DTSTART_RE.captures(s);
-    println!("captures -----------------------");
-    println!("{:?}", caps);
+    
 
     match caps {
         Some(caps) => {
-            let mut options = PartialOptions::new();
-            options.dtstart = Some(datestring_to_date(caps.get(2).unwrap().as_str()));
-            options.tzid = if let Some(tzid) = caps.get(1) {
-                Some(String::from(tzid.as_str()))
+            let tzid: Tz = if let Some(tzid) = caps.get(1) {
+                String::from(tzid.as_str()).parse().unwrap_or(UTC)
             } else {
-                Some(String::from("UTC"))
+                UTC
             };
+
+            let mut options = PartialOptions::new();
+            options.dtstart = Some(datestring_to_date(caps.get(2).unwrap().as_str(), &tzid));
+            options.tzid = Some(tzid);
             Some(options)
         }
         None => None,
@@ -71,14 +112,15 @@ fn parse_rrule(line: &str) -> PartialOptions {
         line
     };
 
-
+    println!("Stripped line: {}", stripped_line);
     let mut options = parse_dtstart(stripped_line).unwrap_or(PartialOptions::new());
+    println!("Options from dtstart: {:?}", options);
 
     let attrs = RRULE_RE.replace(line, "");
     let attrs = attrs.split(";");
 
     for attr in attrs {
-        println!("Attr: {}", attr);
+        
         let l: Vec<&str> = attr.split("=").collect();
 
         let key = l[0];
@@ -86,7 +128,7 @@ fn parse_rrule(line: &str) -> PartialOptions {
         if l.len() > 1 {
             value = l[1];
         }
-        println!("Ket: {}", key);
+        
         match key.to_uppercase().as_str() {
             "FREQ" => {
                 options.freq = Some(from_str_to_freq(value).unwrap());
@@ -138,13 +180,12 @@ fn parse_rrule(line: &str) -> PartialOptions {
             "DTSTART" | "TZID" => {
                 // for backwards compatibility
                 let dtstart_opts = parse_dtstart(line).unwrap();
-                println!("After parsing tzid");
-                println!("{:?}", dtstart_opts);
                 options.tzid = Some(dtstart_opts.tzid.unwrap());
                 options.dtstart = Some(dtstart_opts.dtstart.unwrap());
             }
             "UNTIL" => {
-                options.until = Some(datestring_to_date(value));
+                // Until is always in UTC
+                options.until = Some(datestring_to_date(value, &UTC));
             }
             "BYEASTER" => {
                 options.byeaster = Some(value.parse::<isize>().unwrap());
@@ -189,6 +230,7 @@ fn parse_weekday(val: &str) -> Vec<usize> {
 }
 
 fn parse_line(rfc_string: &str) -> Option<PartialOptions> {
+    println!("Parse line: {}", rfc_string);
     let re = Regex::new(r"(?m)^\s+|\s+$").unwrap();
     let rfc_string = re.replace(rfc_string, "");
     if rfc_string.is_empty() {
@@ -262,8 +304,6 @@ fn parse_string(rfc_string: &str) -> PartialOptions {
     .collect();
 
     if options.len() == 1 {
-        println!("Options i got from str: {}", rfc_string);
-        println!("{:?}", options[0]);
         return options[0].clone();
     }
 
@@ -273,11 +313,11 @@ fn parse_string(rfc_string: &str) -> PartialOptions {
 #[derive(Debug)]
 struct ParsedInput {
     rrule_vals: Vec<PartialOptions>,
-    rdate_vals: Vec<DateTime<Utc>>,
+    rdate_vals: Vec<DTime>,
     exrule_vals: Vec<PartialOptions>,
-    exdate_vals: Vec<DateTime<Utc>>,
-    dtstart: Option<DateTime<Utc>>,
-    tzid: Option<String>,
+    exdate_vals: Vec<DTime>,
+    dtstart: Option<DTime>,
+    tzid: Option<Tz>,
 }
 
 fn parse_input(s: &str) -> ParsedInput {
@@ -288,12 +328,13 @@ fn parse_input(s: &str) -> ParsedInput {
 
     let PartialOptions {
         dtstart,
-        mut tzid,
+        tzid,
         ..
     } = parse_dtstart(s).unwrap();
 
 
     let lines: Vec<&str> = s.split("\n").collect();
+    println!("Lines: {:?}", lines);
     for line in &lines {
         let parsed_line = break_down_line(line);
         match parsed_line.name.to_uppercase().as_str() {
@@ -307,20 +348,35 @@ fn parse_input(s: &str) -> ParsedInput {
                 
                 rrule_vals.push(parse_string(line));
             }
+            "EXRULE" => {
+                if !parsed_line.params.is_empty() {
+                    panic!("Unsupported EXRULE value");
+                }
+                if parsed_line.value.is_empty() {
+                    continue;
+                }
+
+                exrule_vals.push(parse_string(&parsed_line.value));
+            }
             "RDATE" => {
                 let re = Regex::new(r"(?m)RDATE(?:;TZID=([^:=]+))?").unwrap();
                 let matches = re.captures(line).unwrap();
-                if tzid.is_none() && matches.get(1).is_some() {
-                    tzid = Some(String::from(matches.get(1).unwrap().as_str()));
+                let mut tz = UTC;
+                if let Some(tzid) = matches.get(1) {
+                    tz = String::from(tzid.as_str()).parse().unwrap_or(UTC);
                 }
                 
-                rdate_vals.append(&mut parse_rdate(&parsed_line.value, parsed_line.params));
-            }
-            "EXRULE" => {
-                exrule_vals.push(parse_string(&parsed_line.value));
+                rdate_vals.append(&mut parse_rdate(&parsed_line.value, parsed_line.params, &tz));
             }
             "EXDATE" => {
-                exdate_vals.append(&mut parse_rdate(&parsed_line.value, parsed_line.params));
+                let re = Regex::new(r"(?m)EXDATE(?:;TZID=([^:=]+))?").unwrap();
+                let matches = re.captures(line).unwrap();
+                let tz: Tz = if let Some(tzid) = matches.get(1) {
+                    String::from(tzid.as_str()).parse().unwrap_or(UTC)
+                } else {
+                    UTC
+                };
+                exdate_vals.append(&mut parse_rdate(&parsed_line.value, parsed_line.params, &tz));
             }
             "DTSTART" => (),
             _ => panic!("Unsupported property: {}", parsed_line.name)
@@ -347,11 +403,16 @@ fn validate_date_param(params: Vec<&str>){
     }
 }
 
-fn parse_rdate(rdateval: &str, params: Vec<String>) -> Vec<DateTime<Utc>> {
+// ! works needs to be done here
+fn parse_rdate(rdateval: &str, params: Vec<String>, tz: &Tz) -> Vec<DTime> {
     let params: Vec<&str> = params.iter().map(|p| p.as_str()).collect();
     validate_date_param(params);
+    // let re_timezone = Regex::new(r"(?m)TZID=(.+):").unwrap();
+    // let caps = re_timezone.captures(text)
+    // let tzid = re_timezone
 
-    rdateval.split(",").map(|datestr| datestring_to_date(datestr)).collect()
+
+    rdateval.split(",").map(|datestr| datestring_to_date(datestr, tz)).collect()
 }
 
 
@@ -441,7 +502,7 @@ mod test {
 
     #[test]
     fn it_works_2() {
-        let mut options = build_rruleset("RRULE:UNTIL=19990404T110000Z;DTSTART=19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE");
+        let mut options = build_rrule("DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR");
         println!("?????????????=================?????????????");
         println!("{:?}", options);
         println!("?????????????=== ALLL    ==============?????????????");
@@ -462,13 +523,11 @@ mod test {
 
     #[test]
     fn it_works_4() {
-        let options = parse_string("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/New_York:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE");
-        let parsed_opts = parse_options(&options);
-        println!("?????????????=================?????????????");
-        println!("{:?}", options);
-        println!("?????????????=== PARSED ==============?????????????");
-        println!("{:?}", parsed_opts);
-        let all = crate::rrule::RRule::new(parsed_opts).all();
+        let mut set = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5\nEXDATE;TZID=Europe/Berlin:20120202T130000Z,20120203T130000Z");
+        println!("?????????????=================??======?????????????");
+        println!("{:?}", set.exdate.iter().map(|d| d.timestamp()).collect::<Vec<i64>>());
+        let all = set.all();
+        println!("{:?}", all.iter().map(|d| d.timestamp()).collect::<Vec<i64>>());
         println!("------------------ alll ----------------");
         println!("{:?}", all);
     }

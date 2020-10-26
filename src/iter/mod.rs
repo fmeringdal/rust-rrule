@@ -9,21 +9,20 @@ mod masks;
 mod utils;
 
 use crate::options::*;
-use crate::datetime::{Time, from_ordinal, get_weekday_val};
+use crate::datetime::{Time, DTime, from_ordinal, get_weekday_val};
 use chrono::offset::TimeZone;
 use chrono::prelude::*;
 use chrono::{DateTime, Duration};
-use chrono_tz::*;
 
 pub trait IterResult {
-    fn accept(&mut self, date: DateTime<Tz>) -> bool;
-    fn get_value(&self) -> Vec<DateTime<Tz>>;
+    fn accept(&mut self, date: DTime) -> bool;
+    fn get_value(&self) -> Vec<DTime>;
 }
 
 pub fn iter<T: IterResult>(
     iter_result: &mut T,
     options: &mut ParsedOptions,
-) -> Vec<DateTime<Tz>> {
+) -> Vec<DTime> {
 
     if (options.count.is_some() && options.count.unwrap() == 0) || options.interval == 0 {
         return iter_result.get_value();
@@ -87,7 +86,7 @@ pub fn iter<T: IterResult>(
                 }
 
                 let current_day = current_day.unwrap();
-                let date = from_ordinal(ii.yearordinal().unwrap() + current_day);
+                let date = from_ordinal(ii.yearordinal().unwrap() + current_day, &options.tzid);
                 for k in 0..timeset.len() {
                     let res = options.tzid.ymd(date.year(), date.month(), date.day()).and_hms(
                         timeset[k].hour as u32,
@@ -106,6 +105,7 @@ pub fn iter<T: IterResult>(
                         if !iter_result.accept(res) {
                             return iter_result.get_value();
                         }
+                        
                         if count > 0 {
                             count -= 1;
                             if count == 0 {
@@ -147,10 +147,10 @@ pub fn iter<T: IterResult>(
 
 
 pub fn increment_counter_date(
-    counter_date: DateTime<Utc>,
+    counter_date: DTime,
     options: &ParsedOptions,
     filtered: bool,
-) -> DateTime<Utc> {
+) -> DTime {
     match options.freq {
         Frequenzy::Yearly => counter_date
             .with_year(counter_date.year() + options.interval as i32)
@@ -299,7 +299,7 @@ pub fn build_timeset(options: &ParsedOptions) -> Vec<Time> {
 
 pub fn make_timeset(
     ii: &IterInfo,
-    counter_date: &DateTime<Utc>,
+    counter_date: &DTime,
     options: &ParsedOptions,
 ) -> Vec<Time> {
     if options.freq < Frequenzy::Hourly {

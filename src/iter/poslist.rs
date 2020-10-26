@@ -1,4 +1,4 @@
-use crate::datetime::*;
+use crate::datetime::{Time, DTime};
 use crate::iter::iterinfo::IterInfo;
 use crate::iter::utils::pymod;
 use crate::datetime::from_ordinal;
@@ -13,7 +13,7 @@ pub fn build_poslist(
     ii: &IterInfo,
     dayset: &Vec<Option<isize>>,
     tz: &Tz
-) -> Vec<DateTime<Tz>> {
+) -> Vec<DTime> {
     let mut poslist = vec![];
 
     for j in 0..bysetpost.len() {
@@ -44,7 +44,7 @@ pub fn build_poslist(
             i = &tmp[daypos as usize];
         }
 
-        let date = from_ordinal(ii.yearordinal().unwrap() + i);
+        let date = from_ordinal(ii.yearordinal().unwrap() + i, tz);
         let res = tz.ymd(date.year(), date.month(), date.day()).and_hms(
             timeset[timepos as usize].hour as u32,
             timeset[timepos as usize].minute as u32,

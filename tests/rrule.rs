@@ -3,7 +3,7 @@ extern crate chrono_tz;
 extern crate rrule;
 
 use chrono::prelude::*;
-use chrono_tz::UTC;
+use chrono_tz::{UTC, Tz};
 use rrule::{RRule, ParsedOptions, Frequenzy};
 
 #[cfg(test)]
@@ -17,11 +17,11 @@ mod test {
         hour: u32,
         minute: u32,
         second: u32,
-    ) -> DateTime<Utc> {
-        Utc.ymd(year, month, day).and_hms(hour, minute, second)
+    ) -> DateTime<Tz> {
+        UTC.ymd(year, month, day).and_hms(hour, minute, second)
     }
 
-    fn test_recurring(options: ParsedOptions, expected_dates: &Vec<DateTime<Utc>>) {
+    fn test_recurring(options: ParsedOptions, expected_dates: &Vec<DateTime<Tz>>) {
         let mut rrule = RRule::new(options);
         let res = rrule.all();
 

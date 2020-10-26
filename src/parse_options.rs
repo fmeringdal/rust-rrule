@@ -10,7 +10,7 @@ pub fn parse_options(options: &PartialOptions) -> ParsedOptions {
     default_partial_options.wkst = Some(0);
 
     let tzid: Tz = if options.tzid.is_some() {
-        options.tzid.clone().unwrap().parse().unwrap()
+        options.tzid.clone().unwrap()
     } else {
         UTC
     };
@@ -23,7 +23,7 @@ pub fn parse_options(options: &PartialOptions) -> ParsedOptions {
     let freq = partial_options.freq.unwrap();
 
     if partial_options.dtstart.is_none() {
-        partial_options.dtstart = Some(Utc::now());
+        panic!("Dtstart can not be None");
     }
 
     if partial_options.wkst.is_none() {
@@ -37,7 +37,6 @@ pub fn parse_options(options: &PartialOptions) -> ParsedOptions {
             }
         }
     }
-
 
     if !(
         partial_options.byweekno.is_some() ||
@@ -61,7 +60,7 @@ pub fn parse_options(options: &PartialOptions) -> ParsedOptions {
             Frequenzy::Weekly => {
                 partial_options.byweekday = Some(vec![partial_options.dtstart.unwrap().weekday() as usize]);
             },
-            _ => unreachable!("Shouldnt be reached")
+            _ => ()
         };
     }
 
