@@ -1,5 +1,5 @@
 use chrono::prelude::*;
-use chrono_tz::Tz;
+use chrono_tz::{Tz, UTC};
 use crate::rrule::RRule;
 use crate::datetime::DTime;
 use crate::rruleset_iter::RRuleSetIter;
