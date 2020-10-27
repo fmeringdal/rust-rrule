@@ -7,6 +7,7 @@ use chrono::prelude::*;
 use chrono_tz::{UTC, Tz};
 use once_cell::sync::Lazy;
 use regex::Regex;
+use std::str::FromStr;
 
 static DATESTR_RE: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"(?m)^(\d{4})(\d{2})(\d{2})(T(\d{2})(\d{2})(\d{2})Z?)?$").unwrap());
@@ -15,24 +16,45 @@ static DTSTART_RE: Lazy<Regex> =
 
 static RRULE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?m)^(?:RRULE|EXRULE):").unwrap());
 
+static PARSE_LINE_RE_1: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?m)^\s+|\s+$").unwrap());
+static PARSE_LINE_RE_2: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?m)^([A-Z]+?)[:;]").unwrap());
 
 
-fn datestring_to_date(dt: &str, tz: &Tz) -> DTime {
-    let bits = DATESTR_RE.captures(dt).unwrap();
-    return tz
-        .ymd(
-            bits.get(1).unwrap().as_str().parse::<i32>().unwrap(),
-            bits.get(2).unwrap().as_str().parse::<u32>().unwrap(),
-            bits.get(3).unwrap().as_str().parse::<u32>().unwrap(),
-        )
-        .and_hms(
-            bits.get(5).unwrap().as_str().parse::<u32>().unwrap(),
-            bits.get(6).unwrap().as_str().parse::<u32>().unwrap(),
-            bits.get(7).unwrap().as_str().parse::<u32>().unwrap(),
-        );
+
+fn parse_datestring_bit<T: FromStr>(bits: &regex::Captures, i: usize, dt: &str) -> Result<T, RRuleParseError> {
+    match bits.get(i) {
+        Some(bit) => match bit.as_str().parse::<T>() {
+            Err(_) => Err(RRuleParseError(format!("Invalid datetime: {}", dt))),
+            Ok(val) => Ok(val)
+        }
+        _ => Err(RRuleParseError(format!("Invalid datetime: {}", dt)))
+    }
 }
 
-fn parse_dtstart(s: &str) -> Option<Options> {
+fn datestring_to_date(dt: &str, tz: &Tz) -> Result<DTime, RRuleParseError> {
+    let bits = DATESTR_RE.captures(dt);
+    if bits.is_none() {
+        return Err(RRuleParseError(format!("Invalid datetime: {}", dt)));
+    }
+    let bits = bits.unwrap();
+    if bits.len() < 7 {
+        return Err(RRuleParseError(format!("Invalid datetime: {}", dt)));
+    }
+
+    return Ok(tz
+        .ymd(
+            parse_datestring_bit(&bits, 1, dt)?,
+            parse_datestring_bit(&bits, 2, dt)?,
+            parse_datestring_bit(&bits, 3, dt)?,
+        )
+        .and_hms(
+            parse_datestring_bit(&bits, 5, dt)?,
+            parse_datestring_bit(&bits, 6, dt)?,
+            parse_datestring_bit(&bits, 7, dt)?,
+        ));
+}
+
+fn parse_dtstart(s: &str) -> Result<Options, RRuleParseError> {
     let caps = DTSTART_RE.captures(s);
     
 
@@ -45,11 +67,11 @@ fn parse_dtstart(s: &str) -> Option<Options> {
             };
 
             let mut options = Options::new();
-            options.dtstart = Some(datestring_to_date(caps.get(2).unwrap().as_str(), &tzid));
+            options.dtstart = Some(datestring_to_date(caps.get(2).unwrap().as_str(), &tzid)?);
             options.tzid = Some(tzid);
-            Some(options)
+            Ok(options)
         }
-        None => None,
+        None => Err(RRuleParseError(format!("Invalid datetime: {}", s))),
     }
 }
 
@@ -90,7 +112,10 @@ fn parse_rrule(line: &str) -> Result<Options, RRuleParseError> {
         
         match key.to_uppercase().as_str() {
             "FREQ" => {
-                options.freq = Some(from_str_to_freq(value).unwrap());
+                match from_str_to_freq(value) {
+                    Some(freq) => options.freq = Some(freq),
+                    None => return Err(RRuleParseError(format!("Invalid frequenzy: {}", value)))
+                }
             }
             "WKST" => {
                 options.wkst = Some(value.parse::<usize>().unwrap());
@@ -138,13 +163,13 @@ fn parse_rrule(line: &str) -> Result<Options, RRuleParseError> {
             }
             "DTSTART" | "TZID" => {
                 // for backwards compatibility
-                let dtstart_opts = parse_dtstart(line).unwrap();
+                let dtstart_opts = parse_dtstart(line)?;
                 options.tzid = Some(dtstart_opts.tzid.unwrap());
                 options.dtstart = Some(dtstart_opts.dtstart.unwrap());
             }
             "UNTIL" => {
                 // Until is always in UTC
-                options.until = Some(datestring_to_date(value, &UTC));
+                options.until = Some(datestring_to_date(value, &UTC)?);
             }
             "BYEASTER" => {
                 options.byeaster = Some(value.parse::<isize>().unwrap());
@@ -189,15 +214,15 @@ fn parse_weekday(val: &str) -> Result<Vec<usize>, RRuleParseError> {
 }
 
 fn parse_line(rfc_string: &str) -> Result<Option<Options>, RRuleParseError> {
-    let re = Regex::new(r"(?m)^\s+|\s+$").unwrap();
-    let rfc_string = re.replace(rfc_string, "");
+    // let re = Regex::new(r"(?m)^\s+|\s+$").unwrap();
+    let rfc_string = PARSE_LINE_RE_1.replace(rfc_string, "");
     if rfc_string.is_empty() {
         return Ok(None);
     }
 
-    let re = Regex::new(r"(?m)^([A-Z]+?)[:;]").unwrap();
+    // let re = Regex::new(r"(?m)^([A-Z]+?)[:;]").unwrap();
     let rfc_string_upper = rfc_string.to_uppercase();
-    let header = re.captures(&rfc_string_upper);
+    let header = PARSE_LINE_RE_2.captures(&rfc_string_upper);
     
     
 
@@ -210,7 +235,7 @@ fn parse_line(rfc_string: &str) -> Result<Option<Options>, RRuleParseError> {
 
     match key {
         "EXRULE" | "RRULE" => Ok(Some(parse_rrule(&rfc_string)?)),
-        "DTSTART" => Ok(Some(parse_dtstart(&rfc_string).unwrap())),
+        "DTSTART" => Ok(Some(parse_dtstart(&rfc_string)?)),
         _ => Err(RRuleParseError(format!("Unsupported RFC prop {} in {}", key, &rfc_string)))
     }
 }
@@ -293,11 +318,10 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleParseError> {
         dtstart,
         tzid,
         ..
-    } = parse_dtstart(s).unwrap();
+    } = parse_dtstart(s)?;
 
 
     let lines: Vec<&str> = s.split("\n").collect();
-    println!("Lines: {:?}", lines);
     for line in &lines {
         let parsed_line = break_down_line(line);
         match parsed_line.name.to_uppercase().as_str() {
@@ -329,7 +353,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleParseError> {
                     tz = String::from(tzid.as_str()).parse().unwrap_or(UTC);
                 }
                 
-                rdate_vals.append(&mut parse_rdate(&parsed_line.value, parsed_line.params, &tz));
+                rdate_vals.append(&mut parse_rdate(&parsed_line.value, parsed_line.params, &tz)?);
             }
             "EXDATE" => {
                 let re = Regex::new(r"(?m)EXDATE(?:;TZID=([^:=]+))?").unwrap();
@@ -339,12 +363,13 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleParseError> {
                 } else {
                     UTC
                 };
-                exdate_vals.append(&mut parse_rdate(&parsed_line.value, parsed_line.params, &tz));
+                exdate_vals.append(&mut parse_rdate(&parsed_line.value, parsed_line.params, &tz)?);
             }
             "DTSTART" => (),
             _ => return Err(RRuleParseError(format!("Unsupported property: {}", parsed_line.name)))
         }
     }
+
 
     return Ok(ParsedInput {
         dtstart,
@@ -368,15 +393,18 @@ fn validate_date_param(params: Vec<&str>) -> Result<(), RRuleParseError>{
 }
 
 // ! works needs to be done here
-fn parse_rdate(rdateval: &str, params: Vec<String>, tz: &Tz) -> Vec<DTime> {
+fn parse_rdate(rdateval: &str, params: Vec<String>, tz: &Tz) -> Result<Vec<DTime>, RRuleParseError> {
     let params: Vec<&str> = params.iter().map(|p| p.as_str()).collect();
-    validate_date_param(params);
+    validate_date_param(params)?;
     // let re_timezone = Regex::new(r"(?m)TZID=(.+):").unwrap();
     // let caps = re_timezone.captures(text)
     // let tzid = re_timezone
+    let mut rdatevals = vec![];
+    for datestr in rdateval.split(",") {
+        rdatevals.push(datestring_to_date(datestr, tz)?);
+    }
 
-
-    rdateval.split(",").map(|datestr| datestring_to_date(datestr, tz)).collect()
+    Ok(rdatevals)
 }
 
 
@@ -413,7 +441,7 @@ pub fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleParseError> {
 
         let parsed_opts = parse_options(&exrule)?;
         let exrule = RRule::new(parsed_opts);
-        rset.rrule(exrule);        
+        rset.exrule(exrule);        
     }
 
     for exdate in exdate_vals {
@@ -448,40 +476,96 @@ mod test {
 
     #[test]
     fn it_works_1() {
-        let options = build_rruleset("DTSTART:19970902T090000Z\nRRULE:FREQ=YEARLY;COUNT=3\n").unwrap();
-        println!("?????????????=================?????????????");
-        println!("{:?}", options);
+        let res = build_rruleset("DTSTART:19970902T090000Z\nRRULE:FREQ=YEARLY;COUNT=3\n");
+        assert!(res.is_ok());
     }
 
     #[test]
     fn it_works_2() {
-        let mut options = build_rrule("DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR").unwrap();
-        println!("?????????????=================?????????????");
-        println!("{:?}", options);
-        println!("?????????????=== ALLL    ==============?????????????");
-        println!("{:?}", options.all());
+        let res = build_rrule("DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR");
+        assert!(res.is_ok());
     }
 
     #[test]
     fn it_works_3() {
-        let mut options = build_rruleset("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/Denver:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE").unwrap();
-        println!("?????????????=================?????????????");
-        println!("{:?}", options);
-        let tzid: Tz = "America/Denver".parse().unwrap();
-        println!("?????????????=== ALLL    ==============?????????????");
-        println!("{:?}", options.all().into_iter().take(2).collect::<Vec<DateTime<Tz>>>());
-        println!("{:?}", options.all().iter().take(2).map(|d| d.with_timezone(&UTC)).collect::<Vec<DateTime<Tz>>>());
-        println!("Diff : {:?}", options.all()[0].timestamp() - options.all()[0].with_timezone(&UTC).timestamp());
+        let res = build_rruleset("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/Denver:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE");
+        assert!(res.is_ok());
     }
 
     #[test]
     fn it_works_4() {
-        let mut set = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5\nEXDATE;TZID=Europe/Berlin:20120202T130000Z,20120203T130000Z").unwrap();
-        println!("?????????????=================??======?????????????");
-        println!("{:?}", set.exdate.iter().map(|d| d.timestamp()).collect::<Vec<i64>>());
-        let all = set.all();
-        println!("{:?}", all.iter().map(|d| d.timestamp()).collect::<Vec<i64>>());
-        println!("------------------ alll ----------------");
-        println!("{:?}", all);
+        let res = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5\nEXDATE;TZID=Europe/Berlin:20120202T130000Z,20120203T130000Z");
+        assert!(res.is_ok());
+    }
+
+    #[test]
+    fn rrule() {
+        let res = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5");
+        assert!(res.is_ok());
+        let res = res.unwrap();
+        assert_eq!(res.rrule.len(), 1);
+        assert_eq!(res.rrule[0].options.interval, 1);
+        assert_eq!(res.rrule[0].options.count.unwrap(), 5);
+        assert_eq!(res.rrule[0].options.freq, Frequenzy::Daily);
+    }
+
+    #[test]
+    fn exrule() {
+        let res = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5\nEXRULE:FREQ=WEEKLY;INTERVAL=2");
+        assert!(res.is_ok());
+        let res = res.unwrap();
+        assert_eq!(res.exrule.len(), 1);
+        assert_eq!(res.exrule[0].options.interval, 2);
+        assert_eq!(res.exrule[0].options.freq, Frequenzy::Weekly);
+    }
+
+
+    ////////////////////////////////////////////////////
+    // Invalid stuff
+    ////////////////////////////////////////////////////
+    #[test]
+    fn garbage_strings() {
+        let test_cases = vec![
+            "helloworld",
+            "foo bar",
+            "hello\nworld",
+            "RRUle:test",
+        ];
+        for test_case in &test_cases {
+            let res = build_rruleset(test_case);
+            assert!(res.is_err());
+        }
+    }
+    
+    #[test]
+    fn invalid_dtstart() {
+        let res = build_rruleset("DTSTART:20120201120000Z\nRRULE:FREQ=DAILY;COUNT=5");
+        assert!(res.is_err());
+        assert_eq!(res.err().unwrap().0, "Invalid datetime: 20120201120000Z");
+    }
+
+    #[test]
+    fn invalid_freq() {
+        let res = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAIL;COUNT=5");
+        assert!(res.is_err());
+        assert_eq!(res.err().unwrap().0, "Invalid frequenzy: DAIL");
+    }
+
+    #[test]
+    #[ignore = "Only for benching"]
+    fn bench() {
+        let now = std::time::SystemTime::now();
+        for _ in 0..10000 {
+            let mut res = build_rruleset("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/New_York:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE").unwrap();
+            
+            // println!("Parsing took: {:?}", now.elapsed().unwrap().as_millis());
+            let tmp_now = std::time::SystemTime::now();
+
+            res.all();
+            println!("All took: {:?}", tmp_now.elapsed().unwrap().as_nanos());
+        }
+        println!("Time took: {:?}", now.elapsed().unwrap().as_millis());
+
     }
 }
+

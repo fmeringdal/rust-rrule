@@ -13,7 +13,7 @@ extern crate rrule;
 
 use rrule::build_rrule;
 
-let mut rrule = build_rrule("DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3");
+let mut rrule = build_rrule("DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3").unwrap();
 
 // Get all occurrences of the rrule
 let occurences = rrule.all();
