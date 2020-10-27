@@ -1,9 +1,9 @@
 use chrono::prelude::*;
-use crate::options::{ParsedOptions, Frequenzy, Options};
+use crate::options::{ParsedOptions, Frequenzy, Options, RRuleParseError};
 use chrono_tz::{Tz, UTC};
 
 // TODO: Validation
-pub fn parse_options(options: &Options) -> ParsedOptions {
+pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError> {
     let mut default_partial_options = Options::new();
     default_partial_options.interval = Some(1);
     default_partial_options.freq = Some(Frequenzy::Yearly);
@@ -23,7 +23,7 @@ pub fn parse_options(options: &Options) -> ParsedOptions {
     let freq = partial_options.freq.unwrap();
 
     if partial_options.dtstart.is_none() {
-        panic!("Dtstart can not be None");
+        return Err(RRuleParseError(String::from("Dtstart can not be None")));
     }
 
     if partial_options.wkst.is_none() {
@@ -33,7 +33,7 @@ pub fn parse_options(options: &Options) -> ParsedOptions {
     if let Some(bysetpos) = &partial_options.bysetpos {
         for pos in bysetpos {
             if *pos == 0 || !(*pos >= -366 && *pos <= 366) {
-                panic!("bysetpos must be between 1 and 366, or between -366 and -1");
+                return Err(RRuleParseError(String::from("Bysetpos must be between 1 and 366, or between -366 and -1")));
             }
         }
     }
@@ -104,7 +104,7 @@ pub fn parse_options(options: &Options) -> ParsedOptions {
   }
 
 
-  ParsedOptions {
+  Ok(ParsedOptions {
     freq,
     interval: partial_options.interval.unwrap(),
     count: partial_options.count,
@@ -124,7 +124,7 @@ pub fn parse_options(options: &Options) -> ParsedOptions {
     bysecond: partial_options.bysecond.unwrap_or(vec![]),
     bynweekday: partial_options.bynweekday.unwrap_or(vec![]),
     byeaster: partial_options.byeaster,
-  }
+  })
 }
 
 fn is_some_and_not_empty<T>(v: &Option<Vec<T>>) -> bool {

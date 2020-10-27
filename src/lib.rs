@@ -11,7 +11,7 @@
 //! use rrule::build_rrule;
 //!
 //! // Parse a RRule string, return a RRule type
-//! let mut rrule = build_rrule("DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR");
+//! let mut rrule = build_rrule("DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR").unwrap();
 //! assert_eq!(rrule.all().len(), 21);
 //! ```
 //!
@@ -24,7 +24,7 @@
 //! use rrule::build_rruleset;
 //! 
 //! // Parse a RRuleSet string, return a RRuleSet type
-//! let mut rrule = build_rruleset("DTSTART:20120201T023000Z\nRRULE:FREQ=MONTHLY;COUNT=5\nRDATE:20120701T023000Z,20120702T023000Z\nEXRULE:FREQ=MONTHLY;COUNT=2\nEXDATE:20120601T023000Z");
+//! let mut rrule = build_rruleset("DTSTART:20120201T023000Z\nRRULE:FREQ=MONTHLY;COUNT=5\nRDATE:20120701T023000Z,20120702T023000Z\nEXRULE:FREQ=MONTHLY;COUNT=2\nEXDATE:20120601T023000Z").unwrap();
 //! assert_eq!(rrule.all().len(), 6);
 //! ```
 //!
@@ -46,7 +46,8 @@
 //!     .dtstart(UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
 //!     .count(5)
 //!     .freq(Frequenzy::Daily)
-//!     .build();
+//!     .build()
+//!     .unwrap();
 //! 
 //! // Construct `RRule` from options 
 //! let mut rrule = RRule::new(options);
@@ -75,7 +76,8 @@
 //!     .count(4)
 //!     .freq(Frequenzy::Weekly)
 //!     .byweekday(vec![Weekday::Tue, Weekday::Wed])
-//!     .build();
+//!     .build()
+//!     .unwrap();
 //! 
 //! // Construct `RRule` from options 
 //! let mut rrule = RRule::new(rrule_options);
@@ -87,7 +89,8 @@
 //!     .count(4)
 //!     .freq(Frequenzy::Weekly)
 //!     .byweekday(vec![Weekday::Wed])
-//!     .build();
+//!     .build()
+//!     .unwrap();
 //! 
 //! // Construct `RRule` from options 
 //! let mut exrule = RRule::new(exrule_options);
@@ -137,7 +140,8 @@
 //!     .dtstart(Berlin.ymd(2020, 1, 1).and_hms(9, 0, 0))
 //!     .count(4)
 //!     .freq(Frequenzy::Daily)
-//!     .build();
+//!     .build()
+//!     .unwrap();
 //! 
 //! let mut rrule = RRule::new(rrule_options);
 //!

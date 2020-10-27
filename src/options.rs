@@ -2,6 +2,8 @@ use chrono::prelude::*;
 use chrono_tz::Tz;
 use crate::datetime::{DTime, get_weekday_val};
 use crate::parse_options::parse_options;
+use std::error::Error;
+use std::fmt::{Display, Formatter};
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub enum Frequenzy {
@@ -200,7 +202,18 @@ impl Options {
         self
     }
 
-    pub fn build(self) -> ParsedOptions {
+    pub fn build(self) -> Result<ParsedOptions, RRuleParseError> {
         parse_options(&self)
     }
 }
+
+#[derive(Debug, Clone)]
+pub struct RRuleParseError(pub String);
+
+impl Display for RRuleParseError {
+    fn fmt(&self, f: &mut Formatter) -> core::fmt::Result {
+        write!(f, "Encountered parsing error: {}", self.0)
+    }
+}
+
+impl Error for RRuleParseError{}

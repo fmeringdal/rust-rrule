@@ -66,16 +66,14 @@ fn from_str_to_freq(s: &str) -> Option<Frequenzy> {
     }
 }
 
-fn parse_rrule(line: &str) -> Options {
+fn parse_rrule(line: &str) -> Result<Options, RRuleParseError> {
     let stripped_line = if line.starts_with("RRULE:") {
         &line[6..]
     } else {
         line
     };
 
-    println!("Stripped line: {}", stripped_line);
     let mut options = parse_dtstart(stripped_line).unwrap_or(Options::new());
-    println!("Options from dtstart: {:?}", options);
 
     let attrs = RRULE_RE.replace(line, "");
     let attrs = attrs.split(";");
@@ -136,7 +134,7 @@ fn parse_rrule(line: &str) -> Options {
               options.bysecond = Some(bysecond);
             }
             "BYWEEKDAY" | "BYDAY" => {
-                options.byweekday = Some(parse_weekday(value));
+                options.byweekday = Some(parse_weekday(value)?);
             }
             "DTSTART" | "TZID" => {
                 // for backwards compatibility
@@ -151,27 +149,27 @@ fn parse_rrule(line: &str) -> Options {
             "BYEASTER" => {
                 options.byeaster = Some(value.parse::<isize>().unwrap());
             }
-            _ => panic!("Invalid property: {}", key),
+            _ => return Err(RRuleParseError(format!("Invalid property: {}", key))),
         };
     }
 
-    options
+    Ok(options)
 }
 
-fn str_to_weekday(d: &str) -> usize {
+fn str_to_weekday(d: &str) -> Result<usize, RRuleParseError> {
     match d.to_uppercase().as_str() {
-        "MO" => 0,
-        "TU" => 1,
-        "WE" => 2,
-        "TH" => 3,
-        "FR" => 4,
-        "SA" => 5,
-        "SU" => 6,
-        _ => panic!("Invalid weekday: {}", d),
+        "MO" => Ok(0),
+        "TU" => Ok(1),
+        "WE" => Ok(2),
+        "TH" => Ok(3),
+        "FR" => Ok(4),
+        "SA" => Ok(5),
+        "SU" => Ok(6),
+        _ => Err(RRuleParseError(format!("Invalid weekday: {}", d))),
     }
 }
 
-fn parse_weekday(val: &str) -> Vec<usize> {
+fn parse_weekday(val: &str) -> Result<Vec<usize>, RRuleParseError> {
     val.split(",").map(|day| {
         if day.len() == 2 {
             // MO, TU, ...
@@ -190,12 +188,11 @@ fn parse_weekday(val: &str) -> Vec<usize> {
     }).collect()
 }
 
-fn parse_line(rfc_string: &str) -> Option<Options> {
-    println!("Parse line: {}", rfc_string);
+fn parse_line(rfc_string: &str) -> Result<Option<Options>, RRuleParseError> {
     let re = Regex::new(r"(?m)^\s+|\s+$").unwrap();
     let rfc_string = re.replace(rfc_string, "");
     if rfc_string.is_empty() {
-        return None;
+        return Ok(None);
     }
 
     let re = Regex::new(r"(?m)^([A-Z]+?)[:;]").unwrap();
@@ -206,15 +203,15 @@ fn parse_line(rfc_string: &str) -> Option<Options> {
 
     let rfc_string = rfc_string.to_string();
     if header.is_none() {
-        return Some(parse_rrule(&rfc_string));
+        return Ok(Some(parse_rrule(&rfc_string)?));
     }
     let header = header.unwrap();
     let key = header.get(1).unwrap().as_str();
 
     match key {
-        "EXRULE" | "RRULE" => Some(parse_rrule(&rfc_string)),
-        "DTSTART" => Some(parse_dtstart(&rfc_string).unwrap()),
-        _ => panic!("Unsupported RFC prop {} in {}", key, &rfc_string)
+        "EXRULE" | "RRULE" => Ok(Some(parse_rrule(&rfc_string)?)),
+        "DTSTART" => Ok(Some(parse_dtstart(&rfc_string).unwrap())),
+        _ => Err(RRuleParseError(format!("Unsupported RFC prop {} in {}", key, &rfc_string)))
     }
 }
 
@@ -259,16 +256,21 @@ fn extract_name(line: String) -> LineName {
     }
 } 
 
-fn parse_string(rfc_string: &str) -> Options {
-    let options: Vec<Options> = rfc_string.split("\n").map(|l| parse_line(l)).filter(|x| x.is_some())
-    .map(|o| o.unwrap())
-    .collect();
+fn parse_string(rfc_string: &str) -> Result<Options, RRuleParseError> {
+    let mut options = vec![];
+    for line in rfc_string.split("\n") {
+        let parsed_line = parse_line(line)?;
+        if let Some(parsed_line) = parsed_line {
+            options.push(parsed_line);
+        }
 
-    if options.len() == 1 {
-        return options[0].clone();
     }
 
-    Options::concat(&options[0], &options[1])
+    if options.len() == 1 {
+        return Ok(options[0].clone());
+    }
+
+    Ok(Options::concat(&options[0], &options[1]))
 }
 
 #[derive(Debug)]
@@ -281,7 +283,7 @@ struct ParsedInput {
     tzid: Option<Tz>,
 }
 
-fn parse_input(s: &str) -> ParsedInput {
+fn parse_input(s: &str) -> Result<ParsedInput, RRuleParseError> {
     let mut rrule_vals = vec![];
     let mut rdate_vals = vec![];
     let mut exrule_vals = vec![];
@@ -301,23 +303,23 @@ fn parse_input(s: &str) -> ParsedInput {
         match parsed_line.name.to_uppercase().as_str() {
             "RRULE" => {
                 if !parsed_line.params.is_empty() {
-                    panic!("Unsupported RRULE value");
+                    return Err(RRuleParseError(String::from("Unsupported RRULE value")));
                 }
                 if parsed_line.value.is_empty() {
                     continue;
                 }
                 
-                rrule_vals.push(parse_string(line));
+                rrule_vals.push(parse_string(line)?);
             }
             "EXRULE" => {
                 if !parsed_line.params.is_empty() {
-                    panic!("Unsupported EXRULE value");
+                    return Err(RRuleParseError(String::from("Unsupported EXRULE value")));
                 }
                 if parsed_line.value.is_empty() {
                     continue;
                 }
-
-                exrule_vals.push(parse_string(&parsed_line.value));
+                // TODO: why is it parsed_line.value here and line for RRULE ?? Do some testing 
+                exrule_vals.push(parse_string(&parsed_line.value)?);
             }
             "RDATE" => {
                 let re = Regex::new(r"(?m)RDATE(?:;TZID=([^:=]+))?").unwrap();
@@ -340,28 +342,29 @@ fn parse_input(s: &str) -> ParsedInput {
                 exdate_vals.append(&mut parse_rdate(&parsed_line.value, parsed_line.params, &tz));
             }
             "DTSTART" => (),
-            _ => panic!("Unsupported property: {}", parsed_line.name)
+            _ => return Err(RRuleParseError(format!("Unsupported property: {}", parsed_line.name)))
         }
     }
 
-    return ParsedInput {
+    return Ok(ParsedInput {
         dtstart,
         tzid,
         rrule_vals,
         rdate_vals,
         exrule_vals,
         exdate_vals
-    }
+    })
 }
 
-fn validate_date_param(params: Vec<&str>){
+fn validate_date_param(params: Vec<&str>) -> Result<(), RRuleParseError>{
     let re = Regex::new(r"(?m)(VALUE=DATE(-TIME)?)|(TZID=)").unwrap();
 
     for param in &params {
         if re.captures(param).unwrap().len() == 0 {
-            panic!("Unsupported RDATE/EXDATE parm: {}", param);
+            return Err(RRuleParseError(format!("Unsupported RDATE/EXDATE parm: {}", param)));
         }
     }
+    Ok(())
 }
 
 // ! works needs to be done here
@@ -377,7 +380,7 @@ fn parse_rdate(rdateval: &str, params: Vec<String>, tz: &Tz) -> Vec<DTime> {
 }
 
 
-pub fn build_rruleset(s: &str) -> RRuleSet {
+pub fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleParseError> {
     let ParsedInput {
         mut rrule_vals,
         rdate_vals,
@@ -386,66 +389,55 @@ pub fn build_rruleset(s: &str) -> RRuleSet {
         dtstart,
         tzid,
         ..
-    } = parse_input(s);
+    } = parse_input(s)?;
 
 
     let mut rset = RRuleSet::new();
+    rset.dtstart = dtstart;
     
-    if !rrule_vals.is_empty() ||
-        !rdate_vals.is_empty() ||
-        !exrule_vals.is_empty() ||
-        !exdate_vals.is_empty() {
+    for rruleval in rrule_vals.iter_mut() {
+        rruleval.tzid = tzid.clone();
+        rruleval.dtstart = dtstart;
+        let parsed_opts = parse_options(&rruleval)?;
+        let rrule = RRule::new(parsed_opts);
+        rset.rrule(rrule);
+    }
 
-        rset.dtstart = dtstart;
-        // rset.tzid(tzid || undefined);
-        
-        for rruleval in rrule_vals.iter_mut() {
-            rruleval.tzid = tzid.clone();
-            rruleval.dtstart = dtstart;
-            let parsed_opts = parse_options(&rruleval);
-            let rrule = RRule::new(parsed_opts);
-            rset.rrule(rrule);
-        }
-    
-        for rdate in rdate_vals {
-            rset.rdate(rdate);
-        }
+    for rdate in rdate_vals {
+        rset.rdate(rdate);
+    }
 
-        for exrule in exrule_vals.iter_mut() {
-            exrule.tzid = tzid.clone();
-            exrule.dtstart = dtstart;
+    for exrule in exrule_vals.iter_mut() {
+        exrule.tzid = tzid.clone();
+        exrule.dtstart = dtstart;
 
-            let parsed_opts = parse_options(&exrule);
-            let exrule = RRule::new(parsed_opts);
-            rset.rrule(exrule);        
-        }
-    
-        for exdate in exdate_vals {
-            rset.exdate(exdate);
-        }
-    
-        // if (options.compatible && options.dtstart) rset.rdate(dtstart!);
-        return rset;
+        let parsed_opts = parse_options(&exrule)?;
+        let exrule = RRule::new(parsed_opts);
+        rset.rrule(exrule);        
+    }
+
+    for exdate in exdate_vals {
+        rset.exdate(exdate);
     }
 
 
-    rset
+    Ok(rset)
 }
 
-pub fn build_rrule(s: &str) -> RRule {
+pub fn build_rrule(s: &str) -> Result<RRule, RRuleParseError> {
     let ParsedInput {
         mut rrule_vals,
         tzid,
         dtstart,
         ..
-    } = parse_input(s);
+    } = parse_input(s)?;
 
     rrule_vals[0].tzid = tzid;
     rrule_vals[0].dtstart = dtstart;
 
-    let parsed_opts = parse_options(&rrule_vals[0]);
+    let parsed_opts = parse_options(&rrule_vals[0])?;
 
-    RRule::new(parsed_opts)
+    Ok(RRule::new(parsed_opts))
 }
 
 
@@ -456,14 +448,14 @@ mod test {
 
     #[test]
     fn it_works_1() {
-        let options = build_rruleset("DTSTART:19970902T090000Z\nRRULE:FREQ=YEARLY;COUNT=3\n");
+        let options = build_rruleset("DTSTART:19970902T090000Z\nRRULE:FREQ=YEARLY;COUNT=3\n").unwrap();
         println!("?????????????=================?????????????");
         println!("{:?}", options);
     }
 
     #[test]
     fn it_works_2() {
-        let mut options = build_rrule("DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR");
+        let mut options = build_rrule("DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR").unwrap();
         println!("?????????????=================?????????????");
         println!("{:?}", options);
         println!("?????????????=== ALLL    ==============?????????????");
@@ -472,7 +464,7 @@ mod test {
 
     #[test]
     fn it_works_3() {
-        let mut options = build_rruleset("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/Denver:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE");
+        let mut options = build_rruleset("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/Denver:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE").unwrap();
         println!("?????????????=================?????????????");
         println!("{:?}", options);
         let tzid: Tz = "America/Denver".parse().unwrap();
@@ -484,7 +476,7 @@ mod test {
 
     #[test]
     fn it_works_4() {
-        let mut set = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5\nEXDATE;TZID=Europe/Berlin:20120202T130000Z,20120203T130000Z");
+        let mut set = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5\nEXDATE;TZID=Europe/Berlin:20120202T130000Z,20120203T130000Z").unwrap();
         println!("?????????????=================??======?????????????");
         println!("{:?}", set.exdate.iter().map(|d| d.timestamp()).collect::<Vec<i64>>());
         let all = set.all();
