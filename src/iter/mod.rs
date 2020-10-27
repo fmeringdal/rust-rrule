@@ -12,7 +12,7 @@ use crate::options::*;
 use crate::datetime::{Time, DTime, from_ordinal, get_weekday_val};
 use chrono::offset::TimeZone;
 use chrono::prelude::*;
-use chrono::{DateTime, Duration};
+use chrono::Duration;
 
 pub trait IterResult {
     fn accept(&mut self, date: DTime) -> bool;

@@ -1,5 +1,5 @@
 use chrono::prelude::*;
-use chrono_tz::{Tz, UTC};
+use chrono_tz::Tz;
 use crate::rrule::RRule;
 use crate::datetime::DTime;
 use crate::rruleset_iter::RRuleSetIter;
@@ -42,7 +42,7 @@ impl RRuleSet {
 
     pub fn all(&mut self) -> Vec<DateTime<Tz>> {
         let mut iter = RRuleSetIter::all(self);
-        iter.iter(None)
+        iter.iter()
     }
 
     /// Returns the last recurrence before the given datetime instance.
@@ -50,7 +50,7 @@ impl RRuleSet {
     /// With inc == true, if dt itself is an occurrence, it will be returned.
     pub fn before(&mut self, date: DateTime<Tz>, inc: bool) -> Vec<DateTime<Tz>> {
         let mut iter = RRuleSetIter::before(self, date, inc);
-        iter.iter(None)
+        iter.iter()
     }
 
     /// Returns the last recurrence after the given datetime instance.
@@ -58,7 +58,7 @@ impl RRuleSet {
     /// With inc == true, if dt itself is an occurrence, it will be returned.
     pub fn after(&mut self, date: DateTime<Tz>, inc: bool) -> Vec<DateTime<Tz>> {
         let mut iter = RRuleSetIter::after(self, date, inc);
-        iter.iter(None)
+        iter.iter()
     }
 
     /// Returns all the occurrences of the rrule between after and before.
@@ -72,7 +72,7 @@ impl RRuleSet {
         inc: bool,
     ) -> Vec<DateTime<Tz>> {
         let mut iter = RRuleSetIter::between(self, after, before, inc);
-        iter.iter(None)
+        iter.iter()
     }
 }
 

@@ -4,7 +4,6 @@ use crate::rrule::RRule;
 use crate::datetime::DTime;
 use crate::rruleset::RRuleSet;
 use chrono::prelude::*;
-use chrono::DateTime;
 use chrono_tz::{UTC, Tz};
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -31,20 +30,6 @@ fn datestring_to_date(dt: &str, tz: &Tz) -> DTime {
             bits.get(6).unwrap().as_str().parse::<u32>().unwrap(),
             bits.get(7).unwrap().as_str().parse::<u32>().unwrap(),
         );
-}
-
-struct ParsedDateParam {
-    datetime: DateTime<Tz>,
-    timezone: Tz,
-}
-
-fn parse_date_param(s: &str, reg: Lazy<Regex>) -> ParsedDateParam {
-    let caps = reg.captures(s);
-
-    ParsedDateParam {
-        datetime: UTC.timestamp_nanos(0),
-        timezone: UTC
-    }
 }
 
 fn parse_dtstart(s: &str) -> Option<Options> {

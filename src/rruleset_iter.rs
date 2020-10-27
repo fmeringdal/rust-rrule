@@ -3,7 +3,7 @@ use chrono::prelude::*;
 use crate::rruleset::RRuleSet;
 use crate::rrule_iter::*;
 use std::collections::HashMap;
-use chrono_tz::{Tz, UTC};
+use chrono_tz::Tz;
 
 /// Result iterator for the RRuleSet type. It mostly just wraps
 /// `RRuleIterRes` and also before accepting any date makes sure that
@@ -121,7 +121,7 @@ impl<'a> RRuleSetIter<'a> {
         true
     }
 
-    pub fn iter(&mut self, tzid: Option<String>) -> Vec<DateTime<Tz>> {
+    pub fn iter(&mut self) -> Vec<DateTime<Tz>> {
 
         // Add all exdates to exdate_hash
         for date in &self.rrule_set.exdate {
