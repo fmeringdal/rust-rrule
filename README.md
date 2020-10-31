@@ -31,5 +31,4 @@ assert_eq!(occurences.len(), 3);
 
 # Todos
 
-- tests for minutes and seconds frequencies
 - cache

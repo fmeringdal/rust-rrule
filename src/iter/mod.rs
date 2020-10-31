@@ -247,9 +247,9 @@ pub fn increment_counter_date(
                 let hours = counter_date.hour() as usize;
 
                 if (options.byhour.is_empty() || includes(&options.byhour, &hours)) && (
-                    options.byminute.is_empty() || includes(&options.byminute, &minutes) && (
+                    options.byminute.is_empty() || includes(&options.byminute, &minutes)) && (
                         options.bysecond.is_empty() || includes(&options.bysecond, &seconds)
-                    )) {
+                    ) {
                         break;
                 }
             }

@@ -4967,7 +4967,6 @@ mod test {
         );
     }
 
-    //////////////////////////////////////////////////////////////////////////
     #[test]
     fn minutely() {
         let options = ParsedOptions {
@@ -5365,7 +5364,6 @@ mod test {
                 ymd_hms(1997, 12, 31, 0, 3, 0),
             ],
         );
-        println!("Done after: {}ms", start.elapsed().unwrap().as_millis());
     }
 
     #[test]
@@ -5833,20 +5831,6 @@ mod test {
         );
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////////
     #[test]
     fn secondly() {
         let options = ParsedOptions {
@@ -5880,853 +5864,803 @@ mod test {
         );
     }
 
-    // #[test]
-    // fn secondly_interval() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(3),
-    //         bymonth: vec![],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![],
-    //         byhour: vec![],
-    //         bysetpos: vec![],
-    //         byweekno: vec![],
-    //         byminute: vec![],
-    //         bysecond: vec![],
-    //         byyearday: vec![],
-    //         bymonthday: vec![],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 2,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1997, 9, 2, 9, 0, 0),
-    //             ymd_hms(1997, 9, 2, 9, 2, 0),
-    //             ymd_hms(1997, 9, 2, 9, 4, 0),
-    //         ],
-    //     );
-    // }
+    #[test]
+    fn secondly_interval() {
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(3),
+            bymonth: vec![],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![],
+            bysecond: vec![],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 2,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1997, 9, 2, 9, 0, 0),
+                ymd_hms(1997, 9, 2, 9, 0, 2),
+                ymd_hms(1997, 9, 2, 9, 0, 4),
+            ],
+        );
+    }
 
-    // #[test]
-    // fn secondly_interval_large() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(3),
-    //         bymonth: vec![],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![],
-    //         byhour: vec![],
-    //         bysetpos: vec![],
-    //         byweekno: vec![],
-    //         byminute: vec![],
-    //         bysecond: vec![],
-    //         byyearday: vec![],
-    //         bymonthday: vec![],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1501,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1997, 9, 2, 9, 0, 0),
-    //             ymd_hms(1997, 9, 3, 10, 1, 0),
-    //             ymd_hms(1997, 9, 4, 11, 2, 0),
-    //         ],
-    //     );
-    // }
+    #[test]
+    fn secondly_interval_large() {
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(3),
+            bymonth: vec![],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![],
+            bysecond: vec![],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 90061,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1997, 9, 2, 9, 0, 0),
+                ymd_hms(1997, 9, 3, 10, 1, 1),
+                ymd_hms(1997, 9, 4, 11, 2, 2),
+            ],
+        );
+    }
 
-    // #[test]
-    // fn secondly_by_month() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(3),
-    //         bymonth: vec![1, 3],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![],
-    //         byhour: vec![],
-    //         bysetpos: vec![],
-    //         byweekno: vec![],
-    //         byminute: vec![],
-    //         bysecond: vec![],
-    //         byyearday: vec![],
-    //         bymonthday: vec![],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1998, 1, 1, 0, 0, 0),
-    //             ymd_hms(1998, 1, 1, 0, 1, 0),
-    //             ymd_hms(1998, 1, 1, 0, 2, 0),
-    //         ],
-    //     );
-    // }
+    #[test]
+    fn secondly_by_month() {
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(3),
+            bymonth: vec![1, 3],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![],
+            bysecond: vec![],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 1,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1998, 1, 1, 0, 0, 0),
+                ymd_hms(1998, 1, 1, 0, 0, 1),
+                ymd_hms(1998, 1, 1, 0, 0, 2),
+            ],
+        );
+    }
 
-    // #[test]
-    // fn secondly_by_monthday() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(3),
-    //         bymonth: vec![],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![],
-    //         byhour: vec![],
-    //         bysetpos: vec![],
-    //         byweekno: vec![],
-    //         byminute: vec![],
-    //         bysecond: vec![],
-    //         byyearday: vec![],
-    //         bymonthday: vec![1, 3],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1997, 9, 3, 0, 0, 0),
-    //             ymd_hms(1997, 9, 3, 0, 1, 0),
-    //             ymd_hms(1997, 9, 3, 0, 2, 0),
-    //         ],
-    //     );
-    // }
+    #[test]
+    fn secondly_by_monthday() {
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(3),
+            bymonth: vec![],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![],
+            bysecond: vec![],
+            byyearday: vec![],
+            bymonthday: vec![1, 3],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 1,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1997, 9, 3, 0, 0, 0),
+                ymd_hms(1997, 9, 3, 0, 0, 1),
+                ymd_hms(1997, 9, 3, 0, 0, 2),
+            ],
+        );
+    }
 
-    // #[test]
-    // fn secondly_by_month_and_monthday() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(3),
-    //         bymonth: vec![1, 3],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![],
-    //         byhour: vec![],
-    //         bysetpos: vec![],
-    //         byweekno: vec![],
-    //         byminute: vec![],
-    //         bysecond: vec![],
-    //         byyearday: vec![],
-    //         bymonthday: vec![5, 7],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1998, 1, 5, 0, 0, 0),
-    //             ymd_hms(1998, 1, 5, 0, 1, 0),
-    //             ymd_hms(1998, 1, 5, 0, 2, 0),
-    //         ],
-    //     );
-    // }
+    #[test]
+    fn secondly_by_month_and_monthday() {
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(3),
+            bymonth: vec![1, 3],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![],
+            bysecond: vec![],
+            byyearday: vec![],
+            bymonthday: vec![5, 7],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 1,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1998, 1, 5, 0, 0, 0),
+                ymd_hms(1998, 1, 5, 0, 0, 1),
+                ymd_hms(1998, 1, 5, 0, 0, 2),
+            ],
+        );
+    }
 
-    // #[test]
-    // fn secondly_by_weekday() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(3),
-    //         bymonth: vec![],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![3, 5],
-    //         byhour: vec![],
-    //         bysetpos: vec![],
-    //         byweekno: vec![],
-    //         byminute: vec![],
-    //         bysecond: vec![],
-    //         byyearday: vec![],
-    //         bymonthday: vec![],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1997, 9, 4, 0, 0, 0),
-    //             ymd_hms(1997, 9, 4, 0, 1, 0),
-    //             ymd_hms(1997, 9, 4, 0, 2, 0),
-    //         ],
-    //     );
-    // }
+    #[test]
+    fn secondly_by_weekday() {
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(3),
+            bymonth: vec![],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![3, 5],
+            byhour: vec![],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![],
+            bysecond: vec![],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 1,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1997, 9, 4, 0, 0, 0),
+                ymd_hms(1997, 9, 4, 0, 0, 1),
+                ymd_hms(1997, 9, 4, 0, 0, 2),
+            ],
+        );
+    }
 
-    // #[test]
-    // fn secondly_by_month_and_weekday() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(3),
-    //         bymonth: vec![1, 3],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![1, 3],
-    //         byhour: vec![],
-    //         bysetpos: vec![],
-    //         byweekno: vec![],
-    //         byminute: vec![],
-    //         bysecond: vec![],
-    //         byyearday: vec![],
-    //         bymonthday: vec![],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1998, 1, 1, 0, 0, 0),
-    //             ymd_hms(1998, 1, 1, 0, 1, 0),
-    //             ymd_hms(1998, 1, 1, 0, 2, 0),
-    //         ],
-    //     );
-    // }
+    #[test]
+    fn secondly_by_month_and_weekday() {
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(3),
+            bymonth: vec![1, 3],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![1, 3],
+            byhour: vec![],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![],
+            bysecond: vec![],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 1,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1998, 1, 1, 0, 0, 0),
+                ymd_hms(1998, 1, 1, 0, 0, 1),
+                ymd_hms(1998, 1, 1, 0, 0, 2),
+            ],
+        );
+    }
 
-    // #[test]
-    // fn secondly_by_monthday_and_weekday() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(3),
-    //         bymonth: vec![],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![1, 3],
-    //         byhour: vec![],
-    //         bysetpos: vec![],
-    //         byweekno: vec![],
-    //         byminute: vec![],
-    //         bysecond: vec![],
-    //         byyearday: vec![],
-    //         bymonthday: vec![1, 3],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1998, 1, 1, 0, 0, 0),
-    //             ymd_hms(1998, 1, 1, 0, 1, 0),
-    //             ymd_hms(1998, 1, 1, 0, 2, 0),
-    //         ],
-    //     );
-    // }
+    #[test]
+    fn secondly_by_monthday_and_weekday() {
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(3),
+            bymonth: vec![],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![1, 3],
+            byhour: vec![],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![],
+            bysecond: vec![],
+            byyearday: vec![],
+            bymonthday: vec![1, 3],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 1,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1998, 1, 1, 0, 0, 0),
+                ymd_hms(1998, 1, 1, 0, 0, 1),
+                ymd_hms(1998, 1, 1, 0, 0, 2),
+            ],
+        );
+    }
 
-    // #[test]
-    // fn secondly_by_month_and_monthday_and_weekday() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(3),
-    //         bymonth: vec![1, 3],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![1, 3],
-    //         byhour: vec![],
-    //         bysetpos: vec![],
-    //         byweekno: vec![],
-    //         byminute: vec![],
-    //         bysecond: vec![],
-    //         byyearday: vec![],
-    //         bymonthday: vec![1, 3],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1998, 1, 1, 0, 0, 0),
-    //             ymd_hms(1998, 1, 1, 0, 1, 0),
-    //             ymd_hms(1998, 1, 1, 0, 2, 0),
-    //         ],
-    //     );
-    // }
+    #[test]
+    fn secondly_by_month_and_monthday_and_weekday() {
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(3),
+            bymonth: vec![1, 3],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![1, 3],
+            byhour: vec![],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![],
+            bysecond: vec![],
+            byyearday: vec![],
+            bymonthday: vec![1, 3],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 1,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1998, 1, 1, 0, 0, 0),
+                ymd_hms(1998, 1, 1, 0, 0, 1),
+                ymd_hms(1998, 1, 1, 0, 0, 2),
+            ],
+        );
+    }
 
-    // #[test]
-    // fn secondly_by_yearday() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(4),
-    //         bymonth: vec![],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![],
-    //         byhour: vec![],
-    //         bysetpos: vec![],
-    //         byweekno: vec![],
-    //         byminute: vec![],
-    //         bysecond: vec![],
-    //         byyearday: vec![1, 100, 200, 365],
-    //         bymonthday: vec![],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1997, 12, 31, 0, 0, 0),
-    //             ymd_hms(1997, 12, 31, 0, 1, 0),
-    //             ymd_hms(1997, 12, 31, 0, 2, 0),
-    //             ymd_hms(1997, 12, 31, 0, 3, 0),
-    //         ],
-    //     );
-    // }
+    #[test]
+    fn secondly_by_yearday() {
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(4),
+            bymonth: vec![],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![],
+            bysecond: vec![],
+            byyearday: vec![1, 100, 200, 365],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 1,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1997, 12, 31, 0, 0, 0),
+                ymd_hms(1997, 12, 31, 0, 0, 1),
+                ymd_hms(1997, 12, 31, 0, 0, 2),
+                ymd_hms(1997, 12, 31, 0, 0, 3),
+            ],
+        );
+    }
 
-    // #[test]
-    // fn secondly_by_yeardayneg() {
-    //     let start  = std::time::SystemTime::now();
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(4),
-    //         bymonth: vec![],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![],
-    //         byhour: vec![],
-    //         bysetpos: vec![],
-    //         byweekno: vec![],
-    //         byminute: vec![],
-    //         bysecond: vec![],
-    //         byyearday: vec![-365, -266, -166, -1],
-    //         bymonthday: vec![],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1997, 12, 31, 0, 0, 0),
-    //             ymd_hms(1997, 12, 31, 0, 1, 0),
-    //             ymd_hms(1997, 12, 31, 0, 2, 0),
-    //             ymd_hms(1997, 12, 31, 0, 3, 0),
-    //         ],
-    //     );
-    //     println!("Done after: {}ms", start.elapsed().unwrap().as_millis());
-    // }
+    #[test]
+    fn secondly_by_yeardayneg() {
+        let start  = std::time::SystemTime::now();
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(4),
+            bymonth: vec![],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![],
+            bysecond: vec![],
+            byyearday: vec![-365, -266, -166, -1],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 1,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1997, 12, 31, 0, 0, 0),
+                ymd_hms(1997, 12, 31, 0, 0, 1),
+                ymd_hms(1997, 12, 31, 0, 0, 2),
+                ymd_hms(1997, 12, 31, 0, 0, 3),
+            ],
+        );
+    }
 
-    // #[test]
-    // fn secondly_by_month_and_yearday() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(4),
-    //         bymonth: vec![4, 7],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![],
-    //         byhour: vec![],
-    //         bysetpos: vec![],
-    //         byweekno: vec![],
-    //         byminute: vec![],
-    //         bysecond: vec![],
-    //         byyearday: vec![1, 100, 200, 365],
-    //         bymonthday: vec![],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1998, 4, 10, 0, 0, 0),
-    //             ymd_hms(1998, 4, 10, 0, 1, 0),
-    //             ymd_hms(1998, 4, 10, 0, 2, 0),
-    //             ymd_hms(1998, 4, 10, 0, 3, 0),
-    //         ],
-    //     );
-    // }
+    #[test]
+    fn secondly_by_month_and_yearday() {
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(4),
+            bymonth: vec![4, 7],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![],
+            bysecond: vec![],
+            byyearday: vec![1, 100, 200, 365],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 1,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1998, 4, 10, 0, 0, 0),
+                ymd_hms(1998, 4, 10, 0, 0, 1),
+                ymd_hms(1998, 4, 10, 0, 0, 2),
+                ymd_hms(1998, 4, 10, 0, 0, 3),
+            ],
+        );
+    }
 
-    // #[test]
-    // fn secondly_by_weekno() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(3),
-    //         bymonth: vec![],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![],
-    //         byhour: vec![],
-    //         bysetpos: vec![],
-    //         byweekno: vec![20],
-    //         byminute: vec![],
-    //         bysecond: vec![],
-    //         byyearday: vec![],
-    //         bymonthday: vec![],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1998, 5, 11, 0, 0, 0),
-    //             ymd_hms(1998, 5, 11, 0, 1, 0),
-    //             ymd_hms(1998, 5, 11, 0, 2, 0),
-    //         ],
-    //     );
-    // }
+    #[test]
+    fn secondly_by_weekno() {
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(3),
+            bymonth: vec![],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![],
+            bysetpos: vec![],
+            byweekno: vec![20],
+            byminute: vec![],
+            bysecond: vec![],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 1,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1998, 5, 11, 0, 0, 0),
+                ymd_hms(1998, 5, 11, 0, 0, 1),
+                ymd_hms(1998, 5, 11, 0, 0, 2),
+            ],
+        );
+    }
 
-    // #[test]
-    // fn secondly_by_weekno_and_weekday() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(3),
-    //         bymonth: vec![],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![0],
-    //         byhour: vec![],
-    //         bysetpos: vec![],
-    //         byweekno: vec![1],
-    //         byminute: vec![],
-    //         bysecond: vec![],
-    //         byyearday: vec![],
-    //         bymonthday: vec![],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1997, 12, 29, 0, 0, 0),
-    //             ymd_hms(1997, 12, 29, 0, 1, 0),
-    //             ymd_hms(1997, 12, 29, 0, 2, 0),
-    //         ],
-    //     );
-    // }
+    #[test]
+    fn secondly_by_weekno_and_weekday() {
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(3),
+            bymonth: vec![],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![0],
+            byhour: vec![],
+            bysetpos: vec![],
+            byweekno: vec![1],
+            byminute: vec![],
+            bysecond: vec![],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 1,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1997, 12, 29, 0, 0, 0),
+                ymd_hms(1997, 12, 29, 0, 0, 1),
+                ymd_hms(1997, 12, 29, 0, 0, 2),
+            ],
+        );
+    }
 
-    // #[test]
-    // fn secondly_by_weekno_and_weekday_large() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(3),
-    //         bymonth: vec![],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![6],
-    //         byhour: vec![],
-    //         bysetpos: vec![],
-    //         byweekno: vec![52],
-    //         byminute: vec![],
-    //         bysecond: vec![],
-    //         byyearday: vec![],
-    //         bymonthday: vec![],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1997, 12, 28, 0, 0, 0),
-    //             ymd_hms(1997, 12, 28, 0, 1, 0),
-    //             ymd_hms(1997, 12, 28, 0, 2, 0),
-    //         ],
-    //     );
-    // }
+    #[test]
+    fn secondly_by_weekno_and_weekday_large() {
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(3),
+            bymonth: vec![],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![6],
+            byhour: vec![],
+            bysetpos: vec![],
+            byweekno: vec![52],
+            byminute: vec![],
+            bysecond: vec![],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 1,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1997, 12, 28, 0, 0, 0),
+                ymd_hms(1997, 12, 28, 0, 0, 1),
+                ymd_hms(1997, 12, 28, 0, 0, 2),
+            ],
+        );
+    }
 
-    // #[test]
-    // fn secondly_by_weekno_and_weekday_last() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(3),
-    //         bymonth: vec![],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![6],
-    //         byhour: vec![],
-    //         bysetpos: vec![],
-    //         byweekno: vec![-1],
-    //         byminute: vec![],
-    //         bysecond: vec![],
-    //         byyearday: vec![],
-    //         bymonthday: vec![],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1997, 12, 28, 0, 0, 0),
-    //             ymd_hms(1997, 12, 28, 0, 1, 0),
-    //             ymd_hms(1997, 12, 28, 0, 2, 0),
-    //         ],
-    //     );
-    // }
+    #[test]
+    fn secondly_by_weekno_and_weekday_last() {
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(3),
+            bymonth: vec![],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![6],
+            byhour: vec![],
+            bysetpos: vec![],
+            byweekno: vec![-1],
+            byminute: vec![],
+            bysecond: vec![],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 1,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1997, 12, 28, 0, 0, 0),
+                ymd_hms(1997, 12, 28, 0, 0, 1),
+                ymd_hms(1997, 12, 28, 0, 0, 2),
+            ],
+        );
+    }
 
-    // #[test]
-    // fn secondly_by_weekno_and_weekday53() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(3),
-    //         bymonth: vec![],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![0],
-    //         byhour: vec![],
-    //         bysetpos: vec![],
-    //         byweekno: vec![53],
-    //         byminute: vec![],
-    //         bysecond: vec![],
-    //         byyearday: vec![],
-    //         bymonthday: vec![],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1998, 12, 28, 0, 0, 0),
-    //             ymd_hms(1998, 12, 28, 0, 1, 0),
-    //             ymd_hms(1998, 12, 28, 0, 2, 0),
-    //         ],
-    //     );
-    // }
+    #[test]
+    fn secondly_by_weekno_and_weekday53() {
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(3),
+            bymonth: vec![],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![0],
+            byhour: vec![],
+            bysetpos: vec![],
+            byweekno: vec![53],
+            byminute: vec![],
+            bysecond: vec![],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 1,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1998, 12, 28, 0, 0, 0),
+                ymd_hms(1998, 12, 28, 0, 0, 1),
+                ymd_hms(1998, 12, 28, 0, 0, 2),
+            ],
+        );
+    }
 
-    // #[test]
-    // fn secondly_by_hour() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(3),
-    //         bymonth: vec![],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![],
-    //         byhour: vec![6, 18],
-    //         bysetpos: vec![],
-    //         byweekno: vec![],
-    //         byminute: vec![],
-    //         bysecond: vec![],
-    //         byyearday: vec![],
-    //         bymonthday: vec![],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1997, 9, 2, 18, 0, 0),
-    //             ymd_hms(1997, 9, 2, 18, 1, 0),
-    //             ymd_hms(1997, 9, 2, 18, 2, 0),
-    //         ],
-    //     );
-    // }
+    #[test]
+    fn secondly_by_hour() {
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(3),
+            bymonth: vec![],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![6, 18],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![],
+            bysecond: vec![],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 1,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1997, 9, 2, 18, 0, 0),
+                ymd_hms(1997, 9, 2, 18, 0, 1),
+                ymd_hms(1997, 9, 2, 18, 0, 2),
+            ],
+        );
+    }
 
-    // #[test]
-    // fn secondly_by_minute() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(3),
-    //         bymonth: vec![],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![],
-    //         byhour: vec![],
-    //         bysetpos: vec![],
-    //         byweekno: vec![],
-    //         byminute: vec![6, 18],
-    //         bysecond: vec![],
-    //         byyearday: vec![],
-    //         bymonthday: vec![],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1997, 9, 2, 9, 6, 0),
-    //             ymd_hms(1997, 9, 2, 9, 18, 0),
-    //             ymd_hms(1997, 9, 2, 10, 6, 0),
-    //         ],
-    //     );
-    // }
+    #[test]
+    fn secondly_by_minute() {
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(3),
+            bymonth: vec![],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![6, 18],
+            bysecond: vec![],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 1,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1997, 9, 2, 9, 6, 0),
+                ymd_hms(1997, 9, 2, 9, 6, 1),
+                ymd_hms(1997, 9, 2, 9, 6, 2),
+            ],
+        );
+    }
 
-    // #[test]
-    // fn secondly_by_second() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(3),
-    //         bymonth: vec![],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![],
-    //         byhour: vec![],
-    //         bysetpos: vec![],
-    //         byweekno: vec![],
-    //         byminute: vec![],
-    //         bysecond: vec![6, 18],
-    //         byyearday: vec![],
-    //         bymonthday: vec![],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1997, 9, 2, 9, 0, 6),
-    //             ymd_hms(1997, 9, 2, 9, 0, 18),
-    //             ymd_hms(1997, 9, 2, 9, 1, 6),
-    //         ],
-    //     );
-    // }
+    #[test]
+    fn secondly_by_second() {
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(3),
+            bymonth: vec![],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![],
+            bysecond: vec![6, 18],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 1,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1997, 9, 2, 9, 0, 6),
+                ymd_hms(1997, 9, 2, 9, 0, 18),
+                ymd_hms(1997, 9, 2, 9, 1, 6),
+            ],
+        );
+    }
 
-    // #[test]
-    // fn secondly_by_hour_and_minute() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(3),
-    //         bymonth: vec![],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![],
-    //         byhour: vec![6, 18],
-    //         bysetpos: vec![],
-    //         byweekno: vec![],
-    //         byminute: vec![6, 18],
-    //         bysecond: vec![],
-    //         byyearday: vec![],
-    //         bymonthday: vec![],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1997, 9, 2, 18, 6, 0),
-    //             ymd_hms(1997, 9, 2, 18, 18, 0),
-    //             ymd_hms(1997, 9, 3, 6, 6, 0),
-    //         ],
-    //     );
-    // }
+    #[test]
+    fn secondly_by_hour_and_minute() {
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(3),
+            bymonth: vec![],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![6, 18],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![6, 18],
+            bysecond: vec![],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 1,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1997, 9, 2, 18, 6, 0),
+                ymd_hms(1997, 9, 2, 18, 6, 1),
+                ymd_hms(1997, 9, 2, 18, 6, 2),
+            ],
+        );
+    }
 
-    // #[test]
-    // fn secondly_by_hour_and_second() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(3),
-    //         bymonth: vec![],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![],
-    //         byhour: vec![6, 18],
-    //         bysetpos: vec![],
-    //         byweekno: vec![],
-    //         byminute: vec![],
-    //         bysecond: vec![6, 18],
-    //         byyearday: vec![],
-    //         bymonthday: vec![],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1997, 9, 2, 18, 0, 6),
-    //             ymd_hms(1997, 9, 2, 18, 0, 18),
-    //             ymd_hms(1997, 9, 2, 18, 1, 6),
-    //         ],
-    //     );
-    // }
+    #[test]
+    fn secondly_by_hour_and_second() {
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(3),
+            bymonth: vec![],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![6, 18],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![],
+            bysecond: vec![6, 18],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 1,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1997, 9, 2, 18, 0, 6),
+                ymd_hms(1997, 9, 2, 18, 0, 18),
+                ymd_hms(1997, 9, 2, 18, 1, 6),
+            ],
+        );
+    }
 
-    // #[test]
-    // fn secondly_by_minute_and_second() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(3),
-    //         bymonth: vec![],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![],
-    //         byhour: vec![],
-    //         bysetpos: vec![],
-    //         byweekno: vec![],
-    //         byminute: vec![6, 18],
-    //         bysecond: vec![6, 18],
-    //         byyearday: vec![],
-    //         bymonthday: vec![],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1997, 9, 2, 9, 6, 6),
-    //             ymd_hms(1997, 9, 2, 9, 6, 18),
-    //             ymd_hms(1997, 9, 2, 9, 18, 6),
-    //         ],
-    //     );
-    // }
+    #[test]
+    fn secondly_by_minute_and_second() {
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(3),
+            bymonth: vec![],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![6, 18],
+            bysecond: vec![6, 18],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 1,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1997, 9, 2, 9, 6, 6),
+                ymd_hms(1997, 9, 2, 9, 6, 18),
+                ymd_hms(1997, 9, 2, 9, 18, 6),
+            ],
+        );
+    }
 
-    // #[test]
-    // fn secondly_by_hour_and_minute_and_second() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(5),
-    //         bymonth: vec![],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![],
-    //         byhour: vec![6, 18],
-    //         bysetpos: vec![],
-    //         byweekno: vec![],
-    //         byminute: vec![6, 18],
-    //         bysecond: vec![6, 18],
-    //         byyearday: vec![],
-    //         bymonthday: vec![],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1997, 9, 2, 18, 6, 6),
-    //             ymd_hms(1997, 9, 2, 18, 6, 18),
-    //             ymd_hms(1997, 9, 2, 18, 18, 6),
-    //             ymd_hms(1997, 9, 2, 18, 18, 18),
-    //             ymd_hms(1997, 9, 3, 6, 6, 6),
-    //         ],
-    //     );
-    // }
-
-    // #[test]
-    // fn secondly_by_setpos() {
-    //     let options = ParsedOptions {
-    //         freq: Frequenzy::Secondly,
-    //         count: Some(3),
-    //         bymonth: vec![],
-    //         dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
-    //         byweekday: vec![],
-    //         byhour: vec![],
-    //         bysetpos: vec![3, -3],
-    //         byweekno: vec![],
-    //         byminute: vec![],
-    //         bysecond: vec![15, 30, 45],
-    //         byyearday: vec![],
-    //         bymonthday: vec![],
-    //         bynweekday: vec![],
-    //         bynmonthday: vec![],
-    //         until: None,
-    //         wkst: 0,
-    //         tzid: UTC,
-    //         interval: 1,
-    //         byeaster: None,
-    //     };
-    //     test_recurring(
-    //         options,
-    //         &vec![
-    //             ymd_hms(1997, 9, 2, 9, 0, 15),
-    //             ymd_hms(1997, 9, 2, 9, 0, 45),
-    //             ymd_hms(1997, 9, 2, 9, 1, 15),
-    //         ],
-    //     );
-    // }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////////
-
+    #[test]
+    fn secondly_by_hour_and_minute_and_second() {
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(5),
+            bymonth: vec![],
+            dtstart: ymd_hms(1997, 9, 2, 9, 0, 0),
+            byweekday: vec![],
+            byhour: vec![6, 18],
+            bysetpos: vec![],
+            byweekno: vec![],
+            byminute: vec![6, 18],
+            bysecond: vec![6, 18],
+            byyearday: vec![],
+            bymonthday: vec![],
+            bynweekday: vec![],
+            bynmonthday: vec![],
+            until: None,
+            wkst: 0,
+            tzid: UTC,
+            interval: 1,
+            byeaster: None,
+        };
+        test_recurring(
+            options,
+            &vec![
+                ymd_hms(1997, 9, 2, 18, 6, 6),
+                ymd_hms(1997, 9, 2, 18, 6, 18),
+                ymd_hms(1997, 9, 2, 18, 18, 6),
+                ymd_hms(1997, 9, 2, 18, 18, 18),
+                ymd_hms(1997, 9, 3, 6, 6, 6),
+            ],
+        );
+    }
 
     #[test]
     fn until_not_matching() {
