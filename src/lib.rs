@@ -1,9 +1,10 @@
 //! A partial implementation of recurrence rules as defined in the iCalendar RFC.
+//! 
 //!
 //!
 //! # Examples
 //!
-//! RRule
+//! RRule quickstart from rrulestring
 //!
 //! ```
 //! extern crate rrule;
@@ -16,7 +17,7 @@
 //! ```
 //!
 //!
-//! RRuleSet
+//! RRuleSet quickstart from rrulestring
 //!
 //! ```
 //! extern crate rrule;
@@ -30,7 +31,7 @@
 //!
 //!
 //!
-//! Using `Options` instead of str to build RRule and RRuleSet
+//! Using `Options` instead of rrule strings to build RRule and RRuleSet
 //!
 //! ```
 //! extern crate rrule;
@@ -83,7 +84,7 @@
 //! let mut rrule = RRule::new(rrule_options);
 //!
 //!
-//! // Build options for ecrule that occurs weekly on Wednesday
+//! // Build options for exrule that occurs weekly on Wednesday
 //! let mut exrule_options = Options::new()
 //!     .dtstart(UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
 //!     .count(4)
@@ -121,21 +122,21 @@
 //!
 //! use chrono::prelude::*;
 //! use chrono_tz::{UTC, Tz};
-//! use chrono_tz::Europe::{Berlin, Moscow};
+//! use chrono_tz::Europe::Berlin;
 //! use rrule::{RRule, RRuleSet, Options, Frequenzy, Weekday};
 //!
 //! // SOME NOTES:
-//! // Occurences produces by RRule or RRuleSet will be in the same timezone
+//! // Occurences produced by an rrule will be in the same timezone
 //! // as the start datetime provided (dtstart). The `until` datetime MUST
 //! // always be specified with the UTC timezone if it is specified.
-
+//!
 //! // Example:
-//! // The following examples uses an RRuleSet with an RRule that yields occurences
-//! // in the Europe/Berlin timezone, and contains one EXDATE that is specified
+//! // The following examples uses the RRuleSet type with an RRule that yields occurences
+//! // in the Europe/Berlin timezone, and one EXDATE that is specified
 //! // in UTC and collides (and therefore filters away) with one of those occurences.  
 //!
 //!
-//! // Build options for rrule that occurs daily at 9 oclock
+//! // Build options for rrule that occurs daily at 9 oclock for 4 times
 //! let mut rrule_options = Options::new()
 //!     .dtstart(Berlin.ymd(2020, 1, 1).and_hms(9, 0, 0))
 //!     .count(4)
@@ -146,7 +147,7 @@
 //! let mut rrule = RRule::new(rrule_options);
 //!
 //! // Exdate in the UTC at 8 oclock which is 9 oclock in Berlin and therefore
-//! // collides with one of the rrule occurences.
+//! // collides with the second rrule occurence.
 //! let exdate = UTC.ymd(2020, 1, 2).and_hms(8, 0, 0);
 //!
 //! // Now create the RRuleSet and add rrule and exdate
@@ -158,11 +159,22 @@
 //! // RRule contained 4 occurences but 1 was filtered away by the exdate
 //! assert_eq!(occurences.len(), 3);
 //!
-//! // If you want to get back the DateTimes in another timezone (In this case Moscow).
-//! // Refer to the chrono and chrono-tz crates for more documentation on how to work with
-//! // their DateTime type and timezones.
+//! // If you want to get back the DateTimes in another timezone you can just iterate over the result
+//! // and convert them to another timezone by using the with_timzone method provided by the DateTime type.
+//! // Refer to the chrono and chrono-tz crates for more documenation on working with the DateTime type.
+//! 
+//! // Example of converting to mocow timezone
+//! use chrono_tz::Europe::Moscow;
+//!
 //! let occurences_in_moscow_tz: Vec<DateTime<Tz>> = occurences.iter()
 //!     .map(|d| d.with_timezone(&Moscow)).collect();
+//!
+//!
+//! // Example of converting to local timezone (Local comes from chrono::prelude::*)
+//! let occurences_in_local_tz: Vec<DateTime<Local>> = occurences.iter()
+//!     .map(|d| d.with_timezone(&Local)).collect();
+//!
+//!
 //! ```
 
 extern crate chrono;
