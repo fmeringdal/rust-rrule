@@ -109,6 +109,23 @@ fn stringval_to_int<T: FromStr>(val: &str, err_msg: String) -> Result<T, RRulePa
     }
 }
 
+fn stringval_to_intvec<T: FromStr + Ord + PartialEq + Copy, F: Fn(T) -> bool>(val: &str, accept: F, err_msg: String) -> Result<Vec<T>, RRuleParseError> {
+    let mut parsed_vals = vec![];
+    for val in val.split(",") {
+        let val = stringval_to_int(val, err_msg.clone())?;
+        if accept(val) {
+            parsed_vals.push(val);
+        } else {
+            return Err(RRuleParseError(err_msg));
+        }
+    }
+
+    parsed_vals.sort();
+    parsed_vals.dedup();
+
+    Ok(parsed_vals)
+}
+
 fn parse_rrule(line: &str) -> Result<Options, RRuleParseError> {
     let stripped_line = if line.starts_with("RRULE:") {
         &line[6..]
@@ -154,67 +171,35 @@ fn parse_rrule(line: &str) -> Result<Options, RRuleParseError> {
                 options.interval = Some(interval);
             }
             "BYSETPOS" => {
-                let mut bysetpos = vec![];
-                for val in value.split(",") {
-                    let val = stringval_to_int(val, format!("Invalid bysetpos value"))?;
-                    bysetpos.push(val);
-                }
+                let bysetpos = stringval_to_intvec(value, |pos| true, format!("Invalid bysetpos value"))?;
                 options.bysetpos = Some(bysetpos);
             }
             "BYMONTH" => {
-                let mut bymonth = vec![];
-                for val in value.split(",") {
-                    let val = stringval_to_int(val, format!("Invalid bymonth value"))?;
-                    bymonth.push(val);
-                }
+                let bymonth = stringval_to_intvec(value, |month| month >= 0 && month <= 11, format!("Invalid bymonth value"))?;
                 options.bymonth = Some(bymonth);
             }
             "BYMONTHDAY" => {
-                let mut bymonthday = vec![];
-                for val in value.split(",") {
-                    let val = stringval_to_int(val, format!("Invalid bymonthday value"))?;
-                    bymonthday.push(val);
-                }
+                let bymonthday = stringval_to_intvec(value, |monthday| monthday >= 0 && monthday <= 31, format!("Invalid bymonthday value"))?;
                 options.bymonthday = Some(bymonthday);
             }
             "BYYEARDAY" => {
-                let mut byyearday = vec![];
-                for val in value.split(",") {
-                    let val = stringval_to_int(val, format!("Invalid byyearday value"))?;
-                    byyearday.push(val);
-                }
+                let byyearday = stringval_to_intvec(value, |yearday| yearday >= -366 && yearday <= 366, format!("Invalid byyearday value"))?;
                 options.byyearday = Some(byyearday);
             }
             "BYWEEKNO" => {
-                let mut byweekno = vec![];
-                for val in value.split(",") {
-                    let val = stringval_to_int(val, format!("Invalid byweekno value"))?;
-                    byweekno.push(val);
-                }
+                let byweekno = stringval_to_intvec(value, |weekno| weekno >= 0 && weekno <= 53, format!("Invalid byweekno value"))?;
                 options.byweekno = Some(byweekno);
             }
             "BYHOUR" => {
-                let mut byhour = vec![];
-                for val in value.split(",") {
-                    let val = stringval_to_int(val, format!("Invalid byhour value"))?;
-                    byhour.push(val);
-                }
+                let byhour = stringval_to_intvec(value, |hour| hour < 24, format!("Invalid byhour value"))?;
                 options.byhour = Some(byhour);
             }
             "BYMINUTE" => {
-                let mut byminute = vec![];
-                for val in value.split(",") {
-                    let val = stringval_to_int(val, format!("Invalid byminute value"))?;
-                    byminute.push(val);
-                }
+                let byminute = stringval_to_intvec(value, |minute| minute < 60, format!("Invalid byminute value"))?;
                 options.byminute = Some(byminute);
             }
             "BYSECOND" => {
-                let mut bysecond = vec![];
-                for val in value.split(",") {
-                    let val = stringval_to_int(val, format!("Invalid bysecond value"))?;
-                    bysecond.push(val);
-                }
+                let bysecond = stringval_to_intvec(value, |sec| sec < 60, format!("Invalid bysecond value"))?;
                 options.bysecond = Some(bysecond);
             }
             "BYWEEKDAY" | "BYDAY" => {
@@ -471,7 +456,6 @@ fn validate_date_param(params: Vec<&str>) -> Result<(), RRuleParseError> {
     Ok(())
 }
 
-// ! work needs to be done here
 fn parse_rdate(
     rdateval: &str,
     params: Vec<String>,
@@ -479,9 +463,7 @@ fn parse_rdate(
 ) -> Result<Vec<DTime>, RRuleParseError> {
     let params: Vec<&str> = params.iter().map(|p| p.as_str()).collect();
     validate_date_param(params)?;
-    // let re_timezone = Regex::new(r"(?m)TZID=(.+):").unwrap();
-    // let caps = re_timezone.captures(text)
-    // let tzid = re_timezone
+    
     let mut rdatevals = vec![];
     for datestr in rdateval.split(",") {
         rdatevals.push(datestring_to_date(datestr, tz)?);
@@ -625,6 +607,30 @@ mod test {
         let res = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAIL;COUNT=5");
         assert!(res.is_err());
         assert_eq!(res.err().unwrap().0, "Invalid frequenzy: DAIL");
+    }
+
+    #[test]
+    fn invalid_byhour() {
+        let res = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5;BYHOUR=24");
+        assert!(res.is_err());
+        assert_eq!(res.err().unwrap().0, "Invalid byhour value");
+
+
+        let res = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5;BYHOUR=5,6,25");
+        assert!(res.is_err());
+        assert_eq!(res.err().unwrap().0, "Invalid byhour value");
+    }
+
+    #[test]
+    fn invalid_byminute() {
+        let res = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5;BYMINUTE=60");
+        assert!(res.is_err());
+        assert_eq!(res.err().unwrap().0, "Invalid byminute value");
+
+
+        let res = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5;BYMINUTE=4,5,64");
+        assert!(res.is_err());
+        assert_eq!(res.err().unwrap().0, "Invalid byminute value");
     }
 
     #[test]
