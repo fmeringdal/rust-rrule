@@ -175,7 +175,7 @@ fn parse_rrule(line: &str) -> Result<Options, RRuleParseError> {
                 options.bysetpos = Some(bysetpos);
             }
             "BYMONTH" => {
-                let bymonth = stringval_to_intvec(value, |month| month >= 0 && month <= 11, format!("Invalid bymonth value"))?;
+                let bymonth = stringval_to_intvec(value, |month| month <= 11, format!("Invalid bymonth value"))?;
                 options.bymonth = Some(bymonth);
             }
             "BYMONTHDAY" => {
