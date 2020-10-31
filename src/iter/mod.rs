@@ -204,8 +204,58 @@ pub fn increment_counter_date(
             }
             counter_date.with_hour(0).unwrap() + Duration::hours(new_hours as i64)
         }
-        Frequenzy::Minutely => counter_date + Duration::minutes(options.interval as i64),
-        Frequenzy::Secondly => counter_date + Duration::seconds(options.interval as i64),
+        Frequenzy::Minutely => {
+            let mut minutes_inc = 0;
+            let minutes = counter_date.minute() as usize;
+            let hours = counter_date.hour() as usize;
+            if filtered {
+                // Jump to one iteration before next day
+                minutes_inc = (1439. - ((hours*60+minutes) as f32/options.interval as f32)).floor() as usize *options.interval;
+            }
+
+
+            let mut counter_date = counter_date + Duration::minutes(minutes_inc as i64);
+            loop {
+                counter_date = counter_date + Duration::minutes(options.interval as i64);
+                let minutes = counter_date.minute() as usize;
+                let hours = counter_date.hour() as usize;
+
+                if (options.byhour.is_empty() || includes(&options.byhour, &hours)) && (
+                    options.byminute.is_empty() || includes(&options.byminute, &minutes)) {
+                        break;
+                }
+            }
+
+            counter_date
+        },
+        Frequenzy::Secondly => {
+            let mut seconds_inc = 0;
+            let seconds = counter_date.second() as usize;
+            let minutes = counter_date.minute() as usize;
+            let hours = counter_date.hour() as usize;
+            if filtered {
+                // Jump to one iteration before next day
+                seconds_inc = (86399. - ((hours*3600+minutes*60+seconds) as f32/options.interval as f32)).floor() as usize *options.interval;
+            }
+
+
+            let mut counter_date = counter_date + Duration::seconds(seconds_inc as i64);
+            loop {
+                counter_date = counter_date + Duration::seconds(options.interval as i64);
+                let seconds = counter_date.second() as usize;
+                let minutes = counter_date.minute() as usize;
+                let hours = counter_date.hour() as usize;
+
+                if (options.byhour.is_empty() || includes(&options.byhour, &hours)) && (
+                    options.byminute.is_empty() || includes(&options.byminute, &minutes) && (
+                        options.bysecond.is_empty() || includes(&options.bysecond, &seconds)
+                    )) {
+                        break;
+                }
+            }
+
+            counter_date
+        },
     }
 }
 
