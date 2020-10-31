@@ -1,5 +1,5 @@
-use crate::options::*;
 use crate::iter::utils::pymod;
+use crate::options::*;
 
 #[derive(Debug)]
 pub struct MonthInfo {

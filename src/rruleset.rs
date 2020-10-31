@@ -1,8 +1,8 @@
+use crate::datetime::DTime;
+use crate::rrule::RRule;
+use crate::rruleset_iter::RRuleSetIter;
 use chrono::prelude::*;
 use chrono_tz::{Tz, UTC};
-use crate::rrule::RRule;
-use crate::datetime::DTime;
-use crate::rruleset_iter::RRuleSetIter;
 
 #[derive(Debug)]
 pub struct RRuleSet {
@@ -81,14 +81,7 @@ mod test_iter_set {
     use super::*;
     use crate::options::*;
 
-    fn ymd_hms(
-        year: i32,
-        month: u32,
-        day: u32,
-        hour: u32,
-        minute: u32,
-        second: u32,
-    ) -> DTime {
+    fn ymd_hms(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32) -> DTime {
         UTC.ymd(year, month, day).and_hms(hour, minute, second)
     }
 

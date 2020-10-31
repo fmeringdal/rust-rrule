@@ -1,6 +1,6 @@
 use crate::iter::iter;
-use crate::rrule_iter::*;
 use crate::options::*;
+use crate::rrule_iter::*;
 use chrono::prelude::*;
 use chrono_tz::Tz;
 
@@ -11,9 +11,7 @@ pub struct RRule {
 
 impl RRule {
     pub fn new(options: ParsedOptions) -> Self {
-        Self {
-            options
-        }
+        Self { options }
     }
 
     pub fn all(&mut self) -> Vec<DateTime<Tz>> {

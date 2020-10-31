@@ -1,6 +1,6 @@
-mod yearinfo;
-mod monthinfo;
 mod iterinfo;
+mod monthinfo;
+mod yearinfo;
 use iterinfo::IterInfo;
 mod poslist;
 use poslist::build_poslist;
@@ -8,8 +8,8 @@ mod easter;
 mod masks;
 mod utils;
 
+use crate::datetime::{from_ordinal, get_weekday_val, DTime, Time};
 use crate::options::*;
-use crate::datetime::{Time, DTime, from_ordinal, get_weekday_val};
 use chrono::offset::TimeZone;
 use chrono::prelude::*;
 use chrono::Duration;
@@ -19,11 +19,7 @@ pub trait IterResult {
     fn get_value(&self) -> Vec<DTime>;
 }
 
-pub fn iter<T: IterResult>(
-    iter_result: &mut T,
-    options: &mut ParsedOptions,
-) -> Vec<DTime> {
-
+pub fn iter<T: IterResult>(iter_result: &mut T, options: &mut ParsedOptions) -> Vec<DTime> {
     if (options.count.is_some() && options.count.unwrap() == 0) || options.interval == 0 {
         return iter_result.get_value();
     }
@@ -54,7 +50,15 @@ pub fn iter<T: IterResult>(
         let filtered = remove_filtered_days(&mut dayset, start, end, &ii, options);
 
         if not_empty(&options.bysetpos) {
-            let poslist = build_poslist(&options.bysetpos, &timeset, start, end, &ii, &dayset, &options.tzid);
+            let poslist = build_poslist(
+                &options.bysetpos,
+                &timeset,
+                start,
+                end,
+                &ii,
+                &dayset,
+                &options.tzid,
+            );
 
             for j in 0..poslist.len() {
                 let res = poslist[j];
@@ -85,11 +89,14 @@ pub fn iter<T: IterResult>(
                 let current_day = current_day.unwrap();
                 let date = from_ordinal(ii.yearordinal().unwrap() + current_day, &options.tzid);
                 for k in 0..timeset.len() {
-                    let res = options.tzid.ymd(date.year(), date.month(), date.day()).and_hms(
-                        timeset[k].hour as u32,
-                        timeset[k].minute as u32,
-                        timeset[k].second as u32,
-                    );
+                    let res = options
+                        .tzid
+                        .ymd(date.year(), date.month(), date.day())
+                        .and_hms(
+                            timeset[k].hour as u32,
+                            timeset[k].minute as u32,
+                            timeset[k].second as u32,
+                        );
                     if options.until.is_some() && res > options.until.unwrap() {
                         return iter_result.get_value();
                     }
@@ -97,7 +104,7 @@ pub fn iter<T: IterResult>(
                         if !iter_result.accept(res) {
                             return iter_result.get_value();
                         }
-                        
+
                         if count > 0 {
                             count -= 1;
                             if count == 0 {
@@ -136,7 +143,6 @@ pub fn iter<T: IterResult>(
         ii.rebuild(counter_date.year() as isize, counter_date.month() as usize);
     }
 }
-
 
 pub fn increment_counter_date(
     counter_date: DTime,
@@ -289,11 +295,7 @@ pub fn build_timeset(options: &ParsedOptions) -> Vec<Time> {
     timeset
 }
 
-pub fn make_timeset(
-    ii: &IterInfo,
-    counter_date: &DTime,
-    options: &ParsedOptions,
-) -> Vec<Time> {
+pub fn make_timeset(ii: &IterInfo, counter_date: &DTime, options: &ParsedOptions) -> Vec<Time> {
     if options.freq < Frequenzy::Hourly {
         return build_timeset(options);
     }

@@ -1,7 +1,7 @@
-use crate::datetime::{Time, DTime};
+use crate::datetime::from_ordinal;
+use crate::datetime::{DTime, Time};
 use crate::iter::iterinfo::IterInfo;
 use crate::iter::utils::pymod;
-use crate::datetime::from_ordinal;
 use chrono::prelude::*;
 use chrono_tz::Tz;
 
@@ -12,7 +12,7 @@ pub fn build_poslist(
     end: usize,
     ii: &IterInfo,
     dayset: &Vec<Option<isize>>,
-    tz: &Tz
+    tz: &Tz,
 ) -> Vec<DTime> {
     let mut poslist = vec![];
 
@@ -31,8 +31,9 @@ pub fn build_poslist(
         let mut tmp = vec![];
         for k in start..end {
             let val = dayset[k];
-            if val.is_some() {
-                tmp.push(val.unwrap());
+            match val {
+                Some(v) => tmp.push(v),
+                None => (),
             }
         }
 

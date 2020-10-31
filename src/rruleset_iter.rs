@@ -1,9 +1,9 @@
 use crate::iter::{iter, IterResult};
-use chrono::prelude::*;
-use crate::rruleset::RRuleSet;
 use crate::rrule_iter::*;
-use std::collections::HashMap;
+use crate::rruleset::RRuleSet;
+use chrono::prelude::*;
 use chrono_tz::Tz;
+use std::collections::HashMap;
 
 /// Result iterator for the RRuleSet type. It mostly just wraps
 /// `RRuleIterRes` and also before accepting any date makes sure that
@@ -99,7 +99,10 @@ impl<'a> RRuleSetIter<'a> {
     fn accept_when_unknown_bounds(&mut self, date: DateTime<Tz>) -> bool {
         let dt = date.timestamp();
         if !self.exdate_hash.contains_key(&dt) {
-            self.eval_exdate(&date.timezone().timestamp(dt - 1, 0), &date.timezone().timestamp(dt + 1, 0));
+            self.eval_exdate(
+                &date.timezone().timestamp(dt - 1, 0),
+                &date.timezone().timestamp(dt + 1, 0),
+            );
             if !self.exdate_hash.contains_key(&dt) {
                 self.exdate_hash.insert(dt, ());
                 return self.iter_res.accept(date);
@@ -122,7 +125,6 @@ impl<'a> RRuleSetIter<'a> {
     }
 
     pub fn iter(&mut self) -> Vec<DateTime<Tz>> {
-
         // Add all exdates to exdate_hash
         for date in &self.rrule_set.exdate {
             println!("Exdate timestamp: {}", date.timestamp());

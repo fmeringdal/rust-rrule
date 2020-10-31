@@ -1,7 +1,7 @@
+use crate::datetime::{get_weekday_val, DTime};
+use crate::parse_options::parse_options;
 use chrono::prelude::*;
 use chrono_tz::Tz;
-use crate::datetime::{DTime, get_weekday_val};
-use crate::parse_options::parse_options;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
@@ -92,7 +92,7 @@ impl Options {
     fn is_some_or_none<'a, T>(prop1: &'a Option<T>, prop2: &'a Option<T>) -> &'a Option<T> {
         if prop2.is_some() {
             return prop2;
-        } 
+        }
         prop1
     }
 
@@ -177,7 +177,7 @@ impl Options {
     }
 
     pub fn byweekday(mut self, byweekday: Vec<Weekday>) -> Self {
-        let byweekday = byweekday.iter().map(|w| get_weekday_val(w)).collect(); 
+        let byweekday = byweekday.iter().map(|w| get_weekday_val(w)).collect();
         self.byweekday = Some(byweekday);
         self
     }
@@ -216,4 +216,4 @@ impl Display for RRuleParseError {
     }
 }
 
-impl Error for RRuleParseError{}
+impl Error for RRuleParseError {}

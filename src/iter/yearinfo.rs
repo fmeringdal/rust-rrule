@@ -1,9 +1,8 @@
+use crate::datetime::{get_weekday_val, get_year_len, to_ordinal};
 use crate::iter::masks::MASKS;
+use crate::iter::utils::pymod;
 use crate::options::*;
 use chrono::prelude::*;
-use crate::datetime::{to_ordinal, get_year_len, get_weekday_val};
-use crate::iter::utils::pymod;
-
 
 #[derive(Debug)]
 pub struct YearInfo {

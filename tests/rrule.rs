@@ -3,8 +3,8 @@ extern crate chrono_tz;
 extern crate rrule;
 
 use chrono::prelude::*;
-use chrono_tz::{UTC, Tz};
-use rrule::{RRule, ParsedOptions, Frequenzy};
+use chrono_tz::{Tz, UTC};
+use rrule::{Frequenzy, ParsedOptions, RRule};
 
 #[cfg(test)]
 mod test {
