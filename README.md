@@ -6,7 +6,7 @@
   <a href="https://crates.io/crates/rrule"><img src="https://img.shields.io/crates/v/rrule.svg" /></a>
 </p>
 
-# :zap: Quick start
+## :zap: Quick start
 
 ```rust
 extern crate rrule;
@@ -20,7 +20,7 @@ let recurrences = rrule.all();
 assert_eq!(recurrences.len(), 3);
 ```
 
-# Documentation and more examples
+## Documentation and more examples
 
 [Documentation and more examples](https://docs.rs/rrule)
 
@@ -30,11 +30,11 @@ This project is licensed under the [MIT license].
 
 [mit license]: https://github.com/fmeringdal/rust_rrule/blob/main/LICENSE
 
-# Inspired by
+## Inspired by
 
 - [python-dateutil library](http://labix.org/python-dateutil/)
 - [rrule.js](https://github.com/jakubroztocil/rrule)
 
-# Todos
+## Todos
 
 - cache
