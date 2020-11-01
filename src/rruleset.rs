@@ -40,30 +40,41 @@ impl RRuleSet {
         self.exdate.push(exdate);
     }
 
+    /// Returns all the recurrences of the rruleset
     pub fn all(&mut self) -> Vec<DateTime<Tz>> {
         let mut iter = RRuleSetIter::all(self);
         iter.iter()
     }
 
     /// Returns the last recurrence before the given datetime instance.
-    /// The inc keyword defines what happens if dt is an occurrence.
-    /// With inc == true, if dt itself is an occurrence, it will be returned.
-    pub fn before(&mut self, date: DateTime<Tz>, inc: bool) -> Vec<DateTime<Tz>> {
+    /// The inc keyword defines what happens if dt is an recurrence.
+    /// With inc == true, if dt itself is an recurrence, it will be returned.
+    pub fn before(&mut self, date: DateTime<Tz>, inc: bool) -> Option<DateTime<Tz>> {
         let mut iter = RRuleSetIter::before(self, date, inc);
-        iter.iter()
+        let recurrences = iter.iter();
+        if recurrences.is_empty() {
+            None
+        } else {
+            Some(recurrences[0])
+        }
     }
 
     /// Returns the last recurrence after the given datetime instance.
-    /// The inc keyword defines what happens if dt is an occurrence.
-    /// With inc == true, if dt itself is an occurrence, it will be returned.
-    pub fn after(&mut self, date: DateTime<Tz>, inc: bool) -> Vec<DateTime<Tz>> {
+    /// The inc keyword defines what happens if dt is an recurrence.
+    /// With inc == true, if dt itself is an recurrence, it will be returned.
+    pub fn after(&mut self, date: DateTime<Tz>, inc: bool) -> Option<DateTime<Tz>> {
         let mut iter = RRuleSetIter::after(self, date, inc);
-        iter.iter()
+        let recurrences = iter.iter();
+        if recurrences.is_empty() {
+            None
+        } else {
+            Some(recurrences[0])
+        }
     }
 
-    /// Returns all the occurrences of the rrule between after and before.
+    /// Returns all the recurrences of the rrule between after and before.
     /// The inc keyword defines what happens if after and/or before are
-    /// themselves occurrences. With inc == True, they will be included in the
+    /// themselves recurrences. With inc == true, they will be included in the
     /// list, if they are found in the recurrence set.
     pub fn between(
         &mut self,
@@ -396,9 +407,9 @@ mod test_iter_set {
         let rrule = RRule::new(options);
         set.exrule(rrule);
 
-        test_recurring(
-            set.before(ymd_hms_2(2015, 9, 2, 9, 0, 0), false),
-            vec![ymd_hms_2(2014, 9, 2, 9, 0, 0)],
+        assert_eq!(
+            set.before(ymd_hms_2(2015, 9, 2, 9, 0, 0), false).unwrap(),
+            ymd_hms_2(2014, 9, 2, 9, 0, 0),
         );
     }
 
@@ -454,9 +465,9 @@ mod test_iter_set {
         let rrule = RRule::new(options);
         set.exrule(rrule);
 
-        test_recurring(
-            set.after(ymd_hms_2(2000, 9, 2, 9, 0, 0), false),
-            vec![ymd_hms_2(2007, 9, 2, 9, 0, 0)],
+        assert_eq!(
+            set.after(ymd_hms_2(2000, 9, 2, 9, 0, 0), false).unwrap(),
+            ymd_hms_2(2007, 9, 2, 9, 0, 0),
         );
     }
 

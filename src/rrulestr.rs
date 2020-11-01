@@ -9,23 +9,20 @@ use once_cell::sync::Lazy;
 use regex::Regex;
 use std::str::FromStr;
 
+/// Some regex used for parsing the rrule string.
 static DATESTR_RE: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"(?m)^(\d{4})(\d{2})(\d{2})(T(\d{2})(\d{2})(\d{2})Z?)?$").unwrap());
 static DTSTART_RE: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"(?m)DTSTART(?:;TZID=([^:=]+?))?(?::|=)([^;\s]+)").unwrap());
-
 static RRULE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?m)^(?:RRULE|EXRULE):").unwrap());
-
 static PARSE_LINE_RE_1: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?m)^\s+|\s+$").unwrap());
 static PARSE_LINE_RE_2: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?m)^([A-Z]+?)[:;]").unwrap());
-
 static RDATE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?m)RDATE(?:;TZID=([^:=]+))?").unwrap());
 static EXDATE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?m)EXDATE(?:;TZID=([^:=]+))?").unwrap());
-
-
 static DATETIME_RE: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"(?m)(VALUE=DATE(-TIME)?)|(TZID=)").unwrap());
 
+    
 fn parse_datestring_bit<T: FromStr>(
     bits: &regex::Captures,
     i: usize,
@@ -171,7 +168,7 @@ fn parse_rrule(line: &str) -> Result<Options, RRuleParseError> {
                 options.interval = Some(interval);
             }
             "BYSETPOS" => {
-                let bysetpos = stringval_to_intvec(value, |pos| true, format!("Invalid bysetpos value"))?;
+                let bysetpos = stringval_to_intvec(value, |_pos| true, format!("Invalid bysetpos value"))?;
                 options.bysetpos = Some(bysetpos);
             }
             "BYMONTH" => {

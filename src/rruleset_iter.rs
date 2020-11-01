@@ -8,7 +8,7 @@ use std::collections::HashMap;
 /// Result iterator for the RRuleSet type. It mostly just wraps
 /// `RRuleIterRes` and also before accepting any date makes sure that
 /// it does not collide with any exdates provided by either the exdates property
-/// or produced by the exrule rules.
+/// or any occurence produced by any of the the exrules.
 pub struct RRuleSetIter<'a> {
     exdate_hash: HashMap<i64, ()>,
     iter_res: RRuleIterRes,
@@ -95,7 +95,7 @@ impl<'a> RRuleSetIter<'a> {
         }
     }
 
-    /// Here it is required to recompute exrules to see if some of the occurences will collide with the provided date.
+    /// Here it is required to recompute exrules to see if some of the recurrences will collide with the provided date.
     fn accept_when_unknown_bounds(&mut self, date: DateTime<Tz>) -> bool {
         let dt = date.timestamp();
         if !self.exdate_hash.contains_key(&dt) {
@@ -112,7 +112,7 @@ impl<'a> RRuleSetIter<'a> {
         true
     }
 
-    /// No need to recompute exrules as it has already beeen computed in the start of the iter method
+    /// No need to recompute exrules as it has already been computed in the start of the iter method
     /// because the bounds where known.
     fn accept_when_known_bounds(&mut self, date: DateTime<Tz>) -> bool {
         let dt = date.timestamp();

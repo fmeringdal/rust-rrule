@@ -15,6 +15,9 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
         UTC
     };
 
+    let mut bynweekday: Vec<Vec<isize>> = vec![];
+    let mut bynmonthday: Vec<isize> = vec![];
+
     let mut partial_options = Options::concat(&default_partial_options, options);
 
     if partial_options.byeaster.is_some() {
@@ -72,10 +75,9 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
     }
 
     match &partial_options.bymonthday {
-        None => partial_options.bynmonthday = None,
+        None => bynmonthday = vec![],
         Some(opts_bymonthday) => {
             let mut bymonthday = vec![];
-            let mut bynmonthday = vec![];
 
             for v in opts_bymonthday {
                 if *v > 0 {
@@ -86,13 +88,12 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
             }
 
             partial_options.bymonthday = Some(bymonthday);
-            partial_options.bynmonthday = Some(bynmonthday);
         }
     }
 
-    // byweekday / bynweekday
+    // byweekday / bynweekday // ! more to do here
     if partial_options.byweekday.is_some() {
-        partial_options.bynweekday = None;
+        // partial_options.bynweekday = None;
     }
 
     // byhour
@@ -121,14 +122,14 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
         bysetpos: partial_options.bysetpos.unwrap_or(vec![]),
         bymonth: partial_options.bymonth.unwrap_or(vec![]),
         bymonthday: partial_options.bymonthday.unwrap_or(vec![]),
-        bynmonthday: partial_options.bynmonthday.unwrap_or(vec![]),
+        bynmonthday,
         byyearday: partial_options.byyearday.unwrap_or(vec![]),
         byweekno: partial_options.byweekno.unwrap_or(vec![]),
         byweekday: partial_options.byweekday.unwrap_or(vec![]),
         byhour: partial_options.byhour.unwrap_or(vec![]),
         byminute: partial_options.byminute.unwrap_or(vec![]),
         bysecond: partial_options.bysecond.unwrap_or(vec![]),
-        bynweekday: partial_options.bynweekday.unwrap_or(vec![]),
+        bynweekday,
         byeaster: partial_options.byeaster,
     })
 }

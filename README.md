@@ -15,9 +15,9 @@ use rrule::build_rrule;
 
 let mut rrule = build_rrule("DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3").unwrap();
 
-// Get all occurrences of the rrule
-let occurences = rrule.all();
-assert_eq!(occurences.len(), 3);
+// Get all recurrences of the rrule
+let recurrences = rrule.all();
+assert_eq!(recurrences.len(), 3);
 ```
 
 # Documentation and more examples

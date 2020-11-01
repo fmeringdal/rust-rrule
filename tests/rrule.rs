@@ -5333,7 +5333,6 @@ mod test {
 
     #[test]
     fn minutely_by_yeardayneg() {
-        let start  = std::time::SystemTime::now();
         let options = ParsedOptions {
             freq: Frequenzy::Minutely,
             count: Some(4),
@@ -6197,7 +6196,6 @@ mod test {
 
     #[test]
     fn secondly_by_yeardayneg() {
-        let start  = std::time::SystemTime::now();
         let options = ParsedOptions {
             freq: Frequenzy::Secondly,
             count: Some(4),

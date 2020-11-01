@@ -1,7 +1,7 @@
 use crate::datetime::{get_weekday_val, DTime};
 use crate::parse_options::parse_options;
 use chrono::prelude::*;
-use chrono_tz::Tz;
+use chrono_tz::{Tz, UTC};
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
@@ -39,7 +39,6 @@ pub struct ParsedOptions {
     pub byeaster: Option<isize>,
 }
 
-// TODO: PartialOptions shouldnt have all of these fields
 #[derive(Debug, Clone)]
 pub struct Options {
     pub freq: Option<Frequenzy>,
@@ -52,14 +51,12 @@ pub struct Options {
     pub bysetpos: Option<Vec<isize>>,
     pub bymonth: Option<Vec<usize>>,
     pub bymonthday: Option<Vec<isize>>,
-    pub bynmonthday: Option<Vec<isize>>,
     pub byyearday: Option<Vec<isize>>,
     pub byweekno: Option<Vec<isize>>,
     pub byweekday: Option<Vec<usize>>,
     pub byhour: Option<Vec<usize>>,
     pub byminute: Option<Vec<usize>>,
     pub bysecond: Option<Vec<usize>>,
-    pub bynweekday: Option<Vec<Vec<isize>>>,
     pub byeaster: Option<isize>,
 }
 
@@ -76,14 +73,12 @@ impl Options {
             bysetpos: None,
             bymonth: None,
             bymonthday: None,
-            bynmonthday: None,
             byyearday: None,
             byweekno: None,
             byweekday: None,
             byhour: None,
             byminute: None,
             bysecond: None,
-            bynweekday: None,
             byeaster: None,
         }
     }
@@ -108,14 +103,12 @@ impl Options {
             bysetpos: Self::is_some_or_none(&opt1.bysetpos, &opt2.bysetpos).clone(),
             bymonth: Self::is_some_or_none(&opt1.bymonth, &opt2.bymonth).clone(),
             bymonthday: Self::is_some_or_none(&opt1.bymonthday, &opt2.bymonthday).clone(),
-            bynmonthday: Self::is_some_or_none(&opt1.bynmonthday, &opt2.bynmonthday).clone(),
             byyearday: Self::is_some_or_none(&opt1.byyearday, &opt2.byyearday).clone(),
             byweekno: Self::is_some_or_none(&opt1.byweekno, &opt2.byweekno).clone(),
             byweekday: Self::is_some_or_none(&opt1.byweekday, &opt2.byweekday).clone(),
             byhour: Self::is_some_or_none(&opt1.byhour, &opt2.byhour).clone(),
             byminute: Self::is_some_or_none(&opt1.byminute, &opt2.byminute).clone(),
             bysecond: Self::is_some_or_none(&opt1.bysecond, &opt2.bysecond).clone(),
-            bynweekday: Self::is_some_or_none(&opt1.bynweekday, &opt2.bynweekday).clone(),
             byeaster: Self::is_some_or_none(&opt1.byeaster, &opt2.byeaster).clone(),
         }
     }
@@ -135,8 +128,8 @@ impl Options {
         self
     }
 
-    pub fn until(mut self, until: DTime) -> Self {
-        self.until = Some(until);
+    pub fn until(mut self, until: DateTime<Utc>) -> Self {
+        self.until = Some(until.with_timezone(&UTC));
         self
     }
 

@@ -52,14 +52,14 @@
 //!
 //! // Construct `RRule` from options
 //! let mut rrule = RRule::new(options);
-//! let occurences = rrule.all();
+//! let recurrences = rrule.all();
 //! for i in 0..5 {
-//!     assert_eq!(occurences[i].year(), 2020);
-//!     assert_eq!(occurences[i].month(), 1);
-//!     assert_eq!(occurences[i].day(), 1 + i as u32);
-//!     assert_eq!(occurences[i].hour(), 9);
+//!     assert_eq!(recurrences[i].year(), 2020);
+//!     assert_eq!(recurrences[i].month(), 1);
+//!     assert_eq!(recurrences[i].day(), 1 + i as u32);
+//!     assert_eq!(recurrences[i].hour(), 9);
 //! }
-//! assert_eq!(occurences.len(), 5);
+//! assert_eq!(recurrences.len(), 5);
 //!
 //!
 //!
@@ -68,7 +68,7 @@
 //! // Construct RRuleSet from one rrule and exrule
 //! // The rrule will occur weekly on Tuesday and Wednesday and the exrule
 //! // will occur weekly on Wednesday, and therefore the end result will contain
-//! // weekly occurences just on Wednesday.
+//! // weekly recurrences just on Wednesday.
 //!
 //!
 //! // Build options for rrule that occurs weekly on Tuesday and Wednesday
@@ -101,13 +101,13 @@
 //! rrule_set.rrule(rrule);
 //! rrule_set.exrule(exrule);
 //!
-//! let occurences = rrule_set.all();
+//! let recurrences = rrule_set.all();
 //!
-//! for occurence in &occurences {
+//! for occurence in &recurrences {
 //!     assert_eq!(occurence.weekday(), Weekday::Tue);
 //! }
 //!
-//! assert_eq!(occurences.len(), 2);
+//! assert_eq!(recurrences.len(), 2);
 //! ```
 //!
 //!
@@ -126,14 +126,14 @@
 //! use rrule::{RRule, RRuleSet, Options, Frequenzy, Weekday};
 //!
 //! // SOME NOTES:
-//! // Occurences produced by an rrule will be in the same timezone
+//! // recurrences produced by an rrule will be in the same timezone
 //! // as the start datetime provided (dtstart). The `until` datetime MUST
 //! // always be specified with the UTC timezone if it is specified.
 //!
 //! // Example:
-//! // The following examples uses the RRuleSet type with an RRule that yields occurences
+//! // The following examples uses the RRuleSet type with an RRule that yields recurrences
 //! // in the Europe/Berlin timezone, and one EXDATE that is specified
-//! // in UTC and collides (and therefore filters away) with one of those occurences.  
+//! // in UTC and collides (and therefore filters away) with one of those recurrences.  
 //!
 //!
 //! // Build options for rrule that occurs daily at 9 oclock for 4 times
@@ -155,9 +155,9 @@
 //! rrule_set.rrule(rrule);
 //! rrule_set.exdate(exdate);
 //!
-//! let occurences = rrule_set.all();
-//! // RRule contained 4 occurences but 1 was filtered away by the exdate
-//! assert_eq!(occurences.len(), 3);
+//! let recurrences = rrule_set.all();
+//! // RRule contained 4 recurrences but 1 was filtered away by the exdate
+//! assert_eq!(recurrences.len(), 3);
 //!
 //! // If you want to get back the DateTimes in another timezone you can just iterate over the result
 //! // and convert them to another timezone by using the with_timzone method provided by the DateTime type.
@@ -166,12 +166,12 @@
 //! // Example of converting to mocow timezone
 //! use chrono_tz::Europe::Moscow;
 //!
-//! let occurences_in_moscow_tz: Vec<DateTime<Tz>> = occurences.iter()
+//! let recurrences_in_moscow_tz: Vec<DateTime<Tz>> = recurrences.iter()
 //!     .map(|d| d.with_timezone(&Moscow)).collect();
 //!
 //!
 //! // Example of converting to local timezone (Local comes from chrono::prelude::*)
-//! let occurences_in_local_tz: Vec<DateTime<Local>> = occurences.iter()
+//! let recurrences_in_local_tz: Vec<DateTime<Local>> = recurrences.iter()
 //!     .map(|d| d.with_timezone(&Local)).collect();
 //!
 //!
