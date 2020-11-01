@@ -1,37 +1,49 @@
-//! A partial implementation of recurrence rules as defined in the iCalendar RFC.
-//! 
+//! A performant rust implementation of recurrence rules as defined in the iCalendar RFC.
 //!
+//! RRule provides two main types for working with recurrence rules:
+//! - `RRule`: For working with a single recurrence rule without any exception dates (exdates / exrules) and no additonal dates (rdate).
+//! - `RRuleSet`: For working with a collection of rrule`s, exrule`s, rdate`s and exdate`s. Both the rrule and exrule
+//! properties are represented by the `RRule` type and the rdate and exdate properties are represented by the DateTime<Tz> type
+//! provided by the [chrono](https://crates.io/crates/chrono) and [chrono-tz](https://crates.io/crates/chrono-tz) crates.
+//!
+//! # Building RRule and RRuleSet types
+//! Both of the types implements the `std::str::FromStr` trait so that they can be parsed and built from a `str`. `RRule`
+//! can additionally be constructured from the `Option` type which help build the recurrence rule. `RRuleSet`
+//! can also be built by composing mutliple `RRule`s for its rrule and exrule properties and DateTime<Tz> for its
+//! exdate and rdate properties. See the examples below.
+//!
+//! # Interface
+//! `RRule` and `RRuleSet` have the same interface for generating recurrences. The four methods for "querying" recurrences are:
+//! - `all`: Generate all recurrences that matches the rules
+//! - `between`: Generate all recurrences that matches the rules and are between two given dates
+//! - `before`: Generate the last recurrence that matches the rules and is before a given date
+//! - `after`: Generate the first recurrence that matches the rules and is after a given date
+//! 
 //!
 //! # Examples
 //!
-//! RRule quickstart from rrulestring
+//! Quick start by parsing strings
 //!
 //! ```
 //! extern crate rrule;
 //!
-//! use rrule::build_rrule;
+//! use rrule::RRule;
 //!
-//! // Parse a RRule string, return a RRule type
-//! let mut rrule = build_rrule("DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR").unwrap();
+//! // Parse a RRule string, return a RRul to get e type
+//! let mut rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR".parse().unwrap();
 //! assert_eq!(rrule.all().len(), 21);
-//! ```
 //!
 //!
-//! RRuleSet quickstart from rrulestring
-//!
-//! ```
-//! extern crate rrule;
-//!
-//! use rrule::build_rruleset;
+//! use rrule::RRuleSet;
 //!
 //! // Parse a RRuleSet string, return a RRuleSet type
-//! let mut rrule = build_rruleset("DTSTART:20120201T023000Z\nRRULE:FREQ=MONTHLY;COUNT=5\nRDATE:20120701T023000Z,20120702T023000Z\nEXRULE:FREQ=MONTHLY;COUNT=2\nEXDATE:20120601T023000Z").unwrap();
-//! assert_eq!(rrule.all().len(), 4);
+//! let mut rrule_set: RRuleSet = "DTSTART:20120201T023000Z\nRRULE:FREQ=MONTHLY;COUNT=5\nRDATE:20120701T023000Z,20120702T023000Z\nEXRULE:FREQ=MONTHLY;COUNT=2\nEXDATE:20120601T023000Z".parse().unwrap();
+//! assert_eq!(rrule_set.all().len(), 4);
 //! ```
 //!
 //!
 //!
-//! Using `Options` instead of rrule strings to build RRule and RRuleSet
+//! Using `Options` to build RRule
 //!
 //! ```
 //! extern crate rrule;
@@ -40,7 +52,7 @@
 //!
 //! use chrono::prelude::*;
 //! use chrono_tz::UTC;
-//! use rrule::{RRule, RRuleSet, Options, Frequenzy, Weekday};
+//! use rrule::{RRule, Options, Frequenzy, Weekday};
 //!
 //! // Build options that starts first day in 2020 at 9:00AM and occurs daily 5 times
 //! let mut options = Options::new()
@@ -60,15 +72,21 @@
 //!     assert_eq!(recurrences[i].hour(), 9);
 //! }
 //! assert_eq!(recurrences.len(), 5);
+//! ```
 //!
 //!
+//! Construct RRuleSet from one rrule and exrule.
+//! The rrule will occur weekly on Tuesday and Wednesday and the exrule
+//! will occur weekly on Wednesday, and therefore the end result will contain
+//! weekly recurrences just on Wednesday.
+//! ```
+//! extern crate rrule;
+//! extern crate chrono;
+//! extern crate chrono_tz;
 //!
-//!
-//!
-//! // Construct RRuleSet from one rrule and exrule
-//! // The rrule will occur weekly on Tuesday and Wednesday and the exrule
-//! // will occur weekly on Wednesday, and therefore the end result will contain
-//! // weekly recurrences just on Wednesday.
+//! use chrono::prelude::*;
+//! use chrono_tz::UTC;
+//! use rrule::{RRule, RRuleSet, Options, Frequenzy, Weekday};
 //!
 //!
 //! // Build options for rrule that occurs weekly on Tuesday and Wednesday
@@ -102,7 +120,8 @@
 //! rrule_set.exrule(exrule);
 //!
 //! let recurrences = rrule_set.all();
-//!
+//! 
+//! // Check that all the recurrences are on a Tuesday
 //! for occurence in &recurrences {
 //!     assert_eq!(occurence.weekday(), Weekday::Tue);
 //! }
@@ -162,7 +181,7 @@
 //! // If you want to get back the DateTimes in another timezone you can just iterate over the result
 //! // and convert them to another timezone by using the with_timzone method provided by the DateTime type.
 //! // Refer to the chrono and chrono-tz crates for more documenation on working with the DateTime type.
-//! 
+//!
 //! // Example of converting to mocow timezone
 //! use chrono_tz::Europe::Moscow;
 //!
@@ -191,9 +210,9 @@ mod rrule_iter;
 mod rruleset;
 mod rruleset_iter;
 mod rrulestr;
+mod utils;
 
 pub use crate::options::{Frequenzy, Options, ParsedOptions};
 pub use crate::rrule::RRule;
 pub use crate::rruleset::RRuleSet;
-pub use crate::rrulestr::{build_rrule, build_rruleset};
 pub use chrono::Weekday;

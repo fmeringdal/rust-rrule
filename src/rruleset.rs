@@ -1,8 +1,11 @@
 use crate::datetime::DTime;
+use crate::options::RRuleParseError;
 use crate::rrule::RRule;
 use crate::rruleset_iter::RRuleSetIter;
+use crate::rrulestr::build_rruleset;
 use chrono::prelude::*;
 use chrono_tz::{Tz, UTC};
+use std::str::FromStr;
 
 #[derive(Debug)]
 pub struct RRuleSet {
@@ -84,6 +87,14 @@ impl RRuleSet {
     ) -> Vec<DateTime<Tz>> {
         let mut iter = RRuleSetIter::between(self, after, before, inc);
         iter.iter()
+    }
+}
+
+impl FromStr for RRuleSet {
+    type Err = RRuleParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        build_rruleset(s)
     }
 }
 

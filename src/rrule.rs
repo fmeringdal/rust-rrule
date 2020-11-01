@@ -1,8 +1,10 @@
 use crate::iter::iter;
 use crate::options::*;
 use crate::rrule_iter::*;
+use crate::rrulestr::build_rrule;
 use chrono::prelude::*;
 use chrono_tz::Tz;
+use std::str::FromStr;
 
 #[derive(Clone, Debug)]
 pub struct RRule {
@@ -27,7 +29,7 @@ impl RRule {
         let res = iter(&mut iter_res, &mut self.options);
         res
     }
-    
+
     /// Returns the last recurrence before the given datetime instance.
     /// The inc keyword defines what happens if dt is an recurrence.
     /// With inc == true, if dt itself is an recurrence, it will be returned.
@@ -40,7 +42,7 @@ impl RRule {
         };
         let mut iter_res = RRuleIterRes::new(QueryMethodTypes::Before, iter_args);
 
-        let recurrences =  iter(&mut iter_res, &mut self.options);
+        let recurrences = iter(&mut iter_res, &mut self.options);
         if recurrences.is_empty() {
             None
         } else {
@@ -59,7 +61,7 @@ impl RRule {
             dt: Some(dt),
         };
         let mut iter_res = RRuleIterRes::new(QueryMethodTypes::After, iter_args);
-        let recurrences =  iter(&mut iter_res, &mut self.options);
+        let recurrences = iter(&mut iter_res, &mut self.options);
         if recurrences.is_empty() {
             None
         } else {
@@ -86,5 +88,13 @@ impl RRule {
         let mut iter_res = RRuleIterRes::new(QueryMethodTypes::Between, iter_args);
 
         iter(&mut iter_res, &mut self.options)
+    }
+}
+
+impl FromStr for RRule {
+    type Err = RRuleParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        build_rrule(s)
     }
 }

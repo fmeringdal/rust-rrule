@@ -1,6 +1,6 @@
 use chrono::prelude::*;
 use chrono::Utc;
-use chrono_tz::{Tz};
+use chrono_tz::Tz;
 
 pub type DTime = DateTime<Tz>;
 

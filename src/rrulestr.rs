@@ -22,7 +22,6 @@ static EXDATE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?m)EXDATE(?:;TZID=([^
 static DATETIME_RE: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"(?m)(VALUE=DATE(-TIME)?)|(TZID=)").unwrap());
 
-    
 fn parse_datestring_bit<T: FromStr>(
     bits: &regex::Captures,
     i: usize,
@@ -106,7 +105,11 @@ fn stringval_to_int<T: FromStr>(val: &str, err_msg: String) -> Result<T, RRulePa
     }
 }
 
-fn stringval_to_intvec<T: FromStr + Ord + PartialEq + Copy, F: Fn(T) -> bool>(val: &str, accept: F, err_msg: String) -> Result<Vec<T>, RRuleParseError> {
+fn stringval_to_intvec<T: FromStr + Ord + PartialEq + Copy, F: Fn(T) -> bool>(
+    val: &str,
+    accept: F,
+    err_msg: String,
+) -> Result<Vec<T>, RRuleParseError> {
     let mut parsed_vals = vec![];
     for val in val.split(",") {
         let val = stringval_to_int(val, err_msg.clone())?;
@@ -168,35 +171,58 @@ fn parse_rrule(line: &str) -> Result<Options, RRuleParseError> {
                 options.interval = Some(interval);
             }
             "BYSETPOS" => {
-                let bysetpos = stringval_to_intvec(value, |_pos| true, format!("Invalid bysetpos value"))?;
+                let bysetpos =
+                    stringval_to_intvec(value, |_pos| true, format!("Invalid bysetpos value"))?;
                 options.bysetpos = Some(bysetpos);
             }
             "BYMONTH" => {
-                let bymonth = stringval_to_intvec(value, |month| month <= 11, format!("Invalid bymonth value"))?;
+                let bymonth = stringval_to_intvec(
+                    value,
+                    |month| month <= 11,
+                    format!("Invalid bymonth value"),
+                )?;
                 options.bymonth = Some(bymonth);
             }
             "BYMONTHDAY" => {
-                let bymonthday = stringval_to_intvec(value, |monthday| monthday >= 0 && monthday <= 31, format!("Invalid bymonthday value"))?;
+                let bymonthday = stringval_to_intvec(
+                    value,
+                    |monthday| monthday >= 0 && monthday <= 31,
+                    format!("Invalid bymonthday value"),
+                )?;
                 options.bymonthday = Some(bymonthday);
             }
             "BYYEARDAY" => {
-                let byyearday = stringval_to_intvec(value, |yearday| yearday >= -366 && yearday <= 366, format!("Invalid byyearday value"))?;
+                let byyearday = stringval_to_intvec(
+                    value,
+                    |yearday| yearday >= -366 && yearday <= 366,
+                    format!("Invalid byyearday value"),
+                )?;
                 options.byyearday = Some(byyearday);
             }
             "BYWEEKNO" => {
-                let byweekno = stringval_to_intvec(value, |weekno| weekno >= 0 && weekno <= 53, format!("Invalid byweekno value"))?;
+                let byweekno = stringval_to_intvec(
+                    value,
+                    |weekno| weekno >= 0 && weekno <= 53,
+                    format!("Invalid byweekno value"),
+                )?;
                 options.byweekno = Some(byweekno);
             }
             "BYHOUR" => {
-                let byhour = stringval_to_intvec(value, |hour| hour < 24, format!("Invalid byhour value"))?;
+                let byhour =
+                    stringval_to_intvec(value, |hour| hour < 24, format!("Invalid byhour value"))?;
                 options.byhour = Some(byhour);
             }
             "BYMINUTE" => {
-                let byminute = stringval_to_intvec(value, |minute| minute < 60, format!("Invalid byminute value"))?;
+                let byminute = stringval_to_intvec(
+                    value,
+                    |minute| minute < 60,
+                    format!("Invalid byminute value"),
+                )?;
                 options.byminute = Some(byminute);
             }
             "BYSECOND" => {
-                let bysecond = stringval_to_intvec(value, |sec| sec < 60, format!("Invalid bysecond value"))?;
+                let bysecond =
+                    stringval_to_intvec(value, |sec| sec < 60, format!("Invalid bysecond value"))?;
                 options.bysecond = Some(bysecond);
             }
             "BYWEEKDAY" | "BYDAY" => {
@@ -275,7 +301,12 @@ fn parse_line(rfc_string: &str) -> Result<Option<Options>, RRuleParseError> {
     let header = header.unwrap();
     let key = match header.get(1) {
         Some(k) => k.as_str(),
-        None => return Err(RRuleParseError(format!("Invalid rfc_string: {}", rfc_string)))
+        None => {
+            return Err(RRuleParseError(format!(
+                "Invalid rfc_string: {}",
+                rfc_string
+            )))
+        }
     };
 
     match key {
@@ -345,7 +376,6 @@ fn parse_string(rfc_string: &str) -> Result<Options, RRuleParseError> {
     Ok(Options::concat(&options[0], &options[1]))
 }
 
-
 #[derive(Debug)]
 struct ParsedInput {
     rrule_vals: Vec<Options>,
@@ -391,7 +421,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleParseError> {
             "RDATE" => {
                 let matches = match RDATE_RE.captures(line) {
                     Some(m) => m,
-                    None => return Err(RRuleParseError(format!("Invalid RDATE specified")))
+                    None => return Err(RRuleParseError(format!("Invalid RDATE specified"))),
                 };
                 let mut tz = UTC;
                 if let Some(tzid) = matches.get(1) {
@@ -407,7 +437,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleParseError> {
             "EXDATE" => {
                 let matches = match EXDATE_RE.captures(line) {
                     Some(m) => m,
-                    None => return Err(RRuleParseError(format!("Invalid EXDATE specified")))
+                    None => return Err(RRuleParseError(format!("Invalid EXDATE specified"))),
                 };
                 let tz: Tz = if let Some(tzid) = matches.get(1) {
                     String::from(tzid.as_str()).parse().unwrap_or(UTC)
@@ -444,10 +474,12 @@ fn validate_date_param(params: Vec<&str>) -> Result<(), RRuleParseError> {
     for param in &params {
         match DATETIME_RE.captures(param) {
             Some(caps) if caps.len() > 0 => (),
-            _ => return Err(RRuleParseError(format!(
-                "Unsupported RDATE/EXDATE parm: {}",
-                param
-            )))
+            _ => {
+                return Err(RRuleParseError(format!(
+                    "Unsupported RDATE/EXDATE parm: {}",
+                    param
+                )))
+            }
         }
     }
     Ok(())
@@ -460,7 +492,7 @@ fn parse_rdate(
 ) -> Result<Vec<DTime>, RRuleParseError> {
     let params: Vec<&str> = params.iter().map(|p| p.as_str()).collect();
     validate_date_param(params)?;
-    
+
     let mut rdatevals = vec![];
     for datestr in rdateval.split(",") {
         rdatevals.push(datestring_to_date(datestr, tz)?);
@@ -612,8 +644,8 @@ mod test {
         assert!(res.is_err());
         assert_eq!(res.err().unwrap().0, "Invalid byhour value");
 
-
-        let res = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5;BYHOUR=5,6,25");
+        let res =
+            build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5;BYHOUR=5,6,25");
         assert!(res.is_err());
         assert_eq!(res.err().unwrap().0, "Invalid byhour value");
     }
@@ -624,8 +656,8 @@ mod test {
         assert!(res.is_err());
         assert_eq!(res.err().unwrap().0, "Invalid byminute value");
 
-
-        let res = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5;BYMINUTE=4,5,64");
+        let res =
+            build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5;BYMINUTE=4,5,64");
         assert!(res.is_err());
         assert_eq!(res.err().unwrap().0, "Invalid byminute value");
     }

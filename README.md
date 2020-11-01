@@ -11,9 +11,9 @@
 ```rust
 extern crate rrule;
 
-use rrule::build_rrule;
+use rrule::RRule;
 
-let mut rrule = build_rrule("DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3").unwrap();
+let mut rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
 
 // Get all recurrences of the rrule
 let recurrences = rrule.all();
@@ -23,6 +23,12 @@ assert_eq!(recurrences.len(), 3);
 # Documentation and more examples
 
 [Documentation and more examples](https://docs.rs/rrule)
+
+## License
+
+This project is licensed under the [MIT license].
+
+[mit license]: https://github.com/fmeringdal/rust_rrule/blob/main/LICENSE
 
 # Inspired by
 

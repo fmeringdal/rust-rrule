@@ -6,3 +6,10 @@ pub fn pymod(a: isize, b: isize) -> isize {
     }
     r
 }
+
+pub fn is_some_and_not_empty<T>(v: &Option<Vec<T>>) -> bool {
+    match v {
+        Some(v) => !v.is_empty(),
+        None => false,
+    }
+}

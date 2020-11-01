@@ -1,8 +1,9 @@
 use crate::options::{Frequenzy, Options, ParsedOptions, RRuleParseError};
+use crate::utils::is_some_and_not_empty;
 use chrono::prelude::*;
 use chrono_tz::{Tz, UTC};
 
-// TODO: Validation
+// TODO: More validation here
 pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError> {
     let mut default_partial_options = Options::new();
     default_partial_options.interval = Some(1);
@@ -132,11 +133,4 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
         bynweekday,
         byeaster: partial_options.byeaster,
     })
-}
-
-fn is_some_and_not_empty<T>(v: &Option<Vec<T>>) -> bool {
-    match v {
-        Some(v) => !v.is_empty(),
-        None => false,
-    }
 }

@@ -1,7 +1,7 @@
 use crate::datetime::from_ordinal;
 use crate::datetime::{DTime, Time};
 use crate::iter::iterinfo::IterInfo;
-use crate::iter::utils::pymod;
+use crate::utils::pymod;
 use chrono::prelude::*;
 use chrono_tz::Tz;
 
