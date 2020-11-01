@@ -51,8 +51,7 @@ pub fn build_poslist(
             timeset[timepos as usize].minute as u32,
             timeset[timepos as usize].second as u32,
         );
-        // XXX: can this ever be in the array?
-        // - compare the actual date instead?
+        
         if !poslist.iter().any(|&p| p == res) {
             poslist.push(res);
         }

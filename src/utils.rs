@@ -13,3 +13,25 @@ pub fn is_some_and_not_empty<T>(v: &Option<Vec<T>>) -> bool {
         None => false,
     }
 }
+
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn python_mod(){
+        assert_eq!(pymod(2, -3), -1);
+        assert_eq!(pymod(-2, 3), 1);
+        assert_eq!(pymod(-2, -3), -2);
+        assert_eq!(pymod(-3, -3), 0);
+        assert_eq!(pymod(3, 3), 0);
+        assert_eq!(pymod(2, 3), 2);
+        assert_eq!(pymod(4, 3), 1);
+        assert_eq!(pymod(3, 3), 0);
+        assert_eq!(pymod(6, 3), 0);
+        assert_eq!(pymod(-6, 3), 0);
+        assert_eq!(pymod(-6, -3), 0);
+        assert_eq!(pymod(6, -3), 0);
+    }
+}

@@ -6,7 +6,7 @@
 //! properties are represented by the `RRule` type and the rdate and exdate properties are represented by the DateTime<Tz> type
 //! provided by the [chrono](https://crates.io/crates/chrono) and [chrono-tz](https://crates.io/crates/chrono-tz) crates.
 //!
-//! # Building RRule and RRuleSet types
+//! # Building RRule and RRuleSet
 //! Both of the types implements the `std::str::FromStr` trait so that they can be parsed and built from a `str`. `RRule`
 //! can additionally be constructured from the `Option` type which help build the recurrence rule. `RRuleSet`
 //! can also be built by composing mutliple `RRule`s for its rrule and exrule properties and DateTime<Tz> for its
@@ -78,7 +78,7 @@
 //! Construct RRuleSet from one rrule and exrule.
 //! The rrule will occur weekly on Tuesday and Wednesday and the exrule
 //! will occur weekly on Wednesday, and therefore the end result will contain
-//! weekly recurrences just on Wednesday.
+//! weekly recurrences on Wednesday only.
 //! ```
 //! extern crate rrule;
 //! extern crate chrono;
