@@ -1,6 +1,6 @@
 [package]
 name = "rrule"
-description = "A pure Rust (partial) implementation of recurrence rules as defined in the iCalendar RFC."
+description = "A pure Rust implementation of recurrence rules as defined in the iCalendar RFC."
 license = "MIT"
 version = "0.3.1"
 documentation = "https://docs.rs/rrule"
