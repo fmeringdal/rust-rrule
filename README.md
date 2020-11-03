@@ -44,3 +44,4 @@ This project is licensed under the [MIT license].
 ## TODOS
 
 - cache
+- more tests around string parsing and validation
