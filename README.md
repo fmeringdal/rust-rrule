@@ -6,6 +6,12 @@
   <a href="https://crates.io/crates/rrule"><img src="https://img.shields.io/crates/v/rrule.svg" /></a>
 </p>
 
+## Warning
+
+This crate is not production ready yet. Dates and recurrence rules are quite complicated and
+takes time to get right. Even though this crate is well tested (high code coverage), there are still
+tests missing around edge cases like DST, time zone and rfc_string parsing. Use at your own risk!
+
 ## :zap: Quick start
 
 ```rust
@@ -34,7 +40,3 @@ This project is licensed under the [MIT license].
 
 - [python-dateutil library](http://labix.org/python-dateutil/)
 - [rrule.js](https://github.com/jakubroztocil/rrule)
-
-## Todos
-
-- cache

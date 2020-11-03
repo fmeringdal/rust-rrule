@@ -1,13 +1,13 @@
 //! A performant rust implementation of recurrence rules as defined in the iCalendar RFC.
 //!
-//! RRule provides two main types for working with recurrence rules:
+//! RRule provides two types for working with recurrence rules:
 //! - `RRule`: For working with a single recurrence rule without any exception dates (exdates / exrules) and no additonal dates (rdate).
-//! - `RRuleSet`: For working with a collection of rrule`s, exrule`s, rdate`s and exdate`s. Both the rrule and exrule
+//! - `RRuleSet`: For working with a collection of rrules, exrules, rdates and exdates. Both the rrule and exrule
 //! properties are represented by the `RRule` type and the rdate and exdate properties are represented by the DateTime<Tz> type
 //! provided by the [chrono](https://crates.io/crates/chrono) and [chrono-tz](https://crates.io/crates/chrono-tz) crates.
 //!
 //! # Building RRule and RRuleSet
-//! Both types implements the `std::str::FromStr` trait so that they can be parsed and built from a `str`. `RRule`
+//! Both types implements the `std::str::FromStr` trait so that they can be parsed and built from a string representation. `RRule`
 //! can additionally be constructured from the `Option` type which help build the recurrence rule. `RRuleSet`
 //! can also be built by composing mutliple `RRule`s for its rrule and exrule properties and DateTime<Tz> for its
 //! exdate and rdate properties. See the examples below.
@@ -18,7 +18,7 @@
 //! - `between`: Generate all recurrences that matches the rules and are between two given dates
 //! - `before`: Generate the last recurrence that matches the rules and is before a given date
 //! - `after`: Generate the first recurrence that matches the rules and is after a given date
-//! 
+//! All the generated recurrence will be in the same time zone as the dtstart property.
 //!
 //! # Examples
 //!
@@ -132,8 +132,10 @@
 //!
 //!
 //!
-//! Timezone support
-//!
+//! Timezone support.
+//! The following examples uses `RRuleSet` with one `RRule` that yields recurrences
+//! in the Europe/Berlin timezone, and one EXDATE that is specified
+//! in UTC and collides with one of those recurrences.  
 //! ```
 //! extern crate rrule;
 //! extern crate chrono;
@@ -144,15 +146,6 @@
 //! use chrono_tz::Europe::Berlin;
 //! use rrule::{RRule, RRuleSet, Options, Frequenzy, Weekday};
 //!
-//! // SOME NOTES:
-//! // recurrences produced by an rrule will be in the same timezone
-//! // as the start datetime provided (dtstart). The `until` datetime MUST
-//! // always be specified with the UTC timezone if it is specified.
-//!
-//! // Example:
-//! // The following examples uses the RRuleSet type with an RRule that yields recurrences
-//! // in the Europe/Berlin timezone, and one EXDATE that is specified
-//! // in UTC and collides (and therefore filters away) with one of those recurrences.  
 //!
 //!
 //! // Build options for rrule that occurs daily at 9 oclock for 4 times

@@ -9,6 +9,7 @@ mod masks;
 
 use crate::datetime::{from_ordinal, get_weekday_val, DTime, Time};
 use crate::options::*;
+use crate::utils::{includes, not_empty};
 use chrono::offset::TimeZone;
 use chrono::prelude::*;
 use chrono::Duration;
@@ -262,17 +263,6 @@ pub fn increment_counter_date(
     }
 }
 
-pub fn includes<T>(v: &Vec<T>, el: &T) -> bool
-where
-    T: PartialEq,
-{
-    v.iter().any(|ve| ve == el)
-}
-
-pub fn not_empty<T>(v: &Vec<T>) -> bool {
-    !v.is_empty()
-}
-
 pub fn is_filtered(ii: &IterInfo, current_day: usize, options: &ParsedOptions) -> bool {
     return (not_empty(&options.bymonth)
         && !includes(&options.bymonth, &ii.mmask().unwrap()[current_day]))
@@ -316,14 +306,14 @@ pub fn remove_filtered_days(
     let mut filtered = false;
 
     for daycounter in start..end {
-        let current_day = dayset[daycounter];
-        if current_day.is_none() {
-            continue;
-        }
-
-        filtered = is_filtered(ii, current_day.unwrap() as usize, options);
-        if filtered {
-            dayset[daycounter] = None;
+        match dayset[daycounter] {
+            Some(current_day) => {
+                filtered = is_filtered(ii, current_day as usize, options);
+                if filtered {
+                    dayset[daycounter] = None;
+                }
+            }
+            None => continue
         }
     }
     filtered

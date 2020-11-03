@@ -14,6 +14,17 @@ pub fn is_some_and_not_empty<T>(v: &Option<Vec<T>>) -> bool {
     }
 }
 
+pub fn includes<T>(v: &Vec<T>, el: &T) -> bool
+where
+    T: PartialEq,
+{
+    v.iter().any(|ve| ve == el)
+}
+
+pub fn not_empty<T>(v: &Vec<T>) -> bool {
+    !v.is_empty()
+}
+
 
 #[cfg(test)]
 mod test {
@@ -33,5 +44,19 @@ mod test {
         assert_eq!(pymod(-6, 3), 0);
         assert_eq!(pymod(-6, -3), 0);
         assert_eq!(pymod(6, -3), 0);
+    }
+
+    #[test]
+    fn includes_works(){
+        assert!(!includes(&vec![], &0));
+        assert!(includes(&vec![1], &1));
+        assert!(includes(&vec![1, 2, 3, 4], &3));
+        assert!(!includes(&vec![1, 2, 3, 4], &5));
+    }
+
+    #[test]
+    fn not_empty_works(){
+        assert!(!not_empty::<usize>(&vec![]));
+        assert!(not_empty(&vec![1]));
     }
 }
