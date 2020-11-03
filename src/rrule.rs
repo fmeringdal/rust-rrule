@@ -11,6 +11,7 @@ pub struct RRule {
     pub options: ParsedOptions,
 }
 
+
 impl RRule {
     pub fn new(options: ParsedOptions) -> Self {
         Self { options }

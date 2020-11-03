@@ -7,13 +7,13 @@
 //! provided by the [chrono](https://crates.io/crates/chrono) and [chrono-tz](https://crates.io/crates/chrono-tz) crates.
 //!
 //! # Building RRule and RRuleSet
-//! Both of the types implements the `std::str::FromStr` trait so that they can be parsed and built from a `str`. `RRule`
+//! Both types implements the `std::str::FromStr` trait so that they can be parsed and built from a `str`. `RRule`
 //! can additionally be constructured from the `Option` type which help build the recurrence rule. `RRuleSet`
 //! can also be built by composing mutliple `RRule`s for its rrule and exrule properties and DateTime<Tz> for its
 //! exdate and rdate properties. See the examples below.
 //!
 //! # Interface
-//! `RRule` and `RRuleSet` have the same interface for generating recurrences. The four methods for "querying" recurrences are:
+//! `RRule` and `RRuleSet` have the same interface for generating recurrences. The four methods for "querying" for recurrences are:
 //! - `all`: Generate all recurrences that matches the rules
 //! - `between`: Generate all recurrences that matches the rules and are between two given dates
 //! - `before`: Generate the last recurrence that matches the rules and is before a given date
