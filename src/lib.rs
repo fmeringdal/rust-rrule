@@ -18,7 +18,8 @@
 //! - `between`: Generate all recurrences that matches the rules and are between two given dates
 //! - `before`: Generate the last recurrence that matches the rules and is before a given date
 //! - `after`: Generate the first recurrence that matches the rules and is after a given date
-//! All the generated recurrence will be in the same time zone as the dtstart property.
+//!
+//! Note: All the generated recurrence will be in the same time zone as the dtstart property.
 //!
 //! # Examples
 //!
@@ -29,14 +30,14 @@
 //!
 //! use rrule::RRule;
 //!
-//! // Parse a RRule string, return a RRul to get e type
+//! // Parse a RRule string
 //! let mut rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR".parse().unwrap();
 //! assert_eq!(rrule.all().len(), 21);
 //!
 //!
 //! use rrule::RRuleSet;
 //!
-//! // Parse a RRuleSet string, return a RRuleSet type
+//! // Parse a RRuleSet string
 //! let mut rrule_set: RRuleSet = "DTSTART:20120201T023000Z\nRRULE:FREQ=MONTHLY;COUNT=5\nRDATE:20120701T023000Z,20120702T023000Z\nEXRULE:FREQ=MONTHLY;COUNT=2\nEXDATE:20120601T023000Z".parse().unwrap();
 //! assert_eq!(rrule_set.all().len(), 4);
 //! ```
@@ -120,7 +121,7 @@
 //! rrule_set.exrule(exrule);
 //!
 //! let recurrences = rrule_set.all();
-//! 
+//!
 //! // Check that all the recurrences are on a Tuesday
 //! for occurence in &recurrences {
 //!     assert_eq!(occurence.weekday(), Weekday::Tue);
@@ -191,8 +192,9 @@
 
 extern crate chrono;
 extern crate chrono_tz;
-extern crate once_cell;
 extern crate regex;
+#[macro_use]
+extern crate lazy_static;
 
 mod datetime;
 mod iter;

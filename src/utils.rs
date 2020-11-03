@@ -25,13 +25,12 @@ pub fn not_empty<T>(v: &Vec<T>) -> bool {
     !v.is_empty()
 }
 
-
 #[cfg(test)]
 mod test {
     use super::*;
 
     #[test]
-    fn python_mod(){
+    fn python_mod() {
         assert_eq!(pymod(2, -3), -1);
         assert_eq!(pymod(-2, 3), 1);
         assert_eq!(pymod(-2, -3), -2);
@@ -47,7 +46,7 @@ mod test {
     }
 
     #[test]
-    fn includes_works(){
+    fn includes_works() {
         assert!(!includes(&vec![], &0));
         assert!(includes(&vec![1], &1));
         assert!(includes(&vec![1, 2, 3, 4], &3));
@@ -55,7 +54,7 @@ mod test {
     }
 
     #[test]
-    fn not_empty_works(){
+    fn not_empty_works() {
         assert!(!not_empty::<usize>(&vec![]));
         assert!(not_empty(&vec![1]));
     }

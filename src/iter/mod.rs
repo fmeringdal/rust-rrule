@@ -313,7 +313,7 @@ pub fn remove_filtered_days(
                     dayset[daycounter] = None;
                 }
             }
-            None => continue
+            None => continue,
         }
     }
     filtered

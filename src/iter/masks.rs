@@ -1,12 +1,13 @@
-use once_cell::sync::Lazy;
-
 // =============================================================================
 // Date masks
 // =============================================================================
 
 // Every mask is 7 days longer to handle cross-year weekly periods.
 
-pub static MASKS: Lazy<Masks> = Lazy::new(Masks::default);
+
+lazy_static! {
+    pub static ref MASKS: Masks = Masks::default();
+}
 
 #[derive(Clone)]
 pub struct Masks {

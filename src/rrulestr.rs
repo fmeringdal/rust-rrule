@@ -5,22 +5,22 @@ use crate::rrule::RRule;
 use crate::rruleset::RRuleSet;
 use chrono::prelude::*;
 use chrono_tz::{Tz, UTC};
-use once_cell::sync::Lazy;
 use regex::Regex;
 use std::str::FromStr;
 
-/// Some regex used for parsing the rrule string.
-static DATESTR_RE: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"(?m)^(\d{4})(\d{2})(\d{2})(T(\d{2})(\d{2})(\d{2})Z?)?$").unwrap());
-static DTSTART_RE: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"(?m)DTSTART(?:;TZID=([^:=]+?))?(?::|=)([^;\s]+)").unwrap());
-static RRULE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?m)^(?:RRULE|EXRULE):").unwrap());
-static PARSE_LINE_RE_1: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?m)^\s+|\s+$").unwrap());
-static PARSE_LINE_RE_2: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?m)^([A-Z]+?)[:;]").unwrap());
-static RDATE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?m)RDATE(?:;TZID=([^:=]+))?").unwrap());
-static EXDATE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?m)EXDATE(?:;TZID=([^:=]+))?").unwrap());
-static DATETIME_RE: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"(?m)(VALUE=DATE(-TIME)?)|(TZID=)").unwrap());
+// Some regex used for parsing the rrule string.
+lazy_static! {
+    static ref DATESTR_RE: Regex =
+        Regex::new(r"(?m)^(\d{4})(\d{2})(\d{2})(T(\d{2})(\d{2})(\d{2})Z?)?$").unwrap();
+    static ref DTSTART_RE: Regex =
+        Regex::new(r"(?m)DTSTART(?:;TZID=([^:=]+?))?(?::|=)([^;\s]+)").unwrap();
+    static ref RRULE_RE: Regex = Regex::new(r"(?m)^(?:RRULE|EXRULE):").unwrap();
+    static ref PARSE_LINE_RE_1: Regex = Regex::new(r"(?m)^\s+|\s+$").unwrap();
+    static ref PARSE_LINE_RE_2: Regex = Regex::new(r"(?m)^([A-Z]+?)[:;]").unwrap();
+    static ref RDATE_RE: Regex = Regex::new(r"(?m)RDATE(?:;TZID=([^:=]+))?").unwrap();
+    static ref EXDATE_RE: Regex = Regex::new(r"(?m)EXDATE(?:;TZID=([^:=]+))?").unwrap();
+    static ref DATETIME_RE: Regex = Regex::new(r"(?m)(VALUE=DATE(-TIME)?)|(TZID=)").unwrap();
+}
 
 fn parse_datestring_bit<T: FromStr>(
     bits: &regex::Captures,
