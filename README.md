@@ -10,9 +10,9 @@
 
 This crate is not production ready yet. Dates and recurrence rules are quite complicated and
 takes time to get right. Even though this crate is well tested (high code coverage), there are still
-tests missing around edge cases like DST, time zone and rfc_string parsing. Use at your own risk!
+tests missing regarding edge cases in stuff like DST, time zone and rfc_string parsing. Use at your own risk!
 
-## :zap: Quick start
+## Quick start
 
 ```rust
 extern crate rrule;
@@ -40,3 +40,7 @@ This project is licensed under the [MIT license].
 
 - [python-dateutil library](http://labix.org/python-dateutil/)
 - [rrule.js](https://github.com/jakubroztocil/rrule)
+
+## TODOS
+
+- cache
