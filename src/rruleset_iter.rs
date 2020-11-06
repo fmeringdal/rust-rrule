@@ -127,7 +127,6 @@ impl<'a> RRuleSetIter<'a> {
     pub fn iter(&mut self) -> Vec<DateTime<Tz>> {
         // Add all exdates to exdate_hash
         for date in &self.rrule_set.exdate {
-            println!("Exdate timestamp: {}", date.timestamp());
             self.exdate_hash.insert(date.timestamp(), ());
         }
 
