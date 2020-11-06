@@ -10,7 +10,9 @@
 
 This crate is not production ready yet. Dates and recurrence rules are quite complicated and
 takes time to get right. Even though this crate is well tested (high code coverage), there are still
-tests missing regarding edge cases in stuff like DST, time zone and rfc_string parsing. Use at your own risk!
+tests missing regarding edge cases in stuff like DST, time zone and rfc_string parsing (contributions are very
+welcome!).
+Use at your own risk!
 
 ## Quick start
 
@@ -19,6 +21,7 @@ extern crate rrule;
 
 use rrule::RRule;
 
+// RRule that starts 2012.02.01 and occurs daily for 3 days.
 let mut rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
 
 // Get all recurrences of the rrule
