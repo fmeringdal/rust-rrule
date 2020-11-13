@@ -248,3 +248,17 @@ impl Display for RRuleParseError {
 }
 
 impl Error for RRuleParseError {}
+
+
+pub fn weekday_from_str(val: &str) -> Result<Weekday, String> {
+    match val {
+        "MO" => Ok(Weekday::Mon),
+        "TU" => Ok(Weekday::Tue),
+        "WE" => Ok(Weekday::Wed),
+        "TH" => Ok(Weekday::Thu),
+        "FR" => Ok(Weekday::Fri),
+        "SA" => Ok(Weekday::Sat),
+        "SU" => Ok(Weekday::Sun),
+        _ => Err(format!("Invalid weekday: {}", val)),
+    }
+}

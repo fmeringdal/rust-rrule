@@ -3,6 +3,7 @@ use crate::options::*;
 use crate::parse_options::parse_options;
 use crate::rrule::RRule;
 use crate::rruleset::RRuleSet;
+use crate::datetime::get_weekday_val;
 use chrono::prelude::*;
 use chrono_tz::{Tz, UTC};
 use regex::Regex;
@@ -37,12 +38,13 @@ fn parse_datestring_bit<T: FromStr>(
 }
 
 fn datestring_to_date(dt: &str, tz: &Tz) -> Result<DTime, RRuleParseError> {
+
     let bits = DATESTR_RE.captures(dt);
     if bits.is_none() {
         return Err(RRuleParseError(format!("Invalid datetime: {}", dt)));
     }
     let bits = bits.unwrap();
-    if bits.len() < 7 {
+    if bits.len() < 3 {
         return Err(RRuleParseError(format!("Invalid datetime: {}", dt)));
     }
 
@@ -53,9 +55,9 @@ fn datestring_to_date(dt: &str, tz: &Tz) -> Result<DTime, RRuleParseError> {
             parse_datestring_bit(&bits, 3, dt)?,
         )
         .and_hms(
-            parse_datestring_bit(&bits, 5, dt)?,
-            parse_datestring_bit(&bits, 6, dt)?,
-            parse_datestring_bit(&bits, 7, dt)?,
+            parse_datestring_bit(&bits, 5, dt).unwrap_or(0),
+            parse_datestring_bit(&bits, 6, dt).unwrap_or(0),
+            parse_datestring_bit(&bits, 7, dt).unwrap_or(0),
         ));
 }
 
@@ -69,7 +71,7 @@ fn parse_dtstart(s: &str) -> Result<Options, RRuleParseError> {
             } else {
                 UTC
             };
-
+            
             let dtstart_str = match caps.get(2) {
                 Some(dt) => dt.as_str(),
                 None => return Err(RRuleParseError(format!("Invalid datetime: {}", s))),
@@ -153,14 +155,14 @@ fn parse_rrule(line: &str) -> Result<Options, RRuleParseError> {
                 None => return Err(RRuleParseError(format!("Invalid frequenzy: {}", value))),
             },
             "WKST" => {
-                let wkst = stringval_to_int(value, format!("Invalid weekstart value"))?;
-                if wkst > 6 {
-                    return Err(RRuleParseError(format!(
-                        "Invalid wkst value: {}. It must be between 0 and 6",
-                        wkst
-                    )));
-                };
-                options.wkst = Some(wkst);
+                match weekday_from_str(value) {
+                    Ok(weekday) => {
+                        options.wkst = Some(get_weekday_val(&weekday));
+                    }
+                    Err(e) => {
+                        return Err(RRuleParseError(e));
+                    }
+                }
             }
             "COUNT" => {
                 let count = stringval_to_int(value, format!("Invalid count"))?;
@@ -501,7 +503,12 @@ fn parse_rdate(
     Ok(rdatevals)
 }
 
+fn preprocess_rrule_string(s: &str) -> String {
+    s.replace("DTSTART;VALUE=DATETIME", "DTSTART").replace("DTSTART;VALUE=DATE", "DTSTART")
+}
+
 pub fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleParseError> {
+    let s = preprocess_rrule_string(s);
     let ParsedInput {
         mut rrule_vals,
         rdate_vals,
@@ -510,7 +517,7 @@ pub fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleParseError> {
         dtstart,
         tzid,
         ..
-    } = parse_input(s)?;
+    } = parse_input(&s)?;
 
     let mut rset = RRuleSet::new();
     rset.dtstart = dtstart;
@@ -544,12 +551,14 @@ pub fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleParseError> {
 }
 
 pub fn build_rrule(s: &str) -> Result<RRule, RRuleParseError> {
+    let s = preprocess_rrule_string(s);
+
     let ParsedInput {
         mut rrule_vals,
         tzid,
         dtstart,
         ..
-    } = parse_input(s)?;
+    } = parse_input(&s)?;
 
     rrule_vals[0].tzid = tzid;
     rrule_vals[0].dtstart = dtstart;
@@ -585,7 +594,6 @@ mod test {
     #[test]
     fn it_works_4() {
         let res = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5\nEXDATE;TZID=Europe/Berlin:20120202T130000Z,20120203T130000Z");
-        println!("{:?}", res);
         assert!(res.is_ok());
     }
 
@@ -660,6 +668,12 @@ mod test {
             build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5;BYMINUTE=4,5,64");
         assert!(res.is_err());
         assert_eq!(res.err().unwrap().0, "Invalid byminute value");
+    }
+
+    #[test]
+    fn parses_dtstart_when_just_date() {
+        let res = build_rruleset("DTSTART;VALUE=DATE:20200812\nRRULE:FREQ=WEEKLY;UNTIL=20210511T220000Z;INTERVAL=1;BYDAY=WE;WKST=MO");
+        assert!(res.is_ok());
     }
 
     #[test]
