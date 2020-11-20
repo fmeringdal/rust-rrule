@@ -193,6 +193,7 @@
 extern crate chrono;
 extern crate chrono_tz;
 extern crate regex;
+extern crate serde;
 #[macro_use]
 extern crate lazy_static;
 

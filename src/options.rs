@@ -1,11 +1,12 @@
 use crate::datetime::{get_weekday_val, DTime};
 use crate::parse_options::parse_options;
 use chrono::prelude::*;
+use serde::{Serialize, Deserialize};
 use chrono_tz::{Tz, UTC};
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
-#[derive(Debug, PartialEq, PartialOrd, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, PartialOrd, Clone)]
 pub enum Frequenzy {
     Yearly = 0,
     Monthly = 1,
