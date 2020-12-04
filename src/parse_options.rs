@@ -1,4 +1,4 @@
-use crate::options::{Frequenzy, Options, ParsedOptions, RRuleParseError};
+use crate::options::{Frequenzy, NWeekday, Options, ParsedOptions, RRuleParseError};
 use crate::utils::is_some_and_not_empty;
 use chrono::prelude::*;
 use chrono_tz::{Tz, UTC};
@@ -69,7 +69,8 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
                 partial_options.bymonthday = Some(vec![dtstart.day() as isize]);
             }
             Frequenzy::Weekly => {
-                partial_options.byweekday = Some(vec![dtstart.weekday() as usize]);
+                partial_options.byweekday =
+                    Some(vec![NWeekday::new(dtstart.weekday() as usize, 1)]);
             }
             _ => (),
         };
@@ -92,9 +93,18 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
         }
     }
 
+    let mut byweekday = vec![];
+    let mut bynweekday: Vec<Vec<isize>> = vec![];
     // byweekday / bynweekday // ! more to do here
-    if partial_options.byweekday.is_some() {
-        // partial_options.bynweekday = None;
+
+    if let Some(opts_byweekday) = partial_options.byweekday {
+        for wday in opts_byweekday {
+            if wday.n == 1 {
+                byweekday.push(wday.weekday);
+            } else {
+                bynweekday.push(vec![wday.weekday as isize, wday.n]);
+            }
+        }
     }
 
     // byhour
@@ -126,11 +136,11 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
         bynmonthday,
         byyearday: partial_options.byyearday.unwrap_or(vec![]),
         byweekno: partial_options.byweekno.unwrap_or(vec![]),
-        byweekday: partial_options.byweekday.unwrap_or(vec![]),
+        byweekday,
+        bynweekday,
         byhour: partial_options.byhour.unwrap_or(vec![]),
         byminute: partial_options.byminute.unwrap_or(vec![]),
         bysecond: partial_options.bysecond.unwrap_or(vec![]),
-        bynweekday,
         byeaster: partial_options.byeaster,
     })
 }

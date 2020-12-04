@@ -1,9 +1,9 @@
+use crate::datetime::get_weekday_val;
 use crate::datetime::DTime;
 use crate::options::*;
 use crate::parse_options::parse_options;
 use crate::rrule::RRule;
 use crate::rruleset::RRuleSet;
-use crate::datetime::get_weekday_val;
 use chrono::prelude::*;
 use chrono_tz::{Tz, UTC};
 use regex::Regex;
@@ -21,6 +21,7 @@ lazy_static! {
     static ref RDATE_RE: Regex = Regex::new(r"(?m)RDATE(?:;TZID=([^:=]+))?").unwrap();
     static ref EXDATE_RE: Regex = Regex::new(r"(?m)EXDATE(?:;TZID=([^:=]+))?").unwrap();
     static ref DATETIME_RE: Regex = Regex::new(r"(?m)(VALUE=DATE(-TIME)?)|(TZID=)").unwrap();
+    static ref NWEEKDAY_REGEX: Regex = Regex::new(r"(?m)^([+-]?\d{1,2})([A-Z]{2})$").unwrap();
 }
 
 fn parse_datestring_bit<T: FromStr>(
@@ -38,7 +39,6 @@ fn parse_datestring_bit<T: FromStr>(
 }
 
 fn datestring_to_date(dt: &str, tz: &Tz) -> Result<DTime, RRuleParseError> {
-
     let bits = DATESTR_RE.captures(dt);
     if bits.is_none() {
         return Err(RRuleParseError(format!("Invalid datetime: {}", dt)));
@@ -71,7 +71,7 @@ fn parse_dtstart(s: &str) -> Result<Options, RRuleParseError> {
             } else {
                 UTC
             };
-            
+
             let dtstart_str = match caps.get(2) {
                 Some(dt) => dt.as_str(),
                 None => return Err(RRuleParseError(format!("Invalid datetime: {}", s))),
@@ -154,16 +154,14 @@ fn parse_rrule(line: &str) -> Result<Options, RRuleParseError> {
                 Some(freq) => options.freq = Some(freq),
                 None => return Err(RRuleParseError(format!("Invalid frequenzy: {}", value))),
             },
-            "WKST" => {
-                match weekday_from_str(value) {
-                    Ok(weekday) => {
-                        options.wkst = Some(get_weekday_val(&weekday));
-                    }
-                    Err(e) => {
-                        return Err(RRuleParseError(e));
-                    }
+            "WKST" => match weekday_from_str(value) {
+                Ok(weekday) => {
+                    options.wkst = Some(get_weekday_val(&weekday));
                 }
-            }
+                Err(e) => {
+                    return Err(RRuleParseError(e));
+                }
+            },
             "COUNT" => {
                 let count = stringval_to_int(value, format!("Invalid count"))?;
                 options.count = Some(count);
@@ -266,25 +264,23 @@ fn str_to_weekday(d: &str) -> Result<usize, RRuleParseError> {
     }
 }
 
-fn parse_weekday(val: &str) -> Result<Vec<usize>, RRuleParseError> {
-    val.split(",")
-        .map(|day| {
-            if day.len() == 2 {
-                // MO, TU, ...
-                return str_to_weekday(day);
-            }
+fn parse_weekday(val: &str) -> Result<Vec<NWeekday>, RRuleParseError> {
+    let mut wdays = vec![];
+    for day in val.split(",") {
+        if day.len() == 2 {
+            // MO, TU, ...
+            let wday = str_to_weekday(day)?;
+            wdays.push(NWeekday::new(wday, 1));
+            continue;
+        }
 
-            // ! NOT SUPPORTED YET
-            // -1MO, +3FR, 1SO, 13TU ...
-            // let regex = Regex::new(r"(?m)^([+-]?\d{1,2})([A-Z]{2})$").unwrap();
-            // let parts = regex.captures(day).unwrap();
-            // let n = parts.get(1).unwrap();
-            // let wdaypart = parts.get(2).unwrap();
-            // let wday = str_to_weekday(d)
-
-            return str_to_weekday(day);
-        })
-        .collect()
+        let parts = NWEEKDAY_REGEX.captures(day).unwrap();
+        let n = parts.get(1).unwrap().as_str().parse().unwrap();
+        let wdaypart = parts.get(2).unwrap();
+        let wday = str_to_weekday(wdaypart.as_str())?;
+        wdays.push(NWeekday::new(wday, n));
+    }
+    Ok(wdays)
 }
 
 fn parse_line(rfc_string: &str) -> Result<Option<Options>, RRuleParseError> {
@@ -504,7 +500,8 @@ fn parse_rdate(
 }
 
 fn preprocess_rrule_string(s: &str) -> String {
-    s.replace("DTSTART;VALUE=DATETIME", "DTSTART").replace("DTSTART;VALUE=DATE", "DTSTART")
+    s.replace("DTSTART;VALUE=DATETIME", "DTSTART")
+        .replace("DTSTART;VALUE=DATE", "DTSTART")
 }
 
 pub fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleParseError> {
@@ -674,6 +671,39 @@ mod test {
     fn parses_dtstart_when_just_date() {
         let res = build_rruleset("DTSTART;VALUE=DATE:20200812\nRRULE:FREQ=WEEKLY;UNTIL=20210511T220000Z;INTERVAL=1;BYDAY=WE;WKST=MO");
         assert!(res.is_ok());
+    }
+
+    #[test]
+    fn parses_byday_with_n() {
+        let cases = vec![
+            "DTSTART:20200901T174500\nRRULE:FREQ=MONTHLY;UNTIL=20210504T154500Z;INTERVAL=1;BYDAY=1TU",
+            "DTSTART;VALUE=DATE:20200902\nRRULE:FREQ=MONTHLY;UNTIL=20210504T220000Z;INTERVAL=1;BYDAY=1WE",
+            "DTSTART:20200902T100000\nRRULE:FREQ=MONTHLY;UNTIL=20210505T080000Z;INTERVAL=1;BYDAY=1WE",
+            "DTSTART;VALUE=DATE:20200812\nRRULE:FREQ=MONTHLY;UNTIL=20210524T090000Z;INTERVAL=1;BYDAY=4MO"
+        ];
+        for case in &cases {
+            let res = build_rruleset(case);
+            assert!(res.is_ok());
+        }
+        let cases = vec![
+            "RRULE:FREQ=MONTHLY;UNTIL=20210504T154500Z;INTERVAL=1;BYDAY=1TU",
+            "RRULE:FREQ=MONTHLY;UNTIL=20210504T220000Z;INTERVAL=1;BYDAY=1WE",
+            "RRULE:FREQ=MONTHLY;UNTIL=20210505T080000Z;INTERVAL=1;BYDAY=-1WE",
+            "RRULE:FREQ=MONTHLY;UNTIL=20210505T080000Z;INTERVAL=1;BYDAY=12SU",
+            "RRULE:FREQ=MONTHLY;UNTIL=20210524T090000Z;INTERVAL=1;BYDAY=4MO",
+        ];
+        let opts = vec![
+            vec![NWeekday::new(1,1)],
+            vec![NWeekday::new(2,1)],
+            vec![NWeekday::new(2,-1)],
+            vec![NWeekday::new(6, 12)],
+            vec![NWeekday::new(0,4)]
+        ];
+        for i in 0..cases.len() {
+            let opts_or_err = parse_string(cases[i]);
+            assert!(opts_or_err.is_ok());
+            assert_eq!(opts_or_err.unwrap().byweekday.unwrap(), opts[i]);
+        }
     }
 
     #[test]

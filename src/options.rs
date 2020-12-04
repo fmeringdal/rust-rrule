@@ -1,8 +1,8 @@
 use crate::datetime::{get_weekday_val, DTime};
 use crate::parse_options::parse_options;
 use chrono::prelude::*;
-use serde::{Serialize, Deserialize};
 use chrono_tz::{Tz, UTC};
+use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
@@ -15,6 +15,40 @@ pub enum Frequenzy {
     Hourly = 4,
     Minutely = 5,
     Secondly = 6,
+}
+
+#[derive(Copy, Clone, Debug)]
+pub struct NWeekday {
+    pub weekday: usize,
+    pub n: isize,
+}
+
+impl NWeekday {
+    pub fn new(weekday: usize, n: isize) -> Self {
+        // if (n === 0) throw new Error("Can't create weekday with n == 0")
+        Self { weekday, n }
+    }
+
+    pub fn from(weekday: &Weekday, n: isize) -> Self {
+        // if (n === 0) throw new Error("Can't create weekday with n == 0")
+        Self {
+            weekday: get_weekday_val(weekday),
+            n,
+        }
+    }
+
+    pub fn nth(&self, n: isize) -> Self {
+        if self.n == n {
+            return self.clone();
+        }
+        Self::new(self.weekday, n)
+    }
+}
+
+impl PartialEq for NWeekday {
+    fn eq(&self, other: &Self) -> bool {
+        self.n == other.n && self.weekday == other.weekday
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -33,10 +67,10 @@ pub struct ParsedOptions {
     pub byyearday: Vec<isize>,
     pub byweekno: Vec<isize>,
     pub byweekday: Vec<usize>,
+    pub bynweekday: Vec<Vec<isize>>,
     pub byhour: Vec<usize>,
     pub byminute: Vec<usize>,
     pub bysecond: Vec<usize>,
-    pub bynweekday: Vec<Vec<isize>>,
     pub byeaster: Option<isize>,
 }
 
@@ -54,7 +88,7 @@ pub struct Options {
     pub bymonthday: Option<Vec<isize>>,
     pub byyearday: Option<Vec<isize>>,
     pub byweekno: Option<Vec<isize>>,
-    pub byweekday: Option<Vec<usize>>,
+    pub byweekday: Option<Vec<NWeekday>>,
     pub byhour: Option<Vec<usize>>,
     pub byminute: Option<Vec<usize>>,
     pub bysecond: Option<Vec<usize>>,
@@ -198,7 +232,11 @@ impl Options {
     /// When given, these variables will define the weekdays where the recurrence
     /// will be applied.
     pub fn byweekday(mut self, byweekday: Vec<Weekday>) -> Self {
-        let byweekday = byweekday.iter().map(|w| get_weekday_val(w)).collect();
+        let byweekday = byweekday
+            .iter()
+            .map(|w| get_weekday_val(w))
+            .map(|w| NWeekday::new(w, 1))
+            .collect();
         self.byweekday = Some(byweekday);
         self
     }
@@ -249,7 +287,6 @@ impl Display for RRuleParseError {
 }
 
 impl Error for RRuleParseError {}
-
 
 pub fn weekday_from_str(val: &str) -> Result<Weekday, String> {
     match val {

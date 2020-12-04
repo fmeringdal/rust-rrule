@@ -4,7 +4,6 @@
 
 // Every mask is 7 days longer to handle cross-year weekly periods.
 
-
 lazy_static! {
     pub static ref MASKS: Masks = Masks::default();
 }
