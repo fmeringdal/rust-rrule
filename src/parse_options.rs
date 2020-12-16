@@ -1,4 +1,4 @@
-use crate::options::{Frequenzy, NWeekday, Options, ParsedOptions, RRuleParseError};
+use crate::options::{Frequenzy, NWeekday, NWeekdayIdentifier, Options, ParsedOptions, RRuleParseError};
 use crate::utils::is_some_and_not_empty;
 use chrono::prelude::*;
 use chrono_tz::{Tz, UTC};
@@ -70,7 +70,7 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
             }
             Frequenzy::Weekly => {
                 partial_options.byweekday =
-                    Some(vec![NWeekday::new(dtstart.weekday() as usize, 1)]);
+                    Some(vec![NWeekday::new(dtstart.weekday() as usize, NWeekdayIdentifier::Every)]);
             }
             _ => (),
         };
@@ -99,11 +99,19 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
 
     if let Some(opts_byweekday) = partial_options.byweekday {
         for wday in opts_byweekday {
-            if wday.n == 1 {
-                byweekday.push(wday.weekday);
-            } else {
-                bynweekday.push(vec![wday.weekday as isize, wday.n]);
+            match wday.n {
+                NWeekdayIdentifier::Every => {
+                byweekday.push(wday.weekday)
+                }
+                NWeekdayIdentifier::Identifier(n) => {
+                    bynweekday.push(vec![wday.weekday as isize, n]);
+                }
             }
+            // if wday.n ==  {
+            //     byweekday.push(wday.weekday);
+            // } else {
+            //     bynweekday.push(vec![wday.weekday as isize, wday.n]);
+            // }
         }
     }
 

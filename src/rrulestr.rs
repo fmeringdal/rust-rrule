@@ -270,7 +270,7 @@ fn parse_weekday(val: &str) -> Result<Vec<NWeekday>, RRuleParseError> {
         if day.len() == 2 {
             // MO, TU, ...
             let wday = str_to_weekday(day)?;
-            wdays.push(NWeekday::new(wday, 1));
+            wdays.push(NWeekday::new(wday, NWeekdayIdentifier::Every));
             continue;
         }
 
@@ -278,7 +278,7 @@ fn parse_weekday(val: &str) -> Result<Vec<NWeekday>, RRuleParseError> {
         let n = parts.get(1).unwrap().as_str().parse().unwrap();
         let wdaypart = parts.get(2).unwrap();
         let wday = str_to_weekday(wdaypart.as_str())?;
-        wdays.push(NWeekday::new(wday, n));
+        wdays.push(NWeekday::new(wday, NWeekdayIdentifier::Identifier(n)));
     }
     Ok(wdays)
 }
@@ -568,6 +568,7 @@ pub fn build_rrule(s: &str) -> Result<RRule, RRuleParseError> {
 #[cfg(test)]
 mod test {
     use super::*;
+    use super::NWeekdayIdentifier;
     use chrono_tz::{Tz, UTC};
 
     #[test]
@@ -674,6 +675,12 @@ mod test {
     }
 
     #[test]
+    fn parses_byday_as_nweekday_when_n_is_first() {
+        let res = build_rrule("DTSTART;VALUE=DATE:20200701\nRRULE:FREQ=MONTHLY;UNTIL=20210303T090000Z;INTERVAL=1;BYDAY=1WE").unwrap();
+        assert_eq!(res.options.bynweekday, vec![vec![2,1]]);
+    }
+
+    #[test]
     fn parses_byday_with_n() {
         let cases = vec![
             "DTSTART:20200901T174500\nRRULE:FREQ=MONTHLY;UNTIL=20210504T154500Z;INTERVAL=1;BYDAY=1TU",
@@ -693,11 +700,11 @@ mod test {
             "RRULE:FREQ=MONTHLY;UNTIL=20210524T090000Z;INTERVAL=1;BYDAY=4MO",
         ];
         let opts = vec![
-            vec![NWeekday::new(1,1)],
-            vec![NWeekday::new(2,1)],
-            vec![NWeekday::new(2,-1)],
-            vec![NWeekday::new(6, 12)],
-            vec![NWeekday::new(0,4)]
+            vec![NWeekday::new(1, NWeekdayIdentifier::Identifier(1))],
+            vec![NWeekday::new(2, NWeekdayIdentifier::Identifier(1))],
+            vec![NWeekday::new(2,NWeekdayIdentifier::Identifier(-1))],
+            vec![NWeekday::new(6, NWeekdayIdentifier::Identifier(12))],
+            vec![NWeekday::new(0,NWeekdayIdentifier::Identifier(4))]
         ];
         for i in 0..cases.len() {
             let opts_or_err = parse_string(cases[i]);

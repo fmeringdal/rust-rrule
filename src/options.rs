@@ -17,19 +17,25 @@ pub enum Frequenzy {
     Secondly = 6,
 }
 
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum NWeekdayIdentifier {
+    Every,
+    Identifier(isize),
+}
+
 #[derive(Copy, Clone, Debug)]
 pub struct NWeekday {
     pub weekday: usize,
-    pub n: isize,
+    pub n: NWeekdayIdentifier,
 }
 
 impl NWeekday {
-    pub fn new(weekday: usize, n: isize) -> Self {
+    pub fn new(weekday: usize, n: NWeekdayIdentifier) -> Self {
         // if (n === 0) throw new Error("Can't create weekday with n == 0")
         Self { weekday, n }
     }
 
-    pub fn from(weekday: &Weekday, n: isize) -> Self {
+    pub fn from(weekday: &Weekday, n: NWeekdayIdentifier) -> Self {
         // if (n === 0) throw new Error("Can't create weekday with n == 0")
         Self {
             weekday: get_weekday_val(weekday),
@@ -37,7 +43,7 @@ impl NWeekday {
         }
     }
 
-    pub fn nth(&self, n: isize) -> Self {
+    pub fn nth(&self, n: NWeekdayIdentifier) -> Self {
         if self.n == n {
             return self.clone();
         }
@@ -235,7 +241,7 @@ impl Options {
         let byweekday = byweekday
             .iter()
             .map(|w| get_weekday_val(w))
-            .map(|w| NWeekday::new(w, 1))
+            .map(|w| NWeekday::new(w, NWeekdayIdentifier::Every))
             .collect();
         self.byweekday = Some(byweekday);
         self
