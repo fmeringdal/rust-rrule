@@ -63,7 +63,7 @@ fn datestring_to_date(dt: &str, tz: &Tz) -> Result<DTime, RRuleParseError> {
 
 fn parse_dtstart(s: &str) -> Result<Options, RRuleParseError> {
     let caps = DTSTART_RE.captures(s);
-
+    
     match caps {
         Some(caps) => {
             let tzid: Tz = if let Some(tzid) = caps.get(1) {
@@ -82,7 +82,14 @@ fn parse_dtstart(s: &str) -> Result<Options, RRuleParseError> {
             options.tzid = Some(tzid);
             Ok(options)
         }
-        None => Err(RRuleParseError(format!("Invalid datetime: {}", s))),
+        // None => Err(RRuleParseError(format!("Invalid datetime: {}", s))),
+        // Allow no dtstart which defaults to now in utc timezone
+        None => {
+            let mut options = Options::new();
+            options.dtstart = Some(UTC.timestamp(Utc::now().timestamp(), 0));
+            options.tzid = Some(UTC);
+            Ok(options)
+        },
     }
 }
 
@@ -389,7 +396,6 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleParseError> {
     let mut rdate_vals = vec![];
     let mut exrule_vals = vec![];
     let mut exdate_vals = vec![];
-
     let Options { dtstart, tzid, .. } = parse_dtstart(s)?;
 
     let lines: Vec<&str> = s.split("\n").collect();
@@ -727,5 +733,22 @@ mod test {
             println!("All took: {:?}", tmp_now.elapsed().unwrap().as_nanos());
         }
         println!("Time took: {:?}", now.elapsed().unwrap().as_millis());
+    }
+
+    #[test]
+    fn parses_rrule_without_dtstart() {
+        let res = build_rrule("FREQ=DAILY;COUNT=7");
+        assert!(res.is_ok());
+        let res = res.unwrap();
+        assert_eq!(res.options.count, Some(7));
+        assert_eq!(res.options.freq, Frequenzy::Daily);
+        assert!(Utc::now().timestamp() - res.options.dtstart.timestamp() < 2);
+
+
+        let res = build_rruleset("FREQ=DAILY;COUNT=7");
+        assert!(res.is_ok());
+        let occurences = res.unwrap().all();
+        assert_eq!(occurences.len(), 7);
+        assert!(Utc::now().timestamp() - occurences[0].timestamp() < 2);
     }
 }
