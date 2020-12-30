@@ -145,8 +145,8 @@ impl<'a> RRuleSetIter<'a> {
             _ => (),
         };
 
-        for date in &self.rrule_set.rdate.clone() {
-            if !self.accept(date.clone()) {
+        for date in self.rrule_set.rdate.clone().into_iter() {
+            if !self.accept(date) {
                 break;
             }
         }

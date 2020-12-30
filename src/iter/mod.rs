@@ -320,7 +320,7 @@ pub fn remove_filtered_days(
 }
 
 pub fn build_timeset(options: &ParsedOptions) -> Vec<Time> {
-    let millisecond_mod = (options.dtstart.timestamp_millis() & 1000) as usize;
+    let millisecond_mod = (options.dtstart.timestamp_millis() % 1000) as usize;
 
     if options.freq > Frequenzy::Daily {
         return vec![];
