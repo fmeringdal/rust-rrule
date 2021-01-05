@@ -208,7 +208,7 @@ mod rruleset_iter;
 mod rrulestr;
 mod utils;
 
-pub use crate::options::{Frequenzy, Options, ParsedOptions};
+pub use crate::options::{Frequenzy, Options, ParsedOptions, NWeekday};
 pub use crate::rrule::RRule;
 pub use crate::rruleset::RRuleSet;
 pub use chrono::Weekday;
