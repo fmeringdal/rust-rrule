@@ -3,147 +3,15 @@ mod monthinfo;
 mod yearinfo;
 pub use iterinfo::IterInfo;
 mod poslist;
-use poslist::build_poslist;
+pub use poslist::build_poslist;
 mod easter;
-mod iter_v2;
 mod masks;
-pub use iter_v2::{generate, RRuleIter};
 
-use crate::datetime::{from_ordinal, get_weekday_val, DTime, Time};
+use crate::datetime::{get_weekday_val, DTime, Time};
 use crate::options::*;
 use crate::utils::{includes, not_empty};
-use chrono::offset::TimeZone;
 use chrono::prelude::*;
 use chrono::Duration;
-
-pub trait IterResult {
-    fn accept(&self, date: &DTime) -> (bool, bool);
-}
-
-// pub fn iter<T: IterResult>(iter_result: &mut T, options: &mut ParsedOptions) -> Vec<DTime> {
-//     if (options.count.is_some() && options.count.unwrap() == 0) || options.interval == 0 {
-//         return iter_result.get_value();
-//     }
-
-//     let mut counter_date = options.dtstart;
-//     let mut ii = IterInfo::new(options);
-//     ii.rebuild(counter_date.year() as isize, counter_date.month() as usize);
-
-//     let mut timeset = make_timeset(&ii, &counter_date, options);
-//     let mut count = match options.count {
-//         Some(count) => count,
-//         _ => 0,
-//     };
-
-//     loop {
-//         let (dayset, start, end) = ii.getdayset(
-//             &options.freq,
-//             counter_date.year() as isize,
-//             counter_date.month() as usize,
-//             counter_date.day() as usize,
-//         );
-
-//         let mut dayset = dayset
-//             .into_iter()
-//             .map(|s| Some(s as isize))
-//             .collect::<Vec<Option<isize>>>();
-
-//         let filtered = remove_filtered_days(&mut dayset, start, end, &ii, options);
-
-//         if not_empty(&options.bysetpos) {
-//             let poslist = build_poslist(
-//                 &options.bysetpos,
-//                 &timeset,
-//                 start,
-//                 end,
-//                 &ii,
-//                 &dayset,
-//                 &options.tzid,
-//             );
-
-//             for j in 0..poslist.len() {
-//                 let res = poslist[j];
-//                 if options.until.is_some() && res > options.until.unwrap() {
-//                     return iter_result.get_value();
-//                 }
-
-//                 if res >= options.dtstart {
-//                     if !iter_result.accept(res) {
-//                         return iter_result.get_value();
-//                     }
-
-//                     if count > 0 {
-//                         count -= 1;
-//                         if count == 0 {
-//                             return iter_result.get_value();
-//                         }
-//                     }
-//                 }
-//             }
-//         } else {
-//             for j in start..end {
-//                 let current_day = dayset[j];
-//                 if current_day.is_none() {
-//                     continue;
-//                 }
-
-//                 let current_day = current_day.unwrap();
-//                 let date = from_ordinal(ii.yearordinal().unwrap() + current_day, &options.tzid);
-//                 for k in 0..timeset.len() {
-//                     let res = options
-//                         .tzid
-//                         .ymd(date.year(), date.month(), date.day())
-//                         .and_hms(
-//                             timeset[k].hour as u32,
-//                             timeset[k].minute as u32,
-//                             timeset[k].second as u32,
-//                         );
-//                     if options.until.is_some() && res > options.until.unwrap() {
-//                         return iter_result.get_value();
-//                     }
-//                     if res >= options.dtstart {
-//                         if !iter_result.accept(res) {
-//                             return iter_result.get_value();
-//                         }
-
-//                         if count > 0 {
-//                             count -= 1;
-//                             if count == 0 {
-//                                 return iter_result.get_value();
-//                             }
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-
-//         if options.interval == 0 {
-//             return iter_result.get_value();
-//         }
-
-//         // Handle frequency and interval
-//         counter_date = increment_counter_date(counter_date, options, filtered);
-
-//         if counter_date.year() > 2200 {
-//             return iter_result.get_value();
-//         }
-
-//         if options.freq == Frequenzy::Hourly
-//             || options.freq == Frequenzy::Minutely
-//             || options.freq == Frequenzy::Secondly
-//         {
-//             timeset = ii.gettimeset(
-//                 &options.freq,
-//                 counter_date.hour() as usize,
-//                 counter_date.minute() as usize,
-//                 counter_date.second() as usize,
-//                 0,
-//             );
-//         }
-
-//         ii.rebuild(counter_date.year() as isize, counter_date.month() as usize);
-//     }
-// }
 
 pub fn increment_counter_date(
     counter_date: DTime,

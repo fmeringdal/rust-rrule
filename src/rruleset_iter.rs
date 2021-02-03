@@ -1,5 +1,5 @@
 use crate::rruleset::RRuleSet;
-use crate::{iter::RRuleIter, RRule};
+use crate::{rrule_iter::RRuleIter, RRule};
 use chrono::prelude::*;
 use chrono_tz::Tz;
 use std::collections::HashMap;
