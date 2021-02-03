@@ -25,7 +25,7 @@ use rrule::RRule;
 let mut rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
 
 // Get all recurrences of the rrule
-let recurrences = rrule.all();
+let recurrences = rrule.all(); // Or rrule.into_iter().collect::<Vec<_>>(); if you want to leverage iterators
 assert_eq!(recurrences.len(), 3);
 ```
 
