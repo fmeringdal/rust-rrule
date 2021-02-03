@@ -43,14 +43,14 @@ impl RRuleSet {
     }
 
     /// Returns all the recurrences of the rruleset
-    pub fn all(&mut self) -> Vec<DateTime<Tz>> {
+    pub fn all(&self) -> Vec<DateTime<Tz>> {
         self.clone().into_iter().collect()
     }
 
     /// Returns the last recurrence before the given datetime instance.
     /// The inc keyword defines what happens if dt is an recurrence.
     /// With inc == true, if dt itself is an recurrence, it will be returned.
-    pub fn before(&mut self, dt: DateTime<Tz>, inc: bool) -> Option<DateTime<Tz>> {
+    pub fn before(&self, dt: DateTime<Tz>, inc: bool) -> Option<DateTime<Tz>> {
         self.clone()
             .into_iter()
             .take_while(|d| if inc { *d <= dt } else { *d < dt })
@@ -60,7 +60,7 @@ impl RRuleSet {
     /// Returns the last recurrence after the given datetime instance.
     /// The inc keyword defines what happens if dt is an recurrence.
     /// With inc == true, if dt itself is an recurrence, it will be returned.
-    pub fn after(&mut self, dt: DateTime<Tz>, inc: bool) -> Option<DateTime<Tz>> {
+    pub fn after(&self, dt: DateTime<Tz>, inc: bool) -> Option<DateTime<Tz>> {
         self.clone()
             .into_iter()
             .skip_while(|d| if inc { *d <= dt } else { *d < dt })
@@ -72,7 +72,7 @@ impl RRuleSet {
     /// themselves recurrences. With inc == true, they will be included in the
     /// list, if they are found in the recurrence set.
     pub fn between(
-        &mut self,
+        &self,
         after: DateTime<Tz>,
         before: DateTime<Tz>,
         inc: bool,
