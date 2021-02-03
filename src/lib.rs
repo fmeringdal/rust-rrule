@@ -12,12 +12,67 @@
 //! can also be built by composing mutliple `RRule`s for its rrule and exrule properties and DateTime<Tz> for its
 //! exdate and rdate properties. See the examples below.
 //!
-//! # Interface
-//! `RRule` and `RRuleSet` have the same interface for generating recurrences. The four methods for "querying" for recurrences are:
+//! # Generating occurences
+//! `RRule` and `RRuleSet` have four quick start methods for "querying" for recurrences:
 //! - `all`: Generate all recurrences that matches the rules
 //! - `between`: Generate all recurrences that matches the rules and are between two given dates
 //! - `before`: Generate the last recurrence that matches the rules and is before a given date
 //! - `after`: Generate the first recurrence that matches the rules and is after a given date
+//!
+//! If you have some additional filters or want to work with inifite recurrence rules
+//! both `RRule` and `RRuleSet` implements the `Iterator` traits which makes them very flexible.
+//! All the methods above uses the iterator trait in its implementation as shown below.
+//! ````
+//! extern crate rrule;
+//! extern crate chrono;
+//! extern crate chrono_tz;
+//!
+//! use chrono::prelude::*;
+//! use chrono_tz::UTC;
+//! use rrule::RRule;
+//!
+//! let mut rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
+//!
+//!
+//! // All dates
+//! let all_occurences: Vec<_> = rrule.clone().into_iter().collect();
+//! assert_eq!(all_occurences, rrule.all());
+//!
+//! // Between two dates
+//! let after = UTC.ymd(2012, 2, 1).and_hms(10, 0, 0);
+//! let before = UTC.ymd(2012, 4, 1).and_hms(9, 0, 0);
+//! let inc = true; // Wheter dates equal to after or before should be added;
+//!
+//! let occurences_between_dates: Vec<_> = rrule.clone()
+//!     .into_iter()
+//!     .skip_while(|d| if inc { *d <= after } else { *d < after })
+//!     .take_while(|d| if inc { *d <= before } else { *d < before })
+//!     .collect();
+//! assert_eq!(occurences_between_dates, rrule.between(after, before, inc));
+//!
+//!
+//! // After a date
+//! let after = UTC.ymd(2012, 2, 1).and_hms(10, 0, 0);
+//! let inc = true; // Wheter dates equals to after should be added;
+//!
+//! let occurences_after_date = rrule.clone()
+//!     .into_iter()
+//!     .skip_while(|d| if inc { *d <= after } else { *d < after })
+//!     .next();
+//! assert_eq!(occurences_after_date, rrule.after(after, inc));
+//!
+//!
+//! // Before a date
+//! let before = UTC.ymd(2012, 4, 1).and_hms(10, 0, 0);
+//! let inc = true; // Wheter dates equals to before should be added;
+//!
+//! let occurences_before_date = rrule.clone()
+//!     .into_iter()
+//!     .take_while(|d| if inc { *d <= before } else { *d < before })
+//!     .last();
+//! assert_eq!(occurences_before_date, rrule.before(before, inc));
+//!
+//! ````
 //!
 //! Note: All the generated recurrence will be in the same time zone as the dtstart property.
 //!
@@ -208,7 +263,7 @@ mod rruleset_iter;
 mod rrulestr;
 mod utils;
 
-pub use crate::options::{Frequenzy, Options, ParsedOptions, NWeekday};
+pub use crate::options::{Frequenzy, NWeekday, Options, ParsedOptions};
 pub use crate::rrule::RRule;
 pub use crate::rruleset::RRuleSet;
 pub use chrono::Weekday;

@@ -1,4 +1,6 @@
-use crate::options::{Frequenzy, NWeekday, NWeekdayIdentifier, Options, ParsedOptions, RRuleParseError};
+use crate::options::{
+    Frequenzy, NWeekday, NWeekdayIdentifier, Options, ParsedOptions, RRuleParseError,
+};
 use crate::utils::is_some_and_not_empty;
 use chrono::prelude::*;
 use chrono_tz::{Tz, UTC};
@@ -69,8 +71,10 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
                 partial_options.bymonthday = Some(vec![dtstart.day() as isize]);
             }
             Frequenzy::Weekly => {
-                partial_options.byweekday =
-                    Some(vec![NWeekday::new(dtstart.weekday() as usize, NWeekdayIdentifier::Every)]);
+                partial_options.byweekday = Some(vec![NWeekday::new(
+                    dtstart.weekday() as usize,
+                    NWeekdayIdentifier::Every,
+                )]);
             }
             _ => (),
         };
@@ -100,9 +104,7 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
     if let Some(opts_byweekday) = partial_options.byweekday {
         for wday in opts_byweekday {
             match wday.n {
-                NWeekdayIdentifier::Every => {
-                byweekday.push(wday.weekday)
-                }
+                NWeekdayIdentifier::Every => byweekday.push(wday.weekday),
                 NWeekdayIdentifier::Identifier(n) => {
                     bynweekday.push(vec![wday.weekday as isize, n]);
                 }

@@ -63,7 +63,7 @@ fn datestring_to_date(dt: &str, tz: &Tz) -> Result<DTime, RRuleParseError> {
 
 fn parse_dtstart(s: &str) -> Result<Options, RRuleParseError> {
     let caps = DTSTART_RE.captures(s);
-    
+
     match caps {
         Some(caps) => {
             let tzid: Tz = if let Some(tzid) = caps.get(1) {
@@ -89,7 +89,7 @@ fn parse_dtstart(s: &str) -> Result<Options, RRuleParseError> {
             options.dtstart = Some(UTC.timestamp(Utc::now().timestamp(), 0));
             options.tzid = Some(UTC);
             Ok(options)
-        },
+        }
     }
 }
 
@@ -573,8 +573,8 @@ pub fn build_rrule(s: &str) -> Result<RRule, RRuleParseError> {
 
 #[cfg(test)]
 mod test {
-    use super::*;
     use super::NWeekdayIdentifier;
+    use super::*;
     use chrono_tz::{Tz, UTC};
 
     #[test]
@@ -683,7 +683,7 @@ mod test {
     #[test]
     fn parses_byday_as_nweekday_when_n_is_first() {
         let res = build_rrule("DTSTART;VALUE=DATE:20200701\nRRULE:FREQ=MONTHLY;UNTIL=20210303T090000Z;INTERVAL=1;BYDAY=1WE").unwrap();
-        assert_eq!(res.options.bynweekday, vec![vec![2,1]]);
+        assert_eq!(res.options.bynweekday, vec![vec![2, 1]]);
     }
 
     #[test]
@@ -708,9 +708,9 @@ mod test {
         let opts = vec![
             vec![NWeekday::new(1, NWeekdayIdentifier::Identifier(1))],
             vec![NWeekday::new(2, NWeekdayIdentifier::Identifier(1))],
-            vec![NWeekday::new(2,NWeekdayIdentifier::Identifier(-1))],
+            vec![NWeekday::new(2, NWeekdayIdentifier::Identifier(-1))],
             vec![NWeekday::new(6, NWeekdayIdentifier::Identifier(12))],
-            vec![NWeekday::new(0,NWeekdayIdentifier::Identifier(4))]
+            vec![NWeekday::new(0, NWeekdayIdentifier::Identifier(4))],
         ];
         for i in 0..cases.len() {
             let opts_or_err = parse_string(cases[i]);
@@ -743,7 +743,6 @@ mod test {
         assert_eq!(res.options.count, Some(7));
         assert_eq!(res.options.freq, Frequenzy::Daily);
         assert!(Utc::now().timestamp() - res.options.dtstart.timestamp() < 2);
-
 
         let res = build_rruleset("FREQ=DAILY;COUNT=7");
         assert!(res.is_ok());
