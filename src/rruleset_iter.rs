@@ -18,14 +18,14 @@ impl Iterator for RRuleIterSet {
     fn next(&mut self) -> Option<Self::Item> {
         let mut next_date: Option<(usize, DateTime<Tz>)> = None;
 
-        for (i, rrule_iter) in self.rrule_iters.iter().enumerate() {
+        for (i, rrule_iter) in self.rrule_iters.iter_mut().enumerate() {
             let rrule_queue = self.queue.remove(&i);
-            let next_rrule_date = None;
+            let mut next_rrule_date = None;
             match rrule_queue {
                 Some(d) => next_rrule_date = Some(d),
                 None => {
                     // should be generated
-                    next_rrule_date = generate(rrule_iter, &self.exrules, &mut self.exdates);
+                    next_rrule_date = generate(rrule_iter, &mut self.exrules, &mut self.exdates);
                 }
             }
 
@@ -54,8 +54,8 @@ impl Iterator for RRuleIterSet {
 }
 
 fn generate(
-    rrule_iter: &RRuleIter,
-    exrules: &Vec<RRule>,
+    rrule_iter: &mut RRuleIter,
+    exrules: &mut Vec<RRule>,
     exdates: &mut HashMap<i64, ()>,
 ) -> Option<DateTime<Tz>> {
     let mut date = rrule_iter.next();
@@ -68,7 +68,7 @@ fn generate(
 
 fn accept_generated_date(
     date: &Option<DateTime<Tz>>,
-    exrules: &Vec<RRule>,
+    exrules: &mut Vec<RRule>,
     exdates: &mut HashMap<i64, ()>,
 ) -> bool {
     match date {

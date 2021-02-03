@@ -1,3 +1,5 @@
+use std::cmp::{max, min};
+
 use crate::{datetime::Time, Frequenzy};
 use chrono::prelude::*;
 use chrono_tz::Tz;
@@ -16,21 +18,34 @@ impl Iterator for RRuleIter {
     type Item = DateTime<Tz>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if !self.finished {
-            generate(self);
-        }
-
-        if self.remain.is_empty() {
+        if self.finished {
             return None;
         }
 
-        Some(self.remain.remove(0))
+        if !self.remain.is_empty() {
+            return Some(self.remain.remove(0));
+        }
+
+        generate(self);
+
+        // println!("Done generating: {:?}", self.remain);
+
+        if self.remain.is_empty() {
+            self.finished = true;
+            None
+        } else {
+            Some(self.remain.remove(0))
+        }
     }
 }
 
 pub fn generate(iter: &mut RRuleIter) {
-    let options = &iter.ii.options;
-    let mut count = options.count.unwrap_or(0);
+    let options = iter.ii.options.clone();
+
+    match options.count {
+        Some(count) if count == 0 => return,
+        _ => (),
+    };
 
     while iter.remain.is_empty() {
         let (dayset, start, end) = iter.ii.getdayset(
@@ -66,11 +81,15 @@ pub fn generate(iter: &mut RRuleIter) {
                 }
 
                 if res >= options.dtstart {
+                    println!("Addint here");
                     iter.remain.push(res);
 
-                    if count > 0 {
-                        count -= 1;
-                        if count == 0 {
+                    if let Some(count) = iter.ii.options.count {
+                        if count > 0 {
+                            iter.ii.options.count = Some(count - 1);
+                        }
+                        // This means that the real count is 0, because of the decrement above
+                        if count == 1 {
                             return;
                         }
                     }
@@ -99,6 +118,7 @@ pub fn generate(iter: &mut RRuleIter) {
                         return;
                     }
                     if res >= options.dtstart {
+                        println!("Addint here 2 with count: {:?}", iter.ii.options.count);
                         iter.remain.push(res);
                         // let (add, continue_iterator) = iter_result.accept(&res);
                         // if add {
@@ -108,9 +128,12 @@ pub fn generate(iter: &mut RRuleIter) {
                         //     return;
                         // }
 
-                        if count > 0 {
-                            count -= 1;
-                            if count == 0 {
+                        if let Some(count) = iter.ii.options.count {
+                            if count > 0 {
+                                iter.ii.options.count = Some(count - 1);
+                            }
+                            // This means that the real count is 0, because of the decrement above
+                            if count == 1 {
                                 return;
                             }
                         }
