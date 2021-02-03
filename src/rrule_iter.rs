@@ -28,8 +28,6 @@ impl Iterator for RRuleIter {
 
         generate(self);
 
-        // println!("Done generating: {:?}", self.remain);
-
         if self.remain.is_empty() {
             self.finished = true;
             None

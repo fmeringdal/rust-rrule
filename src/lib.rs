@@ -55,22 +55,22 @@
 //! let after = UTC.ymd(2012, 2, 1).and_hms(10, 0, 0);
 //! let inc = true; // Wheter dates equals to after should be added;
 //!
-//! let occurences_after_date = rrule.clone()
+//! let occurence_after_date = rrule.clone()
 //!     .into_iter()
 //!     .skip_while(|d| if inc { *d <= after } else { *d < after })
 //!     .next();
-//! assert_eq!(occurences_after_date, rrule.after(after, inc));
+//! assert_eq!(occurence_after_date, rrule.after(after, inc));
 //!
 //!
 //! // Before a date
 //! let before = UTC.ymd(2012, 4, 1).and_hms(10, 0, 0);
 //! let inc = true; // Wheter dates equals to before should be added;
 //!
-//! let occurences_before_date = rrule.clone()
+//! let occurence_before_date = rrule.clone()
 //!     .into_iter()
 //!     .take_while(|d| if inc { *d <= before } else { *d < before })
 //!     .last();
-//! assert_eq!(occurences_before_date, rrule.before(before, inc));
+//! assert_eq!(occurence_before_date, rrule.before(before, inc));
 //!
 //! ````
 //!
