@@ -1,13 +1,12 @@
 use crate::datetime::DTime;
 use crate::options::RRuleParseError;
 use crate::rrule::RRule;
-use crate::rruleset_iter::RRuleSetIter;
 use crate::rrulestr::build_rruleset;
 use chrono::prelude::*;
 use chrono_tz::{Tz, UTC};
 use std::str::FromStr;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RRuleSet {
     pub rrule: Vec<RRule>,
     pub rdate: Vec<DTime>,
@@ -45,34 +44,27 @@ impl RRuleSet {
 
     /// Returns all the recurrences of the rruleset
     pub fn all(&mut self) -> Vec<DateTime<Tz>> {
-        let mut iter = RRuleSetIter::all(self);
-        iter.iter()
+        self.clone().into_iter().collect()
     }
 
     /// Returns the last recurrence before the given datetime instance.
     /// The inc keyword defines what happens if dt is an recurrence.
     /// With inc == true, if dt itself is an recurrence, it will be returned.
-    pub fn before(&mut self, date: DateTime<Tz>, inc: bool) -> Option<DateTime<Tz>> {
-        let mut iter = RRuleSetIter::before(self, date, inc);
-        let recurrences = iter.iter();
-        if recurrences.is_empty() {
-            None
-        } else {
-            Some(recurrences[0])
-        }
+    pub fn before(&mut self, dt: DateTime<Tz>, inc: bool) -> Option<DateTime<Tz>> {
+        self.clone()
+            .into_iter()
+            .take_while(|d| if inc { *d <= dt } else { *d < dt })
+            .last()
     }
 
     /// Returns the last recurrence after the given datetime instance.
     /// The inc keyword defines what happens if dt is an recurrence.
     /// With inc == true, if dt itself is an recurrence, it will be returned.
-    pub fn after(&mut self, date: DateTime<Tz>, inc: bool) -> Option<DateTime<Tz>> {
-        let mut iter = RRuleSetIter::after(self, date, inc);
-        let recurrences = iter.iter();
-        if recurrences.is_empty() {
-            None
-        } else {
-            Some(recurrences[0])
-        }
+    pub fn after(&mut self, dt: DateTime<Tz>, inc: bool) -> Option<DateTime<Tz>> {
+        self.clone()
+            .into_iter()
+            .skip_while(|d| if inc { *d <= dt } else { *d < dt })
+            .next()
     }
 
     /// Returns all the recurrences of the rrule between after and before.
@@ -85,8 +77,11 @@ impl RRuleSet {
         before: DateTime<Tz>,
         inc: bool,
     ) -> Vec<DateTime<Tz>> {
-        let mut iter = RRuleSetIter::between(self, after, before, inc);
-        iter.iter()
+        self.clone()
+            .into_iter()
+            .skip_while(|d| if inc { *d <= after } else { *d < after })
+            .take_while(|d| if inc { *d <= before } else { *d < before })
+            .collect()
     }
 }
 

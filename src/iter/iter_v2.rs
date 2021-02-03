@@ -29,8 +29,8 @@ impl Iterator for RRuleIter {
 }
 
 pub fn generate(iter: &mut RRuleIter) {
-    let options = iter.ii.options;
-    let count = options.count.unwrap_or(0);
+    let options = &iter.ii.options;
+    let mut count = options.count.unwrap_or(0);
 
     while iter.remain.is_empty() {
         let (dayset, start, end) = iter.ii.getdayset(
@@ -143,9 +143,9 @@ pub fn generate(iter: &mut RRuleIter) {
             );
         }
 
-        iter.ii.rebuild(
-            iter.counter_date.year() as isize,
-            iter.counter_date.month() as usize,
-        );
+        let year = iter.counter_date.year();
+        let month = iter.counter_date.month();
+
+        iter.ii.rebuild(year as isize, month as usize);
     }
 }
