@@ -115,6 +115,7 @@ mod test_iter_set {
 
     fn test_recurring(actual_dates: Vec<DateTime<Tz>>, expected_dates: Vec<DateTime<Tz>>) {
         println!("Acutal: {:?}", actual_dates);
+        println!("Expected: {:?}", expected_dates);
         assert_eq!(
             actual_dates.len(),
             expected_dates.len(),

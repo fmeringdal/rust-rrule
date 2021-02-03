@@ -81,7 +81,6 @@ pub fn generate(iter: &mut RRuleIter) {
                 }
 
                 if res >= options.dtstart {
-                    println!("Addint here");
                     iter.remain.push(res);
 
                     if let Some(count) = iter.ii.options.count {
@@ -118,15 +117,7 @@ pub fn generate(iter: &mut RRuleIter) {
                         return;
                     }
                     if res >= options.dtstart {
-                        println!("Addint here 2 with count: {:?}", iter.ii.options.count);
                         iter.remain.push(res);
-                        // let (add, continue_iterator) = iter_result.accept(&res);
-                        // if add {
-                        //     iter.remain.push(res);
-                        // }
-                        // if !continue_iterator {
-                        //     return;
-                        // }
 
                         if let Some(count) = iter.ii.options.count {
                             if count > 0 {

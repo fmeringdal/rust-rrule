@@ -10,6 +10,8 @@ pub struct RRuleIterSet {
     pub rrule_iters: Vec<RRuleIter>,
     pub exrules: Vec<RRule>,
     pub exdates: HashMap<i64, ()>,
+    // Sorted additional dates in decreasing order
+    pub rdates: Vec<DateTime<Tz>>,
 }
 
 impl Iterator for RRuleIterSet {
@@ -20,11 +22,11 @@ impl Iterator for RRuleIterSet {
 
         for (i, rrule_iter) in self.rrule_iters.iter_mut().enumerate() {
             let rrule_queue = self.queue.remove(&i);
-            let mut next_rrule_date = None;
+            let next_rrule_date;
             match rrule_queue {
                 Some(d) => next_rrule_date = Some(d),
                 None => {
-                    // should be generated
+                    // should be method on self
                     next_rrule_date = generate(rrule_iter, &mut self.exrules, &mut self.exdates);
                 }
             }
@@ -33,7 +35,7 @@ impl Iterator for RRuleIterSet {
                 Some(next_rrule_date) => match next_date {
                     None => next_date = Some((i, next_rrule_date)),
                     Some(date) => {
-                        if date.1 < next_rrule_date {
+                        if date.1 >= next_rrule_date {
                             // Add previous date to its rrule queue
                             self.queue.insert(date.0, date.1);
 
@@ -49,8 +51,49 @@ impl Iterator for RRuleIterSet {
             }
         }
 
-        next_date.map(|d| d.1)
+        match generate_date(&mut self.rdates, &mut self.exrules, &mut self.exdates) {
+            Some(first_rdate) => {
+                let next_date = match next_date {
+                    Some(next_date) => {
+                        if next_date.1 >= first_rdate {
+                            // Add previous date to its rrule queue
+                            self.queue.insert(next_date.0, next_date.1);
+
+                            first_rdate
+                        } else {
+                            // add rdate back
+                            self.rdates.push(first_rdate);
+
+                            next_date.1
+                        }
+                    }
+                    None => first_rdate,
+                };
+                Some(next_date)
+            }
+            None => next_date.map(|d| d.1),
+        }
     }
+}
+
+fn generate_date(
+    dates: &mut Vec<DateTime<Tz>>,
+    exrules: &mut Vec<RRule>,
+    exdates: &mut HashMap<i64, ()>,
+) -> Option<DateTime<Tz>> {
+    if dates.is_empty() {
+        return None;
+    }
+
+    let mut date = dates.remove(dates.len() - 1);
+    while !accept_generated_date(&Some(date), exrules, exdates) {
+        if dates.is_empty() {
+            return None;
+        }
+        date = dates.remove(dates.len() - 1);
+    }
+
+    Some(date)
 }
 
 fn generate(
@@ -86,7 +129,7 @@ fn accept_generated_date(
                 }
             }
 
-            if !exdates.contains_key(&dt) {
+            if exdates.contains_key(&dt) {
                 return false;
             }
 
@@ -100,7 +143,9 @@ impl IntoIterator for RRuleSet {
 
     type IntoIter = RRuleIterSet;
 
-    fn into_iter(self) -> Self::IntoIter {
+    fn into_iter(mut self) -> Self::IntoIter {
+        // Sort in decreasing order
+        self.rdate.sort_by(|d1, d2| d2.partial_cmp(d1).unwrap());
         RRuleIterSet {
             queue: Default::default(),
             rrule_iters: self
@@ -108,6 +153,7 @@ impl IntoIterator for RRuleSet {
                 .into_iter()
                 .map(|rrule| rrule.into_iter())
                 .collect(),
+            rdates: self.rdate,
             exrules: self.exrule,
             exdates: self
                 .exdate
