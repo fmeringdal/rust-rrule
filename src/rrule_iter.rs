@@ -1,4 +1,7 @@
-use crate::iter::IterResult;
+use crate::{
+    iter::{make_timeset, IterInfo, IterResult, RRuleIter},
+    RRule,
+};
 use chrono::prelude::*;
 use chrono::Duration;
 use chrono_tz::Tz;
@@ -60,34 +63,45 @@ impl RRuleIterRes {
 }
 
 impl IterResult for RRuleIterRes {
-    fn accept(&mut self, date: DateTime<Tz>) -> bool {
-        self.total += 1;
-        let too_early = self.min_date.is_some() && date < self.min_date.unwrap();
-        let too_late = self.max_date.is_some() && date > self.max_date.unwrap();
-
+    // Returns tuple of flags indicating whether to add and continue
+    // iteration (add_date, continue_iteration)
+    fn accept(&self, date: &DateTime<Tz>) -> (bool, bool) {
+        let too_early = match self.min_date {
+            Some(d) => d > *date,
+            None => false,
+        };
+        let too_late = match self.max_date {
+            Some(d) => d < *date,
+            None => false,
+        };
         match self.method {
-            QueryMethodTypes::Between if too_early => true,
-            QueryMethodTypes::Between if too_late => false,
-            QueryMethodTypes::Before if too_late => false,
-            QueryMethodTypes::After if too_early => true,
-            QueryMethodTypes::After => {
-                self.add(date);
-                false
-            }
-            _ => self.add(date),
+            QueryMethodTypes::Between if too_early => (false, true),
+            QueryMethodTypes::Between if too_late => (false, false),
+            QueryMethodTypes::Before if too_late => (false, false),
+            QueryMethodTypes::After => (!too_early, too_early),
+            _ => (true, true),
         }
     }
+}
 
-    // before and after returns only one date whereas all and between an array
-    fn get_value(&self) -> Vec<DateTime<Tz>> {
-        match self.method {
-            QueryMethodTypes::Between | QueryMethodTypes::All => self.result.clone(),
-            _ => {
-                if self.result.is_empty() {
-                    return vec![];
-                }
-                vec![self.result[self.result.len() - 1].clone()]
-            }
+impl IntoIterator for RRule {
+    type Item = DateTime<Tz>;
+
+    type IntoIter = RRuleIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let mut ii = IterInfo::new(self.options);
+        let mut counter_date = ii.options.dtstart;
+        ii.rebuild(counter_date.year() as isize, counter_date.month() as usize);
+
+        let timeset = make_timeset(&ii, &counter_date, &ii.options);
+
+        RRuleIter {
+            counter_date,
+            ii,
+            timeset,
+            remain: vec![],
+            finished: false,
         }
     }
 }
