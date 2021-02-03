@@ -170,7 +170,7 @@ impl IntoIterator for RRule {
 
     fn into_iter(self) -> Self::IntoIter {
         let mut ii = IterInfo::new(self.options);
-        let mut counter_date = ii.options.dtstart;
+        let counter_date = ii.options.dtstart;
         ii.rebuild(counter_date.year() as isize, counter_date.month() as usize);
 
         let timeset = make_timeset(&ii, &counter_date, &ii.options);

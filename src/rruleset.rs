@@ -3,7 +3,7 @@ use crate::options::RRuleParseError;
 use crate::rrule::RRule;
 use crate::rrulestr::build_rruleset;
 use chrono::prelude::*;
-use chrono_tz::{Tz, UTC};
+use chrono_tz::Tz;
 use std::str::FromStr;
 
 #[derive(Debug, Clone)]
@@ -97,6 +97,7 @@ impl FromStr for RRuleSet {
 mod test_iter_set {
     use super::*;
     use crate::options::*;
+    use chrono_tz::UTC;
 
     fn ymd_hms(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32) -> DTime {
         UTC.ymd(year, month, day).and_hms(hour, minute, second)

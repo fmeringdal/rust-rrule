@@ -18,7 +18,7 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
         UTC
     };
 
-    let mut bynweekday: Vec<Vec<isize>> = vec![];
+    let _bynweekday: Vec<Vec<isize>> = vec![];
     let mut bynmonthday: Vec<isize> = vec![];
 
     let mut partial_options = Options::concat(&default_partial_options, options);
