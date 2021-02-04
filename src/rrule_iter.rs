@@ -5,6 +5,7 @@ use crate::{datetime::from_ordinal, RRule};
 use crate::{datetime::Time, Frequenzy};
 use chrono::prelude::*;
 use chrono_tz::Tz;
+use std::collections::VecDeque;
 
 const MAX_YEAR: i32 = 9999;
 
@@ -12,7 +13,7 @@ pub struct RRuleIter {
     pub counter_date: DateTime<Tz>,
     pub ii: IterInfo,
     pub timeset: Vec<Time>,
-    pub remain: Vec<DateTime<Tz>>,
+    pub remain: VecDeque<DateTime<Tz>>,
     pub finished: bool,
 }
 
@@ -25,17 +26,15 @@ impl Iterator for RRuleIter {
         }
 
         if !self.remain.is_empty() {
-            return Some(self.remain.remove(0));
+            return self.remain.pop_front();
         }
 
         generate(self);
 
         if self.remain.is_empty() {
             self.finished = true;
-            None
-        } else {
-            Some(self.remain.remove(0))
         }
+        self.remain.pop_front()
     }
 }
 
@@ -85,7 +84,7 @@ pub fn generate(iter: &mut RRuleIter) {
                 }
 
                 if res >= options.dtstart {
-                    iter.remain.push(res);
+                    iter.remain.push_back(res);
 
                     if let Some(count) = iter.ii.options.count {
                         if count > 0 {
@@ -121,7 +120,7 @@ pub fn generate(iter: &mut RRuleIter) {
                         return;
                     }
                     if res >= options.dtstart {
-                        iter.remain.push(res);
+                        iter.remain.push_back(res);
 
                         if let Some(count) = iter.ii.options.count {
                             if count > 0 {
@@ -184,7 +183,7 @@ impl IntoIterator for RRule {
             counter_date,
             ii,
             timeset,
-            remain: vec![],
+            remain: VecDeque::new(),
             finished: false,
         }
     }
