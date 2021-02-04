@@ -201,5 +201,13 @@ mod tests {
             .parse::<RRule>()
             .unwrap();
         rrule.clone().into_iter().nth(15000000);
+        let rrule = "DTSTART:20220201T100000Z\nRRULE:FREQ=MONTHLY"
+            .parse::<RRule>()
+            .unwrap();
+        rrule.clone().into_iter().nth(15000000);
+        let rrule = "DTSTART:20220201T100000Z\nRRULE:FREQ=YEARLY"
+            .parse::<RRule>()
+            .unwrap();
+        rrule.clone().into_iter().nth(15000000);
     }
 }
