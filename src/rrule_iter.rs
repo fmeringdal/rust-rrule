@@ -13,7 +13,8 @@ pub struct RRuleIter {
     pub counter_date: DateTime<Tz>,
     pub ii: IterInfo,
     pub timeset: Vec<Time>,
-    pub remain: VecDeque<DateTime<Tz>>,
+    // Buffer of datetimes not yet yielded
+    pub buffer: VecDeque<DateTime<Tz>>,
     pub finished: bool,
 }
 
@@ -25,16 +26,16 @@ impl Iterator for RRuleIter {
             return None;
         }
 
-        if !self.remain.is_empty() {
-            return self.remain.pop_front();
+        if !self.buffer.is_empty() {
+            return self.buffer.pop_front();
         }
 
         generate(self);
 
-        if self.remain.is_empty() {
+        if self.buffer.is_empty() {
             self.finished = true;
         }
-        self.remain.pop_front()
+        self.buffer.pop_front()
     }
 }
 
@@ -50,7 +51,7 @@ pub fn generate(iter: &mut RRuleIter) {
         return;
     }
 
-    while iter.remain.is_empty() {
+    while iter.buffer.is_empty() {
         let (dayset, start, end) = iter.ii.getdayset(
             &iter.ii.options.freq,
             iter.counter_date.year() as isize,
@@ -84,7 +85,7 @@ pub fn generate(iter: &mut RRuleIter) {
                 }
 
                 if res >= options.dtstart {
-                    iter.remain.push_back(res);
+                    iter.buffer.push_back(res);
 
                     if let Some(count) = iter.ii.options.count {
                         if count > 0 {
@@ -120,7 +121,7 @@ pub fn generate(iter: &mut RRuleIter) {
                         return;
                     }
                     if res >= options.dtstart {
-                        iter.remain.push_back(res);
+                        iter.buffer.push_back(res);
 
                         if let Some(count) = iter.ii.options.count {
                             if count > 0 {
@@ -183,7 +184,7 @@ impl IntoIterator for RRule {
             counter_date,
             ii,
             timeset,
-            remain: VecDeque::new(),
+            buffer: VecDeque::new(),
             finished: false,
         }
     }
