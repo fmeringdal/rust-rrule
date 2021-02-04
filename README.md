@@ -22,7 +22,7 @@ extern crate rrule;
 use rrule::RRule;
 
 // RRule that starts 2012.02.01 and occurs daily for 3 days.
-let mut rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
+let rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
 
 // Get all recurrences of the rrule
 let recurrences = rrule.all(); // Or rrule.into_iter().collect::<Vec<_>>(); if you want to leverage iterators

@@ -31,7 +31,7 @@
 //! use chrono_tz::UTC;
 //! use rrule::RRule;
 //!
-//! let mut rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
+//! let rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
 //!
 //!
 //! // All dates
@@ -86,14 +86,14 @@
 //! use rrule::RRule;
 //!
 //! // Parse a RRule string
-//! let mut rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR".parse().unwrap();
+//! let rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR".parse().unwrap();
 //! assert_eq!(rrule.all().len(), 21);
 //!
 //!
 //! use rrule::RRuleSet;
 //!
 //! // Parse a RRuleSet string
-//! let mut rrule_set: RRuleSet = "DTSTART:20120201T023000Z\nRRULE:FREQ=MONTHLY;COUNT=5\nRDATE:20120701T023000Z,20120702T023000Z\nEXRULE:FREQ=MONTHLY;COUNT=2\nEXDATE:20120601T023000Z".parse().unwrap();
+//! let rrule_set: RRuleSet = "DTSTART:20120201T023000Z\nRRULE:FREQ=MONTHLY;COUNT=5\nRDATE:20120701T023000Z,20120702T023000Z\nEXRULE:FREQ=MONTHLY;COUNT=2\nEXDATE:20120601T023000Z".parse().unwrap();
 //! assert_eq!(rrule_set.all().len(), 4);
 //! ```
 //!
@@ -119,7 +119,7 @@
 //!     .unwrap();
 //!
 //! // Construct `RRule` from options
-//! let mut rrule = RRule::new(options);
+//! let rrule = RRule::new(options);
 //! let recurrences = rrule.all();
 //! for i in 0..5 {
 //!     assert_eq!(recurrences[i].year(), 2020);
@@ -146,7 +146,7 @@
 //!
 //!
 //! // Build options for rrule that occurs weekly on Tuesday and Wednesday
-//! let mut rrule_options = Options::new()
+//! let rrule_options = Options::new()
 //!     .dtstart(UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
 //!     .count(4)
 //!     .freq(Frequenzy::Weekly)
@@ -155,7 +155,7 @@
 //!     .unwrap();
 //!
 //! // Construct `RRule` from options
-//! let mut rrule = RRule::new(rrule_options);
+//! let rrule = RRule::new(rrule_options);
 //!
 //!
 //! // Build options for exrule that occurs weekly on Wednesday
@@ -205,14 +205,14 @@
 //!
 //!
 //! // Build options for rrule that occurs daily at 9 oclock for 4 times
-//! let mut rrule_options = Options::new()
+//! let rrule_options = Options::new()
 //!     .dtstart(Berlin.ymd(2020, 1, 1).and_hms(9, 0, 0))
 //!     .count(4)
 //!     .freq(Frequenzy::Daily)
 //!     .build()
 //!     .unwrap();
 //!
-//! let mut rrule = RRule::new(rrule_options);
+//! let rrule = RRule::new(rrule_options);
 //!
 //! // Exdate in the UTC at 8 oclock which is 9 oclock in Berlin and therefore
 //! // collides with the second rrule occurence.

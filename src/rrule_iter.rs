@@ -6,6 +6,8 @@ use crate::{datetime::Time, Frequenzy};
 use chrono::prelude::*;
 use chrono_tz::Tz;
 
+const MAX_YEAR: i32 = 9999;
+
 pub struct RRuleIter {
     pub counter_date: DateTime<Tz>,
     pub ii: IterInfo,
@@ -44,6 +46,10 @@ pub fn generate(iter: &mut RRuleIter) {
         Some(count) if count == 0 => return,
         _ => (),
     };
+
+    if iter.counter_date.year() > MAX_YEAR {
+        return;
+    }
 
     while iter.remain.is_empty() {
         let (dayset, start, end) = iter.ii.getdayset(
@@ -138,7 +144,7 @@ pub fn generate(iter: &mut RRuleIter) {
         // Handle frequency and interval
         iter.counter_date = increment_counter_date(iter.counter_date, &options, filtered);
 
-        if iter.counter_date.year() > 2200 {
+        if iter.counter_date.year() > MAX_YEAR {
             return;
         }
 
@@ -161,6 +167,7 @@ pub fn generate(iter: &mut RRuleIter) {
         iter.ii.rebuild(year as isize, month as usize);
     }
 }
+
 impl IntoIterator for RRule {
     type Item = DateTime<Tz>;
 
@@ -180,5 +187,19 @@ impl IntoIterator for RRule {
             remain: vec![],
             finished: false,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    #[ignore = "Takes too much time, only run when releasing"]
+    fn iteration_past_max_year_should_not_panic() {
+        let rrule = "DTSTART:20220201T100000Z\nRRULE:FREQ=DAILY"
+            .parse::<RRule>()
+            .unwrap();
+        rrule.clone().into_iter().nth(15000000);
     }
 }
