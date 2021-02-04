@@ -573,9 +573,7 @@ pub fn build_rrule(s: &str) -> Result<RRule, RRuleParseError> {
 
 #[cfg(test)]
 mod test {
-    use super::NWeekdayIdentifier;
     use super::*;
-    use chrono_tz::{Tz, UTC};
 
     #[test]
     fn it_works_1() {
@@ -724,7 +722,7 @@ mod test {
     fn bench() {
         let now = std::time::SystemTime::now();
         for _ in 0..10000 {
-            let mut res = build_rruleset("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/New_York:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE").unwrap();
+            let res = build_rruleset("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/New_York:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE").unwrap();
 
             // println!("Parsing took: {:?}", now.elapsed().unwrap().as_millis());
             let tmp_now = std::time::SystemTime::now();

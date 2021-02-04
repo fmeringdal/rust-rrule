@@ -18,6 +18,137 @@ pub struct RRuleIter {
     pub finished: bool,
 }
 
+impl RRuleIter {
+    pub fn generate(&mut self) {
+        let options = self.ii.options.clone();
+
+        match options.count {
+            Some(count) if count == 0 => return,
+            _ => (),
+        };
+
+        if self.counter_date.year() > MAX_YEAR {
+            return;
+        }
+
+        while self.buffer.is_empty() {
+            let (dayset, start, end) = self.ii.getdayset(
+                &self.ii.options.freq,
+                self.counter_date.year() as isize,
+                self.counter_date.month() as usize,
+                self.counter_date.day() as usize,
+            );
+
+            let mut dayset = dayset
+                .into_iter()
+                .map(|s| Some(s as isize))
+                .collect::<Vec<Option<isize>>>();
+
+            let filtered = remove_filtered_days(&mut dayset, start, end, &self.ii);
+
+            if options.bysetpos.len() > 0 {
+                let poslist = build_poslist(
+                    &options.bysetpos,
+                    &self.timeset,
+                    start,
+                    end,
+                    &self.ii,
+                    &dayset,
+                    &options.tzid,
+                );
+
+                for j in 0..poslist.len() {
+                    let res = poslist[j];
+                    if options.until.is_some() && res > options.until.unwrap() {
+                        // return iter_result.get_value();
+                        continue; // or break ?
+                    }
+
+                    if res >= options.dtstart {
+                        self.buffer.push_back(res);
+
+                        if let Some(count) = self.ii.options.count {
+                            if count > 0 {
+                                self.ii.options.count = Some(count - 1);
+                            }
+                            // This means that the real count is 0, because of the decrement above
+                            if count == 1 {
+                                return;
+                            }
+                        }
+                    }
+                }
+            } else {
+                for j in start..end {
+                    let current_day = dayset[j];
+                    if current_day.is_none() {
+                        continue;
+                    }
+
+                    let current_day = current_day.unwrap();
+                    let date =
+                        from_ordinal(self.ii.yearordinal().unwrap() + current_day, &options.tzid);
+                    for k in 0..self.timeset.len() {
+                        let res = options
+                            .tzid
+                            .ymd(date.year(), date.month(), date.day())
+                            .and_hms(
+                                self.timeset[k].hour as u32,
+                                self.timeset[k].minute as u32,
+                                self.timeset[k].second as u32,
+                            );
+                        if options.until.is_some() && res > options.until.unwrap() {
+                            return;
+                        }
+                        if res >= options.dtstart {
+                            self.buffer.push_back(res);
+
+                            if let Some(count) = self.ii.options.count {
+                                if count > 0 {
+                                    self.ii.options.count = Some(count - 1);
+                                }
+                                // This means that the real count is 0, because of the decrement above
+                                if count == 1 {
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if options.interval == 0 {
+                return;
+            }
+
+            // Handle frequency and interval
+            self.counter_date = increment_counter_date(self.counter_date, &options, filtered);
+
+            if self.counter_date.year() > MAX_YEAR {
+                return;
+            }
+
+            if options.freq == Frequenzy::Hourly
+                || options.freq == Frequenzy::Minutely
+                || options.freq == Frequenzy::Secondly
+            {
+                self.timeset = self.ii.gettimeset(
+                    &options.freq,
+                    self.counter_date.hour() as usize,
+                    self.counter_date.minute() as usize,
+                    self.counter_date.second() as usize,
+                    0,
+                );
+            }
+
+            let year = self.counter_date.year();
+            let month = self.counter_date.month();
+
+            self.ii.rebuild(year as isize, month as usize);
+        }
+    }
+}
+
 impl Iterator for RRuleIter {
     type Item = DateTime<Tz>;
 
@@ -30,141 +161,12 @@ impl Iterator for RRuleIter {
             return self.buffer.pop_front();
         }
 
-        generate(self);
+        self.generate();
 
         if self.buffer.is_empty() {
             self.finished = true;
         }
         self.buffer.pop_front()
-    }
-}
-
-pub fn generate(iter: &mut RRuleIter) {
-    let options = iter.ii.options.clone();
-
-    match options.count {
-        Some(count) if count == 0 => return,
-        _ => (),
-    };
-
-    if iter.counter_date.year() > MAX_YEAR {
-        return;
-    }
-
-    while iter.buffer.is_empty() {
-        let (dayset, start, end) = iter.ii.getdayset(
-            &iter.ii.options.freq,
-            iter.counter_date.year() as isize,
-            iter.counter_date.month() as usize,
-            iter.counter_date.day() as usize,
-        );
-
-        let mut dayset = dayset
-            .into_iter()
-            .map(|s| Some(s as isize))
-            .collect::<Vec<Option<isize>>>();
-
-        let filtered = remove_filtered_days(&mut dayset, start, end, &iter.ii);
-
-        if options.bysetpos.len() > 0 {
-            let poslist = build_poslist(
-                &options.bysetpos,
-                &iter.timeset,
-                start,
-                end,
-                &iter.ii,
-                &dayset,
-                &options.tzid,
-            );
-
-            for j in 0..poslist.len() {
-                let res = poslist[j];
-                if options.until.is_some() && res > options.until.unwrap() {
-                    // return iter_result.get_value();
-                    continue; // or break ?
-                }
-
-                if res >= options.dtstart {
-                    iter.buffer.push_back(res);
-
-                    if let Some(count) = iter.ii.options.count {
-                        if count > 0 {
-                            iter.ii.options.count = Some(count - 1);
-                        }
-                        // This means that the real count is 0, because of the decrement above
-                        if count == 1 {
-                            return;
-                        }
-                    }
-                }
-            }
-        } else {
-            for j in start..end {
-                let current_day = dayset[j];
-                if current_day.is_none() {
-                    continue;
-                }
-
-                let current_day = current_day.unwrap();
-                let date =
-                    from_ordinal(iter.ii.yearordinal().unwrap() + current_day, &options.tzid);
-                for k in 0..iter.timeset.len() {
-                    let res = options
-                        .tzid
-                        .ymd(date.year(), date.month(), date.day())
-                        .and_hms(
-                            iter.timeset[k].hour as u32,
-                            iter.timeset[k].minute as u32,
-                            iter.timeset[k].second as u32,
-                        );
-                    if options.until.is_some() && res > options.until.unwrap() {
-                        return;
-                    }
-                    if res >= options.dtstart {
-                        iter.buffer.push_back(res);
-
-                        if let Some(count) = iter.ii.options.count {
-                            if count > 0 {
-                                iter.ii.options.count = Some(count - 1);
-                            }
-                            // This means that the real count is 0, because of the decrement above
-                            if count == 1 {
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        if options.interval == 0 {
-            return;
-        }
-
-        // Handle frequency and interval
-        iter.counter_date = increment_counter_date(iter.counter_date, &options, filtered);
-
-        if iter.counter_date.year() > MAX_YEAR {
-            return;
-        }
-
-        if options.freq == Frequenzy::Hourly
-            || options.freq == Frequenzy::Minutely
-            || options.freq == Frequenzy::Secondly
-        {
-            iter.timeset = iter.ii.gettimeset(
-                &options.freq,
-                iter.counter_date.hour() as usize,
-                iter.counter_date.minute() as usize,
-                iter.counter_date.second() as usize,
-                0,
-            );
-        }
-
-        let year = iter.counter_date.year();
-        let month = iter.counter_date.month();
-
-        iter.ii.rebuild(year as isize, month as usize);
     }
 }
 

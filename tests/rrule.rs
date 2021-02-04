@@ -22,7 +22,7 @@ mod test {
     }
 
     fn test_recurring(options: ParsedOptions, expected_dates: &Vec<DateTime<Tz>>) {
-        let mut rrule = RRule::new(options);
+        let rrule = RRule::new(options);
         let res = rrule.all();
 
         assert_eq!(
