@@ -5,7 +5,7 @@ use chrono_tz::Tz;
 use std::collections::HashMap;
 use std::iter::Iterator;
 
-pub struct RRuleIterSet {
+pub struct RRuleSetIter {
     pub queue: HashMap<usize, DateTime<Tz>>,
     pub rrule_iters: Vec<RRuleIter>,
     pub exrules: Vec<RRule>,
@@ -14,7 +14,7 @@ pub struct RRuleIterSet {
     pub rdates: Vec<DateTime<Tz>>,
 }
 
-impl Iterator for RRuleIterSet {
+impl Iterator for RRuleSetIter {
     type Item = DateTime<Tz>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -142,12 +142,12 @@ fn accept_generated_date(
 impl IntoIterator for RRuleSet {
     type Item = DateTime<Tz>;
 
-    type IntoIter = RRuleIterSet;
+    type IntoIter = RRuleSetIter;
 
     fn into_iter(mut self) -> Self::IntoIter {
         // Sort in decreasing order
         self.rdate.sort_by(|d1, d2| d2.partial_cmp(d1).unwrap());
-        RRuleIterSet {
+        RRuleSetIter {
             queue: Default::default(),
             rrule_iters: self
                 .rrule
