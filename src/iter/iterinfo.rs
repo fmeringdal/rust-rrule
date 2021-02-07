@@ -49,88 +49,57 @@ impl IterInfo {
     }
 
     pub fn lastyear(&self) -> Option<isize> {
-        match &self.monthinfo {
-            Some(info) => Some(info.lastyear),
-            None => None,
-        }
+        self.monthinfo.as_ref().map(|info| info.lastyear)
     }
     pub fn lastmonth(&self) -> Option<usize> {
-        match &self.monthinfo {
-            Some(info) => Some(info.lastmonth),
-            None => None,
-        }
+        self.monthinfo.as_ref().map(|info| info.lastmonth)
     }
+
     pub fn yearlen(&self) -> Option<usize> {
-        match &self.yearinfo {
-            Some(info) => Some(info.yearlen),
-            None => None,
-        }
+        self.yearinfo.as_ref().map(|info| info.yearlen)
     }
+
     pub fn yearordinal(&self) -> Option<isize> {
-        match &self.yearinfo {
-            Some(info) => Some(info.yearordinal),
-            None => None,
-        }
+        self.yearinfo.as_ref().map(|info| info.yearordinal)
     }
+
     pub fn mrange(&self) -> Option<&Vec<usize>> {
-        match &self.yearinfo {
-            Some(info) => Some(&info.mrange),
-            None => None,
-        }
+        self.yearinfo.as_ref().map(|info| &info.mrange)
     }
 
     pub fn eastermask(&self) -> Option<&Vec<isize>> {
-        match &self.eastermask {
-            Some(mask) => Some(&mask),
-            None => None,
-        }
+        self.eastermask.as_ref()
     }
+
     pub fn wdaymask(&self) -> Option<&Vec<usize>> {
-        match &self.yearinfo {
-            Some(info) => Some(&info.wdaymask),
-            None => None,
-        }
+        self.yearinfo.as_ref().map(|info| &info.wdaymask)
     }
 
     pub fn mmask(&self) -> Option<&Vec<usize>> {
-        match &self.yearinfo {
-            Some(info) => Some(&info.mmask),
-            None => None,
-        }
+        self.yearinfo.as_ref().map(|info| &info.mmask)
     }
 
     pub fn wnomask(&self) -> Option<&Vec<usize>> {
         match &self.yearinfo {
-            Some(info) => match &info.wnomask {
-                Some(mask) => Some(mask),
-                None => None,
-            },
+            Some(info) => info.wnomask.as_ref(),
             None => None,
         }
     }
+
     pub fn nwdaymask(&self) -> Option<&Vec<isize>> {
-        match &self.monthinfo {
-            Some(info) => Some(&info.nwdaymask),
-            None => None,
-        }
+        self.monthinfo.as_ref().map(|info| &info.nwdaymask)
     }
+
     pub fn nextyearlen(&self) -> Option<usize> {
-        match &self.yearinfo {
-            Some(info) => Some(info.nextyearlen),
-            None => None,
-        }
+        self.yearinfo.as_ref().map(|info| info.nextyearlen)
     }
+
     pub fn mdaymask(&self) -> Option<&Vec<isize>> {
-        match &self.yearinfo {
-            Some(info) => Some(&info.mdaymask),
-            None => None,
-        }
+        self.yearinfo.as_ref().map(|info| &info.mdaymask)
     }
+
     pub fn nmdaymask(&self) -> Option<&Vec<isize>> {
-        match &self.yearinfo {
-            Some(info) => Some(&info.nmdaymask),
-            None => None,
-        }
+        self.yearinfo.as_ref().map(|info| &info.nmdaymask)
     }
 
     pub fn ydayset(&self) -> (Vec<usize>, usize, usize) {
