@@ -51,6 +51,7 @@ impl Iterator for RRuleIterSet {
             }
         }
 
+        // TODO: RDates should be prefiltered before starting iteration
         match generate_date(&mut self.rdates, &mut self.exrules, &mut self.exdates) {
             Some(first_rdate) => {
                 let next_date = match next_date {
