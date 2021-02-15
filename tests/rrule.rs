@@ -25,13 +25,14 @@ mod test {
         let rrule = RRule::new(options);
         let res = rrule.all();
 
+        println!("Acutal: {:?}", res);
+        println!("Expected: {:?}", expected_dates);
         assert_eq!(
             res.len(),
             expected_dates.len(),
             "Expected number of returned dates to be equal to the expected"
         );
 
-        println!("Acutal: {:?}", res);
         for (actual, exptected) in res.iter().zip(expected_dates) {
             assert_eq!(actual, exptected);
         }

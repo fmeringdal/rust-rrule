@@ -19,16 +19,16 @@ pub struct RRuleIter {
 }
 
 impl RRuleIter {
-    pub fn generate(&mut self) {
+    pub fn generate(&mut self) -> bool {
         let options = self.ii.options.clone();
 
         match options.count {
-            Some(count) if count == 0 => return,
+            Some(count) if count == 0 => return true,
             _ => (),
         };
 
         if self.counter_date.year() > MAX_YEAR {
-            return;
+            return true;
         }
 
         while self.buffer.is_empty() {
@@ -73,7 +73,7 @@ impl RRuleIter {
                             }
                             // This means that the real count is 0, because of the decrement above
                             if count == 1 {
-                                return;
+                                return true;
                             }
                         }
                     }
@@ -98,7 +98,7 @@ impl RRuleIter {
                                 self.timeset[k].second as u32,
                             );
                         if options.until.is_some() && res > options.until.unwrap() {
-                            return;
+                            return true;
                         }
                         if res >= options.dtstart {
                             self.buffer.push_back(res);
@@ -109,7 +109,7 @@ impl RRuleIter {
                                 }
                                 // This means that the real count is 0, because of the decrement above
                                 if count == 1 {
-                                    return;
+                                    return true;
                                 }
                             }
                         }
@@ -118,14 +118,14 @@ impl RRuleIter {
             }
 
             if options.interval == 0 {
-                return;
+                return true;
             }
 
             // Handle frequency and interval
             self.counter_date = increment_counter_date(self.counter_date, &options, filtered);
 
             if self.counter_date.year() > MAX_YEAR {
-                return;
+                return true;
             }
 
             if options.freq == Frequenzy::Hourly
@@ -146,6 +146,8 @@ impl RRuleIter {
 
             self.ii.rebuild(year as isize, month as usize);
         }
+
+        false
     }
 }
 
@@ -153,15 +155,15 @@ impl Iterator for RRuleIter {
     type Item = DateTime<Tz>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.finished {
-            return None;
-        }
-
         if !self.buffer.is_empty() {
             return self.buffer.pop_front();
         }
 
-        self.generate();
+        if self.finished {
+            return None;
+        }
+
+        self.finished = self.generate();
 
         if self.buffer.is_empty() {
             self.finished = true;

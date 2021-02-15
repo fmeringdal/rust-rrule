@@ -748,4 +748,18 @@ mod test {
         assert_eq!(occurences.len(), 7);
         assert!(Utc::now().timestamp() - occurences[0].timestamp() < 2);
     }
+
+    #[test]
+    fn avoids_infinite_loop() {
+        let rrule =
+            "DTSTART:20200427T090000\nFREQ=WEEKLY;UNTIL=20200506T035959Z;BYDAY=FR,MO,TH,TU,WE"
+                .parse::<RRule>()
+                .unwrap();
+        let instances: Vec<_> = rrule
+            .into_iter()
+            .skip_while(|d| *d < Local::now())
+            .take(2)
+            .collect();
+        assert_eq!(instances.len(), 0);
+    }
 }
