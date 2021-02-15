@@ -762,4 +762,15 @@ mod test {
             .collect();
         assert_eq!(instances.len(), 0);
     }
+
+    #[test]
+    fn daytime_savings() {
+        let rrule: RRule =
+            "DTSTART;TZID=America/Vancouver:20210301T022210\nRRULE:FREQ=DAILY;COUNT=30"
+                .parse()
+                .unwrap();
+
+        println!("{:?}", rrule.options);
+        println!("Found occurances: {:?}", rrule.all());
+    }
 }

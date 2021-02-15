@@ -3,7 +3,7 @@ use crate::iter::{
 };
 use crate::{datetime::from_ordinal, RRule};
 use crate::{datetime::Time, Frequenzy};
-use chrono::prelude::*;
+use chrono::{prelude::*, Duration};
 use chrono_tz::Tz;
 use std::collections::VecDeque;
 
@@ -21,6 +21,10 @@ pub struct RRuleIter {
 impl RRuleIter {
     pub fn generate(&mut self) -> bool {
         let options = self.ii.options.clone();
+
+        if options.interval == 0 {
+            return true;
+        }
 
         match options.count {
             Some(count) if count == 0 => return true,
@@ -60,7 +64,6 @@ impl RRuleIter {
                 for j in 0..poslist.len() {
                     let res = poslist[j];
                     if options.until.is_some() && res > options.until.unwrap() {
-                        // return iter_result.get_value();
                         continue; // or break ?
                     }
 
@@ -88,15 +91,13 @@ impl RRuleIter {
                     let current_day = current_day.unwrap();
                     let date =
                         from_ordinal(self.ii.yearordinal().unwrap() + current_day, &options.tzid);
+                    let date = options.tzid.ymd(date.year(), date.month(), date.day());
                     for k in 0..self.timeset.len() {
-                        let res = options
-                            .tzid
-                            .ymd(date.year(), date.month(), date.day())
-                            .and_hms(
-                                self.timeset[k].hour as u32,
-                                self.timeset[k].minute as u32,
-                                self.timeset[k].second as u32,
-                            );
+                        let res = date.and_hms(0, 0, 0)
+                            + Duration::hours(self.timeset[k].hour as i64)
+                            + Duration::minutes(self.timeset[k].minute as i64)
+                            + Duration::seconds(self.timeset[k].second as i64);
+
                         if options.until.is_some() && res > options.until.unwrap() {
                             return true;
                         }
@@ -115,10 +116,6 @@ impl RRuleIter {
                         }
                     }
                 }
-            }
-
-            if options.interval == 0 {
-                return true;
             }
 
             // Handle frequency and interval
