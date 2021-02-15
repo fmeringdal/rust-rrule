@@ -770,7 +770,6 @@ mod test {
                 .parse()
                 .unwrap();
 
-        println!("{:?}", rrule.options);
-        println!("Found occurances: {:?}", rrule.all());
+        assert_eq!(rrule.all().len(), 30);
     }
 }
