@@ -118,7 +118,6 @@ impl RRuleIter {
                 }
             }
 
-            println!("Buffer: {:?}", self.buffer);
             // Handle frequency and interval
             self.counter_date = increment_counter_date(self.counter_date, &options, filtered);
 
