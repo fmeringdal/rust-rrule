@@ -1,6 +1,7 @@
 mod iterinfo;
 mod monthinfo;
 mod yearinfo;
+
 pub use iterinfo::IterInfo;
 mod poslist;
 pub use poslist::build_poslist;
@@ -12,6 +13,31 @@ use crate::options::*;
 use crate::utils::{includes, not_empty};
 use chrono::prelude::*;
 use chrono::Duration;
+
+pub fn decrement_date_until_valid(date: DTime, new_month: u32, new_year: Option<i32>) -> DTime {
+    let new_date = if let Some(new_year) = new_year {
+        let mut new_date = date.with_year(new_year);
+        let mut day_i = 1;
+        while new_date.is_none() {
+            new_date = date.with_day(date.day() - day_i);
+            new_date = new_date.unwrap().with_year(new_year);
+            day_i += 1;
+        }
+        new_date.unwrap()
+    } else {
+        date
+    };
+    let mut new_date = new_date.with_month(new_month);
+    let mut day_i = 1;
+    while new_date.is_none() {
+        new_date = date
+            .with_day(date.day() - day_i)
+            .unwrap()
+            .with_month(new_month);
+        day_i += 1;
+    }
+    new_date.unwrap()
+}
 
 pub fn increment_counter_date(
     counter_date: DTime,
@@ -32,13 +58,10 @@ pub fn increment_counter_date(
                     year_div -= 1;
                 }
                 let new_year = counter_date.year() + year_div as i32;
-                counter_date
-                    .with_month(new_month)
-                    .unwrap()
-                    .with_year(new_year)
-                    .unwrap()
+
+                decrement_date_until_valid(counter_date, new_month, Some(new_year))
             } else {
-                counter_date.with_month(new_month).unwrap()
+                decrement_date_until_valid(counter_date, new_month, None)
             }
         }
         Frequenzy::Weekly => {

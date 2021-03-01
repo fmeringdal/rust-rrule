@@ -772,4 +772,10 @@ mod test {
 
         assert_eq!(rrule.all().len(), 30);
     }
+
+    #[test]
+    fn rrule_all_fails_with_panic() {
+        let res = "DTSTART;VALUE=DATE:20201230T130000\nRRULE:FREQ=MONTHLY;UNTIL=20210825T120000Z;INTERVAL=1;BYDAY=-1WE".parse::<RRuleSet>().unwrap().all();
+        println!("Res {:?}", res);
+    }
 }
