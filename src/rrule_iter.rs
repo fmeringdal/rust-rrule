@@ -93,8 +93,7 @@ impl RRuleIter {
                     let year_ordinal = self.ii.yearordinal().unwrap();
                     // Ordinal conversion uses UTC: if we apply local-TZ here, then
                     // just below we'll end up double-applying.
-                    let date =
-                        from_ordinal(year_ordinal + current_day, &UTC);
+                    let date = from_ordinal(year_ordinal + current_day, &UTC);
                     // We apply the local-TZ here,
                     let date = options.tzid.ymd(date.year(), date.month(), date.day());
                     for k in 0..self.timeset.len() {

@@ -9,8 +9,8 @@ use rrule::{Frequenzy, ParsedOptions, RRule};
 #[cfg(test)]
 mod test {
     use super::*;
-    use rrule::Options;
     use chrono::Weekday::Sat;
+    use rrule::Options;
 
     fn ymd_hms(
         year: i32,
@@ -6880,9 +6880,9 @@ mod test {
         );
     }
 
-    use chrono_tz::Europe::Berlin;
     use chrono_tz::America::Los_Angeles;
     use chrono_tz::America::New_York;
+    use chrono_tz::Europe::Berlin;
 
     #[test]
     fn test_timezones_weekly() {
