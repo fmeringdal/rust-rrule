@@ -563,10 +563,11 @@ pub fn build_rrule(s: &str) -> Result<RRule, RRuleParseError> {
         ..
     } = parse_input(&s)?;
 
-    rrule_vals[0].tzid = tzid;
-    rrule_vals[0].dtstart = dtstart;
-
-    let parsed_opts = parse_options(&rrule_vals[0])?;
+    // TODO: find out why rrule_vals can be more than one
+    let mut rrule_opts = rrule_vals.remove(rrule_vals.len() - 1);
+    rrule_opts.tzid = tzid;
+    rrule_opts.dtstart = dtstart;
+    let parsed_opts = parse_options(&rrule_opts)?;
 
     Ok(RRule::new(parsed_opts))
 }
@@ -786,5 +787,16 @@ mod test {
         assert_eq!(8, dates[dates.len() - 1].day());
         assert_eq!(3, dates[dates.len() - 1].month());
         assert_eq!(2021, dates[dates.len() - 1].year());
+    }
+
+    #[test]
+    fn test_zulu() {
+        // let rrule_str = "DTSTART;20210405T150000Z\nRRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO";
+        let rrule_str = "DTSTART:20210405T150000Z\nRRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO";
+        let rrule: RRule = rrule_str.parse().unwrap();
+        assert_eq!(rrule.options.freq, Frequenzy::Weekly);
+        assert_eq!(rrule.options.byweekday, vec![0]);
+        assert_eq!(rrule.options.interval, 1);
+        assert_eq!(rrule.options.dtstart, UTC.ymd(2021, 4, 5).and_hms(15, 0, 0));
     }
 }
