@@ -5,6 +5,7 @@ use crate::{datetime::from_ordinal, RRule};
 use crate::{datetime::Time, Frequenzy};
 use chrono::{prelude::*, Duration};
 use chrono_tz::Tz;
+use chrono_tz::UTC;
 use std::collections::VecDeque;
 
 const MAX_YEAR: i32 = 9999;
@@ -89,8 +90,12 @@ impl RRuleIter {
                     }
 
                     let current_day = current_day.unwrap();
+                    let year_ordinal = self.ii.yearordinal().unwrap();
+                    // Ordinal conversion uses UTC: if we apply local-TZ here, then
+                    // just below we'll end up double-applying.
                     let date =
-                        from_ordinal(self.ii.yearordinal().unwrap() + current_day, &options.tzid);
+                        from_ordinal(year_ordinal + current_day, &UTC);
+                    // We apply the local-TZ here,
                     let date = options.tzid.ymd(date.year(), date.month(), date.day());
                     for k in 0..self.timeset.len() {
                         let res = date.and_hms(0, 0, 0)

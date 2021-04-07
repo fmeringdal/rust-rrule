@@ -9,6 +9,8 @@ use rrule::{Frequenzy, ParsedOptions, RRule};
 #[cfg(test)]
 mod test {
     use super::*;
+    use rrule::Options;
+    use chrono::Weekday::Sat;
 
     fn ymd_hms(
         year: i32,
@@ -6876,5 +6878,63 @@ mod test {
                 ymd_hms(1997, 9, 16, 9, 0, 0),
             ],
         );
+    }
+
+    use chrono_tz::Europe::Berlin;
+    use chrono_tz::America::Los_Angeles;
+    use chrono_tz::America::New_York;
+
+    #[test]
+    fn test_timezones_weekly() {
+        let rrule_options = Options::new()
+            .dtstart(UTC.ymd(2021, 1, 1).and_hms(9, 0, 0))
+            .count(2)
+            .freq(Frequenzy::Weekly)
+            .byweekday(vec![Sat])
+            .build()
+            .unwrap();
+        let rrule = RRule::new(rrule_options.clone());
+        for o in rrule.all().iter() {
+            assert_eq!(o.weekday(), Sat);
+        }
+
+        // NYC (-5)
+        let rrule_options = Options::new()
+            .dtstart(New_York.ymd(2021, 1, 1).and_hms(9, 0, 0))
+            .count(1)
+            .freq(Frequenzy::Weekly)
+            .byweekday(vec![Sat])
+            .build()
+            .unwrap();
+        let rrule = RRule::new(rrule_options.clone());
+        for o in rrule.all().iter() {
+            assert_eq!(o.weekday(), Sat);
+        }
+
+        // How about Berlin (+1)
+        let rrule_options = Options::new()
+            .dtstart(Berlin.ymd(2021, 1, 1).and_hms(9, 0, 0))
+            .count(1)
+            .freq(Frequenzy::Weekly)
+            .byweekday(vec![Sat])
+            .build()
+            .unwrap();
+        let rrule = RRule::new(rrule_options.clone());
+        for o in rrule.all().iter() {
+            assert_eq!(o.weekday(), Sat);
+        }
+
+        // Los Angeles (-7)
+        let rrule_options = Options::new()
+            .dtstart(Los_Angeles.ymd(2021, 1, 1).and_hms(9, 0, 0))
+            .count(1)
+            .freq(Frequenzy::Weekly)
+            .byweekday(vec![Sat])
+            .build()
+            .unwrap();
+        let rrule = RRule::new(rrule_options.clone());
+        for o in rrule.all().iter() {
+            assert_eq!(o.weekday(), Sat);
+        }
     }
 }
