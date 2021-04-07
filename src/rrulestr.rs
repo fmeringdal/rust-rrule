@@ -778,4 +778,13 @@ mod test {
         let res = "DTSTART;VALUE=DATE:20201230T130000\nRRULE:FREQ=MONTHLY;UNTIL=20210825T120000Z;INTERVAL=1;BYDAY=-1WE".parse::<RRuleSet>().unwrap().all();
         println!("Res {:?}", res);
     }
+
+    #[test]
+    fn rrule_generates_final_event_on_8_3_2021() {
+        let dates = "DTSTART;TZID=Europe/Paris:20201214T093000\nRRULE:FREQ=WEEKLY;UNTIL=20210308T083000Z;INTERVAL=2;BYDAY=MO;WKST=MO\nEXDATE;TZID=Europe/Paris:20201228T093000,20210125T093000,20210208T093000".parse::<RRuleSet>().unwrap().all();
+        // the following outputs 2021-02-22 09:30:00 UTC
+        assert_eq!(8, dates[dates.len() - 1].day());
+        assert_eq!(3, dates[dates.len() - 1].month());
+        assert_eq!(2021, dates[dates.len() - 1].year());
+    }
 }
