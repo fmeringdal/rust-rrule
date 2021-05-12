@@ -5,15 +5,15 @@ use crate::iter::yearinfo::{rebuild_year, YearInfo};
 use crate::options::{Frequenzy, ParsedOptions};
 use chrono::prelude::*;
 
-pub struct IterInfo {
+pub struct IterInfo<'a> {
     pub yearinfo: Option<YearInfo>,
     pub monthinfo: Option<MonthInfo>,
     pub eastermask: Option<Vec<isize>>,
-    pub options: ParsedOptions,
+    pub options: &'a ParsedOptions,
 }
 
-impl IterInfo {
-    pub fn new(options: ParsedOptions) -> Self {
+impl<'a> IterInfo<'a> {
+    pub fn new(options: &'a ParsedOptions) -> Self {
         let mut ii = Self {
             options,
             yearinfo: None,

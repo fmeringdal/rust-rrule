@@ -16,15 +16,14 @@ impl RRule {
 
     /// Returns all the recurrences of the rrule
     pub fn all(&self) -> Vec<DateTime<Tz>> {
-        self.clone().into_iter().collect()
+        self.into_iter().collect()
     }
 
     /// Returns the last recurrence before the given datetime instance.
     /// The inc keyword defines what happens if dt is an recurrence.
     /// With inc == true, if dt itself is an recurrence, it will be returned.
     pub fn before(&self, dt: DateTime<Tz>, inc: bool) -> Option<DateTime<Tz>> {
-        self.clone()
-            .into_iter()
+        self.into_iter()
             .take_while(|d| if inc { *d <= dt } else { *d < dt })
             .last()
     }
@@ -33,8 +32,7 @@ impl RRule {
     /// The inc keyword defines what happens if dt is an recurrence.
     /// With inc == true, if dt itself is an recurrence, it will be returned.
     pub fn after(&self, dt: DateTime<Tz>, inc: bool) -> Option<DateTime<Tz>> {
-        self.clone()
-            .into_iter()
+        self.into_iter()
             .skip_while(|d| if inc { *d <= dt } else { *d < dt })
             .next()
     }
@@ -49,8 +47,7 @@ impl RRule {
         before: DateTime<Tz>,
         inc: bool,
     ) -> Vec<DateTime<Tz>> {
-        self.clone()
-            .into_iter()
+        self.into_iter()
             .skip_while(|d| if inc { *d <= after } else { *d < after })
             .take_while(|d| if inc { *d <= before } else { *d < before })
             .collect()

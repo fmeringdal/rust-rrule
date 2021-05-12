@@ -5,16 +5,16 @@ use chrono_tz::Tz;
 use std::collections::HashMap;
 use std::iter::Iterator;
 
-pub struct RRuleSetIter {
+pub struct RRuleSetIter<'a> {
     pub queue: HashMap<usize, DateTime<Tz>>,
-    pub rrule_iters: Vec<RRuleIter>,
-    pub exrules: Vec<RRule>,
+    pub rrule_iters: Vec<RRuleIter<'a>>,
+    pub exrules: &'a Vec<RRule>,
     pub exdates: HashMap<i64, ()>,
     // Sorted additional dates in decreasing order
     pub rdates: Vec<DateTime<Tz>>,
 }
 
-impl Iterator for RRuleSetIter {
+impl<'a> Iterator for RRuleSetIter<'a> {
     type Item = DateTime<Tz>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -52,7 +52,7 @@ impl Iterator for RRuleSetIter {
         }
 
         // TODO: RDates should be prefiltered before starting iteration
-        match generate_date(&mut self.rdates, &mut self.exrules, &mut self.exdates) {
+        match generate_date(&mut self.rdates, &self.exrules, &mut self.exdates) {
             Some(first_rdate) => {
                 let next_date = match next_date {
                     Some(next_date) => {
@@ -79,7 +79,7 @@ impl Iterator for RRuleSetIter {
 
 fn generate_date(
     dates: &mut Vec<DateTime<Tz>>,
-    exrules: &mut Vec<RRule>,
+    exrules: &Vec<RRule>,
     exdates: &mut HashMap<i64, ()>,
 ) -> Option<DateTime<Tz>> {
     if dates.is_empty() {
@@ -99,7 +99,7 @@ fn generate_date(
 
 fn generate(
     rrule_iter: &mut RRuleIter,
-    exrules: &mut Vec<RRule>,
+    exrules: &Vec<RRule>,
     exdates: &mut HashMap<i64, ()>,
 ) -> Option<DateTime<Tz>> {
     let mut date = rrule_iter.next();
@@ -112,7 +112,7 @@ fn generate(
 
 fn accept_generated_date(
     date: &Option<DateTime<Tz>>,
-    exrules: &mut Vec<RRule>,
+    exrules: &Vec<RRule>,
     exdates: &mut HashMap<i64, ()>,
 ) -> bool {
     match date {
@@ -123,7 +123,7 @@ fn accept_generated_date(
             if !exrules.is_empty() {
                 let after = date.timezone().timestamp(dt - 1, 0);
                 let before = date.timezone().timestamp(dt + 1, 0);
-                for exrule in exrules.iter_mut() {
+                for exrule in exrules {
                     for date in exrule.between(after, before, true) {
                         exdates.insert(date.timestamp(), ());
                     }
@@ -139,23 +139,21 @@ fn accept_generated_date(
     }
 }
 
-impl IntoIterator for RRuleSet {
+impl<'a> IntoIterator for &'a RRuleSet {
     type Item = DateTime<Tz>;
 
-    type IntoIter = RRuleSetIter;
+    type IntoIter = RRuleSetIter<'a>;
 
-    fn into_iter(mut self) -> Self::IntoIter {
+    fn into_iter(self) -> Self::IntoIter {
         // Sort in decreasing order
-        self.rdate.sort_by(|d1, d2| d2.partial_cmp(d1).unwrap());
+        let mut rdates_sorted = self.rdate.clone();
+        rdates_sorted.sort_by(|d1, d2| d2.partial_cmp(d1).unwrap());
+
         RRuleSetIter {
             queue: Default::default(),
-            rrule_iters: self
-                .rrule
-                .into_iter()
-                .map(|rrule| rrule.into_iter())
-                .collect(),
-            rdates: self.rdate,
-            exrules: self.exrule,
+            rrule_iters: self.rrule.iter().map(|rrule| rrule.into_iter()).collect(),
+            rdates: rdates_sorted,
+            exrules: &self.exrule,
             exdates: self
                 .exdate
                 .iter()

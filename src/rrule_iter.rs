@@ -4,30 +4,30 @@ use crate::iter::{
 use crate::{datetime::from_ordinal, RRule};
 use crate::{datetime::Time, Frequenzy};
 use chrono::{prelude::*, Duration};
-use chrono_tz::Tz;
-use chrono_tz::UTC;
+use chrono_tz::{Tz, UTC};
 use std::collections::VecDeque;
 
 const MAX_YEAR: i32 = 9999;
 
-pub struct RRuleIter {
+pub struct RRuleIter<'a> {
     pub counter_date: DateTime<Tz>,
-    pub ii: IterInfo,
+    pub ii: IterInfo<'a>,
     pub timeset: Vec<Time>,
     // Buffer of datetimes not yet yielded
     pub buffer: VecDeque<DateTime<Tz>>,
     pub finished: bool,
+    pub count: Option<u32>,
 }
 
-impl RRuleIter {
+impl<'a> RRuleIter<'a> {
     pub fn generate(&mut self) -> bool {
-        let options = self.ii.options.clone();
+        let options = self.ii.options;
 
         if options.interval == 0 {
             return true;
         }
 
-        match options.count {
+        match self.count {
             Some(count) if count == 0 => return true,
             _ => (),
         };
@@ -71,9 +71,10 @@ impl RRuleIter {
                     if res >= options.dtstart {
                         self.buffer.push_back(res);
 
-                        if let Some(count) = self.ii.options.count {
+                        if let Some(count) = self.count {
                             if count > 0 {
-                                self.ii.options.count = Some(count - 1);
+                                self.count = Some(count - 1);
+                                // self.ii.options.count = Some(count - 1);
                             }
                             // This means that the real count is 0, because of the decrement above
                             if count == 1 {
@@ -108,9 +109,10 @@ impl RRuleIter {
                         if res >= options.dtstart {
                             self.buffer.push_back(res);
 
-                            if let Some(count) = self.ii.options.count {
+                            if let Some(count) = self.count {
                                 if count > 0 {
-                                    self.ii.options.count = Some(count - 1);
+                                    self.count = Some(count - 1);
+                                    // self.ii.options.count = Some(count - 1);
                                 }
                                 // This means that the real count is 0, because of the decrement above
                                 if count == 1 {
@@ -152,7 +154,7 @@ impl RRuleIter {
     }
 }
 
-impl Iterator for RRuleIter {
+impl<'a> Iterator for RRuleIter<'a> {
     type Item = DateTime<Tz>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -173,17 +175,18 @@ impl Iterator for RRuleIter {
     }
 }
 
-impl IntoIterator for RRule {
+impl<'a> IntoIterator for &'a RRule {
     type Item = DateTime<Tz>;
 
-    type IntoIter = RRuleIter;
+    type IntoIter = RRuleIter<'a>;
 
     fn into_iter(self) -> Self::IntoIter {
-        let ii = IterInfo::new(self.options);
+        let ii = IterInfo::new(&self.options);
         let counter_date = ii.options.dtstart;
         // ii.rebuild(counter_date.year() as isize, counter_date.month() as usize);
 
         let timeset = make_timeset(&ii, &counter_date, &ii.options);
+        let count = ii.options.count.clone();
 
         RRuleIter {
             counter_date,
@@ -191,6 +194,7 @@ impl IntoIterator for RRule {
             timeset,
             buffer: VecDeque::new(),
             finished: false,
+            count,
         }
     }
 }
