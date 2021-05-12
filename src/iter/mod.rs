@@ -156,8 +156,13 @@ pub fn increment_counter_date(
 }
 
 pub fn is_filtered(ii: &IterInfo, current_day: usize, options: &ParsedOptions) -> bool {
-    return (not_empty(&options.bymonth)
-        && !includes(&options.bymonth, &ii.mmask().unwrap()[current_day]))
+    if !options.bymonth.is_empty() {
+        println!("Current day: {}", current_day);
+        println!("Byymonth: {:?}", options.bymonth);
+        println!("mask: {:?}", ii.mmask().unwrap());
+    }
+    return (!options.bymonth.is_empty()
+        && !options.bymonth.contains(&ii.mmask().unwrap()[current_day]))
         || (not_empty(&options.byweekno) && (ii.wnomask().unwrap()[current_day]) == 0)
         || (not_empty(&options.byweekday)
             && !includes(&options.byweekday, &ii.wdaymask().unwrap()[current_day]))
@@ -217,7 +222,8 @@ pub fn build_timeset(options: &ParsedOptions) -> Vec<Time> {
         return vec![];
     }
 
-    let mut timeset = vec![];
+    let mut timeset =
+        Vec::with_capacity(options.byhour.len() * options.byminute.len() * options.bysecond.len());
     for hour in &options.byhour {
         for minute in &options.byminute {
             for second in &options.bysecond {
