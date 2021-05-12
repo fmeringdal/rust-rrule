@@ -4,14 +4,14 @@
 
 // Every mask is 7 days longer to handle cross-year weekly periods.
 
-pub(crate) type WDAY_MASK = [usize; 7 * 55];
-pub(crate) type MASK_365 = [usize; 365 + 7];
-pub(crate) type MASK_366 = [usize; 366 + 7];
-pub(crate) type MASK_365_SIGNED = [isize; 365 + 7];
-pub(crate) type MASK_366_SIGNED = [isize; 366 + 7];
-pub(crate) type MONTH_RANGE_MASK = [usize; 13];
+pub(crate) type WdayMask = [usize; 7 * 55];
+pub(crate) type Mask365 = [usize; 365 + 7];
+pub(crate) type Mask366 = [usize; 366 + 7];
+pub(crate) type Mask365Signed = [isize; 365 + 7];
+pub(crate) type Mask366Signed = [isize; 366 + 7];
+pub(crate) type MonthRangeMask = [usize; 13];
 
-const M365: MASK_365 = [
+const M365: Mask365 = [
     // 31
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     // 28
@@ -42,7 +42,7 @@ const M365: MASK_365 = [
     // 7 ------------------------------------------------------------------------------------------
     1, 1, 1, 1, 1, 1, 1,
 ];
-const MDAY365: MASK_365_SIGNED = [
+const MDAY365: Mask365Signed = [
     // 31
     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
     27, 28, 29, 30, 31,
@@ -82,7 +82,7 @@ const MDAY365: MASK_365_SIGNED = [
     // 7 -----------------------------------------------------------------------------------------
     1, 2, 3, 4, 5, 6, 7,
 ];
-const NMDAY365: MASK_365_SIGNED = [
+const NMDAY365: Mask365Signed = [
     // 31
     -31, -30, -29, -28, -27, -26, -25, -24, -23, -22, -21, -20, -19, -18, -17, -16, -15, -14, -13,
     -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1,
@@ -122,9 +122,9 @@ const NMDAY365: MASK_365_SIGNED = [
     // 7 -----------------------------------------------------------------------------------------
     -31, -30, -29, -28, -27, -26, -25,
 ];
-const M365_RANGE: MONTH_RANGE_MASK = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365];
+const M365_RANGE: MonthRangeMask = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365];
 
-const M366: MASK_366 = [
+const M366: Mask366 = [
     // 31
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     // 29
@@ -155,7 +155,7 @@ const M366: MASK_366 = [
     // 7 ------------------------------------------------------------------------------------------
     1, 1, 1, 1, 1, 1, 1,
 ];
-const MDAY366: MASK_366_SIGNED = [
+const MDAY366: Mask366Signed = [
     // 31
     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
     27, 28, 29, 30, 31,
@@ -195,8 +195,8 @@ const MDAY366: MASK_366_SIGNED = [
     // 7 -----------------------------------------------------------------------------------------
     1, 2, 3, 4, 5, 6, 7,
 ];
-const M366_RANGE: MONTH_RANGE_MASK = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366];
-const NMDAY366: MASK_366_SIGNED = [
+const M366_RANGE: MonthRangeMask = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366];
+const NMDAY366: Mask366Signed = [
     // 31
     -31, -30, -29, -28, -27, -26, -25, -24, -23, -22, -21, -20, -19, -18, -17, -16, -15, -14, -13,
     -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1,
@@ -236,7 +236,7 @@ const NMDAY366: MASK_366_SIGNED = [
     // 7 -----------------------------------------------------------------------------------------
     -31, -30, -29, -28, -27, -26, -25,
 ];
-const WDAY: WDAY_MASK = [
+const WDAY: WdayMask = [
     0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3,
     4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 0,
     1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4,
@@ -254,15 +254,15 @@ const WDAY: WDAY_MASK = [
 
 #[derive(Clone)]
 pub struct Masks {
-    pub wday: WDAY_MASK,
-    pub m365: MASK_365,
-    pub m365range: MONTH_RANGE_MASK,
-    pub m366: MASK_366,
-    pub m366range: MONTH_RANGE_MASK,
-    pub mday365: MASK_365_SIGNED,
-    pub mday366: MASK_366_SIGNED,
-    pub nmday365: MASK_365_SIGNED,
-    pub nmday366: MASK_366_SIGNED,
+    pub wday: WdayMask,
+    pub m365: Mask365,
+    pub m365range: MonthRangeMask,
+    pub m366: Mask366,
+    pub m366range: MonthRangeMask,
+    pub mday365: Mask365Signed,
+    pub mday366: Mask366Signed,
+    pub nmday365: Mask365Signed,
+    pub nmday366: Mask366Signed,
 }
 
 pub const MASKS: Masks = Masks {
