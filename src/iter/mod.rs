@@ -156,24 +156,18 @@ pub fn increment_counter_date(
 }
 
 pub fn is_filtered(ii: &IterInfo, current_day: usize, options: &ParsedOptions) -> bool {
-    if !options.bymonth.is_empty() {
-        println!("Current day: {}", current_day);
-        println!("Byymonth: {:?}", options.bymonth);
-        println!("mask: {:?}", ii.mmask().unwrap());
-    }
-    return (!options.bymonth.is_empty()
-        && !options.bymonth.contains(&ii.mmask().unwrap()[current_day]))
+    return (!options.bymonth.is_empty() && !options.bymonth.contains(&ii.mmask()[current_day]))
         || (not_empty(&options.byweekno) && (ii.wnomask().unwrap()[current_day]) == 0)
         || (not_empty(&options.byweekday)
-            && !includes(&options.byweekday, &ii.wdaymask().unwrap()[current_day]))
+            && !includes(&options.byweekday, &ii.wdaymask()[current_day]))
         || (ii.nwdaymask().is_some()
             && not_empty(ii.nwdaymask().unwrap())
             && (ii.nwdaymask().unwrap()[current_day]) == 0)
         || (options.byeaster.is_some()
             && !(includes(ii.eastermask().unwrap(), &(current_day as isize))))
         || ((not_empty(&options.bymonthday) || not_empty(&options.bynmonthday))
-            && !includes(&options.bymonthday, &ii.mdaymask().unwrap()[current_day])
-            && !includes(&options.bynmonthday, &ii.nmdaymask().unwrap()[current_day]))
+            && !includes(&options.bymonthday, &ii.mdaymask()[current_day])
+            && !includes(&options.bynmonthday, &ii.nmdaymask()[current_day]))
         || (not_empty(&options.byyearday)
             && ((current_day < ii.yearlen().unwrap()
                 && !includes(&options.byyearday, &(current_day as isize + 1))

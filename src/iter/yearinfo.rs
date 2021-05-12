@@ -10,44 +10,44 @@ pub struct YearInfo {
     pub nextyearlen: usize,
     pub yearordinal: isize,
     pub yearweekday: usize,
-    pub mmask: Vec<usize>,
-    pub mrange: Vec<usize>,
-    pub mdaymask: Vec<isize>,
-    pub nmdaymask: Vec<isize>,
-    pub wdaymask: Vec<usize>,
+    pub mmask: &'static [usize],
+    pub mdaymask: &'static [isize],
+    pub nmdaymask: &'static [isize],
+    pub mrange: &'static [usize],
+    pub wdaymask: &'static [usize],
     pub wnomask: Option<Vec<usize>>,
 }
 
 pub struct BaseMasks {
-    mmask: Vec<usize>,
-    mdaymask: Vec<isize>,
-    nmdaymask: Vec<isize>,
-    wdaymask: Vec<usize>,
-    mrange: Vec<usize>,
+    mmask: &'static [usize],
+    mdaymask: &'static [isize],
+    nmdaymask: &'static [isize],
+    mrange: &'static [usize],
+    wdaymask: &'static [usize],
 }
 
 fn base_year_masks(year: i32) -> BaseMasks {
-    let masks = MASKS.clone();
+    // let masks = MASKS.clone();
     let firstyday = Utc.ymd(year, 1, 1).and_hms_milli(0, 0, 0, 0);
     let yearlen = get_year_len(year);
     let wday = get_weekday_val(&firstyday.weekday()) as usize;
 
     if yearlen == 365 {
         return BaseMasks {
-            mmask: masks.m365,
-            mdaymask: masks.mday365,
-            nmdaymask: masks.nmday365,
-            mrange: masks.m365range,
-            wdaymask: Vec::from(&masks.wday[wday..]),
+            mmask: &MASKS.m365,
+            mdaymask: &MASKS.mday365,
+            nmdaymask: &MASKS.nmday365,
+            mrange: &MASKS.m365range,
+            wdaymask: &MASKS.wday[wday..],
         };
     }
 
     BaseMasks {
-        mmask: masks.m366,
-        mdaymask: masks.mday366,
-        nmdaymask: masks.nmday366,
-        mrange: masks.m366range,
-        wdaymask: Vec::from(&masks.wday[wday..]),
+        mmask: &MASKS.m366,
+        mdaymask: &MASKS.mday366,
+        nmdaymask: &MASKS.nmday366,
+        mrange: &MASKS.m366range,
+        wdaymask: &MASKS.wday[wday..],
     }
 }
 

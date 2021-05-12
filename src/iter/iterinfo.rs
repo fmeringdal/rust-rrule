@@ -14,12 +14,16 @@ pub struct IterInfo {
 
 impl IterInfo {
     pub fn new(options: ParsedOptions) -> Self {
-        Self {
+        let mut ii = Self {
             options,
             yearinfo: None,
             monthinfo: None,
             eastermask: None,
-        }
+        };
+        let counter_date = ii.options.dtstart;
+        ii.rebuild(counter_date.year() as isize, counter_date.month() as usize);
+
+        ii
     }
 
     pub fn rebuild(&mut self, year: isize, month: usize) {
@@ -63,20 +67,20 @@ impl IterInfo {
         self.yearinfo.as_ref().map(|info| info.yearordinal)
     }
 
-    pub fn mrange(&self) -> Option<&Vec<usize>> {
-        self.yearinfo.as_ref().map(|info| &info.mrange)
+    pub fn mrange(&self) -> &[usize] {
+        self.yearinfo.as_ref().map(|info| &info.mrange).unwrap()
     }
 
     pub fn eastermask(&self) -> Option<&Vec<isize>> {
         self.eastermask.as_ref()
     }
 
-    pub fn wdaymask(&self) -> Option<&Vec<usize>> {
-        self.yearinfo.as_ref().map(|info| &info.wdaymask)
+    pub fn wdaymask(&self) -> &[usize] {
+        self.yearinfo.as_ref().map(|info| &info.wdaymask).unwrap()
     }
 
-    pub fn mmask(&self) -> Option<&Vec<usize>> {
-        self.yearinfo.as_ref().map(|info| &info.mmask)
+    pub fn mmask(&self) -> &[usize] {
+        self.yearinfo.as_ref().map(|info| &info.mmask).unwrap()
     }
 
     pub fn wnomask(&self) -> Option<&Vec<usize>> {
@@ -94,12 +98,12 @@ impl IterInfo {
         self.yearinfo.as_ref().map(|info| info.nextyearlen)
     }
 
-    pub fn mdaymask(&self) -> Option<&Vec<isize>> {
-        self.yearinfo.as_ref().map(|info| &info.mdaymask)
+    pub fn mdaymask(&self) -> &[isize] {
+        self.yearinfo.as_ref().unwrap().mdaymask
     }
 
-    pub fn nmdaymask(&self) -> Option<&Vec<isize>> {
-        self.yearinfo.as_ref().map(|info| &info.nmdaymask)
+    pub fn nmdaymask(&self) -> &[isize] {
+        self.yearinfo.as_ref().unwrap().nmdaymask
     }
 
     pub fn ydayset(&self) -> (Vec<usize>, usize, usize) {
@@ -112,7 +116,7 @@ impl IterInfo {
     }
 
     pub fn mdayset(&self, month: usize) -> (Vec<usize>, usize, usize) {
-        let mrange = self.mrange().unwrap();
+        let mrange = self.mrange();
         let start = mrange[month - 1];
         let end = mrange[month];
         let mut set = vec![0; self.yearlen().unwrap()];
@@ -138,7 +142,7 @@ impl IterInfo {
             }
             set[i] = i;
             i += 1;
-            if self.wdaymask().unwrap()[i] == self.options.wkst {
+            if self.wdaymask()[i] == self.options.wkst {
                 break;
             }
         }

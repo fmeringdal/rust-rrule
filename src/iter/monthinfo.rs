@@ -12,8 +12,8 @@ pub fn rebuild_month(
     year: isize,
     month: usize,
     yearlen: usize,
-    mrange: &Vec<usize>,
-    wdaymask: &Vec<usize>,
+    mrange: &[usize],
+    wdaymask: &[usize],
     options: &ParsedOptions,
 ) -> MonthInfo {
     let mut result = MonthInfo {
