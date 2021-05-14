@@ -609,14 +609,6 @@ mod test {
     }
 
     #[test]
-    fn it_rejects_garbage_strings() {
-        let garbage_strings = vec!["", "!", "1", "fioashfoias!?", "        "];
-        for string in garbage_strings {
-            assert!(build_rrule(string).is_err())
-        }
-    }
-
-    #[test]
     fn rrule() {
         let res = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5");
         assert!(res.is_ok());
@@ -643,7 +635,26 @@ mod test {
     // Invalid stuff
     ////////////////////////////////////////////////////
     #[test]
-    fn garbage_strings() {
+    fn garbage_strings_rrule() {
+        let test_cases = vec![
+            "",
+            "!",
+            "1",
+            "fioashfoias!?",
+            "        ",
+            "helloworld",
+            "foo bar",
+            "hello\nworld",
+            "RRUle:test",
+        ];
+        for test_case in &test_cases {
+            let res = build_rrule(test_case);
+            assert!(res.is_err());
+        }
+    }
+
+    #[test]
+    fn garbage_strings_rrule_set() {
         let test_cases = vec!["helloworld", "foo bar", "hello\nworld", "RRUle:test"];
         for test_case in &test_cases {
             let res = build_rruleset(test_case);
