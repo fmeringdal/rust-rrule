@@ -374,6 +374,10 @@ fn parse_string(rfc_string: &str) -> Result<Options, RRuleParseError> {
         }
     }
 
+    if options.is_empty() {
+        return Err(RRuleParseError("Invalid rrule string".into()));
+    }
+
     if options.len() == 1 {
         return Ok(options[0].clone());
     }
@@ -563,6 +567,10 @@ pub fn build_rrule(s: &str) -> Result<RRule, RRuleParseError> {
         ..
     } = parse_input(&s)?;
 
+    if rrule_vals.is_empty() {
+        return Err(RRuleParseError("Invalid rrule string".into()));
+    }
+
     // TODO: find out why rrule_vals can be more than one
     let mut rrule_opts = rrule_vals.remove(rrule_vals.len() - 1);
     rrule_opts.tzid = tzid;
@@ -598,6 +606,14 @@ mod test {
     fn it_works_4() {
         let res = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5\nEXDATE;TZID=Europe/Berlin:20120202T130000Z,20120203T130000Z");
         assert!(res.is_ok());
+    }
+
+    #[test]
+    fn it_rejects_garbage_strings() {
+        let garbage_strings = vec!["", "!", "1", "fioashfoias!?", "        "];
+        for string in garbage_strings {
+            assert!(build_rrule(string).is_err())
+        }
     }
 
     #[test]
@@ -719,16 +735,22 @@ mod test {
     }
 
     #[test]
-    #[ignore = "Only for benching"]
+    // #[ignore = "Only for benching"]
     fn bench() {
         let now = std::time::SystemTime::now();
-        for _ in 0..10000 {
-            let res = build_rruleset("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/New_York:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE").unwrap();
+        for _ in 0..1000 {
+            // let res = build_rruleset("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/New_York:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE").unwrap();
+            let res = build_rruleset("RRULE:UNTIL=20100404T110000Z;DTSTART;TZID=America/New_York:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE").unwrap();
 
             // println!("Parsing took: {:?}", now.elapsed().unwrap().as_millis());
             let tmp_now = std::time::SystemTime::now();
 
-            res.all();
+            // res.all();
+            res.between(
+                UTC.timestamp_millis(915321600000),
+                UTC.timestamp_millis(920505600000),
+                true,
+            );
             println!("All took: {:?}", tmp_now.elapsed().unwrap().as_nanos());
         }
         println!("Time took: {:?}", now.elapsed().unwrap().as_millis());
