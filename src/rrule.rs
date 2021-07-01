@@ -33,7 +33,7 @@ impl RRule {
     /// With inc == true, if dt itself is an recurrence, it will be returned.
     pub fn after(&self, dt: DateTime<Tz>, inc: bool) -> Option<DateTime<Tz>> {
         self.into_iter()
-            .skip_while(|d| if inc { *d <= dt } else { *d < dt })
+            .skip_while(|d| if inc { *d < dt } else { *d <= dt })
             .next()
     }
 
@@ -48,7 +48,7 @@ impl RRule {
         inc: bool,
     ) -> Vec<DateTime<Tz>> {
         self.into_iter()
-            .skip_while(|d| if inc { *d <= after } else { *d < after })
+            .skip_while(|d| if inc { *d < after } else { *d <= after })
             .take_while(|d| if inc { *d <= before } else { *d < before })
             .collect()
     }
