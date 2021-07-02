@@ -6937,4 +6937,94 @@ mod test {
             assert_eq!(o.weekday(), Sat);
         }
     }
+
+    #[test]
+    fn test_before_inclusive_hit() {
+        let rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
+
+        let before = UTC.ymd(2012, 2, 2).and_hms(9, 30, 0);
+        let inc = true;
+
+        assert_eq!(Some(before), rrule.before(before, inc));
+    }
+
+    #[test]
+    fn test_before_inclusive_miss() {
+        let rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
+
+        let before = UTC.ymd(2012, 2, 3).and_hms(9, 0, 0);
+        let oracle = UTC.ymd(2012, 2, 2).and_hms(9, 30, 0);
+        let inc = true;
+
+        assert_eq!(Some(oracle), rrule.before(before, inc));
+    }
+
+    #[test]
+    fn test_after_inclusive_hit() {
+        let rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
+
+        let after = UTC.ymd(2012, 2, 2).and_hms(9, 30, 0);
+        let inc = true;
+
+        assert_eq!(Some(after), rrule.after(after, inc));
+    }
+
+    #[test]
+    fn test_after_inclusive_miss() {
+        let rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
+
+        let after = UTC.ymd(2012, 2, 2).and_hms(10, 0, 0);
+        let oracle = UTC.ymd(2012, 2, 3).and_hms(9, 30, 0);
+        let inc = true;
+
+        assert_eq!(Some(oracle), rrule.after(after, inc));
+    }
+
+    #[test]
+    fn test_between_inclusive_both_miss() {
+        let rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=5".parse().unwrap();
+
+        let before = UTC.ymd(2012, 2, 2).and_hms(10, 0, 0);
+        let middle = UTC.ymd(2012, 2, 3).and_hms(9, 30, 0);
+        let after = UTC.ymd(2012, 2, 4).and_hms(9, 0, 0);
+        let inc = true;
+
+        assert_eq!(vec![middle], rrule.between(before, after, inc));
+    }
+
+    #[test]
+    fn test_between_inclusive_lower_miss() {
+        let rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=5".parse().unwrap();
+
+        let before = UTC.ymd(2012, 2, 2).and_hms(10, 0, 0);
+        let middle = UTC.ymd(2012, 2, 3).and_hms(9, 30, 0);
+        let after = UTC.ymd(2012, 2, 4).and_hms(9, 30, 0);
+        let inc = true;
+
+        assert_eq!(vec![middle, after], rrule.between(before, after, inc));
+    }
+
+    #[test]
+    fn test_between_inclusive_upper_miss() {
+        let rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=5".parse().unwrap();
+
+        let before = UTC.ymd(2012, 2, 2).and_hms(9, 30, 0);
+        let middle = UTC.ymd(2012, 2, 3).and_hms(9, 30, 0);
+        let after = UTC.ymd(2012, 2, 4).and_hms(9, 0, 0);
+        let inc = true;
+
+        assert_eq!(vec![before, middle], rrule.between(before, after, inc));
+    }
+
+    #[test]
+    fn test_between_inclusive_both_hit() {
+        let rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=5".parse().unwrap();
+
+        let before = UTC.ymd(2012, 2, 2).and_hms(9, 30, 0);
+        let middle = UTC.ymd(2012, 2, 3).and_hms(9, 30, 0);
+        let after = UTC.ymd(2012, 2, 4).and_hms(9, 30, 0);
+        let inc = true;
+
+        assert_eq!(vec![before, middle, after], rrule.between(before, after, inc));
+    }
 }
