@@ -1,4 +1,4 @@
-use crate::datetime::{get_weekday_val, DTime};
+use crate::datetime::DTime;
 use crate::parse_options::parse_options;
 use chrono::prelude::*;
 use chrono_tz::{Tz, UTC};
@@ -38,14 +38,14 @@ impl NWeekday {
     pub fn from(weekday: &Weekday, n: NWeekdayIdentifier) -> Self {
         // if (n === 0) throw new Error("Can't create weekday with n == 0")
         Self {
-            weekday: get_weekday_val(weekday),
+            weekday: *weekday as usize,
             n,
         }
     }
 
     pub fn nth(&self, n: NWeekdayIdentifier) -> Self {
         if self.n == n {
-            return self.clone();
+            return *self;
         }
         Self::new(self.weekday, n)
     }
@@ -80,7 +80,33 @@ pub struct ParsedOptions {
     pub byeaster: Option<isize>,
 }
 
-#[derive(Debug, Clone)]
+impl Default for ParsedOptions {
+    fn default() -> Self {
+        ParsedOptions {
+            freq: Frequenzy::Yearly,
+            count: Default::default(),
+            bymonth: Default::default(),
+            dtstart: UTC.ymd(1970, 1, 1).and_hms(0, 0, 0),
+            byweekday: Default::default(),
+            byhour: Default::default(),
+            bysetpos: Default::default(),
+            byweekno: Default::default(),
+            byminute: Default::default(),
+            bysecond: Default::default(),
+            byyearday: Default::default(),
+            bymonthday: Default::default(),
+            bynweekday: Default::default(),
+            bynmonthday: Default::default(),
+            until: Default::default(),
+            wkst: Default::default(),
+            tzid: UTC,
+            interval: 1,
+            byeaster: Default::default(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default)]
 pub struct Options {
     pub freq: Option<Frequenzy>,
     pub interval: Option<usize>,
@@ -102,28 +128,6 @@ pub struct Options {
 }
 
 impl Options {
-    pub fn new() -> Self {
-        Self {
-            freq: None,
-            interval: None,
-            count: None,
-            until: None,
-            tzid: None,
-            dtstart: None,
-            wkst: None,
-            bysetpos: None,
-            bymonth: None,
-            bymonthday: None,
-            byyearday: None,
-            byweekno: None,
-            byweekday: None,
-            byhour: None,
-            byminute: None,
-            bysecond: None,
-            byeaster: None,
-        }
-    }
-
     // TODO: better name
     fn is_some_or_none<'a, T>(prop1: &'a Option<T>, prop2: &'a Option<T>) -> &'a Option<T> {
         if prop2.is_some() {
@@ -135,12 +139,12 @@ impl Options {
     pub fn concat(opt1: &Self, opt2: &Self) -> Self {
         Self {
             freq: Self::is_some_or_none(&opt1.freq, &opt2.freq).clone(),
-            interval: Self::is_some_or_none(&opt1.interval, &opt2.interval).clone(),
-            count: Self::is_some_or_none(&opt1.count, &opt2.count).clone(),
-            until: Self::is_some_or_none(&opt1.until, &opt2.until).clone(),
-            tzid: Self::is_some_or_none(&opt1.tzid, &opt2.tzid).clone(),
-            dtstart: Self::is_some_or_none(&opt1.dtstart, &opt2.dtstart).clone(),
-            wkst: Self::is_some_or_none(&opt1.wkst, &opt2.wkst).clone(),
+            interval: *Self::is_some_or_none(&opt1.interval, &opt2.interval),
+            count: *Self::is_some_or_none(&opt1.count, &opt2.count),
+            until: *Self::is_some_or_none(&opt1.until, &opt2.until),
+            tzid: *Self::is_some_or_none(&opt1.tzid, &opt2.tzid),
+            dtstart: *Self::is_some_or_none(&opt1.dtstart, &opt2.dtstart),
+            wkst: *Self::is_some_or_none(&opt1.wkst, &opt2.wkst),
             bysetpos: Self::is_some_or_none(&opt1.bysetpos, &opt2.bysetpos).clone(),
             bymonth: Self::is_some_or_none(&opt1.bymonth, &opt2.bymonth).clone(),
             bymonthday: Self::is_some_or_none(&opt1.bymonthday, &opt2.bymonthday).clone(),
@@ -150,7 +154,7 @@ impl Options {
             byhour: Self::is_some_or_none(&opt1.byhour, &opt2.byhour).clone(),
             byminute: Self::is_some_or_none(&opt1.byminute, &opt2.byminute).clone(),
             bysecond: Self::is_some_or_none(&opt1.bysecond, &opt2.bysecond).clone(),
-            byeaster: Self::is_some_or_none(&opt1.byeaster, &opt2.byeaster).clone(),
+            byeaster: *Self::is_some_or_none(&opt1.byeaster, &opt2.byeaster),
         }
     }
 
@@ -189,7 +193,7 @@ impl Options {
 
     /// The week start day. This will affect recurrences based on weekly periods. The default week start is Weekday::Mon.
     pub fn wkst(mut self, wkst: Weekday) -> Self {
-        self.wkst = Some(get_weekday_val(&wkst));
+        self.wkst = Some(wkst as usize);
         self
     }
 
@@ -240,7 +244,7 @@ impl Options {
     pub fn byweekday(mut self, byweekday: Vec<Weekday>) -> Self {
         let byweekday = byweekday
             .iter()
-            .map(|w| get_weekday_val(w))
+            .map(|w| *w as usize)
             .map(|w| NWeekday::new(w, NWeekdayIdentifier::Every))
             .collect();
         self.byweekday = Some(byweekday);

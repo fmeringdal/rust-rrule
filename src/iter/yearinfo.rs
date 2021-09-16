@@ -1,4 +1,4 @@
-use crate::datetime::{get_weekday_val, get_year_len, to_ordinal};
+use crate::datetime::{get_year_len, to_ordinal};
 use crate::iter::masks::MASKS;
 use crate::options::*;
 use crate::utils::pymod;
@@ -30,7 +30,7 @@ fn base_year_masks(year: i32) -> BaseMasks {
     // let masks = MASKS.clone();
     let firstyday = Utc.ymd(year, 1, 1).and_hms_milli(0, 0, 0, 0);
     let yearlen = get_year_len(year);
-    let wday = get_weekday_val(&firstyday.weekday()) as usize;
+    let wday = firstyday.weekday() as usize;
 
     if yearlen == 365 {
         return BaseMasks {
@@ -57,7 +57,7 @@ pub fn rebuild_year(year: i32, options: &ParsedOptions) -> YearInfo {
     let yearlen = get_year_len(year);
     let nextyearlen = get_year_len(year + 1);
     let yearordinal = to_ordinal(&firstyday);
-    let yearweekday = get_weekday_val(&firstyday.weekday());
+    let yearweekday = firstyday.weekday() as usize;
 
     let base_masks = base_year_masks(year);
 
@@ -154,7 +154,7 @@ pub fn rebuild_year(year: i32, options: &ParsedOptions) -> YearInfo {
         // this year.
         let lnumweeks;
         if !options.byweekno.iter().any(|&weekno| weekno == -1) {
-            let lyearweekday = get_weekday_val(&Utc.ymd(year - 1, 1, 1).weekday());
+            let lyearweekday = Utc.ymd(year - 1, 1, 1).weekday() as usize;
 
             let lno1wkst = pymod((7 - lyearweekday + options.wkst) as isize, 7);
 
@@ -169,7 +169,7 @@ pub fn rebuild_year(year: i32, options: &ParsedOptions) -> YearInfo {
 
             lnumweeks = 52 + (pymod(weekst, 7) / 4) as isize;
         } else {
-            lnumweeks = -1 as isize;
+            lnumweeks = -1_isize;
         }
 
         if options.byweekno.iter().any(|&weekno| weekno == lnumweeks) {

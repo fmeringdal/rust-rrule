@@ -111,7 +111,7 @@
 //! use rrule::{RRule, Options, Frequenzy, Weekday};
 //!
 //! // Build options that starts first day in 2020 at 9:00AM and occurs daily 5 times
-//! let mut options = Options::new()
+//! let mut options = Options::default()
 //!     .dtstart(UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
 //!     .count(5)
 //!     .freq(Frequenzy::Daily)
@@ -146,7 +146,7 @@
 //!
 //!
 //! // Build options for rrule that occurs weekly on Tuesday and Wednesday
-//! let rrule_options = Options::new()
+//! let rrule_options = Options::default()
 //!     .dtstart(UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
 //!     .count(4)
 //!     .freq(Frequenzy::Weekly)
@@ -159,7 +159,7 @@
 //!
 //!
 //! // Build options for exrule that occurs weekly on Wednesday
-//! let mut exrule_options = Options::new()
+//! let mut exrule_options = Options::default()
 //!     .dtstart(UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
 //!     .count(4)
 //!     .freq(Frequenzy::Weekly)
@@ -191,7 +191,7 @@
 //! Timezone support.
 //! The following examples uses `RRuleSet` with one `RRule` that yields recurrences
 //! in the Europe/Berlin timezone, and one EXDATE that is specified
-//! in UTC and collides with one of those recurrences.  
+//! in UTC and collides with one of those recurrences.
 //! ```
 //! extern crate rrule;
 //! extern crate chrono;
@@ -205,7 +205,7 @@
 //!
 //!
 //! // Build options for rrule that occurs daily at 9 oclock for 4 times
-//! let rrule_options = Options::new()
+//! let rrule_options = Options::default()
 //!     .dtstart(Berlin.ymd(2020, 1, 1).and_hms(9, 0, 0))
 //!     .count(4)
 //!     .freq(Frequenzy::Daily)

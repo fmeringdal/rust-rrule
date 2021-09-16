@@ -47,7 +47,7 @@ mod test {
 
     #[test]
     fn includes_works() {
-        assert!(!includes(&vec![], &0));
+        assert!(!includes(&Vec::new(), &0));
         assert!(includes(&vec![1], &1));
         assert!(includes(&vec![1, 2, 3, 4], &3));
         assert!(!includes(&vec![1, 2, 3, 4], &5));
@@ -55,7 +55,7 @@ mod test {
 
     #[test]
     fn not_empty_works() {
-        assert!(!not_empty::<usize>(&vec![]));
+        assert!(!not_empty::<usize>(&Vec::new()));
         assert!(not_empty(&vec![1]));
     }
 }

@@ -4,22 +4,25 @@ use crate::options::{
 use crate::utils::is_some_and_not_empty;
 use chrono::prelude::*;
 use chrono_tz::{Tz, UTC};
+use std::cmp::Ordering;
 
 // TODO: More validation here
 pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError> {
-    let mut default_partial_options = Options::new();
-    default_partial_options.interval = Some(1);
-    default_partial_options.freq = Some(Frequenzy::Yearly);
-    default_partial_options.wkst = Some(0);
+    let default_partial_options = Options {
+        interval: Some(1),
+        freq: Some(Frequenzy::Yearly),
+        wkst: Some(0),
+        ..Default::default()
+    };
 
     let tzid: Tz = if options.tzid.is_some() {
-        options.tzid.clone().unwrap()
+        options.tzid.unwrap()
     } else {
         UTC
     };
 
-    let _bynweekday: Vec<Vec<isize>> = vec![];
-    let mut bynmonthday: Vec<isize> = vec![];
+    let _bynweekday: Vec<Vec<isize>> = Vec::new();
+    let mut bynmonthday: Vec<isize> = Vec::new();
 
     let mut partial_options = Options::concat(&default_partial_options, options);
 
@@ -81,15 +84,14 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
     }
 
     match &partial_options.bymonthday {
-        None => bynmonthday = vec![],
+        None => bynmonthday = Vec::new(),
         Some(opts_bymonthday) => {
-            let mut bymonthday = vec![];
+            let mut bymonthday = Vec::new();
 
             for v in opts_bymonthday {
-                if *v > 0 {
-                    bymonthday.push(*v);
-                } else if *v < 0 {
-                    bynmonthday.push(*v);
+                match v.cmp(&0) {
+                    Ordering::Less | Ordering::Greater => bymonthday.push(*v),
+                    _ => {}
                 }
             }
 
@@ -97,8 +99,8 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
         }
     }
 
-    let mut byweekday = vec![];
-    let mut bynweekday: Vec<Vec<isize>> = vec![];
+    let mut byweekday = Vec::new();
+    let mut bynweekday: Vec<Vec<isize>> = Vec::new();
     // byweekday / bynweekday // ! more to do here
 
     if let Some(opts_byweekday) = partial_options.byweekday {
@@ -140,17 +142,17 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
         tzid,
         dtstart,
         wkst: partial_options.wkst.unwrap(),
-        bysetpos: partial_options.bysetpos.unwrap_or(vec![]),
-        bymonth: partial_options.bymonth.unwrap_or(vec![]),
-        bymonthday: partial_options.bymonthday.unwrap_or(vec![]),
+        bysetpos: partial_options.bysetpos.unwrap_or_default(),
+        bymonth: partial_options.bymonth.unwrap_or_default(),
+        bymonthday: partial_options.bymonthday.unwrap_or_default(),
         bynmonthday,
-        byyearday: partial_options.byyearday.unwrap_or(vec![]),
-        byweekno: partial_options.byweekno.unwrap_or(vec![]),
+        byyearday: partial_options.byyearday.unwrap_or_default(),
+        byweekno: partial_options.byweekno.unwrap_or_default(),
         byweekday,
         bynweekday,
-        byhour: partial_options.byhour.unwrap_or(vec![]),
-        byminute: partial_options.byminute.unwrap_or(vec![]),
-        bysecond: partial_options.bysecond.unwrap_or(vec![]),
+        byhour: partial_options.byhour.unwrap_or_default(),
+        byminute: partial_options.byminute.unwrap_or_default(),
+        bysecond: partial_options.bysecond.unwrap_or_default(),
         byeaster: partial_options.byeaster,
     })
 }

@@ -1,4 +1,3 @@
-use crate::datetime::get_weekday_val;
 use crate::datetime::DTime;
 use crate::options::*;
 use crate::parse_options::parse_options;
@@ -48,7 +47,7 @@ fn datestring_to_date(dt: &str, tz: &Tz) -> Result<DTime, RRuleParseError> {
         return Err(RRuleParseError(format!("Invalid datetime: {}", dt)));
     }
 
-    return Ok(tz
+    Ok(tz
         .ymd(
             parse_datestring_bit(&bits, 1, dt)?,
             parse_datestring_bit(&bits, 2, dt)?,
@@ -58,7 +57,7 @@ fn datestring_to_date(dt: &str, tz: &Tz) -> Result<DTime, RRuleParseError> {
             parse_datestring_bit(&bits, 5, dt).unwrap_or(0),
             parse_datestring_bit(&bits, 6, dt).unwrap_or(0),
             parse_datestring_bit(&bits, 7, dt).unwrap_or(0),
-        ));
+        ))
 }
 
 fn parse_dtstart(s: &str) -> Result<Options, RRuleParseError> {
@@ -77,17 +76,21 @@ fn parse_dtstart(s: &str) -> Result<Options, RRuleParseError> {
                 None => return Err(RRuleParseError(format!("Invalid datetime: {}", s))),
             };
 
-            let mut options = Options::new();
-            options.dtstart = Some(datestring_to_date(dtstart_str, &tzid)?);
-            options.tzid = Some(tzid);
+            let options = Options {
+                dtstart: Some(datestring_to_date(dtstart_str, &tzid)?),
+                tzid: Some(tzid),
+                ..Default::default()
+            };
             Ok(options)
         }
         // None => Err(RRuleParseError(format!("Invalid datetime: {}", s))),
         // Allow no dtstart which defaults to now in utc timezone
         None => {
-            let mut options = Options::new();
-            options.dtstart = Some(UTC.timestamp(Utc::now().timestamp(), 0));
-            options.tzid = Some(UTC);
+            let options = Options {
+                dtstart: Some(UTC.timestamp(Utc::now().timestamp(), 0)),
+                tzid: Some(UTC),
+                ..Default::default()
+            };
             Ok(options)
         }
     }
@@ -110,7 +113,7 @@ fn stringval_to_int<T: FromStr>(val: &str, err_msg: String) -> Result<T, RRulePa
     if let Ok(val) = val.parse() {
         Ok(val)
     } else {
-        return Err(RRuleParseError(err_msg));
+        Err(RRuleParseError(err_msg))
     }
 }
 
@@ -119,8 +122,8 @@ fn stringval_to_intvec<T: FromStr + Ord + PartialEq + Copy, F: Fn(T) -> bool>(
     accept: F,
     err_msg: String,
 ) -> Result<Vec<T>, RRuleParseError> {
-    let mut parsed_vals = vec![];
-    for val in val.split(",") {
+    let mut parsed_vals = Vec::new();
+    for val in val.split(',') {
         let val = stringval_to_int(val, err_msg.clone())?;
         if accept(val) {
             parsed_vals.push(val);
@@ -136,19 +139,19 @@ fn stringval_to_intvec<T: FromStr + Ord + PartialEq + Copy, F: Fn(T) -> bool>(
 }
 
 fn parse_rrule(line: &str) -> Result<Options, RRuleParseError> {
-    let stripped_line = if line.starts_with("RRULE:") {
-        &line[6..]
+    let stripped_line = if let Some(stripped) = line.strip_prefix("RRULE:") {
+        stripped
     } else {
         line
     };
 
-    let mut options = parse_dtstart(stripped_line).unwrap_or(Options::new());
+    let mut options = parse_dtstart(stripped_line).unwrap_or_default();
 
     let attrs = RRULE_RE.replace(line, "");
-    let attrs = attrs.split(";");
+    let attrs = attrs.split(';');
 
     for attr in attrs {
-        let l: Vec<&str> = attr.split("=").collect();
+        let l: Vec<&str> = attr.split('=').collect();
 
         let key = l[0];
         let mut value = "";
@@ -163,38 +166,38 @@ fn parse_rrule(line: &str) -> Result<Options, RRuleParseError> {
             },
             "WKST" => match weekday_from_str(value) {
                 Ok(weekday) => {
-                    options.wkst = Some(get_weekday_val(&weekday));
+                    options.wkst = Some(weekday as usize);
                 }
                 Err(e) => {
                     return Err(RRuleParseError(e));
                 }
             },
             "COUNT" => {
-                let count = stringval_to_int(value, format!("Invalid count"))?;
+                let count = stringval_to_int(value, "Invalid count".to_string())?;
                 options.count = Some(count);
             }
             "INTERVAL" => {
-                let interval = stringval_to_int(value, format!("Invalid interval"))?;
+                let interval = stringval_to_int(value, "Invalid interval".to_string())?;
                 options.interval = Some(interval);
             }
             "BYSETPOS" => {
                 let bysetpos =
-                    stringval_to_intvec(value, |_pos| true, format!("Invalid bysetpos value"))?;
+                    stringval_to_intvec(value, |_pos| true, "Invalid bysetpos value".to_string())?;
                 options.bysetpos = Some(bysetpos);
             }
             "BYMONTH" => {
                 let bymonth = stringval_to_intvec(
                     value,
                     |month| month <= 11,
-                    format!("Invalid bymonth value"),
+                    "Invalid bymonth value".to_string(),
                 )?;
                 options.bymonth = Some(bymonth);
             }
             "BYMONTHDAY" => {
                 let bymonthday = stringval_to_intvec(
                     value,
-                    |monthday| monthday >= 0 && monthday <= 31,
-                    format!("Invalid bymonthday value"),
+                    |monthday| (0..=31).contains(&monthday),
+                    "Invalid bymonthday value".to_string(),
                 )?;
                 options.bymonthday = Some(bymonthday);
             }
@@ -202,34 +205,40 @@ fn parse_rrule(line: &str) -> Result<Options, RRuleParseError> {
                 let byyearday = stringval_to_intvec(
                     value,
                     |yearday| yearday >= -366 && yearday <= 366,
-                    format!("Invalid byyearday value"),
+                    "Invalid byyearday value".to_string(),
                 )?;
                 options.byyearday = Some(byyearday);
             }
             "BYWEEKNO" => {
                 let byweekno = stringval_to_intvec(
                     value,
-                    |weekno| weekno >= 0 && weekno <= 53,
-                    format!("Invalid byweekno value"),
+                    |weekno| (0..=53).contains(&weekno),
+                    "Invalid byweekno value".to_string(),
                 )?;
                 options.byweekno = Some(byweekno);
             }
             "BYHOUR" => {
-                let byhour =
-                    stringval_to_intvec(value, |hour| hour < 24, format!("Invalid byhour value"))?;
+                let byhour = stringval_to_intvec(
+                    value,
+                    |hour| hour < 24,
+                    "Invalid byhour value".to_string(),
+                )?;
                 options.byhour = Some(byhour);
             }
             "BYMINUTE" => {
                 let byminute = stringval_to_intvec(
                     value,
                     |minute| minute < 60,
-                    format!("Invalid byminute value"),
+                    "Invalid byminute value".to_string(),
                 )?;
                 options.byminute = Some(byminute);
             }
             "BYSECOND" => {
-                let bysecond =
-                    stringval_to_intvec(value, |sec| sec < 60, format!("Invalid bysecond value"))?;
+                let bysecond = stringval_to_intvec(
+                    value,
+                    |sec| sec < 60,
+                    "Invalid bysecond value".to_string(),
+                )?;
                 options.bysecond = Some(bysecond);
             }
             "BYWEEKDAY" | "BYDAY" => {
@@ -272,8 +281,8 @@ fn str_to_weekday(d: &str) -> Result<usize, RRuleParseError> {
 }
 
 fn parse_weekday(val: &str) -> Result<Vec<NWeekday>, RRuleParseError> {
-    let mut wdays = vec![];
-    for day in val.split(",") {
+    let mut wdays = Vec::new();
+    for day in val.split(',') {
         if day.len() == 2 {
             // MO, TU, ...
             let wday = str_to_weekday(day)?;
@@ -310,7 +319,7 @@ fn parse_line(rfc_string: &str) -> Result<Option<Options>, RRuleParseError> {
             return Err(RRuleParseError(format!(
                 "Invalid rfc_string: {}",
                 rfc_string
-            )))
+            )));
         }
     };
 
@@ -333,12 +342,12 @@ struct ParsedLine {
 
 fn break_down_line(line: &str) -> ParsedLine {
     let parsed_line_name = extract_name(String::from(line));
-    let params: Vec<&str> = parsed_line_name.name.split(";").collect();
+    let params: Vec<&str> = parsed_line_name.name.split(';').collect();
 
     ParsedLine {
         name: params[0].to_uppercase(),
         params: params[1..].iter().map(|s| String::from(*s)).collect(),
-        value: String::from(parsed_line_name.value),
+        value: parsed_line_name.value,
     }
 }
 
@@ -348,14 +357,14 @@ struct LineName {
 }
 
 fn extract_name(line: String) -> LineName {
-    if !line.contains(":") {
+    if !line.contains(':') {
         return LineName {
             name: String::from("RRULE"),
             value: line,
         };
     }
 
-    let parts: Vec<&str> = line.split(":").collect();
+    let parts: Vec<&str> = line.split(':').collect();
     let name = parts[0];
     let value = parts[1..].join("");
 
@@ -366,8 +375,8 @@ fn extract_name(line: String) -> LineName {
 }
 
 fn parse_string(rfc_string: &str) -> Result<Options, RRuleParseError> {
-    let mut options = vec![];
-    for line in rfc_string.split("\n") {
+    let mut options = Vec::new();
+    for line in rfc_string.split('\n') {
         let parsed_line = parse_line(line)?;
         if let Some(parsed_line) = parsed_line {
             options.push(parsed_line);
@@ -396,13 +405,13 @@ struct ParsedInput {
 }
 
 fn parse_input(s: &str) -> Result<ParsedInput, RRuleParseError> {
-    let mut rrule_vals = vec![];
-    let mut rdate_vals = vec![];
-    let mut exrule_vals = vec![];
-    let mut exdate_vals = vec![];
+    let mut rrule_vals = Vec::new();
+    let mut rdate_vals = Vec::new();
+    let mut exrule_vals = Vec::new();
+    let mut exdate_vals = Vec::new();
     let Options { dtstart, tzid, .. } = parse_dtstart(s)?;
 
-    let lines: Vec<&str> = s.split("\n").collect();
+    let lines: Vec<&str> = s.split('\n').collect();
     for line in &lines {
         let parsed_line = break_down_line(line);
         match parsed_line.name.to_uppercase().as_str() {
@@ -429,7 +438,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleParseError> {
             "RDATE" => {
                 let matches = match RDATE_RE.captures(line) {
                     Some(m) => m,
-                    None => return Err(RRuleParseError(format!("Invalid RDATE specified"))),
+                    None => return Err(RRuleParseError("Invalid RDATE specified".to_string())),
                 };
                 let mut tz = UTC;
                 if let Some(tzid) = matches.get(1) {
@@ -445,7 +454,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleParseError> {
             "EXDATE" => {
                 let matches = match EXDATE_RE.captures(line) {
                     Some(m) => m,
-                    None => return Err(RRuleParseError(format!("Invalid EXDATE specified"))),
+                    None => return Err(RRuleParseError("Invalid EXDATE specified".to_string())),
                 };
                 let tz: Tz = if let Some(tzid) = matches.get(1) {
                     String::from(tzid.as_str()).parse().unwrap_or(UTC)
@@ -463,19 +472,19 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleParseError> {
                 return Err(RRuleParseError(format!(
                     "Unsupported property: {}",
                     parsed_line.name
-                )))
+                )));
             }
         }
     }
 
-    return Ok(ParsedInput {
+    Ok(ParsedInput {
         dtstart,
         tzid,
         rrule_vals,
         rdate_vals,
         exrule_vals,
         exdate_vals,
-    });
+    })
 }
 
 fn validate_date_param(params: Vec<&str>) -> Result<(), RRuleParseError> {
@@ -486,7 +495,7 @@ fn validate_date_param(params: Vec<&str>) -> Result<(), RRuleParseError> {
                 return Err(RRuleParseError(format!(
                     "Unsupported RDATE/EXDATE parm: {}",
                     param
-                )))
+                )));
             }
         }
     }
@@ -501,8 +510,8 @@ fn parse_rdate(
     let params: Vec<&str> = params.iter().map(|p| p.as_str()).collect();
     validate_date_param(params)?;
 
-    let mut rdatevals = vec![];
-    for datestr in rdateval.split(",") {
+    let mut rdatevals = Vec::new();
+    for datestr in rdateval.split(',') {
         rdatevals.push(datestring_to_date(datestr, tz)?);
     }
 
@@ -526,13 +535,15 @@ pub fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleParseError> {
         ..
     } = parse_input(&s)?;
 
-    let mut rset = RRuleSet::new();
-    rset.dtstart = dtstart;
+    let mut rset = RRuleSet {
+        dtstart,
+        ..Default::default()
+    };
 
     for rruleval in rrule_vals.iter_mut() {
-        rruleval.tzid = tzid.clone();
+        rruleval.tzid = tzid;
         rruleval.dtstart = dtstart;
-        let parsed_opts = parse_options(&rruleval)?;
+        let parsed_opts = parse_options(rruleval)?;
         let rrule = RRule::new(parsed_opts);
         rset.rrule(rrule);
     }
@@ -542,10 +553,10 @@ pub fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleParseError> {
     }
 
     for exrule in exrule_vals.iter_mut() {
-        exrule.tzid = tzid.clone();
+        exrule.tzid = tzid;
         exrule.dtstart = dtstart;
 
-        let parsed_opts = parse_options(&exrule)?;
+        let parsed_opts = parse_options(exrule)?;
         let exrule = RRule::new(parsed_opts);
         rset.exrule(exrule);
     }
@@ -718,7 +729,7 @@ mod test {
             "DTSTART:20200901T174500\nRRULE:FREQ=MONTHLY;UNTIL=20210504T154500Z;INTERVAL=1;BYDAY=1TU",
             "DTSTART;VALUE=DATE:20200902\nRRULE:FREQ=MONTHLY;UNTIL=20210504T220000Z;INTERVAL=1;BYDAY=1WE",
             "DTSTART:20200902T100000\nRRULE:FREQ=MONTHLY;UNTIL=20210505T080000Z;INTERVAL=1;BYDAY=1WE",
-            "DTSTART;VALUE=DATE:20200812\nRRULE:FREQ=MONTHLY;UNTIL=20210524T090000Z;INTERVAL=1;BYDAY=4MO"
+            "DTSTART;VALUE=DATE:20200812\nRRULE:FREQ=MONTHLY;UNTIL=20210524T090000Z;INTERVAL=1;BYDAY=4MO",
         ];
         for case in &cases {
             let res = build_rruleset(case);
@@ -789,12 +800,15 @@ mod test {
             "DTSTART:20200427T090000\nFREQ=WEEKLY;UNTIL=20200506T035959Z;BYDAY=FR,MO,TH,TU,WE"
                 .parse::<RRule>()
                 .unwrap();
-        let instances: Vec<_> = rrule
-            .into_iter()
-            .skip_while(|d| *d < Local::now())
-            .take(2)
-            .collect();
-        assert_eq!(instances.len(), 0);
+
+        assert_eq!(
+            rrule
+                .into_iter()
+                .skip_while(|d| *d < Local::now())
+                .take(2)
+                .count(),
+            0
+        );
     }
 
     #[test]

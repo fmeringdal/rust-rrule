@@ -51,7 +51,7 @@ impl<'a> RRuleIter<'a> {
 
             let filtered = remove_filtered_days(&mut dayset, start, end, &self.ii);
 
-            if options.bysetpos.len() > 0 {
+            if !options.bysetpos.is_empty() {
                 let poslist = build_poslist(
                     &options.bysetpos,
                     &self.timeset,
@@ -62,8 +62,7 @@ impl<'a> RRuleIter<'a> {
                     &options.tzid,
                 );
 
-                for j in 0..poslist.len() {
-                    let res = poslist[j];
+                for res in poslist {
                     if options.until.is_some() && res > options.until.unwrap() {
                         continue; // or break ?
                     }
@@ -84,8 +83,7 @@ impl<'a> RRuleIter<'a> {
                     }
                 }
             } else {
-                for j in start..end {
-                    let current_day = dayset[j];
+                for current_day in dayset.iter().take(end).skip(start) {
                     if current_day.is_none() {
                         continue;
                     }
@@ -125,7 +123,7 @@ impl<'a> RRuleIter<'a> {
             }
 
             // Handle frequency and interval
-            self.counter_date = increment_counter_date(self.counter_date, &options, filtered);
+            self.counter_date = increment_counter_date(self.counter_date, options, filtered);
 
             if self.counter_date.year() > MAX_YEAR {
                 return true;
@@ -185,8 +183,8 @@ impl<'a> IntoIterator for &'a RRule {
         let counter_date = ii.options.dtstart;
         // ii.rebuild(counter_date.year() as isize, counter_date.month() as usize);
 
-        let timeset = make_timeset(&ii, &counter_date, &ii.options);
-        let count = ii.options.count.clone();
+        let timeset = make_timeset(&ii, &counter_date, ii.options);
+        let count = ii.options.count;
 
         RRuleIter {
             counter_date,
@@ -209,14 +207,14 @@ mod tests {
         let rrule = "DTSTART:20220201T100000Z\nRRULE:FREQ=DAILY"
             .parse::<RRule>()
             .unwrap();
-        rrule.clone().into_iter().nth(15000000);
+        rrule.into_iter().nth(15000000);
         let rrule = "DTSTART:20220201T100000Z\nRRULE:FREQ=MONTHLY"
             .parse::<RRule>()
             .unwrap();
-        rrule.clone().into_iter().nth(15000000);
+        rrule.into_iter().nth(15000000);
         let rrule = "DTSTART:20220201T100000Z\nRRULE:FREQ=YEARLY"
             .parse::<RRule>()
             .unwrap();
-        rrule.clone().into_iter().nth(15000000);
+        rrule.into_iter().nth(15000000);
     }
 }

@@ -19,10 +19,10 @@ pub fn rebuild_month(
     let mut result = MonthInfo {
         lastyear: year,
         lastmonth: month,
-        nwdaymask: vec![],
+        nwdaymask: Vec::new(),
     };
 
-    let mut ranges: Vec<(isize, isize)> = vec![];
+    let mut ranges: Vec<(isize, isize)> = Vec::new();
     if options.freq == Frequenzy::Yearly {
         if options.bymonth.is_empty() {
             ranges = vec![(0, yearlen as isize)];
@@ -44,10 +44,9 @@ pub fn rebuild_month(
     // care about cross-year weekly periods.
     result.nwdaymask = vec![0; yearlen];
 
-    for j in 0..ranges.len() {
-        let rang = ranges[j];
-        let first = rang.0;
-        let last = rang.1 - 1;
+    for range in ranges {
+        let first = range.0;
+        let last = range.1 - 1;
 
         for k in 0..options.bynweekday.len() {
             let mut i: isize;

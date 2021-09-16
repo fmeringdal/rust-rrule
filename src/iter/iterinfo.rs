@@ -28,7 +28,7 @@ impl<'a> IterInfo<'a> {
 
     pub fn rebuild(&mut self, year: isize, month: usize) {
         if self.monthinfo.is_none() || year != self.monthinfo.as_ref().unwrap().lastyear {
-            self.yearinfo = Some(rebuild_year(year as i32, &self.options));
+            self.yearinfo = Some(rebuild_year(year as i32, self.options));
         }
 
         if !self.options.bynweekday.is_empty()
@@ -40,9 +40,9 @@ impl<'a> IterInfo<'a> {
                     year,
                     month,
                     yearinfo.yearlen,
-                    &yearinfo.mrange,
-                    &yearinfo.wdaymask,
-                    &self.options,
+                    yearinfo.mrange,
+                    yearinfo.wdaymask,
+                    self.options,
                 ));
             }
         }
@@ -120,8 +120,8 @@ impl<'a> IterInfo<'a> {
         let start = mrange[month - 1];
         let end = mrange[month];
         let mut set = vec![0; self.yearlen().unwrap()];
-        for i in start..end {
-            set[i] = i;
+        for (i, el) in set.iter_mut().enumerate().take(end).skip(start) {
+            *el = i;
         }
         (set, start, end)
     }

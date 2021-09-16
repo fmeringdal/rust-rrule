@@ -27,12 +27,12 @@ impl<'a> Iterator for RRuleSetIter<'a> {
                 Some(d) => next_rrule_date = Some(d),
                 None => {
                     // should be method on self
-                    next_rrule_date = generate(rrule_iter, &mut self.exrules, &mut self.exdates);
+                    next_rrule_date = generate(rrule_iter, self.exrules, &mut self.exdates);
                 }
             }
 
-            match next_rrule_date {
-                Some(next_rrule_date) => match next_date {
+            if let Some(next_rrule_date) = next_rrule_date {
+                match next_date {
                     None => next_date = Some((i, next_rrule_date)),
                     Some(date) => {
                         if date.1 >= next_rrule_date {
@@ -46,13 +46,12 @@ impl<'a> Iterator for RRuleSetIter<'a> {
                             self.queue.insert(i, next_rrule_date);
                         }
                     }
-                },
-                None => {}
+                }
             }
         }
 
         // TODO: RDates should be prefiltered before starting iteration
-        match generate_date(&mut self.rdates, &self.exrules, &mut self.exdates) {
+        match generate_date(&mut self.rdates, self.exrules, &mut self.exdates) {
             Some(first_rdate) => {
                 let next_date = match next_date {
                     Some(next_date) => {
@@ -79,7 +78,7 @@ impl<'a> Iterator for RRuleSetIter<'a> {
 
 fn generate_date(
     dates: &mut Vec<DateTime<Tz>>,
-    exrules: &Vec<RRule>,
+    exrules: &[RRule],
     exdates: &mut HashMap<i64, ()>,
 ) -> Option<DateTime<Tz>> {
     if dates.is_empty() {
@@ -99,7 +98,7 @@ fn generate_date(
 
 fn generate(
     rrule_iter: &mut RRuleIter,
-    exrules: &Vec<RRule>,
+    exrules: &[RRule],
     exdates: &mut HashMap<i64, ()>,
 ) -> Option<DateTime<Tz>> {
     let mut date = rrule_iter.next();
@@ -112,7 +111,7 @@ fn generate(
 
 fn accept_generated_date(
     date: &Option<DateTime<Tz>>,
-    exrules: &Vec<RRule>,
+    exrules: &[RRule],
     exdates: &mut HashMap<i64, ()>,
 ) -> bool {
     match date {

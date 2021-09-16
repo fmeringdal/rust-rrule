@@ -6,20 +6,19 @@ use chrono::prelude::*;
 use chrono_tz::Tz;
 
 pub fn build_poslist(
-    bysetpost: &Vec<isize>,
-    timeset: &Vec<Time>,
+    bysetpost: &[isize],
+    timeset: &[Time],
     start: usize,
     end: usize,
     ii: &IterInfo,
-    dayset: &Vec<Option<isize>>,
+    dayset: &[Option<isize>],
     tz: &Tz,
 ) -> Vec<DTime> {
-    let mut poslist = vec![];
+    let mut poslist = Vec::new();
 
-    for j in 0..bysetpost.len() {
+    for pos in bysetpost.iter().copied() {
         let daypos;
         let timepos;
-        let pos = bysetpost[j];
         if pos < 0 {
             daypos = (pos as f32 / timeset.len() as f32).floor() as isize;
             timepos = pymod(pos as isize, timeset.len() as isize);
@@ -28,14 +27,13 @@ pub fn build_poslist(
             timepos = pymod(pos as isize - 1, timeset.len() as isize);
         }
 
-        let mut tmp = vec![];
-        for k in start..end {
-            let val = dayset[k];
-            match val {
-                Some(v) => tmp.push(v),
-                None => (),
-            }
-        }
+        let tmp = dayset
+            .iter()
+            .take(end)
+            .skip(start)
+            .copied()
+            .flatten()
+            .collect::<Vec<_>>();
 
         let i;
         if daypos < 0 {

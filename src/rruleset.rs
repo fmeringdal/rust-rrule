@@ -6,7 +6,7 @@ use chrono::prelude::*;
 use chrono_tz::Tz;
 use std::str::FromStr;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct RRuleSet {
     pub rrule: Vec<RRule>,
     pub rdate: Vec<DTime>,
@@ -16,16 +16,6 @@ pub struct RRuleSet {
 }
 
 impl RRuleSet {
-    pub fn new() -> Self {
-        Self {
-            rrule: vec![],
-            rdate: vec![],
-            exrule: vec![],
-            exdate: vec![],
-            dtstart: None,
-        }
-    }
-
     pub fn rrule(&mut self, rrule: RRule) {
         self.rrule.push(rrule);
     }
@@ -61,8 +51,7 @@ impl RRuleSet {
     /// With inc == true, if dt itself is an recurrence, it will be returned.
     pub fn after(&self, dt: DateTime<Tz>, inc: bool) -> Option<DateTime<Tz>> {
         self.into_iter()
-            .skip_while(|d| if inc { *d <= dt } else { *d < dt })
-            .next()
+            .find(|d| !(if inc { *d <= dt } else { *d < dt }))
     }
 
     /// Returns all the recurrences of the rrule between after and before.
@@ -127,51 +116,29 @@ mod test_iter_set {
 
     #[test]
     fn rrule_and_exrule() {
-        let mut set = RRuleSet::new();
+        let mut set = RRuleSet::default();
 
         let options1 = ParsedOptions {
             freq: Frequenzy::Yearly,
             count: Some(6),
-            bymonth: vec![],
             dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
             byweekday: vec![1, 3],
             byhour: vec![9],
-            bysetpos: vec![],
-            byweekno: vec![],
             byminute: vec![0],
             bysecond: vec![0],
-            byyearday: vec![],
-            bymonthday: vec![],
-            bynweekday: vec![],
-            bynmonthday: vec![],
-            until: None,
-            wkst: 0,
-            tzid: UTC,
-            interval: 1,
-            byeaster: None,
+            ..Default::default()
         };
         let rrule = RRule::new(options1);
         set.rrule(rrule);
         let options2 = ParsedOptions {
             freq: Frequenzy::Yearly,
             count: Some(3),
-            bymonth: vec![],
             dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
             byweekday: vec![3],
             byhour: vec![9],
-            bysetpos: vec![],
-            byweekno: vec![],
             byminute: vec![0],
             bysecond: vec![0],
-            byyearday: vec![],
-            bymonthday: vec![],
-            bynweekday: vec![],
-            bynmonthday: vec![],
-            until: None,
-            wkst: 0,
-            tzid: UTC,
-            interval: 1,
-            byeaster: None,
+            ..Default::default()
         };
         let exrule = RRule::new(options2);
         set.exrule(exrule);
@@ -188,7 +155,7 @@ mod test_iter_set {
 
     #[test]
     fn setdate_and_exdate() {
-        let mut set = RRuleSet::new();
+        let mut set = RRuleSet::default();
 
         set.rdate(ymd_hms(1997, 9, 2, 9, 0, 0));
         set.rdate(ymd_hms(1997, 9, 4, 9, 0, 0));
@@ -213,7 +180,7 @@ mod test_iter_set {
 
     #[test]
     fn setdate_and_exrule() {
-        let mut set = RRuleSet::new();
+        let mut set = RRuleSet::default();
 
         set.rdate(ymd_hms(1997, 9, 2, 9, 0, 0));
         set.rdate(ymd_hms(1997, 9, 4, 9, 0, 0));
@@ -225,23 +192,12 @@ mod test_iter_set {
         let options = ParsedOptions {
             freq: Frequenzy::Yearly,
             count: Some(3),
-            bymonth: vec![],
             dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
             byweekday: vec![3],
             byhour: vec![9],
-            bysetpos: vec![],
-            byweekno: vec![],
             byminute: vec![0],
             bysecond: vec![0],
-            byyearday: vec![],
-            bymonthday: vec![],
-            bynweekday: vec![],
-            bynmonthday: vec![],
-            until: None,
-            wkst: 0,
-            tzid: UTC,
-            interval: 1,
-            byeaster: None,
+            ..Default::default()
         };
         let exrrule = RRule::new(options);
         set.exrule(exrrule);
@@ -258,28 +214,17 @@ mod test_iter_set {
 
     #[test]
     fn rrule_and_exdate() {
-        let mut set = RRuleSet::new();
+        let mut set = RRuleSet::default();
 
         let options = ParsedOptions {
             freq: Frequenzy::Yearly,
             count: Some(6),
-            bymonth: vec![],
             dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
             byweekday: vec![1, 3],
             byhour: vec![9],
-            bysetpos: vec![],
-            byweekno: vec![],
             byminute: vec![0],
             bysecond: vec![0],
-            byyearday: vec![],
-            bymonthday: vec![],
-            bynweekday: vec![],
-            bynmonthday: vec![],
-            until: None,
-            wkst: 0,
-            tzid: UTC,
-            interval: 1,
-            byeaster: None,
+            ..Default::default()
         };
         let rrule = RRule::new(options);
         set.rrule(rrule);
@@ -300,28 +245,18 @@ mod test_iter_set {
 
     #[test]
     fn rrule_and_exyearly_yearly_big() {
-        let mut set = RRuleSet::new();
+        let mut set = RRuleSet::default();
 
         let options = ParsedOptions {
             freq: Frequenzy::Yearly,
             count: Some(13),
             bymonth: vec![9],
             dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
-            byweekday: vec![],
             byhour: vec![9],
-            bysetpos: vec![],
-            byweekno: vec![],
             byminute: vec![0],
             bysecond: vec![0],
-            byyearday: vec![],
             bymonthday: vec![2],
-            bynweekday: vec![],
-            bynmonthday: vec![],
-            until: None,
-            wkst: 0,
-            tzid: UTC,
-            interval: 1,
-            byeaster: None,
+            ..Default::default()
         };
         let rrule = RRule::new(options);
         set.rrule(rrule);
@@ -331,21 +266,11 @@ mod test_iter_set {
             count: Some(10),
             bymonth: vec![9],
             dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
-            byweekday: vec![],
             byhour: vec![9],
-            bysetpos: vec![],
-            byweekno: vec![],
             byminute: vec![0],
             bysecond: vec![0],
-            byyearday: vec![],
             bymonthday: vec![2],
-            bynweekday: vec![],
-            bynmonthday: vec![],
-            until: None,
-            wkst: 0,
-            tzid: UTC,
-            interval: 1,
-            byeaster: None,
+            ..Default::default()
         };
         let rrule = RRule::new(options);
         set.exrule(rrule);
@@ -362,28 +287,18 @@ mod test_iter_set {
 
     #[test]
     fn before() {
-        let mut set = RRuleSet::new();
+        let mut set = RRuleSet::default();
 
         let options = ParsedOptions {
             freq: Frequenzy::Yearly,
-            count: None,
             bymonth: vec![9],
             dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
-            byweekday: vec![],
             byhour: vec![9],
-            bysetpos: vec![],
-            byweekno: vec![],
             byminute: vec![0],
             bysecond: vec![0],
-            byyearday: vec![],
             bymonthday: vec![2],
-            bynweekday: vec![],
-            bynmonthday: vec![],
-            until: None,
-            wkst: 0,
-            tzid: UTC,
             interval: 1,
-            byeaster: None,
+            ..Default::default()
         };
         let rrule = RRule::new(options);
         set.rrule(rrule);
@@ -393,21 +308,12 @@ mod test_iter_set {
             count: Some(10),
             bymonth: vec![9],
             dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
-            byweekday: vec![],
             byhour: vec![9],
-            bysetpos: vec![],
-            byweekno: vec![],
             byminute: vec![0],
             bysecond: vec![0],
-            byyearday: vec![],
             bymonthday: vec![2],
-            bynweekday: vec![],
-            bynmonthday: vec![],
-            until: None,
-            wkst: 0,
-            tzid: UTC,
             interval: 1,
-            byeaster: None,
+            ..Default::default()
         };
         let rrule = RRule::new(options);
         set.exrule(rrule);
@@ -420,28 +326,18 @@ mod test_iter_set {
 
     #[test]
     fn after() {
-        let mut set = RRuleSet::new();
+        let mut set = RRuleSet::default();
 
         let options = ParsedOptions {
             freq: Frequenzy::Yearly,
-            count: None,
             bymonth: vec![9],
             dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
-            byweekday: vec![],
             byhour: vec![9],
-            bysetpos: vec![],
-            byweekno: vec![],
             byminute: vec![0],
             bysecond: vec![0],
-            byyearday: vec![],
             bymonthday: vec![2],
-            bynweekday: vec![],
-            bynmonthday: vec![],
-            until: None,
-            wkst: 0,
-            tzid: UTC,
             interval: 1,
-            byeaster: None,
+            ..Default::default()
         };
         let rrule = RRule::new(options);
         set.rrule(rrule);
@@ -451,21 +347,11 @@ mod test_iter_set {
             count: Some(10),
             bymonth: vec![9],
             dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
-            byweekday: vec![],
             byhour: vec![9],
-            bysetpos: vec![],
-            byweekno: vec![],
             byminute: vec![0],
             bysecond: vec![0],
-            byyearday: vec![],
             bymonthday: vec![2],
-            bynweekday: vec![],
-            bynmonthday: vec![],
-            until: None,
-            wkst: 0,
-            tzid: UTC,
-            interval: 1,
-            byeaster: None,
+            ..Default::default()
         };
         let rrule = RRule::new(options);
         set.exrule(rrule);
@@ -478,28 +364,17 @@ mod test_iter_set {
 
     #[test]
     fn between() {
-        let mut set = RRuleSet::new();
+        let mut set = RRuleSet::default();
 
         let options = ParsedOptions {
             freq: Frequenzy::Yearly,
-            count: None,
             bymonth: vec![9],
             dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
-            byweekday: vec![],
             byhour: vec![9],
-            bysetpos: vec![],
-            byweekno: vec![],
             byminute: vec![0],
             bysecond: vec![0],
-            byyearday: vec![],
             bymonthday: vec![2],
-            bynweekday: vec![],
-            bynmonthday: vec![],
-            until: None,
-            wkst: 0,
-            tzid: UTC,
-            interval: 1,
-            byeaster: None,
+            ..Default::default()
         };
         let rrule = RRule::new(options);
         set.rrule(rrule);
@@ -509,21 +384,11 @@ mod test_iter_set {
             count: Some(10),
             bymonth: vec![9],
             dtstart: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
-            byweekday: vec![],
             byhour: vec![9],
-            bysetpos: vec![],
-            byweekno: vec![],
             byminute: vec![0],
             bysecond: vec![0],
-            byyearday: vec![],
             bymonthday: vec![2],
-            bynweekday: vec![],
-            bynmonthday: vec![],
-            until: None,
-            wkst: 0,
-            tzid: UTC,
-            interval: 1,
-            byeaster: None,
+            ..Default::default()
         };
         let rrule = RRule::new(options);
         set.exrule(rrule);
@@ -544,28 +409,18 @@ mod test_iter_set {
 
     #[test]
     fn before_70s() {
-        let mut set = RRuleSet::new();
+        let mut set = RRuleSet::default();
 
         let options = ParsedOptions {
             freq: Frequenzy::Yearly,
             count: Some(2),
             bymonth: vec![1],
             dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
-            byweekday: vec![],
             byhour: vec![9],
-            bysetpos: vec![],
-            byweekno: vec![],
             byminute: vec![0],
             bysecond: vec![0],
-            byyearday: vec![],
             bymonthday: vec![1],
-            bynweekday: vec![],
-            bynmonthday: vec![],
-            until: None,
-            wkst: 0,
-            tzid: UTC,
-            interval: 1,
-            byeaster: None,
+            ..Default::default()
         };
         let rrule = RRule::new(options);
         set.rrule(rrule);
@@ -575,6 +430,362 @@ mod test_iter_set {
             vec![
                 ymd_hms_2(1960, 1, 1, 9, 0, 0),
                 ymd_hms_2(1961, 1, 1, 9, 0, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn secondly_with_interval_1() {
+        let mut set = RRuleSet::default();
+
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(2),
+            dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
+            byhour: vec![9],
+            byminute: vec![0],
+            bysecond: vec![0],
+            ..Default::default()
+        };
+        let rrule = RRule::new(options);
+        set.rrule(rrule);
+
+        test_recurring(
+            set.all(),
+            vec![
+                ymd_hms_2(1960, 1, 1, 9, 0, 0),
+                ymd_hms_2(1960, 1, 1, 9, 0, 1),
+            ],
+        );
+    }
+
+    #[test]
+    fn secondly_with_interval_2() {
+        let mut set = RRuleSet::default();
+
+        let options = ParsedOptions {
+            freq: Frequenzy::Secondly,
+            count: Some(2),
+            dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
+            byhour: vec![9],
+            byminute: vec![0],
+            bysecond: vec![0],
+            interval: 2,
+            ..Default::default()
+        };
+        let rrule = RRule::new(options);
+        set.rrule(rrule);
+
+        test_recurring(
+            set.all(),
+            vec![
+                ymd_hms_2(1960, 1, 1, 9, 0, 0),
+                ymd_hms_2(1960, 1, 1, 9, 0, 2),
+            ],
+        );
+    }
+
+    #[test]
+    fn minutely_with_interval_1() {
+        let mut set = RRuleSet::default();
+
+        let options = ParsedOptions {
+            freq: Frequenzy::Minutely,
+            count: Some(2),
+            dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
+            byhour: vec![9],
+            byminute: vec![0],
+            bysecond: vec![0],
+            ..Default::default()
+        };
+        let rrule = RRule::new(options);
+        set.rrule(rrule);
+
+        test_recurring(
+            set.all(),
+            vec![
+                ymd_hms_2(1960, 1, 1, 9, 0, 0),
+                ymd_hms_2(1960, 1, 1, 9, 1, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn minutely_with_interval_2() {
+        let mut set = RRuleSet::default();
+
+        let options = ParsedOptions {
+            freq: Frequenzy::Minutely,
+            count: Some(2),
+            dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
+            byhour: vec![9],
+            byminute: vec![0],
+            bysecond: vec![0],
+            interval: 2,
+            ..Default::default()
+        };
+        let rrule = RRule::new(options);
+        set.rrule(rrule);
+
+        test_recurring(
+            set.all(),
+            vec![
+                ymd_hms_2(1960, 1, 1, 9, 0, 0),
+                ymd_hms_2(1960, 1, 1, 9, 2, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn hourly_with_interval_1() {
+        let mut set = RRuleSet::default();
+
+        let options = ParsedOptions {
+            freq: Frequenzy::Hourly,
+            count: Some(2),
+            dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
+            byhour: vec![9],
+            byminute: vec![0],
+            bysecond: vec![0],
+            ..Default::default()
+        };
+        let rrule = RRule::new(options);
+        set.rrule(rrule);
+
+        test_recurring(
+            set.all(),
+            vec![
+                ymd_hms_2(1960, 1, 1, 9, 0, 0),
+                ymd_hms_2(1960, 1, 1, 10, 0, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn hourly_with_interval_2() {
+        let mut set = RRuleSet::default();
+
+        let options = ParsedOptions {
+            freq: Frequenzy::Hourly,
+            count: Some(2),
+            dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
+            byhour: vec![9],
+            byminute: vec![0],
+            bysecond: vec![0],
+            ..Default::default()
+        };
+        let rrule = RRule::new(options);
+        set.rrule(rrule);
+
+        test_recurring(
+            set.all(),
+            vec![
+                ymd_hms_2(1960, 1, 1, 9, 0, 0),
+                ymd_hms_2(1960, 1, 1, 11, 0, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn daily_with_interval_1() {
+        let mut set = RRuleSet::default();
+
+        let options = ParsedOptions {
+            freq: Frequenzy::Daily,
+            count: Some(2),
+            dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
+            byhour: vec![9],
+            byminute: vec![0],
+            bysecond: vec![0],
+            ..Default::default()
+        };
+        let rrule = RRule::new(options);
+        set.rrule(rrule);
+
+        test_recurring(
+            set.all(),
+            vec![
+                ymd_hms_2(1960, 1, 1, 9, 0, 0),
+                ymd_hms_2(1960, 1, 2, 9, 0, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn daily_with_interval_2() {
+        let mut set = RRuleSet::default();
+
+        let options = ParsedOptions {
+            freq: Frequenzy::Daily,
+            count: Some(2),
+            dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
+            byhour: vec![9],
+            byminute: vec![0],
+            bysecond: vec![0],
+            interval: 2,
+            ..Default::default()
+        };
+        let rrule = RRule::new(options);
+        set.rrule(rrule);
+
+        test_recurring(
+            set.all(),
+            vec![
+                ymd_hms_2(1960, 1, 1, 9, 0, 0),
+                ymd_hms_2(1960, 1, 3, 9, 0, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn weekly_with_interval_1() {
+        let mut set = RRuleSet::default();
+
+        let options = ParsedOptions {
+            freq: Frequenzy::Weekly,
+            count: Some(2),
+            dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
+            byhour: vec![9],
+            byminute: vec![0],
+            bysecond: vec![0],
+            ..Default::default()
+        };
+        let rrule = RRule::new(options);
+        set.rrule(rrule);
+
+        test_recurring(
+            set.all(),
+            vec![
+                ymd_hms_2(1960, 1, 1, 9, 0, 0),
+                ymd_hms_2(1960, 1, 8, 9, 0, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn weekly_with_interval_2() {
+        let mut set = RRuleSet::default();
+
+        let options = ParsedOptions {
+            freq: Frequenzy::Weekly,
+            count: Some(2),
+            dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
+            byhour: vec![9],
+            byminute: vec![0],
+            bysecond: vec![0],
+            interval: 2,
+            ..Default::default()
+        };
+        let rrule = RRule::new(options);
+        set.rrule(rrule);
+
+        test_recurring(
+            set.all(),
+            vec![
+                ymd_hms_2(1960, 1, 1, 9, 0, 0),
+                ymd_hms_2(1960, 1, 15, 9, 0, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn monthly_with_interval_1() {
+        let mut set = RRuleSet::default();
+
+        let options = ParsedOptions {
+            freq: Frequenzy::Monthly,
+            count: Some(2),
+            dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
+            byhour: vec![9],
+            byminute: vec![0],
+            bysecond: vec![0],
+            ..Default::default()
+        };
+        let rrule = RRule::new(options);
+        set.rrule(rrule);
+
+        test_recurring(
+            set.all(),
+            vec![
+                ymd_hms_2(1960, 1, 1, 9, 0, 0),
+                ymd_hms_2(1960, 2, 1, 9, 0, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn monthly_with_interval_2() {
+        let mut set = RRuleSet::default();
+
+        let options = ParsedOptions {
+            freq: Frequenzy::Monthly,
+            count: Some(2),
+            dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
+            byhour: vec![9],
+            byminute: vec![0],
+            bysecond: vec![0],
+            interval: 2,
+            ..Default::default()
+        };
+        let rrule = RRule::new(options);
+        set.rrule(rrule);
+
+        test_recurring(
+            set.all(),
+            vec![
+                ymd_hms_2(1960, 1, 1, 9, 0, 0),
+                ymd_hms_2(1960, 3, 1, 9, 0, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn yearly_with_interval_1() {
+        let mut set = RRuleSet::default();
+
+        let options = ParsedOptions {
+            freq: Frequenzy::Yearly,
+            count: Some(2),
+            dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
+            byhour: vec![9],
+            byminute: vec![0],
+            bysecond: vec![0],
+            ..Default::default()
+        };
+        let rrule = RRule::new(options);
+        set.rrule(rrule);
+
+        test_recurring(
+            set.all(),
+            vec![
+                ymd_hms_2(1960, 1, 1, 9, 0, 0),
+                ymd_hms_2(1960, 2, 1, 9, 0, 0),
+            ],
+        );
+    }
+
+    #[test]
+    fn yearly_with_interval_2() {
+        let mut set = RRuleSet::default();
+
+        let options = ParsedOptions {
+            freq: Frequenzy::Yearly,
+            count: Some(2),
+            dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
+            byhour: vec![9],
+            byminute: vec![0],
+            bysecond: vec![0],
+            interval: 2,
+            ..Default::default()
+        };
+        let rrule = RRule::new(options);
+        set.rrule(rrule);
+
+        test_recurring(
+            set.all(),
+            vec![
+                ymd_hms_2(1960, 1, 1, 9, 0, 0),
+                ymd_hms_2(1962, 1, 1, 9, 0, 0),
             ],
         );
     }

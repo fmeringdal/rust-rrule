@@ -24,18 +24,6 @@ pub fn get_year_len(year: i32) -> usize {
     365
 }
 
-pub fn get_weekday_val(wk: &Weekday) -> usize {
-    match wk {
-        Weekday::Mon => 0,
-        Weekday::Tue => 1,
-        Weekday::Wed => 2,
-        Weekday::Thu => 3,
-        Weekday::Fri => 4,
-        Weekday::Sat => 5,
-        Weekday::Sun => 6,
-    }
-}
-
 #[derive(Debug)]
 pub struct Time {
     pub hour: usize,

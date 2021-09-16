@@ -8,7 +8,7 @@ pub use poslist::build_poslist;
 mod easter;
 mod masks;
 
-use crate::datetime::{get_weekday_val, DTime, Time};
+use crate::datetime::{DTime, Time};
 use crate::options::*;
 use crate::utils::{includes, not_empty};
 use chrono::prelude::*;
@@ -66,7 +66,7 @@ pub fn increment_counter_date(
         }
         Frequenzy::Weekly => {
             let mut day_delta = 0;
-            let weekday = get_weekday_val(&counter_date.weekday());
+            let weekday = counter_date.weekday() as usize;
             if options.wkst > weekday {
                 day_delta += -((weekday + 1 + (6 - options.wkst)) as isize)
                     + (options.interval as isize) * 7;
@@ -195,12 +195,12 @@ pub fn remove_filtered_days(
 ) -> bool {
     let mut filtered = false;
 
-    for daycounter in start..end {
-        match dayset[daycounter] {
+    for daycounter in dayset.iter_mut().take(end).skip(start) {
+        match daycounter {
             Some(current_day) => {
-                filtered = is_filtered(ii, current_day as usize, &ii.options);
+                filtered = is_filtered(ii, *current_day as usize, ii.options);
                 if filtered {
-                    dayset[daycounter] = None;
+                    *daycounter = None;
                 }
             }
             None => continue,
@@ -213,7 +213,7 @@ pub fn build_timeset(options: &ParsedOptions) -> Vec<Time> {
     let millisecond_mod = (options.dtstart.timestamp_millis() % 1000) as usize;
 
     if options.freq > Frequenzy::Daily {
-        return vec![];
+        return Vec::new();
     }
 
     let mut timeset =
@@ -253,7 +253,7 @@ pub fn make_timeset(ii: &IterInfo, counter_date: &DTime, options: &ParsedOptions
                 .iter()
                 .any(|&s| s == counter_date.second() as usize))
     {
-        return vec![];
+        return Vec::new();
     }
 
     ii.gettimeset(
