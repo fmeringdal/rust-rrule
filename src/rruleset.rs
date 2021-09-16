@@ -442,9 +442,6 @@ mod test_iter_set {
             freq: Frequenzy::Secondly,
             count: Some(2),
             dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
-            byhour: vec![9],
-            byminute: vec![0],
-            bysecond: vec![0],
             ..Default::default()
         };
         let rrule = RRule::new(options);
@@ -467,9 +464,6 @@ mod test_iter_set {
             freq: Frequenzy::Secondly,
             count: Some(2),
             dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
-            byhour: vec![9],
-            byminute: vec![0],
-            bysecond: vec![0],
             interval: 2,
             ..Default::default()
         };
@@ -493,8 +487,6 @@ mod test_iter_set {
             freq: Frequenzy::Minutely,
             count: Some(2),
             dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
-            byhour: vec![9],
-            byminute: vec![0],
             bysecond: vec![0],
             ..Default::default()
         };
@@ -518,8 +510,6 @@ mod test_iter_set {
             freq: Frequenzy::Minutely,
             count: Some(2),
             dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
-            byhour: vec![9],
-            byminute: vec![0],
             bysecond: vec![0],
             interval: 2,
             ..Default::default()
@@ -544,7 +534,6 @@ mod test_iter_set {
             freq: Frequenzy::Hourly,
             count: Some(2),
             dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
-            byhour: vec![9],
             byminute: vec![0],
             bysecond: vec![0],
             ..Default::default()
@@ -569,9 +558,9 @@ mod test_iter_set {
             freq: Frequenzy::Hourly,
             count: Some(2),
             dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
-            byhour: vec![9],
             byminute: vec![0],
             bysecond: vec![0],
+            interval: 2,
             ..Default::default()
         };
         let rrule = RRule::new(options);
@@ -594,7 +583,6 @@ mod test_iter_set {
             freq: Frequenzy::Daily,
             count: Some(2),
             dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
-            byhour: vec![9],
             byminute: vec![0],
             bysecond: vec![0],
             ..Default::default()
@@ -644,10 +632,11 @@ mod test_iter_set {
         let options = ParsedOptions {
             freq: Frequenzy::Weekly,
             count: Some(2),
-            dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
+            dtstart: UTC.ymd(1960, 1, 4).and_hms(9, 0, 0), // 4th is Monday
             byhour: vec![9],
             byminute: vec![0],
             bysecond: vec![0],
+            byweekday: vec![0],
             ..Default::default()
         };
         let rrule = RRule::new(options);
@@ -656,8 +645,8 @@ mod test_iter_set {
         test_recurring(
             set.all(),
             vec![
-                ymd_hms_2(1960, 1, 1, 9, 0, 0),
-                ymd_hms_2(1960, 1, 8, 9, 0, 0),
+                ymd_hms_2(1960, 1, 4, 9, 0, 0),
+                ymd_hms_2(1960, 1, 11, 9, 0, 0),
             ],
         );
     }
@@ -669,10 +658,11 @@ mod test_iter_set {
         let options = ParsedOptions {
             freq: Frequenzy::Weekly,
             count: Some(2),
-            dtstart: UTC.ymd(1960, 1, 1).and_hms(9, 0, 0),
+            dtstart: UTC.ymd(1960, 1, 4).and_hms(9, 0, 0), // 4th is Monday
             byhour: vec![9],
             byminute: vec![0],
             bysecond: vec![0],
+            byweekday: vec![0],
             interval: 2,
             ..Default::default()
         };
@@ -682,8 +672,8 @@ mod test_iter_set {
         test_recurring(
             set.all(),
             vec![
-                ymd_hms_2(1960, 1, 1, 9, 0, 0),
-                ymd_hms_2(1960, 1, 15, 9, 0, 0),
+                ymd_hms_2(1960, 1, 4, 9, 0, 0),
+                ymd_hms_2(1960, 1, 18, 9, 0, 0),
             ],
         );
     }
@@ -699,6 +689,7 @@ mod test_iter_set {
             byhour: vec![9],
             byminute: vec![0],
             bysecond: vec![0],
+            bymonthday: vec![1],
             ..Default::default()
         };
         let rrule = RRule::new(options);
@@ -725,6 +716,7 @@ mod test_iter_set {
             byminute: vec![0],
             bysecond: vec![0],
             interval: 2,
+            bymonthday: vec![1],
             ..Default::default()
         };
         let rrule = RRule::new(options);
@@ -750,6 +742,7 @@ mod test_iter_set {
             byhour: vec![9],
             byminute: vec![0],
             bysecond: vec![0],
+            byyearday: vec![1],
             ..Default::default()
         };
         let rrule = RRule::new(options);
@@ -759,7 +752,7 @@ mod test_iter_set {
             set.all(),
             vec![
                 ymd_hms_2(1960, 1, 1, 9, 0, 0),
-                ymd_hms_2(1960, 2, 1, 9, 0, 0),
+                ymd_hms_2(1961, 1, 1, 9, 0, 0),
             ],
         );
     }
@@ -775,6 +768,7 @@ mod test_iter_set {
             byhour: vec![9],
             byminute: vec![0],
             bysecond: vec![0],
+            byyearday: vec![1],
             interval: 2,
             ..Default::default()
         };
