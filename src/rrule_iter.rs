@@ -16,17 +16,21 @@ pub struct RRuleIter<'a> {
     // Buffer of datetimes not yet yielded
     pub buffer: VecDeque<DateTime<Tz>>,
     pub finished: bool,
+    /// Number of events that should still be generated before the end.
+    /// Counter always goes down after each iteration.
     pub count: Option<u32>,
 }
 
 impl<'a> RRuleIter<'a> {
     pub fn generate(&mut self) -> bool {
+        // Get general info about recurrence rules
         let options = self.ii.options;
 
         if options.interval == 0 {
             return true;
         }
 
+        // Check if the count is set, and if 0
         match self.count {
             Some(count) if count == 0 => return true,
             _ => (),

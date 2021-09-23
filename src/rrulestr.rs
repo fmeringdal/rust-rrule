@@ -16,8 +16,7 @@ lazy_static! {
     static ref DTSTART_RE: Regex =
         Regex::new(r"(?m)DTSTART(?:;TZID=([^:=]+?))?(?::|=)([^;\s]+)").unwrap();
     static ref RRULE_RE: Regex = Regex::new(r"(?m)^(?:RRULE|EXRULE):").unwrap();
-    static ref PARSE_LINE_RE_1: Regex = Regex::new(r"(?m)^\s+|\s+$").unwrap();
-    static ref PARSE_LINE_RE_2: Regex = Regex::new(r"(?m)^([A-Z]+?)[:;]").unwrap();
+    static ref PARSE_RULE_LINE_RE: Regex = Regex::new(r"(?m)^([A-Z]+?)[:;]").unwrap();
     static ref RDATE_RE: Regex = Regex::new(r"(?m)RDATE(?:;TZID=([^:=]+))?").unwrap();
     static ref EXDATE_RE: Regex = Regex::new(r"(?m)EXDATE(?:;TZID=([^:=]+))?").unwrap();
     static ref DATETIME_RE: Regex = Regex::new(r"(?m)(VALUE=DATE(-TIME)?)|(TZID=)").unwrap();
@@ -231,7 +230,7 @@ fn parse_rrule(line: &str) -> Result<Options, RRuleParseError> {
         line
     };
 
-    let mut options = parse_dtstart(stripped_line).unwrap_or(Options::new());
+    let mut options = parse_dtstart(stripped_line)?;
 
     let attrs = RRULE_RE.replace(line, "");
     let attrs = attrs.split(";");
@@ -327,8 +326,8 @@ fn parse_rrule(line: &str) -> Result<Options, RRuleParseError> {
             "DTSTART" | "TZID" => {
                 // for backwards compatibility
                 let dtstart_opts = parse_dtstart(line)?;
-                options.tzid = Some(dtstart_opts.tzid.unwrap());
-                options.dtstart = Some(dtstart_opts.dtstart.unwrap());
+                options.tzid = dtstart_opts.tzid.clone();
+                options.dtstart = dtstart_opts.dtstart.clone();
             }
             "UNTIL" => {
                 // Until is always in UTC
@@ -366,56 +365,75 @@ fn str_to_weekday(d: &str) -> Result<usize, RRuleParseError> {
     }
 }
 
+/// Parse the "BYWEEKDAY" and "BYDAY" values
+/// Example: `SU,MO,TU,WE,TH,FR` or `4MO` or `-1WE`
+/// > For example, within a MONTHLY rule, +1MO (or simply 1MO) represents the first Monday
+/// > within the month, whereas -1MO represents the last Monday of the month.
 fn parse_weekday(val: &str) -> Result<Vec<NWeekday>, RRuleParseError> {
     let mut wdays = vec![];
+    // Separate all days
     for day in val.split(",") {
+        // Each day is 2 characters long
         if day.len() == 2 {
             // MO, TU, ...
             let wday = str_to_weekday(day)?;
             wdays.push(NWeekday::new(wday, NWeekdayIdentifier::Every));
-            continue;
+        } else {
+            // When a day has values in front or behind it
+            // Parse `4MO` and `-1WE`
+            match NWEEKDAY_REGEX.captures(day) {
+                Some(parts) => {
+                    // Will only panic when regex is incorrect
+                    let number = parts.get(1).unwrap().as_str().parse().unwrap();
+                    let wdaypart = parts.get(2).unwrap();
+                    let wday = str_to_weekday(wdaypart.as_str())?;
+                    wdays.push(NWeekday::new(wday, NWeekdayIdentifier::Identifier(number)));
+                }
+                None => {
+                    return Err(RRuleParseError(format!(
+                        "Invalid weekday selection: {}",
+                        day
+                    )));
+                }
+            }
         }
-
-        let parts = NWEEKDAY_REGEX.captures(day).unwrap();
-        let n = parts.get(1).unwrap().as_str().parse().unwrap();
-        let wdaypart = parts.get(2).unwrap();
-        let wday = str_to_weekday(wdaypart.as_str())?;
-        wdays.push(NWeekday::new(wday, NWeekdayIdentifier::Identifier(n)));
     }
     Ok(wdays)
 }
 
-fn parse_line(rfc_string: &str) -> Result<Option<Options>, RRuleParseError> {
-    let rfc_string = PARSE_LINE_RE_1.replace(rfc_string, "");
+fn parse_rule_line(rfc_string: &str) -> Result<Option<Options>, RRuleParseError> {
+    let rfc_string = rfc_string.trim();
+    // If this part is empty return back
     if rfc_string.is_empty() {
         return Ok(None);
     }
 
     let rfc_string_upper = rfc_string.to_uppercase();
-    let header = PARSE_LINE_RE_2.captures(&rfc_string_upper);
+    // Get header, `RRULE:` or `EXRULE;` part.
+    let header = PARSE_RULE_LINE_RE.captures(&rfc_string_upper);
 
-    let rfc_string = rfc_string.to_string();
-    if header.is_none() {
-        return Ok(Some(parse_rrule(&rfc_string)?));
-    }
-    let header = header.unwrap();
-    let key = match header.get(1) {
-        Some(k) => k.as_str(),
-        None => {
-            return Err(RRuleParseError(format!(
-                "Invalid rfc_string: {}",
-                rfc_string
-            )))
+    if let Some(header) = header {
+        let key = match header.get(1) {
+            Some(k) => k.as_str(),
+            None => {
+                return Err(RRuleParseError(format!(
+                    "Invalid rule line prefix: {}",
+                    rfc_string
+                )))
+            }
+        };
+
+        match key {
+            "EXRULE" | "RRULE" => Ok(Some(parse_rrule(rfc_string)?)),
+            "DTSTART" => Ok(Some(parse_dtstart(rfc_string)?)),
+            _ => Err(RRuleParseError(format!(
+                "Unsupported RFC prop {} in {}",
+                key, &rfc_string
+            ))),
         }
-    };
-
-    match key {
-        "EXRULE" | "RRULE" => Ok(Some(parse_rrule(&rfc_string)?)),
-        "DTSTART" => Ok(Some(parse_dtstart(&rfc_string)?)),
-        _ => Err(RRuleParseError(format!(
-            "Unsupported RFC prop {} in {}",
-            key, &rfc_string
-        ))),
+    } else {
+        // If no header is set, we can parse it as `RRULE`
+        Ok(Some(parse_rrule(rfc_string)?))
     }
 }
 
@@ -460,24 +478,27 @@ fn extract_name(line: String) -> LineName {
     }
 }
 
-fn parse_string(rfc_string: &str) -> Result<Options, RRuleParseError> {
+fn parse_rule(rfc_string: &str) -> Result<Options, RRuleParseError> {
     let mut options = vec![];
     for line in rfc_string.split("\n") {
-        let parsed_line = parse_line(line)?;
+        let parsed_line = parse_rule_line(line)?;
         if let Some(parsed_line) = parsed_line {
             options.push(parsed_line);
         }
     }
 
-    if options.is_empty() {
-        return Err(RRuleParseError("Invalid rrule string".into()));
+    match options.len() {
+        0 => Err(RRuleParseError("Invalid rrule string".into())),
+        1 => Ok(options[0].clone()),
+        2 => Ok(Options::concat(&options[0], &options[1])),
+        n => {
+            log::warn!(
+                "To many seperate rules, only combining last 2, there are {} availible",
+                n
+            );
+            Ok(Options::concat(&options[0], &options[1]))
+        }
     }
-
-    if options.len() == 1 {
-        return Ok(options[0].clone());
-    }
-
-    Ok(Options::concat(&options[0], &options[1]))
 }
 
 #[derive(Debug)]
@@ -509,7 +530,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleParseError> {
                     continue;
                 }
 
-                rrule_vals.push(parse_string(line)?);
+                rrule_vals.push(parse_rule(line)?);
             }
             "EXRULE" => {
                 if !parsed_line.params.is_empty() {
@@ -519,7 +540,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleParseError> {
                     continue;
                 }
                 // TODO: why is it parsed_line.value here and line for RRULE ?? Do some testing
-                exrule_vals.push(parse_string(&parsed_line.value)?);
+                exrule_vals.push(parse_rule(&parsed_line.value)?);
             }
             "RDATE" => {
                 let matches = match RDATE_RE.captures(line) {
@@ -651,6 +672,11 @@ pub fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleParseError> {
     Ok(rset)
 }
 
+/// Create an [`RRule`] from [`String`] if input is valid.
+///
+/// If RRule contains invalid parts and [`RRuleParseError`] will be returned.
+/// This should never panic, but it might in odd cases.
+/// Please report if it does panic.
 pub fn build_rrule(s: &str) -> Result<RRule, RRuleParseError> {
     let s = preprocess_rrule_string(s);
 
@@ -661,17 +687,19 @@ pub fn build_rrule(s: &str) -> Result<RRule, RRuleParseError> {
         ..
     } = parse_input(&s)?;
 
-    if rrule_vals.is_empty() {
-        return Err(RRuleParseError("Invalid rrule string".into()));
+    match rrule_vals.len() {
+        0 => Err(RRuleParseError("Invalid rrule string".into())),
+        1 => {
+            let mut rrule_opts = rrule_vals.remove(0);
+            rrule_opts.tzid = tzid;
+            rrule_opts.dtstart = dtstart;
+            let parsed_opts = parse_options(&rrule_opts)?;
+            Ok(RRule::new(parsed_opts))
+        }
+        _ => Err(RRuleParseError(
+            "To many rrules, please use `RRuleSet` instead.".into(),
+        )),
     }
-
-    // TODO: find out why rrule_vals can be more than one
-    let mut rrule_opts = rrule_vals.remove(rrule_vals.len() - 1);
-    rrule_opts.tzid = tzid;
-    rrule_opts.dtstart = dtstart;
-    let parsed_opts = parse_options(&rrule_opts)?;
-
-    Ok(RRule::new(parsed_opts))
 }
 
 #[cfg(test)]
@@ -847,7 +875,7 @@ mod test {
             "RRULE:FREQ=MONTHLY;UNTIL=20210504T220000Z;INTERVAL=1;BYDAY=1WE",
             "RRULE:FREQ=MONTHLY;UNTIL=20210505T080000Z;INTERVAL=1;BYDAY=-1WE",
             "RRULE:FREQ=MONTHLY;UNTIL=20210505T080000Z;INTERVAL=1;BYDAY=12SU",
-            "RRULE:FREQ=MONTHLY;UNTIL=20210524T090000Z;INTERVAL=1;BYDAY=4MO",
+            "RRULE:FREQ=MONTHLY;UNTIL=20210524T090000Z;INTERVAL=1;BYDAY=+4MO",
         ];
         let opts = vec![
             vec![NWeekday::new(1, NWeekdayIdentifier::Identifier(1))],
@@ -857,7 +885,7 @@ mod test {
             vec![NWeekday::new(0, NWeekdayIdentifier::Identifier(4))],
         ];
         for i in 0..cases.len() {
-            let opts_or_err = parse_string(cases[i]);
+            let opts_or_err = parse_rule(cases[i]);
             assert!(opts_or_err.is_ok());
             assert_eq!(opts_or_err.unwrap().byweekday.unwrap(), opts[i]);
         }
@@ -868,8 +896,13 @@ mod test {
     fn bench() {
         let now = std::time::SystemTime::now();
         for _ in 0..1000 {
-            // let res = build_rruleset("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/New_York:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE").unwrap();
-            let res = build_rruleset("RRULE:UNTIL=20100404T110000Z;DTSTART;TZID=America/New_York:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE").unwrap();
+            // let res = build_rruleset("RRULE:UNTIL=19990404T110000Z;\
+            // DTSTART;TZID=America/New_York:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE").unwrap();
+            let res = build_rruleset(
+                "RRULE:UNTIL=20100404T110000Z;\
+                DTSTART;TZID=America/New_York:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE",
+            )
+            .unwrap();
 
             // println!("Parsing took: {:?}", now.elapsed().unwrap().as_millis());
             let tmp_now = std::time::SystemTime::now();

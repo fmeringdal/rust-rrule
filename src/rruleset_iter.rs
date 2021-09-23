@@ -147,7 +147,8 @@ impl<'a> IntoIterator for &'a RRuleSet {
     fn into_iter(self) -> Self::IntoIter {
         // Sort in decreasing order
         let mut rdates_sorted = self.rdate.clone();
-        rdates_sorted.sort_by(|d1, d2| d2.partial_cmp(d1).unwrap());
+        rdates_sorted
+            .sort_by(|d1, d2| d2.partial_cmp(d1).expect("Could not order dates correctly"));
 
         RRuleSetIter {
             queue: Default::default(),

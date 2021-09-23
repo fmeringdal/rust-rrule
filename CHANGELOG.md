@@ -16,6 +16,7 @@ This project follows the [Semantic Versioning standard](https://semver.org/).
 ### Fixed
 - Replaced panic on incorrect datetime with error.
 - Fix timezone conversions when `TZID` and `Z` is present.
+- Stabilized `RRule` parsing from string. Fixed possible panics.
 
 ### Security
 

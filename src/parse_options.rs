@@ -12,10 +12,9 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
     default_partial_options.freq = Some(Frequency::Yearly);
     default_partial_options.wkst = Some(0);
 
-    let tzid: Tz = if options.tzid.is_some() {
-        options.tzid.clone().unwrap()
-    } else {
-        UTC
+    let tzid: Tz = match options.tzid {
+        Some(tz) => tz,
+        None => UTC, // TODO Should this default to UTC?
     };
 
     let _bynweekday: Vec<Vec<isize>> = vec![];
@@ -46,11 +45,10 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
         }
     }
 
-    let dtstart = if partial_options.dtstart.is_some() {
-        partial_options.dtstart.unwrap()
-    } else {
-        return Err(RRuleParseError(String::from("Dtstart was not specified")));
-    };
+    let dtstart = match partial_options.dtstart {
+        Some(dtstart) => Ok(dtstart),
+        None => Err(RRuleParseError(String::from("Dtstart was not specified"))),
+    }?;
 
     if !(partial_options.byweekno.is_some()
         || is_some_and_not_empty(&partial_options.byweekno)
