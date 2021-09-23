@@ -2,7 +2,7 @@ use crate::iter::{
     build_poslist, increment_counter_date, make_timeset, remove_filtered_days, IterInfo,
 };
 use crate::{datetime::from_ordinal, RRule};
-use crate::{datetime::Time, Frequenzy};
+use crate::{datetime::Time, Frequency};
 use chrono::{prelude::*, Duration};
 use chrono_tz::{Tz, UTC};
 use std::collections::VecDeque;
@@ -131,9 +131,9 @@ impl<'a> RRuleIter<'a> {
                 return true;
             }
 
-            if options.freq == Frequenzy::Hourly
-                || options.freq == Frequenzy::Minutely
-                || options.freq == Frequenzy::Secondly
+            if options.freq == Frequency::Hourly
+                || options.freq == Frequency::Minutely
+                || options.freq == Frequency::Secondly
             {
                 self.timeset = self.ii.gettimeset(
                     &options.freq,

@@ -2,14 +2,14 @@ use chrono::prelude::*;
 use chrono::Utc;
 use chrono_tz::Tz;
 
-pub type DTime = DateTime<Tz>;
+pub type DateTime = chrono::DateTime<Tz>;
 
-pub fn from_ordinal(ordinal: isize, tz: &Tz) -> DTime {
+pub fn from_ordinal(ordinal: isize, tz: &Tz) -> DateTime {
     let timestamp = ordinal * 24 * 60 * 60;
     tz.timestamp(timestamp as i64, 0)
 }
 
-pub fn to_ordinal(date: &DateTime<Utc>) -> isize {
+pub fn to_ordinal(date: &chrono::DateTime<Utc>) -> isize {
     (date.timestamp() / 60 / 60 / 24) as isize
 }
 

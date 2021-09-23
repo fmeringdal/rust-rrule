@@ -1,10 +1,10 @@
 use crate::datetime::get_weekday_val;
-use crate::datetime::DTime;
+use crate::datetime::DateTime;
 use crate::options::*;
 use crate::parse_options::parse_options;
 use crate::rrule::RRule;
 use crate::rruleset::RRuleSet;
-use chrono::prelude::*;
+use chrono::{NaiveDate, NaiveDateTime, TimeZone};
 use chrono_tz::{Tz, UTC};
 use regex::Regex;
 use std::str::FromStr;
@@ -12,7 +12,7 @@ use std::str::FromStr;
 // Some regex used for parsing the rrule string.
 lazy_static! {
     static ref DATESTR_RE: Regex =
-        Regex::new(r"(?m)^(\d{4})(\d{2})(\d{2})(T(\d{2})(\d{2})(\d{2})Z?)?$").unwrap();
+        Regex::new(r"(?m)^(\d{4})(\d{2})(\d{2})(T(\d{2})(\d{2})(\d{2})(Z?))?$").unwrap();
     static ref DTSTART_RE: Regex =
         Regex::new(r"(?m)DTSTART(?:;TZID=([^:=]+?))?(?::|=)([^;\s]+)").unwrap();
     static ref RRULE_RE: Regex = Regex::new(r"(?m)^(?:RRULE|EXRULE):").unwrap();
@@ -31,34 +31,124 @@ fn parse_datestring_bit<T: FromStr>(
 ) -> Result<T, RRuleParseError> {
     match bits.get(i) {
         Some(bit) => match bit.as_str().parse::<T>() {
-            Err(_) => Err(RRuleParseError(format!("Invalid datetime: {}", dt))),
+            Err(_) => Err(RRuleParseError(format!("Invalid datetime: `{}`", dt))),
             Ok(val) => Ok(val),
         },
-        _ => Err(RRuleParseError(format!("Invalid datetime: {}", dt))),
+        _ => Err(RRuleParseError(format!("Invalid datetime: `{}`", dt))),
     }
 }
 
-fn datestring_to_date(dt: &str, tz: &Tz) -> Result<DTime, RRuleParseError> {
+fn parse_timezone(tzid: &str) -> Result<Tz, RRuleParseError> {
+    Tz::from_str(tzid).map_err(|_err| RRuleParseError(format!("Invalid timezone: `{}`", tzid)))
+}
+
+fn create_date(dt: &str, year: i32, month: u32, day: u32) -> Result<NaiveDate, RRuleParseError> {
+    match NaiveDate::from_ymd_opt(year, month, day) {
+        Some(date) => Ok(date),
+        None => Err(RRuleParseError(format!("Invalid date in: `{}`", dt))),
+    }
+}
+
+fn create_datetime(
+    dt: &str,
+    date: &NaiveDate,
+    hour: u32,
+    min: u32,
+    sec: u32,
+) -> Result<NaiveDateTime, RRuleParseError> {
+    match date.and_hms_opt(hour, min, sec) {
+        Some(datetime) => Ok(datetime),
+        None => Err(RRuleParseError(format!("Invalid time in: `{}`", dt))),
+    }
+}
+
+fn datestring_to_date(dt: &str, tz: &Option<Tz>) -> Result<DateTime, RRuleParseError> {
     let bits = DATESTR_RE.captures(dt);
     if bits.is_none() {
-        return Err(RRuleParseError(format!("Invalid datetime: {}", dt)));
+        return Err(RRuleParseError(format!("Invalid datetime: `{}`", dt)));
     }
-    let bits = bits.unwrap();
+    let bits = bits.expect("This is checked in the lines above.");
     if bits.len() < 3 {
-        return Err(RRuleParseError(format!("Invalid datetime: {}", dt)));
+        return Err(RRuleParseError(format!("Invalid datetime: `{}`", dt)));
     }
 
-    return Ok(tz
-        .ymd(
-            parse_datestring_bit(&bits, 1, dt)?,
-            parse_datestring_bit(&bits, 2, dt)?,
-            parse_datestring_bit(&bits, 3, dt)?,
-        )
-        .and_hms(
-            parse_datestring_bit(&bits, 5, dt).unwrap_or(0),
-            parse_datestring_bit(&bits, 6, dt).unwrap_or(0),
-            parse_datestring_bit(&bits, 7, dt).unwrap_or(0),
-        ));
+    // Combine parts to create data time.
+    let date = create_date(
+        dt,
+        parse_datestring_bit(&bits, 1, dt)?,
+        parse_datestring_bit(&bits, 2, dt)?,
+        parse_datestring_bit(&bits, 3, dt)?,
+    )?;
+    // Spec defines this is a date-time OR date
+    // So the time can will be set to 0:0:0 if only a date is given.
+    // https://icalendar.org/iCalendar-RFC-5545/3-8-2-4-date-time-start.html
+    let datetime = create_datetime(
+        dt,
+        &date,
+        parse_datestring_bit(&bits, 5, dt).unwrap_or(0),
+        parse_datestring_bit(&bits, 6, dt).unwrap_or(0),
+        parse_datestring_bit(&bits, 7, dt).unwrap_or(0),
+    )?;
+    // Apply timezone appended to the datetime before converting to UTC.
+    // For more info https://icalendar.org/iCalendar-RFC-5545/3-3-5-date-time.html
+    let zulu_timezone_set = match bits.get(8) {
+        Some(part) => part.as_str() == "Z",
+        None => false,
+    };
+    let datetime: chrono::DateTime<chrono::Utc> = if zulu_timezone_set {
+        // If a `Z` is present, UTC should be used.
+        chrono::DateTime::<_>::from_utc(datetime, chrono::Utc)
+    } else {
+        // If no `Z` is present, local time should be used.
+        use chrono::offset::LocalResult;
+        // Get datetime in local time or machine local time.
+        // So this also takes into account daylight or standard time (summer/winter).
+        match tz {
+            Some(tz) => {
+                // Use the timezone specified in the `tzid`
+                match tz.from_local_datetime(&datetime) {
+                    LocalResult::None => Err(RRuleParseError(format!(
+                        "Invalid datetime in local timezone: `{}`",
+                        dt
+                    ))),
+                    LocalResult::Single(date) => Ok(date),
+                    LocalResult::Ambiguous(date1, date2) => Err(RRuleParseError(format!(
+                        "Invalid datetime in local timezone: `{}` \
+                        this datetime is ambiguous it can be: `{}` or `{}`",
+                        dt, date1, date2
+                    ))),
+                }?
+                .with_timezone(&chrono::Utc)
+            }
+            None => {
+                // Use current system timezone
+                // TODO Add option to always use UTC when this is executed on a server.
+                let local = chrono::Local;
+                match local.from_local_datetime(&datetime) {
+                    LocalResult::None => Err(RRuleParseError(format!(
+                        "Invalid datetime in local timezone: `{}`",
+                        dt
+                    ))),
+                    LocalResult::Single(date) => Ok(date),
+                    LocalResult::Ambiguous(date1, date2) => Err(RRuleParseError(format!(
+                        "Invalid datetime in local timezone: `{}` \
+                        this datetime is ambiguous it can be: `{}` or `{}`",
+                        dt, date1, date2
+                    ))),
+                }?
+                .with_timezone(&chrono::Utc)
+            }
+        }
+    };
+    let datetime_with_timezone = if let Some(tz) = tz {
+        // Apply timezone from `TZID=` part (if any)
+        datetime.with_timezone(tz)
+    } else {
+        // If no timezone is give, set datetime as UTC
+        datetime.with_timezone(&UTC)
+    };
+
+    return Ok(datetime_with_timezone);
 }
 
 fn parse_dtstart(s: &str) -> Result<Options, RRuleParseError> {
@@ -66,42 +156,41 @@ fn parse_dtstart(s: &str) -> Result<Options, RRuleParseError> {
 
     match caps {
         Some(caps) => {
-            let tzid: Tz = if let Some(tzid) = caps.get(1) {
-                String::from(tzid.as_str()).parse().unwrap_or(UTC)
-            } else {
-                UTC
+            let tzid: Option<Tz> = match caps.get(1) {
+                Some(tzid) => Some(parse_timezone(tzid.as_str())?),
+                None => None,
             };
 
             let dtstart_str = match caps.get(2) {
                 Some(dt) => dt.as_str(),
-                None => return Err(RRuleParseError(format!("Invalid datetime: {}", s))),
+                None => return Err(RRuleParseError(format!("Invalid datetime: `{}`", s))),
             };
 
             let mut options = Options::new();
             options.dtstart = Some(datestring_to_date(dtstart_str, &tzid)?);
-            options.tzid = Some(tzid);
+            options.tzid = tzid;
             Ok(options)
         }
         // None => Err(RRuleParseError(format!("Invalid datetime: {}", s))),
         // Allow no dtstart which defaults to now in utc timezone
         None => {
             let mut options = Options::new();
-            options.dtstart = Some(UTC.timestamp(Utc::now().timestamp(), 0));
+            options.dtstart = Some(UTC.timestamp(chrono::Utc::now().timestamp(), 0));
             options.tzid = Some(UTC);
             Ok(options)
         }
     }
 }
 
-fn from_str_to_freq(s: &str) -> Option<Frequenzy> {
+fn from_str_to_freq(s: &str) -> Option<Frequency> {
     match s.to_uppercase().as_str() {
-        "YEARLY" => Some(Frequenzy::Yearly),
-        "MONTHLY" => Some(Frequenzy::Monthly),
-        "WEEKLY" => Some(Frequenzy::Weekly),
-        "DAILY" => Some(Frequenzy::Daily),
-        "HOURLY" => Some(Frequenzy::Hourly),
-        "MINUTELY" => Some(Frequenzy::Minutely),
-        "SECONDLY" => Some(Frequenzy::Secondly),
+        "YEARLY" => Some(Frequency::Yearly),
+        "MONTHLY" => Some(Frequency::Monthly),
+        "WEEKLY" => Some(Frequency::Weekly),
+        "DAILY" => Some(Frequency::Daily),
+        "HOURLY" => Some(Frequency::Hourly),
+        "MINUTELY" => Some(Frequency::Minutely),
+        "SECONDLY" => Some(Frequency::Secondly),
         _ => None,
     }
 }
@@ -159,7 +248,7 @@ fn parse_rrule(line: &str) -> Result<Options, RRuleParseError> {
         match key.to_uppercase().as_str() {
             "FREQ" => match from_str_to_freq(value) {
                 Some(freq) => options.freq = Some(freq),
-                None => return Err(RRuleParseError(format!("Invalid frequenzy: {}", value))),
+                None => return Err(RRuleParseError(format!("Invalid frequency: `{}`", value))),
             },
             "WKST" => match weekday_from_str(value) {
                 Ok(weekday) => {
@@ -243,7 +332,13 @@ fn parse_rrule(line: &str) -> Result<Options, RRuleParseError> {
             }
             "UNTIL" => {
                 // Until is always in UTC
-                options.until = Some(datestring_to_date(value, &UTC)?);
+                // TODO: Comment above is not true because of:
+                // > [...]
+                // > Furthermore, if the "DTSTART" property is specified as a date with local time,
+                // > then the UNTIL rule part MUST also be specified as a date with local time.
+                //
+                // Thus This can be in local time
+                options.until = Some(datestring_to_date(value, &Some(UTC))?);
             }
             "BYEASTER" => {
                 options.byeaster = Some(stringval_to_int(
@@ -388,10 +483,10 @@ fn parse_string(rfc_string: &str) -> Result<Options, RRuleParseError> {
 #[derive(Debug)]
 struct ParsedInput {
     rrule_vals: Vec<Options>,
-    rdate_vals: Vec<DTime>,
+    rdate_vals: Vec<DateTime>,
     exrule_vals: Vec<Options>,
-    exdate_vals: Vec<DTime>,
-    dtstart: Option<DTime>,
+    exdate_vals: Vec<DateTime>,
+    dtstart: Option<DateTime>,
     tzid: Option<Tz>,
 }
 
@@ -431,10 +526,10 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleParseError> {
                     Some(m) => m,
                     None => return Err(RRuleParseError(format!("Invalid RDATE specified"))),
                 };
-                let mut tz = UTC;
-                if let Some(tzid) = matches.get(1) {
-                    tz = String::from(tzid.as_str()).parse().unwrap_or(UTC);
-                }
+                let tz: Option<Tz> = match matches.get(1) {
+                    Some(tzid) => Some(parse_timezone(tzid.as_str())?),
+                    None => None,
+                };
 
                 rdate_vals.append(&mut parse_rdate(
                     &parsed_line.value,
@@ -447,10 +542,9 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleParseError> {
                     Some(m) => m,
                     None => return Err(RRuleParseError(format!("Invalid EXDATE specified"))),
                 };
-                let tz: Tz = if let Some(tzid) = matches.get(1) {
-                    String::from(tzid.as_str()).parse().unwrap_or(UTC)
-                } else {
-                    UTC
+                let tz: Option<Tz> = match matches.get(1) {
+                    Some(tzid) => Some(parse_timezone(tzid.as_str())?),
+                    None => None,
                 };
                 exdate_vals.append(&mut parse_rdate(
                     &parsed_line.value,
@@ -496,8 +590,8 @@ fn validate_date_param(params: Vec<&str>) -> Result<(), RRuleParseError> {
 fn parse_rdate(
     rdateval: &str,
     params: Vec<String>,
-    tz: &Tz,
-) -> Result<Vec<DTime>, RRuleParseError> {
+    tz: &Option<Tz>,
+) -> Result<Vec<DateTime>, RRuleParseError> {
     let params: Vec<&str> = params.iter().map(|p| p.as_str()).collect();
     validate_date_param(params)?;
 
@@ -584,6 +678,30 @@ pub fn build_rrule(s: &str) -> Result<RRule, RRuleParseError> {
 mod test {
     use super::*;
 
+    /// Print and compair 2 lists of dates and panic it they are not the same.
+    fn check_occurrences(occurrences: Vec<DateTime>, expected: Vec<&str>) {
+        let formater = |dt: &DateTime| -> String { format!("    \"{}\",\n", dt.to_rfc3339()) };
+        println!(
+            "Given: [\n{}]\nExpected: {:#?}",
+            occurrences
+                .iter()
+                .map(formater)
+                .collect::<Vec<_>>()
+                .join(""),
+            expected
+        );
+        assert_eq!(occurrences.len(), expected.len(), "List sizes don't match");
+        for (given, expected) in occurrences.iter().zip(expected.iter()) {
+            let exp_datetime = chrono::DateTime::parse_from_rfc3339(expected).unwrap();
+            // Compair items and check if in the same offset/timezone
+            assert_eq!(
+                given.to_rfc3339(),
+                exp_datetime.to_rfc3339(),
+                "Dates not in same timezone"
+            );
+        }
+    }
+
     #[test]
     fn it_works_1() {
         let res = build_rruleset("DTSTART:19970902T090000Z\nRRULE:FREQ=YEARLY;COUNT=3\n");
@@ -616,7 +734,7 @@ mod test {
         assert_eq!(res.rrule.len(), 1);
         assert_eq!(res.rrule[0].options.interval, 1);
         assert_eq!(res.rrule[0].options.count.unwrap(), 5);
-        assert_eq!(res.rrule[0].options.freq, Frequenzy::Daily);
+        assert_eq!(res.rrule[0].options.freq, Frequency::Daily);
     }
 
     #[test]
@@ -628,7 +746,7 @@ mod test {
         let res = res.unwrap();
         assert_eq!(res.exrule.len(), 1);
         assert_eq!(res.exrule[0].options.interval, 2);
-        assert_eq!(res.exrule[0].options.freq, Frequenzy::Weekly);
+        assert_eq!(res.exrule[0].options.freq, Frequency::Weekly);
     }
 
     ////////////////////////////////////////////////////
@@ -666,14 +784,14 @@ mod test {
     fn invalid_dtstart() {
         let res = build_rruleset("DTSTART:20120201120000Z\nRRULE:FREQ=DAILY;COUNT=5");
         assert!(res.is_err());
-        assert_eq!(res.err().unwrap().0, "Invalid datetime: 20120201120000Z");
+        assert_eq!(res.err().unwrap().0, "Invalid datetime: `20120201120000Z`");
     }
 
     #[test]
     fn invalid_freq() {
         let res = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAIL;COUNT=5");
         assert!(res.is_err());
-        assert_eq!(res.err().unwrap().0, "Invalid frequenzy: DAIL");
+        assert_eq!(res.err().unwrap().0, "Invalid frequency: `DAIL`");
     }
 
     #[test]
@@ -773,25 +891,25 @@ mod test {
         assert!(res.is_ok());
         let res = res.unwrap();
         assert_eq!(res.options.count, Some(7));
-        assert_eq!(res.options.freq, Frequenzy::Daily);
-        assert!(Utc::now().timestamp() - res.options.dtstart.timestamp() < 2);
+        assert_eq!(res.options.freq, Frequency::Daily);
+        assert!(chrono::Utc::now().timestamp() - res.options.dtstart.timestamp() < 2);
 
         let res = build_rruleset("FREQ=DAILY;COUNT=7");
         assert!(res.is_ok());
         let occurences = res.unwrap().all();
         assert_eq!(occurences.len(), 7);
-        assert!(Utc::now().timestamp() - occurences[0].timestamp() < 2);
+        assert!(chrono::Utc::now().timestamp() - occurences[0].timestamp() < 2);
     }
 
     #[test]
     fn avoids_infinite_loop() {
-        let rrule =
-            "DTSTART:20200427T090000\nFREQ=WEEKLY;UNTIL=20200506T035959Z;BYDAY=FR,MO,TH,TU,WE"
-                .parse::<RRule>()
-                .unwrap();
+        let rrule = "DTSTART:20200427T090000\n\
+            FREQ=WEEKLY;UNTIL=20200506T035959Z;BYDAY=FR,MO,TH,TU,WE"
+            .parse::<RRule>()
+            .unwrap();
         let instances: Vec<_> = rrule
             .into_iter()
-            .skip_while(|d| *d < Local::now())
+            .skip_while(|d| *d < chrono::Local::now())
             .take(2)
             .collect();
         assert_eq!(instances.len(), 0);
@@ -809,17 +927,41 @@ mod test {
 
     #[test]
     fn rrule_all_fails_with_panic() {
-        let res = "DTSTART;VALUE=DATE:20201230T130000\nRRULE:FREQ=MONTHLY;UNTIL=20210825T120000Z;INTERVAL=1;BYDAY=-1WE".parse::<RRuleSet>().unwrap().all();
+        let res = "DTSTART;VALUE=DATE:20201230T130000\n\
+        RRULE:FREQ=MONTHLY;UNTIL=20210825T120000Z;INTERVAL=1;BYDAY=-1WE"
+            .parse::<RRuleSet>()
+            .unwrap()
+            .all();
         println!("Res {:?}", res);
     }
 
     #[test]
-    fn rrule_generates_final_event_on_8_3_2021() {
-        let dates = "DTSTART;TZID=Europe/Paris:20201214T093000\nRRULE:FREQ=WEEKLY;UNTIL=20210308T083000Z;INTERVAL=2;BYDAY=MO;WKST=MO\nEXDATE;TZID=Europe/Paris:20201228T093000,20210125T093000,20210208T093000".parse::<RRuleSet>().unwrap().all();
-        // the following outputs 2021-02-22 09:30:00 UTC
-        assert_eq!(8, dates[dates.len() - 1].day());
-        assert_eq!(3, dates[dates.len() - 1].month());
-        assert_eq!(2021, dates[dates.len() - 1].year());
+    fn rrule_generates_recurring_filter() {
+        let dates = "DTSTART;TZID=Europe/Paris:20201214T093000\n\
+        RRULE:FREQ=WEEKLY;UNTIL=20210308T083000Z;INTERVAL=2;BYDAY=MO;WKST=MO\n\
+        EXDATE;TZID=Europe/Paris:20201228T093000,20210125T093000,20210208T093000"
+            .parse::<RRuleSet>()
+            .unwrap()
+            .all();
+        // This results in following set (minus exdate)
+        // [
+        //     2020-12-14T09:30:00CET,
+        //     2020-12-28T09:30:00CET, // Removed because of exdate
+        //     2021-01-11T09:30:00CET,
+        //     2021-01-25T09:30:00CET, // Removed because of exdate
+        //     2021-02-08T09:30:00CET, // Removed because of exdate
+        //     2021-02-22T09:30:00CET,
+        //     2021-03-08T09:30:00CET, // same as `UNTIL` but different timezones
+        // ]
+        check_occurrences(
+            dates,
+            vec![
+                "2020-12-14T09:30:00+01:00",
+                "2021-01-11T09:30:00+01:00",
+                "2021-02-22T09:30:00+01:00",
+                "2021-03-08T09:30:00+01:00",
+            ],
+        )
     }
 
     #[test]
@@ -827,9 +969,29 @@ mod test {
         // let rrule_str = "DTSTART;20210405T150000Z\nRRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO";
         let rrule_str = "DTSTART:20210405T150000Z\nRRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO";
         let rrule: RRule = rrule_str.parse().unwrap();
-        assert_eq!(rrule.options.freq, Frequenzy::Weekly);
+        assert_eq!(rrule.options.freq, Frequency::Weekly);
         assert_eq!(rrule.options.byweekday, vec![0]);
         assert_eq!(rrule.options.interval, 1);
         assert_eq!(rrule.options.dtstart, UTC.ymd(2021, 4, 5).and_hms(15, 0, 0));
+    }
+
+    #[test]
+    fn rrule_daylight_savings() {
+        let dates = "DTSTART;TZID=Europe/Paris:20210214T093000\n\
+        RRULE:FREQ=WEEKLY;UNTIL=20210508T083000Z;INTERVAL=2;BYDAY=MO;WKST=MO"
+            .parse::<RRuleSet>()
+            .unwrap()
+            .all();
+        check_occurrences(
+            dates,
+            vec![
+                "2021-02-22T09:30:00+01:00",
+                "2021-03-08T09:30:00+01:00",
+                "2021-03-22T09:30:00+01:00",
+                "2021-04-05T09:30:00+02:00", // Switching to summer time.
+                "2021-04-19T09:30:00+02:00",
+                "2021-05-03T09:30:00+02:00",
+            ],
+        )
     }
 }

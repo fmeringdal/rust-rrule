@@ -8,13 +8,17 @@ pub use poslist::build_poslist;
 mod easter;
 mod masks;
 
-use crate::datetime::{get_weekday_val, DTime, Time};
+use crate::datetime::{get_weekday_val, DateTime, Time};
 use crate::options::*;
 use crate::utils::{includes, not_empty};
 use chrono::prelude::*;
 use chrono::Duration;
 
-pub fn decrement_date_until_valid(date: DTime, new_month: u32, new_year: Option<i32>) -> DTime {
+pub fn decrement_date_until_valid(
+    date: DateTime,
+    new_month: u32,
+    new_year: Option<i32>,
+) -> DateTime {
     let new_date = if let Some(new_year) = new_year {
         let mut new_date = date.with_year(new_year);
         let mut day_i = 1;
@@ -40,15 +44,15 @@ pub fn decrement_date_until_valid(date: DTime, new_month: u32, new_year: Option<
 }
 
 pub fn increment_counter_date(
-    counter_date: DTime,
+    counter_date: DateTime,
     options: &ParsedOptions,
     filtered: bool,
-) -> DTime {
+) -> DateTime {
     match options.freq {
-        Frequenzy::Yearly => counter_date
+        Frequency::Yearly => counter_date
             .with_year(counter_date.year() + options.interval as i32)
             .unwrap(),
-        Frequenzy::Monthly => {
+        Frequency::Monthly => {
             let new_month = counter_date.month() + options.interval as u32;
             if new_month > 12 {
                 let mut year_div = new_month / 12;
@@ -64,7 +68,7 @@ pub fn increment_counter_date(
                 decrement_date_until_valid(counter_date, new_month, None)
             }
         }
-        Frequenzy::Weekly => {
+        Frequency::Weekly => {
             let mut day_delta = 0;
             let weekday = get_weekday_val(&counter_date.weekday());
             if options.wkst > weekday {
@@ -75,8 +79,8 @@ pub fn increment_counter_date(
             }
             counter_date + Duration::days(day_delta as i64)
         }
-        Frequenzy::Daily => counter_date + Duration::days(options.interval as i64),
-        Frequenzy::Hourly => {
+        Frequency::Daily => counter_date + Duration::days(options.interval as i64),
+        Frequency::Hourly => {
             let mut new_hours = counter_date.hour() as usize;
             if filtered {
                 new_hours += ((23 - new_hours) as f32 / options.interval as f32).floor() as usize
@@ -96,7 +100,7 @@ pub fn increment_counter_date(
             }
             counter_date.with_hour(0).unwrap() + Duration::hours(new_hours as i64)
         }
-        Frequenzy::Minutely => {
+        Frequency::Minutely => {
             let mut minutes_inc = 0;
             let minutes = counter_date.minute() as usize;
             let hours = counter_date.hour() as usize;
@@ -122,7 +126,7 @@ pub fn increment_counter_date(
 
             counter_date
         }
-        Frequenzy::Secondly => {
+        Frequency::Secondly => {
             let mut seconds_inc = 0;
             let seconds = counter_date.second() as usize;
             let minutes = counter_date.minute() as usize;
@@ -212,7 +216,7 @@ pub fn remove_filtered_days(
 pub fn build_timeset(options: &ParsedOptions) -> Vec<Time> {
     let millisecond_mod = (options.dtstart.timestamp_millis() % 1000) as usize;
 
-    if options.freq > Frequenzy::Daily {
+    if options.freq > Frequency::Daily {
         return vec![];
     }
 
@@ -229,24 +233,24 @@ pub fn build_timeset(options: &ParsedOptions) -> Vec<Time> {
     timeset
 }
 
-pub fn make_timeset(ii: &IterInfo, counter_date: &DTime, options: &ParsedOptions) -> Vec<Time> {
-    if options.freq < Frequenzy::Hourly {
+pub fn make_timeset(ii: &IterInfo, counter_date: &DateTime, options: &ParsedOptions) -> Vec<Time> {
+    if options.freq < Frequency::Hourly {
         return build_timeset(options);
     }
 
-    if (options.freq >= Frequenzy::Hourly
+    if (options.freq >= Frequency::Hourly
         && !options.byhour.is_empty()
         && !options
             .byhour
             .iter()
             .any(|&h| h == counter_date.hour() as usize))
-        || (options.freq >= Frequenzy::Minutely
+        || (options.freq >= Frequency::Minutely
             && !options.byminute.is_empty()
             && !options
                 .byminute
                 .iter()
                 .any(|&m| m == counter_date.minute() as usize))
-        || (options.freq >= Frequenzy::Secondly
+        || (options.freq >= Frequency::Secondly
             && !options.bysecond.is_empty()
             && !options
                 .bysecond

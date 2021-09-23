@@ -1,5 +1,5 @@
 use crate::options::{
-    Frequenzy, NWeekday, NWeekdayIdentifier, Options, ParsedOptions, RRuleParseError,
+    Frequency, NWeekday, NWeekdayIdentifier, Options, ParsedOptions, RRuleParseError,
 };
 use crate::utils::is_some_and_not_empty;
 use chrono::prelude::*;
@@ -9,7 +9,7 @@ use chrono_tz::{Tz, UTC};
 pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError> {
     let mut default_partial_options = Options::new();
     default_partial_options.interval = Some(1);
-    default_partial_options.freq = Some(Frequenzy::Yearly);
+    default_partial_options.freq = Some(Frequency::Yearly);
     default_partial_options.wkst = Some(0);
 
     let tzid: Tz = if options.tzid.is_some() {
@@ -24,9 +24,9 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
     let mut partial_options = Options::concat(&default_partial_options, options);
 
     if partial_options.byeaster.is_some() {
-        partial_options.freq = Some(Frequenzy::Yearly);
+        partial_options.freq = Some(Frequency::Yearly);
     }
-    let freq = partial_options.freq.unwrap_or(Frequenzy::Daily);
+    let freq = partial_options.freq.unwrap_or(Frequency::Daily);
 
     if partial_options.dtstart.is_none() {
         return Err(RRuleParseError(String::from("Dtstart can not be None")));
@@ -61,16 +61,16 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
         || partial_options.byeaster.is_some())
     {
         match &freq {
-            Frequenzy::Yearly => {
+            Frequency::Yearly => {
                 if partial_options.bymonth.is_none() {
                     partial_options.bymonth = Some(vec![dtstart.month() as usize]);
                 }
                 partial_options.bymonthday = Some(vec![dtstart.day() as isize]);
             }
-            Frequenzy::Monthly => {
+            Frequency::Monthly => {
                 partial_options.bymonthday = Some(vec![dtstart.day() as isize]);
             }
-            Frequenzy::Weekly => {
+            Frequency::Weekly => {
                 partial_options.byweekday = Some(vec![NWeekday::new(
                     dtstart.weekday() as usize,
                     NWeekdayIdentifier::Every,
@@ -118,17 +118,17 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
     }
 
     // byhour
-    if partial_options.byhour.is_none() && freq < Frequenzy::Hourly {
+    if partial_options.byhour.is_none() && freq < Frequency::Hourly {
         partial_options.byhour = Some(vec![dtstart.hour() as usize]);
     }
 
     // byminute
-    if partial_options.byminute.is_none() && freq < Frequenzy::Minutely {
+    if partial_options.byminute.is_none() && freq < Frequency::Minutely {
         partial_options.byminute = Some(vec![dtstart.minute() as usize]);
     }
 
     // bysecond
-    if partial_options.bysecond.is_none() && freq < Frequenzy::Secondly {
+    if partial_options.bysecond.is_none() && freq < Frequency::Secondly {
         partial_options.bysecond = Some(vec![dtstart.second() as usize]);
     }
 

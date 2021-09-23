@@ -22,99 +22,88 @@
 //! If you have some additional filters or want to work with inifite recurrence rules
 //! both `RRule` and `RRuleSet` implements the `Iterator` traits which makes them very flexible.
 //! All the methods above uses the iterator trait in its implementation as shown below.
-//! ````
-//! extern crate rrule;
-//! extern crate chrono;
-//! extern crate chrono_tz;
-//!
-//! use chrono::prelude::*;
+//! ```rust
+//! use chrono::TimeZone;
 //! use chrono_tz::UTC;
 //! use rrule::RRule;
 //!
 //! let rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
 //!
-//!
 //! // All dates
-//! let all_occurences: Vec<_> = rrule.clone().into_iter().collect();
-//! assert_eq!(all_occurences, rrule.all());
+//! let all_occurrences: Vec<_> = rrule.clone().into_iter().collect();
+//! assert_eq!(all_occurrences, rrule.all());
 //!
 //! // Between two dates
 //! let after = UTC.ymd(2012, 2, 1).and_hms(10, 0, 0);
 //! let before = UTC.ymd(2012, 4, 1).and_hms(9, 0, 0);
-//! let inc = true; // Wheter dates equal to after or before should be added;
+//! let inc = true; // Whether dates equal to after or before should be added;
 //!
-//! let occurences_between_dates: Vec<_> = rrule.clone()
+//! let occurrences_between_dates: Vec<_> = rrule.clone()
 //!     .into_iter()
 //!     .skip_while(|d| if inc { *d <= after } else { *d < after })
 //!     .take_while(|d| if inc { *d <= before } else { *d < before })
 //!     .collect();
-//! assert_eq!(occurences_between_dates, rrule.between(after, before, inc));
-//!
+//! assert_eq!(occurrences_between_dates, rrule.between(after, before, inc));
 //!
 //! // After a date
 //! let after = UTC.ymd(2012, 2, 1).and_hms(10, 0, 0);
-//! let inc = true; // Wheter dates equals to after should be added;
+//! let inc = true; // Whether dates equals to after should be added;
 //!
-//! let occurence_after_date = rrule.clone()
+//! let occurrence_after_date = rrule.clone()
 //!     .into_iter()
 //!     .skip_while(|d| if inc { *d <= after } else { *d < after })
 //!     .next();
-//! assert_eq!(occurence_after_date, rrule.after(after, inc));
-//!
+//! assert_eq!(occurrence_after_date, rrule.after(after, inc));
 //!
 //! // Before a date
 //! let before = UTC.ymd(2012, 4, 1).and_hms(10, 0, 0);
-//! let inc = true; // Wheter dates equals to before should be added;
+//! let inc = true; // Whether dates equals to before should be added;
 //!
-//! let occurence_before_date = rrule.clone()
+//! let occurrence_before_date = rrule.clone()
 //!     .into_iter()
 //!     .take_while(|d| if inc { *d <= before } else { *d < before })
 //!     .last();
-//! assert_eq!(occurence_before_date, rrule.before(before, inc));
+//! assert_eq!(occurrence_before_date, rrule.before(before, inc));
 //!
-//! ````
+//! ```
 //!
-//! Note: All the generated recurrence will be in the same time zone as the dtstart property.
+//! Note: All the generated recurrence will be in the same time zone as the `dtstart` property.
 //!
 //! # Examples
 //!
 //! Quick start by parsing strings
 //!
-//! ```
-//! extern crate rrule;
-//!
+//! ```rust
 //! use rrule::RRule;
 //!
 //! // Parse a RRule string
-//! let rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR".parse().unwrap();
+//! let rrule: RRule = "DTSTART:20120201T093000Z\n\
+//!    RRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR".parse().unwrap();
 //! assert_eq!(rrule.all().len(), 21);
-//!
 //!
 //! use rrule::RRuleSet;
 //!
 //! // Parse a RRuleSet string
-//! let rrule_set: RRuleSet = "DTSTART:20120201T023000Z\nRRULE:FREQ=MONTHLY;COUNT=5\nRDATE:20120701T023000Z,20120702T023000Z\nEXRULE:FREQ=MONTHLY;COUNT=2\nEXDATE:20120601T023000Z".parse().unwrap();
+//! let rrule_set: RRuleSet = "DTSTART:20120201T023000Z\n\
+//!     RRULE:FREQ=MONTHLY;COUNT=5\n\
+//!     RDATE:20120701T023000Z,20120702T023000Z\n\
+//!     EXRULE:FREQ=MONTHLY;COUNT=2\n\
+//!     EXDATE:20120601T023000Z".parse().unwrap();
 //! assert_eq!(rrule_set.all().len(), 4);
 //! ```
 //!
-//!
-//!
 //! Using `Options` to build RRule
 //!
-//! ```
-//! extern crate rrule;
-//! extern crate chrono;
-//! extern crate chrono_tz;
-//!
-//! use chrono::prelude::*;
+//! ```rust
+//! use chrono::{Datelike, Timelike, TimeZone};
 //! use chrono_tz::UTC;
-//! use rrule::{RRule, Options, Frequenzy, Weekday};
+//! use rrule::{RRule, Options, Frequency, Weekday};
 //!
 //! // Build options that starts first day in 2020 at 9:00AM and occurs daily 5 times
 //! let mut options = Options::new()
 //!     .dtstart(UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
 //!     .count(5)
-//!     .freq(Frequenzy::Daily)
+//!     .freq(Frequency::Daily)
 //!     .build()
 //!     .unwrap();
 //!
@@ -130,26 +119,20 @@
 //! assert_eq!(recurrences.len(), 5);
 //! ```
 //!
-//!
-//! Construct RRuleSet from one rrule and exrule.
+//! ## Construct `RRuleSet` from one `rrule` and `exrule`
 //! The rrule will occur weekly on Tuesday and Wednesday and the exrule
 //! will occur weekly on Wednesday, and therefore the end result will contain
 //! weekly recurrences on Wednesday only.
-//! ```
-//! extern crate rrule;
-//! extern crate chrono;
-//! extern crate chrono_tz;
-//!
-//! use chrono::prelude::*;
+//! ```rust
+//! use chrono::{Datelike, TimeZone};
 //! use chrono_tz::UTC;
-//! use rrule::{RRule, RRuleSet, Options, Frequenzy, Weekday};
-//!
+//! use rrule::{RRule, RRuleSet, Options, Frequency, Weekday};
 //!
 //! // Build options for rrule that occurs weekly on Tuesday and Wednesday
 //! let rrule_options = Options::new()
 //!     .dtstart(UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
 //!     .count(4)
-//!     .freq(Frequenzy::Weekly)
+//!     .freq(Frequency::Weekly)
 //!     .byweekday(vec![Weekday::Tue, Weekday::Wed])
 //!     .build()
 //!     .unwrap();
@@ -162,7 +145,7 @@
 //! let mut exrule_options = Options::new()
 //!     .dtstart(UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
 //!     .count(4)
-//!     .freq(Frequenzy::Weekly)
+//!     .freq(Frequency::Weekly)
 //!     .byweekday(vec![Weekday::Wed])
 //!     .build()
 //!     .unwrap();
@@ -178,44 +161,35 @@
 //! let recurrences = rrule_set.all();
 //!
 //! // Check that all the recurrences are on a Tuesday
-//! for occurence in &recurrences {
-//!     assert_eq!(occurence.weekday(), Weekday::Tue);
+//! for occurrence in &recurrences {
+//!     assert_eq!(occurrence.weekday(), Weekday::Tue);
 //! }
 //!
 //! assert_eq!(recurrences.len(), 2);
 //! ```
 //!
-//!
-//!
-//!
-//! Timezone support.
+//! ## Timezone support
 //! The following examples uses `RRuleSet` with one `RRule` that yields recurrences
 //! in the Europe/Berlin timezone, and one EXDATE that is specified
 //! in UTC and collides with one of those recurrences.  
-//! ```
-//! extern crate rrule;
-//! extern crate chrono;
-//! extern crate chrono_tz;
-//!
-//! use chrono::prelude::*;
+//! ```rust
+//! use chrono::{Datelike, DateTime, TimeZone, Local};
 //! use chrono_tz::{UTC, Tz};
 //! use chrono_tz::Europe::Berlin;
-//! use rrule::{RRule, RRuleSet, Options, Frequenzy, Weekday};
+//! use rrule::{RRule, RRuleSet, Options, Frequency, Weekday};
 //!
-//!
-//!
-//! // Build options for rrule that occurs daily at 9 oclock for 4 times
+//! // Build options for rrule that occurs daily at 9:00 for 4 times
 //! let rrule_options = Options::new()
 //!     .dtstart(Berlin.ymd(2020, 1, 1).and_hms(9, 0, 0))
 //!     .count(4)
-//!     .freq(Frequenzy::Daily)
+//!     .freq(Frequency::Daily)
 //!     .build()
 //!     .unwrap();
 //!
 //! let rrule = RRule::new(rrule_options);
 //!
-//! // Exdate in the UTC at 8 oclock which is 9 oclock in Berlin and therefore
-//! // collides with the second rrule occurence.
+//! // Exdate in the UTC at 8:00 which is 9:00 in Berlin and therefore
+//! // collides with the second rrule occurrence.
 //! let exdate = UTC.ymd(2020, 1, 2).and_hms(8, 0, 0);
 //!
 //! // Now create the RRuleSet and add rrule and exdate
@@ -229,19 +203,17 @@
 //!
 //! // If you want to get back the DateTimes in another timezone you can just iterate over the result
 //! // and convert them to another timezone by using the with_timzone method provided by the DateTime type.
-//! // Refer to the chrono and chrono-tz crates for more documenation on working with the DateTime type.
+//! // Refer to the chrono and chrono-tz crates for more documentation on working with the DateTime type.
 //!
-//! // Example of converting to mocow timezone
+//! // Example of converting to Moscow timezone
 //! use chrono_tz::Europe::Moscow;
 //!
 //! let recurrences_in_moscow_tz: Vec<DateTime<Tz>> = recurrences.iter()
 //!     .map(|d| d.with_timezone(&Moscow)).collect();
 //!
-//!
 //! // Example of converting to local timezone (Local comes from chrono::prelude::*)
 //! let recurrences_in_local_tz: Vec<DateTime<Local>> = recurrences.iter()
 //!     .map(|d| d.with_timezone(&Local)).collect();
-//!
 //!
 //! ```
 
@@ -263,7 +235,7 @@ mod rruleset_iter;
 mod rrulestr;
 mod utils;
 
-pub use crate::options::{Frequenzy, NWeekday, Options, ParsedOptions};
+pub use crate::options::{Frequency, NWeekday, Options, ParsedOptions};
 pub use crate::rrule::RRule;
 pub use crate::rruleset::RRuleSet;
 pub use chrono::Weekday;

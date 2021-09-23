@@ -2,7 +2,7 @@ use crate::datetime::{to_ordinal, Time};
 use crate::iter::easter::easter;
 use crate::iter::monthinfo::{rebuild_month, MonthInfo};
 use crate::iter::yearinfo::{rebuild_year, YearInfo};
-use crate::options::{Frequenzy, ParsedOptions};
+use crate::options::{Frequency, ParsedOptions};
 use chrono::prelude::*;
 
 pub struct IterInfo<'a> {
@@ -196,32 +196,32 @@ impl<'a> IterInfo<'a> {
 
     pub fn getdayset(
         &self,
-        freq: &Frequenzy,
+        freq: &Frequency,
         year: isize,
         month: usize,
         day: usize,
     ) -> (Vec<usize>, usize, usize) {
         match freq {
-            Frequenzy::Yearly => self.ydayset(),
-            Frequenzy::Monthly => self.mdayset(month),
-            Frequenzy::Weekly => self.wdayset(year, month, day),
-            Frequenzy::Daily => self.ddayset(year, month, day),
+            Frequency::Yearly => self.ydayset(),
+            Frequency::Monthly => self.mdayset(month),
+            Frequency::Weekly => self.wdayset(year, month, day),
+            Frequency::Daily => self.ddayset(year, month, day),
             _ => self.ddayset(year, month, day),
         }
     }
 
     pub fn gettimeset(
         &self,
-        freq: &Frequenzy,
+        freq: &Frequency,
         hour: usize,
         minute: usize,
         second: usize,
         millisecond: usize,
     ) -> Vec<Time> {
         match freq {
-            Frequenzy::Hourly => self.htimeset(hour, minute, second, millisecond),
-            Frequenzy::Minutely => self.mtimeset(hour, minute, second, millisecond),
-            Frequenzy::Secondly => self.stimeset(hour, minute, second, millisecond),
+            Frequency::Hourly => self.htimeset(hour, minute, second, millisecond),
+            Frequency::Minutely => self.mtimeset(hour, minute, second, millisecond),
+            Frequency::Secondly => self.stimeset(hour, minute, second, millisecond),
             _ => panic!("Invalid freq"),
         }
     }
