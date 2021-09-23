@@ -14,11 +14,9 @@ tests missing regarding edge cases in stuff like DST, time zone and rfc_string p
 welcome!).
 Use at your own risk!
 
-## Quick start
+## Library Usage
 
 ```rust
-extern crate rrule;
-
 use rrule::RRule;
 
 // RRule that starts 2012.02.01 and occurs daily for 3 days.
@@ -29,9 +27,19 @@ let recurrences = rrule.all(); // Or rrule.into_iter().collect::<Vec<_>>(); if y
 assert_eq!(recurrences.len(), 3);
 ```
 
-## Documentation and more examples
+See more examples at [docs.rs](https://docs.rs/rrule)
 
-[Documentation and more examples](https://docs.rs/rrule)
+
+## Command Line Tool Usage
+Install the command line tool with:
+```
+$ cargo install rrule
+```
+
+Then run it with:
+```
+$ rrule "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3"
+```
 
 ## License
 
