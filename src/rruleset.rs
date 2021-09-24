@@ -40,9 +40,11 @@ impl RRuleSet {
         self.exdate.push(exdate);
     }
 
-    /// Returns all the recurrences of the rruleset
-    pub fn all(&self) -> Vec<DateTime> {
-        self.into_iter().collect()
+    /// Returns all the recurrences of the rruleset.
+    /// Limit must be set in order to prevent infinite loops.
+    /// The max limit is `65535`. If you need more please use `into_iter` directly.
+    pub fn all(&self, limit: u16) -> Vec<DateTime> {
+        self.into_iter().take(limit as usize).collect()
     }
 
     /// Returns the last recurrence before the given datetime instance.
@@ -160,7 +162,7 @@ mod test_iter_set {
         set.exrule(exrule);
 
         test_recurring(
-            set.all(),
+            set.all(50),
             vec![
                 ymd_hms(1997, 9, 2, 9, 0, 0),
                 ymd_hms(1997, 9, 9, 9, 0, 0),
@@ -185,7 +187,7 @@ mod test_iter_set {
         set.exdate(ymd_hms(1997, 9, 18, 9, 0, 0));
 
         test_recurring(
-            set.all(),
+            set.all(50),
             vec![
                 ymd_hms(1997, 9, 2, 9, 0, 0),
                 ymd_hms(1997, 9, 9, 9, 0, 0),
@@ -230,7 +232,7 @@ mod test_iter_set {
         set.exrule(exrrule);
 
         test_recurring(
-            set.all(),
+            set.all(50),
             vec![
                 ymd_hms(1997, 9, 2, 9, 0, 0),
                 ymd_hms(1997, 9, 9, 9, 0, 0),
@@ -272,7 +274,7 @@ mod test_iter_set {
         set.exdate(ymd_hms(1997, 9, 9, 9, 0, 0));
 
         test_recurring(
-            set.all(),
+            set.all(50),
             vec![
                 ymd_hms(1997, 9, 11, 9, 0, 0),
                 ymd_hms(1997, 9, 16, 9, 0, 0),
@@ -334,7 +336,7 @@ mod test_iter_set {
         set.exrule(rrule);
 
         test_recurring(
-            set.all(),
+            set.all(50),
             vec![
                 ymd_hms(2007, 9, 2, 9, 0, 0),
                 ymd_hms(2008, 9, 2, 9, 0, 0),
@@ -554,7 +556,7 @@ mod test_iter_set {
         set.rrule(rrule);
 
         test_recurring(
-            set.all(),
+            set.all(50),
             vec![ymd_hms(1960, 1, 1, 9, 0, 0), ymd_hms(1961, 1, 1, 9, 0, 0)],
         );
     }

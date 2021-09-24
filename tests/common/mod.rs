@@ -18,7 +18,7 @@ pub fn ymd_hms(
 
 pub fn test_recurring(options: ParsedOptions, expected_dates: &Vec<DateTime<Tz>>) {
     let rrule = RRule::new(options);
-    let res = rrule.all();
+    let res = rrule.all(100);
 
     println!("Actual: {:?}", res);
     println!("Expected: {:?}", expected_dates);

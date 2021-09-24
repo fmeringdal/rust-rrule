@@ -6,9 +6,13 @@ use chrono::prelude::*;
 
 #[derive(Debug)]
 pub struct YearInfo {
+    /// Amount of days in the current year (365 or 366)
     pub yearlen: usize,
+    /// Amount of days in the next year (365 or 366)
     pub nextyearlen: usize,
+    /// Number of days since Unix epoch
     pub yearordinal: isize,
+    /// Get day of the week from first day of the year (1 jan)
     pub yearweekday: usize,
     pub mmask: &'static [usize],
     pub mdaymask: &'static [isize],
@@ -54,10 +58,10 @@ fn base_year_masks(year: i32) -> BaseMasks {
 pub fn rebuild_year(year: i32, options: &ParsedOptions) -> YearInfo {
     let firstyday = Utc.ymd(year, 1, 1).and_hms_milli(0, 0, 0, 0);
 
-    let yearlen = get_year_len(year);
-    let nextyearlen = get_year_len(year + 1);
-    let yearordinal = to_ordinal(&firstyday);
-    let yearweekday = get_weekday_val(&firstyday.weekday());
+    let yearlen = get_year_len(year) as usize;
+    let nextyearlen = get_year_len(year + 1) as usize;
+    let yearordinal = to_ordinal(&firstyday) as isize;
+    let yearweekday = get_weekday_val(&firstyday.weekday()) as usize;
 
     let base_masks = base_year_masks(year);
 
@@ -154,7 +158,7 @@ pub fn rebuild_year(year: i32, options: &ParsedOptions) -> YearInfo {
         // this year.
         let lnumweeks;
         if !options.byweekno.iter().any(|&weekno| weekno == -1) {
-            let lyearweekday = get_weekday_val(&Utc.ymd(year - 1, 1, 1).weekday());
+            let lyearweekday = get_weekday_val(&Utc.ymd(year - 1, 1, 1).weekday()) as usize;
 
             let lno1wkst = pymod((7 - lyearweekday + options.wkst) as isize, 7);
 

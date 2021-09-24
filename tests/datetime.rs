@@ -1,10 +1,9 @@
 mod common;
 
-use std::str::FromStr;
-
 use chrono::TimeZone;
 use chrono_tz::UTC;
 use rrule::RRule;
+use std::str::FromStr;
 
 /// Check if datetime can be parsed correctly
 #[test]
@@ -14,7 +13,7 @@ fn parse_datetime() {
         .expect("RRule could not be parsed");
 
     assert_eq!(
-        rrule.all(),
+        rrule.all(50),
         vec![
             UTC.ymd(2012, 2, 01).and_hms(2, 30, 0),
             UTC.ymd(2012, 2, 02).and_hms(2, 30, 0)
@@ -31,7 +30,7 @@ fn parse_datetime_with_timezone() {
             .expect("RRule could not be parsed");
 
     assert_eq!(
-        rrule.all(),
+        rrule.all(50),
         vec![
             UTC.ymd(2012, 2, 01).and_hms(2, 30, 0),
             UTC.ymd(2012, 2, 02).and_hms(2, 30, 0)

@@ -251,7 +251,7 @@ fn parse_rrule(line: &str) -> Result<Options, RRuleParseError> {
             },
             "WKST" => match weekday_from_str(value) {
                 Ok(weekday) => {
-                    options.wkst = Some(get_weekday_val(&weekday));
+                    options.wkst = Some(get_weekday_val(&weekday) as usize);
                 }
                 Err(e) => {
                     return Err(RRuleParseError(e));
@@ -352,7 +352,7 @@ fn parse_rrule(line: &str) -> Result<Options, RRuleParseError> {
     Ok(options)
 }
 
-fn str_to_weekday(d: &str) -> Result<usize, RRuleParseError> {
+fn str_to_weekday(d: &str) -> Result<u8, RRuleParseError> {
     match d.to_uppercase().as_str() {
         "MO" => Ok(0),
         "TU" => Ok(1),
@@ -907,7 +907,7 @@ mod test {
             // println!("Parsing took: {:?}", now.elapsed().unwrap().as_millis());
             let tmp_now = std::time::SystemTime::now();
 
-            // res.all();
+            // res.all(50);
             res.between(
                 UTC.timestamp_millis(915321600000),
                 UTC.timestamp_millis(920505600000),
@@ -929,7 +929,7 @@ mod test {
 
         let res = build_rruleset("FREQ=DAILY;COUNT=7");
         assert!(res.is_ok());
-        let occurences = res.unwrap().all();
+        let occurences = res.unwrap().all(50);
         assert_eq!(occurences.len(), 7);
         assert!(chrono::Utc::now().timestamp() - occurences[0].timestamp() < 2);
     }
@@ -955,7 +955,7 @@ mod test {
                 .parse()
                 .unwrap();
 
-        assert_eq!(rrule.all().len(), 30);
+        assert_eq!(rrule.all(60).len(), 30);
     }
 
     #[test]
@@ -964,7 +964,7 @@ mod test {
         RRULE:FREQ=MONTHLY;UNTIL=20210825T120000Z;INTERVAL=1;BYDAY=-1WE"
             .parse::<RRuleSet>()
             .unwrap()
-            .all();
+            .all(50);
         println!("Res {:?}", res);
     }
 
@@ -975,7 +975,7 @@ mod test {
         EXDATE;TZID=Europe/Paris:20201228T093000,20210125T093000,20210208T093000"
             .parse::<RRuleSet>()
             .unwrap()
-            .all();
+            .all(50);
         // This results in following set (minus exdate)
         // [
         //     2020-12-14T09:30:00CET,
@@ -1014,7 +1014,7 @@ mod test {
         RRULE:FREQ=WEEKLY;UNTIL=20210508T083000Z;INTERVAL=2;BYDAY=MO;WKST=MO"
             .parse::<RRuleSet>()
             .unwrap()
-            .all();
+            .all(50);
         check_occurrences(
             dates,
             vec![

@@ -70,7 +70,7 @@ pub fn increment_counter_date(
         }
         Frequency::Weekly => {
             let mut day_delta = 0;
-            let weekday = get_weekday_val(&counter_date.weekday());
+            let weekday: usize = get_weekday_val(&counter_date.weekday()) as usize;
             if options.wkst > weekday {
                 day_delta += -((weekday + 1 + (6 - options.wkst)) as isize)
                     + (options.interval as isize) * 7;
@@ -163,7 +163,7 @@ pub fn is_filtered(ii: &IterInfo, current_day: usize, options: &ParsedOptions) -
     return (!options.bymonth.is_empty() && !options.bymonth.contains(&ii.mmask()[current_day]))
         || (not_empty(&options.byweekno) && (ii.wnomask().unwrap()[current_day]) == 0)
         || (not_empty(&options.byweekday)
-            && !includes(&options.byweekday, &ii.wdaymask()[current_day]))
+            && !includes(&options.byweekday, &(ii.wdaymask()[current_day] as u8)))
         || (ii.nwdaymask().is_some()
             && not_empty(ii.nwdaymask().unwrap())
             && (ii.nwdaymask().unwrap()[current_day]) == 0)

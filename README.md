@@ -24,8 +24,10 @@ use rrule::RRule;
 // RRule that starts 2012.02.01 and occurs daily for 3 days.
 let rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
 
+// Set hard limit in case of infinitely recurring rules.
+let limit = 100;
 // Get all recurrences of the rrule
-let recurrences = rrule.all(); // Or rrule.into_iter().collect::<Vec<_>>(); if you want to leverage iterators
+let recurrences = rrule.all(limit); // Or rrule.into_iter().collect::<Vec<_>>(); if you want to leverage iterators
 assert_eq!(recurrences.len(), 3);
 ```
 

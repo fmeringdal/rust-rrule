@@ -6861,7 +6861,7 @@ fn test_timezones_weekly() {
         .build()
         .unwrap();
     let rrule = RRule::new(rrule_options.clone());
-    for o in rrule.all().iter() {
+    for o in rrule.into_iter() {
         assert_eq!(o.weekday(), Sat);
     }
 
@@ -6874,7 +6874,7 @@ fn test_timezones_weekly() {
         .build()
         .unwrap();
     let rrule = RRule::new(rrule_options.clone());
-    for o in rrule.all().iter() {
+    for o in rrule.into_iter() {
         assert_eq!(o.weekday(), Sat);
     }
 
@@ -6887,7 +6887,7 @@ fn test_timezones_weekly() {
         .build()
         .unwrap();
     let rrule = RRule::new(rrule_options.clone());
-    for o in rrule.all().iter() {
+    for o in rrule.into_iter() {
         assert_eq!(o.weekday(), Sat);
     }
 
@@ -6900,7 +6900,7 @@ fn test_timezones_weekly() {
         .build()
         .unwrap();
     let rrule = RRule::new(rrule_options.clone());
-    for o in rrule.all().iter() {
+    for o in rrule.into_iter() {
         assert_eq!(o.weekday(), Sat);
     }
 }

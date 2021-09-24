@@ -25,12 +25,12 @@ pub enum NWeekdayIdentifier {
 
 #[derive(Copy, Clone, Debug)]
 pub struct NWeekday {
-    pub weekday: usize,
+    pub weekday: u8,
     pub n: NWeekdayIdentifier,
 }
 
 impl NWeekday {
-    pub fn new(weekday: usize, n: NWeekdayIdentifier) -> Self {
+    pub fn new(weekday: u8, n: NWeekdayIdentifier) -> Self {
         // if (n === 0) throw new Error("Can't create weekday with n == 0")
         Self { weekday, n }
     }
@@ -72,7 +72,7 @@ pub struct ParsedOptions {
     pub bynmonthday: Vec<isize>,
     pub byyearday: Vec<isize>,
     pub byweekno: Vec<isize>,
-    pub byweekday: Vec<usize>,
+    pub byweekday: Vec<u8>,
     pub bynweekday: Vec<Vec<isize>>,
     pub byhour: Vec<usize>,
     pub byminute: Vec<usize>,
@@ -189,7 +189,7 @@ impl Options {
 
     /// The week start day. This will affect recurrences based on weekly periods. The default week start is Weekday::Mon.
     pub fn wkst(mut self, wkst: Weekday) -> Self {
-        self.wkst = Some(get_weekday_val(&wkst));
+        self.wkst = Some(get_weekday_val(&wkst) as usize);
         self
     }
 

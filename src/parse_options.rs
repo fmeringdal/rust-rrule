@@ -70,7 +70,7 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
             }
             Frequency::Weekly => {
                 partial_options.byweekday = Some(vec![NWeekday::new(
-                    dtstart.weekday() as usize,
+                    dtstart.weekday() as u8,
                     NWeekdayIdentifier::Every,
                 )]);
             }

@@ -14,9 +14,11 @@ impl RRule {
         Self { options }
     }
 
-    /// Returns all the recurrences of the rrule
-    pub fn all(&self) -> Vec<DateTime<Tz>> {
-        self.into_iter().collect()
+    /// Returns all the recurrences of the rrule.
+    /// Limit must be set in order to prevent infinite loops.
+    /// The max limit is `65535`. If you need more please use `into_iter` directly.
+    pub fn all(&self, limit: u16) -> Vec<DateTime<Tz>> {
+        self.into_iter().take(limit as usize).collect()
     }
 
     /// Returns the last recurrence before the given datetime instance.

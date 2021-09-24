@@ -39,7 +39,7 @@ impl<'a> IterInfo<'a> {
                 self.monthinfo = Some(rebuild_month(
                     year,
                     month,
-                    yearinfo.yearlen,
+                    yearinfo.yearlen as usize,
                     &yearinfo.mrange,
                     &yearinfo.wdaymask,
                     &self.options,
@@ -63,8 +63,8 @@ impl<'a> IterInfo<'a> {
         self.yearinfo.as_ref().map(|info| info.yearlen)
     }
 
-    pub fn yearordinal(&self) -> Option<isize> {
-        self.yearinfo.as_ref().map(|info| info.yearordinal)
+    pub fn yearordinal(&self) -> Option<i64> {
+        self.yearinfo.as_ref().map(|info| info.yearordinal as i64)
     }
 
     pub fn mrange(&self) -> &[usize] {

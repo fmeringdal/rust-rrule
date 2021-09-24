@@ -31,7 +31,7 @@
 //!
 //! // All dates
 //! let all_occurrences: Vec<_> = rrule.clone().into_iter().collect();
-//! assert_eq!(all_occurrences, rrule.all());
+//! assert_eq!(all_occurrences, rrule.all(100));
 //!
 //! // Between two dates
 //! let after = UTC.ymd(2012, 2, 1).and_hms(10, 0, 0);
@@ -79,7 +79,7 @@
 //! // Parse a RRule string
 //! let rrule: RRule = "DTSTART:20120201T093000Z\n\
 //!    RRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR".parse().unwrap();
-//! assert_eq!(rrule.all().len(), 21);
+//! assert_eq!(rrule.all(100).len(), 21);
 //!
 //! use rrule::RRuleSet;
 //!
@@ -89,7 +89,7 @@
 //!     RDATE:20120701T023000Z,20120702T023000Z\n\
 //!     EXRULE:FREQ=MONTHLY;COUNT=2\n\
 //!     EXDATE:20120601T023000Z".parse().unwrap();
-//! assert_eq!(rrule_set.all().len(), 4);
+//! assert_eq!(rrule_set.all(100).len(), 4);
 //! ```
 //!
 //! Using `Options` to build RRule
@@ -109,7 +109,7 @@
 //!
 //! // Construct `RRule` from options
 //! let rrule = RRule::new(options);
-//! let recurrences = rrule.all();
+//! let recurrences = rrule.all(100);
 //! for i in 0..5 {
 //!     assert_eq!(recurrences[i].year(), 2020);
 //!     assert_eq!(recurrences[i].month(), 1);
@@ -158,7 +158,7 @@
 //! rrule_set.rrule(rrule);
 //! rrule_set.exrule(exrule);
 //!
-//! let recurrences = rrule_set.all();
+//! let recurrences = rrule_set.all(100);
 //!
 //! // Check that all the recurrences are on a Tuesday
 //! for occurrence in &recurrences {
@@ -197,7 +197,7 @@
 //! rrule_set.rrule(rrule);
 //! rrule_set.exdate(exdate);
 //!
-//! let recurrences = rrule_set.all();
+//! let recurrences = rrule_set.all(100);
 //! // RRule contained 4 recurrences but 1 was filtered away by the exdate
 //! assert_eq!(recurrences.len(), 3);
 //!

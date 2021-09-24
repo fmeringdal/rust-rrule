@@ -4,27 +4,41 @@ use chrono_tz::Tz;
 
 pub type DateTime = chrono::DateTime<Tz>;
 
-pub fn from_ordinal(ordinal: isize, tz: &Tz) -> DateTime {
+/// Convert number of days since unix epoch back to `DataTime`
+pub fn from_ordinal(ordinal: i64, tz: &Tz) -> DateTime {
     let timestamp = ordinal * 24 * 60 * 60;
     tz.timestamp(timestamp as i64, 0)
 }
 
-pub fn to_ordinal(date: &chrono::DateTime<Utc>) -> isize {
-    (date.timestamp() / 60 / 60 / 24) as isize
+/// Return number of days since unix epoch (rounded down)
+pub fn to_ordinal(date: &chrono::DateTime<Utc>) -> i64 {
+    // Number of seconds since Unix epoch
+    // sec / 60 = min
+    // min / 60 = hours
+    // hours / 24 = days
+    date.timestamp() / 60 / 60 / 24
 }
 
+/// Return true if given year is a leap year
 pub fn is_leap_year(year: i32) -> bool {
+    // Every 4 years, and every 100 years
+    // but not if dividable by 400.
     year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)
 }
 
-pub fn get_year_len(year: i32) -> usize {
+/// Return amount of days in year,
+/// So 365 or 366 depending on the year
+pub fn get_year_len(year: i32) -> u16 {
     if is_leap_year(year) {
         return 366;
     }
     365
 }
 
-pub fn get_weekday_val(wk: &Weekday) -> usize {
+/// Get day of the week,
+/// Mondays = 0,
+/// Sunday = 6
+pub fn get_weekday_val(wk: &Weekday) -> u8 {
     match wk {
         Weekday::Mon => 0,
         Weekday::Tue => 1,

@@ -10,11 +10,14 @@ use std::collections::VecDeque;
 const MAX_YEAR: i32 = 9999;
 
 pub struct RRuleIter<'a> {
+    /// Date the iterator is currently at.
     pub counter_date: DateTime<Tz>,
     pub ii: IterInfo<'a>,
     pub timeset: Vec<Time>,
     // Buffer of datetimes not yet yielded
     pub buffer: VecDeque<DateTime<Tz>>,
+    /// Indicate of iterator should not return more items.
+    /// Once set set `true` is will always return `None`.
     pub finished: bool,
     /// Number of events that should still be generated before the end.
     /// Counter always goes down after each iteration.
@@ -22,7 +25,24 @@ pub struct RRuleIter<'a> {
 }
 
 impl<'a> RRuleIter<'a> {
+    /// Generate a list of dates that will be added to the buffer.
+    /// Returns true if finished, no more items should/can be returned.
     pub fn generate(&mut self) -> bool {
+        // Do early check if done (if known)
+        if self.finished {
+            return true;
+        }
+        // Check if the count is set, and if 0
+        match self.count {
+            Some(count) if count == 0 => return true,
+            _ => (),
+        };
+        // Check if `MAX_YEAR` is reached.
+        if self.counter_date.year() > MAX_YEAR {
+            log::warn!("Iterator reached maximum year `{}`.", MAX_YEAR);
+            return true;
+        }
+
         // Get general info about recurrence rules
         let options = self.ii.options;
 
@@ -30,16 +50,7 @@ impl<'a> RRuleIter<'a> {
             return true;
         }
 
-        // Check if the count is set, and if 0
-        match self.count {
-            Some(count) if count == 0 => return true,
-            _ => (),
-        };
-
-        if self.counter_date.year() > MAX_YEAR {
-            return true;
-        }
-
+        // Loop until there is at least 1 item in the buffer.
         while self.buffer.is_empty() {
             let (dayset, start, end) = self.ii.getdayset(
                 &self.ii.options.freq,
@@ -98,7 +109,7 @@ impl<'a> RRuleIter<'a> {
                     let year_ordinal = self.ii.yearordinal().unwrap();
                     // Ordinal conversion uses UTC: if we apply local-TZ here, then
                     // just below we'll end up double-applying.
-                    let date = from_ordinal(year_ordinal + current_day, &UTC);
+                    let date = from_ordinal(year_ordinal + current_day as i64, &UTC);
                     // We apply the local-TZ here,
                     let date = options.tzid.ymd(date.year(), date.month(), date.day());
                     for k in 0..self.timeset.len() {
@@ -153,7 +164,7 @@ impl<'a> RRuleIter<'a> {
 
             self.ii.rebuild(year as isize, month as usize);
         }
-
+        // Indicate that there might be more items on the next iteration.
         false
     }
 }

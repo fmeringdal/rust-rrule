@@ -40,12 +40,12 @@ pub fn build_poslist(
         let i;
         if daypos < 0 {
             let index = tmp.len() as isize + daypos;
-            i = &tmp[index as usize];
+            i = tmp[index as usize];
         } else {
-            i = &tmp[daypos as usize];
+            i = tmp[daypos as usize]; // TODO Panics when it goes out of bounds
         }
 
-        let date = from_ordinal(ii.yearordinal().unwrap() + i, tz);
+        let date = from_ordinal(ii.yearordinal().unwrap() + i as i64, tz);
         let res = tz.ymd(date.year(), date.month(), date.day()).and_hms(
             timeset[timepos as usize].hour as u32,
             timeset[timepos as usize].minute as u32,
