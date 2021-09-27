@@ -216,6 +216,8 @@
 //!     .map(|d| d.with_timezone(&Local)).collect();
 //!
 //! ```
+#![forbid(unsafe_code)]
+#![deny(clippy::all)]
 
 extern crate chrono;
 extern crate chrono_tz;

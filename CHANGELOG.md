@@ -5,6 +5,7 @@ This project follows the [Semantic Versioning standard](https://semver.org/).
 ## Version 0.6.0 (2021-xx-xx)
 
 ### Added
+- Added `forbid(unsafe_code)` into repo. We don't ever need unsafe code.
 
 ### Changed
 - Renamed `Frequenzy` to `Frequency`
