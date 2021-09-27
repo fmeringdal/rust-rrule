@@ -5,7 +5,7 @@ use crate::rrule::RRule;
 use crate::rrulestr::build_rruleset;
 use std::str::FromStr;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct RRuleSet {
     pub rrule: Vec<RRule>,
     pub rdate: Vec<DateTime>,
@@ -15,16 +15,6 @@ pub struct RRuleSet {
 }
 
 impl RRuleSet {
-    pub fn new() -> Self {
-        Self {
-            rrule: vec![],
-            rdate: vec![],
-            exrule: vec![],
-            exdate: vec![],
-            dtstart: None,
-        }
-    }
-
     pub fn rrule(&mut self, rrule: RRule) {
         self.rrule.push(rrule);
     }
@@ -89,8 +79,7 @@ impl RRuleSet {
     /// With inc == true, if dt itself is an recurrence, it will be returned.
     pub fn after(&self, dt: DateTime, inc: bool) -> Option<DateTime> {
         self.into_iter()
-            .skip_while(|d| if inc { *d <= dt } else { *d < dt })
-            .next()
+            .find(|d| !(if inc { *d <= dt } else { *d < dt }))
     }
 
     /// Returns all the recurrences of the rrule between after and before.
@@ -140,7 +129,7 @@ mod test_iter_set {
 
     #[test]
     fn rrule_and_exrule() {
-        let mut set = RRuleSet::new();
+        let mut set = RRuleSet::default();
 
         let options1 = ParsedOptions {
             freq: Frequency::Yearly,
@@ -201,7 +190,7 @@ mod test_iter_set {
 
     #[test]
     fn setdate_and_exdate() {
-        let mut set = RRuleSet::new();
+        let mut set = RRuleSet::default();
 
         set.rdate(ymd_hms(1997, 9, 2, 9, 0, 0));
         set.rdate(ymd_hms(1997, 9, 4, 9, 0, 0));
@@ -226,7 +215,7 @@ mod test_iter_set {
 
     #[test]
     fn setdate_and_exrule() {
-        let mut set = RRuleSet::new();
+        let mut set = RRuleSet::default();
 
         set.rdate(ymd_hms(1997, 9, 2, 9, 0, 0));
         set.rdate(ymd_hms(1997, 9, 4, 9, 0, 0));
@@ -271,7 +260,7 @@ mod test_iter_set {
 
     #[test]
     fn rrule_and_exdate() {
-        let mut set = RRuleSet::new();
+        let mut set = RRuleSet::default();
 
         let options = ParsedOptions {
             freq: Frequency::Yearly,
@@ -313,7 +302,7 @@ mod test_iter_set {
 
     #[test]
     fn rrule_and_exyearly_yearly_big() {
-        let mut set = RRuleSet::new();
+        let mut set = RRuleSet::default();
 
         let options = ParsedOptions {
             freq: Frequency::Yearly,
@@ -375,7 +364,7 @@ mod test_iter_set {
 
     #[test]
     fn before() {
-        let mut set = RRuleSet::new();
+        let mut set = RRuleSet::default();
 
         let options = ParsedOptions {
             freq: Frequency::Yearly,
@@ -433,7 +422,7 @@ mod test_iter_set {
 
     #[test]
     fn after() {
-        let mut set = RRuleSet::new();
+        let mut set = RRuleSet::default();
 
         let options = ParsedOptions {
             freq: Frequency::Yearly,
@@ -491,7 +480,7 @@ mod test_iter_set {
 
     #[test]
     fn between() {
-        let mut set = RRuleSet::new();
+        let mut set = RRuleSet::default();
 
         let options = ParsedOptions {
             freq: Frequency::Yearly,
@@ -557,7 +546,7 @@ mod test_iter_set {
 
     #[test]
     fn before_70s() {
-        let mut set = RRuleSet::new();
+        let mut set = RRuleSet::default();
 
         let options = ParsedOptions {
             freq: Frequency::Yearly,

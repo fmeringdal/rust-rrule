@@ -45,7 +45,7 @@ impl NWeekday {
 
     pub fn nth(&self, n: NWeekdayIdentifier) -> Self {
         if self.n == n {
-            return self.clone();
+            return *self;
         }
         Self::new(self.weekday, n)
     }
@@ -80,7 +80,7 @@ pub struct ParsedOptions {
     pub byeaster: Option<isize>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Options {
     pub freq: Option<Frequency>,
     pub interval: Option<usize>,
@@ -102,28 +102,6 @@ pub struct Options {
 }
 
 impl Options {
-    pub fn new() -> Self {
-        Self {
-            freq: None,
-            interval: None,
-            count: None,
-            until: None,
-            tzid: None,
-            dtstart: None,
-            wkst: None,
-            bysetpos: None,
-            bymonth: None,
-            bymonthday: None,
-            byyearday: None,
-            byweekno: None,
-            byweekday: None,
-            byhour: None,
-            byminute: None,
-            bysecond: None,
-            byeaster: None,
-        }
-    }
-
     // TODO: better name
     fn is_some_or_none<'a, T>(prop1: &'a Option<T>, prop2: &'a Option<T>) -> &'a Option<T> {
         if prop2.is_some() {
@@ -135,12 +113,12 @@ impl Options {
     pub fn concat(opt1: &Self, opt2: &Self) -> Self {
         Self {
             freq: Self::is_some_or_none(&opt1.freq, &opt2.freq).clone(),
-            interval: Self::is_some_or_none(&opt1.interval, &opt2.interval).clone(),
-            count: Self::is_some_or_none(&opt1.count, &opt2.count).clone(),
-            until: Self::is_some_or_none(&opt1.until, &opt2.until).clone(),
-            tzid: Self::is_some_or_none(&opt1.tzid, &opt2.tzid).clone(),
-            dtstart: Self::is_some_or_none(&opt1.dtstart, &opt2.dtstart).clone(),
-            wkst: Self::is_some_or_none(&opt1.wkst, &opt2.wkst).clone(),
+            interval: *Self::is_some_or_none(&opt1.interval, &opt2.interval),
+            count: *Self::is_some_or_none(&opt1.count, &opt2.count),
+            until: *Self::is_some_or_none(&opt1.until, &opt2.until),
+            tzid: *Self::is_some_or_none(&opt1.tzid, &opt2.tzid),
+            dtstart: *Self::is_some_or_none(&opt1.dtstart, &opt2.dtstart),
+            wkst: *Self::is_some_or_none(&opt1.wkst, &opt2.wkst),
             bysetpos: Self::is_some_or_none(&opt1.bysetpos, &opt2.bysetpos).clone(),
             bymonth: Self::is_some_or_none(&opt1.bymonth, &opt2.bymonth).clone(),
             bymonthday: Self::is_some_or_none(&opt1.bymonthday, &opt2.bymonthday).clone(),
@@ -150,7 +128,7 @@ impl Options {
             byhour: Self::is_some_or_none(&opt1.byhour, &opt2.byhour).clone(),
             byminute: Self::is_some_or_none(&opt1.byminute, &opt2.byminute).clone(),
             bysecond: Self::is_some_or_none(&opt1.bysecond, &opt2.bysecond).clone(),
-            byeaster: Self::is_some_or_none(&opt1.byeaster, &opt2.byeaster).clone(),
+            byeaster: *Self::is_some_or_none(&opt1.byeaster, &opt2.byeaster),
         }
     }
 

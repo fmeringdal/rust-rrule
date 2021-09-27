@@ -6,12 +6,12 @@ use crate::utils::pymod;
 use chrono_tz::Tz;
 
 pub fn build_poslist(
-    bysetpost: &Vec<isize>,
-    timeset: &Vec<Time>,
+    bysetpost: &[isize],
+    timeset: &[Time],
     start: usize,
     end: usize,
     ii: &IterInfo,
-    dayset: &Vec<Option<isize>>,
+    dayset: &[Option<isize>],
     tz: &Tz,
 ) -> Result<Vec<DateTime>, RRuleIterError> {
     let mut poslist = vec![];

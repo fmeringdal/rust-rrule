@@ -60,8 +60,7 @@ impl RRule {
     /// With inc == true, if dt itself is an recurrence, it will be returned.
     pub fn after(&self, dt: DateTime, inc: bool) -> Option<DateTime> {
         self.into_iter()
-            .skip_while(|d| if inc { *d < dt } else { *d <= dt })
-            .next()
+            .find(|d| !(if inc { *d < dt } else { *d <= dt }))
     }
 
     /// Returns all the recurrences of the rrule between after and before.

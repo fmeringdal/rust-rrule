@@ -14,14 +14,14 @@ pub fn is_some_and_not_empty<T>(v: &Option<Vec<T>>) -> bool {
     }
 }
 
-pub fn includes<T>(v: &Vec<T>, el: &T) -> bool
+pub fn includes<T>(v: &[T], el: &T) -> bool
 where
     T: PartialEq,
 {
     v.iter().any(|ve| ve == el)
 }
 
-pub fn not_empty<T>(v: &Vec<T>) -> bool {
+pub fn not_empty<T>(v: &[T]) -> bool {
     !v.is_empty()
 }
 

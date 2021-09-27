@@ -1,6 +1,8 @@
 use crate::iter::RRuleIterError;
 use chrono::{offset::LocalResult, TimeZone, Utc};
 
+// TODO remove this clippy `allow` flag and give variables proper names.
+#[allow(clippy::many_single_char_names)]
 pub fn easter(y: isize, offset: isize) -> Result<Vec<isize>, RRuleIterError> {
     let a = y % 19;
     let b = (y as f32 / 100_f32).floor() as isize;
@@ -33,10 +35,10 @@ pub fn easter(y: isize, offset: isize) -> Result<Vec<isize>, RRuleIterError> {
     }?
     .and_hms(0, 0, 0);
     let year_start = Utc.ymd(year, 1, 1).and_hms(0, 0, 0);
-    return Ok(vec![
+    Ok(vec![
         ((date.timestamp() - year_start.timestamp()) as f32 / (60 * 60 * 24) as f32).ceil()
             as isize,
-    ]);
+    ])
 }
 
 #[cfg(test)]

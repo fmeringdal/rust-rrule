@@ -6853,7 +6853,7 @@ fn test_timezones_weekly() {
     use chrono_tz::America::New_York;
     use chrono_tz::Europe::Berlin;
 
-    let rrule_options = Options::new()
+    let rrule_options = Options::default()
         .dtstart(UTC.ymd(2021, 1, 1).and_hms(9, 0, 0))
         .count(2)
         .freq(Frequency::Weekly)
@@ -6866,7 +6866,7 @@ fn test_timezones_weekly() {
     }
 
     // NYC (-5)
-    let rrule_options = Options::new()
+    let rrule_options = Options::default()
         .dtstart(New_York.ymd(2021, 1, 1).and_hms(9, 0, 0))
         .count(1)
         .freq(Frequency::Weekly)
@@ -6879,7 +6879,7 @@ fn test_timezones_weekly() {
     }
 
     // How about Berlin (+1)
-    let rrule_options = Options::new()
+    let rrule_options = Options::default()
         .dtstart(Berlin.ymd(2021, 1, 1).and_hms(9, 0, 0))
         .count(1)
         .freq(Frequency::Weekly)
@@ -6892,7 +6892,7 @@ fn test_timezones_weekly() {
     }
 
     // Los Angeles (-7)
-    let rrule_options = Options::new()
+    let rrule_options = Options::default()
         .dtstart(Los_Angeles.ymd(2021, 1, 1).and_hms(9, 0, 0))
         .count(1)
         .freq(Frequency::Weekly)

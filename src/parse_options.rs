@@ -7,10 +7,12 @@ use chrono_tz::{Tz, UTC};
 
 // TODO: More validation here
 pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError> {
-    let mut default_partial_options = Options::new();
-    default_partial_options.interval = Some(1);
-    default_partial_options.freq = Some(Frequency::Yearly);
-    default_partial_options.wkst = Some(0);
+    let default_partial_options = Options {
+        interval: Some(1),
+        freq: Some(Frequency::Yearly),
+        wkst: Some(0),
+        ..Default::default()
+    };
 
     let tzid: Tz = match options.tzid {
         Some(tz) => tz,
@@ -81,13 +83,15 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
     match &partial_options.bymonthday {
         None => bynmonthday = vec![],
         Some(opts_bymonthday) => {
+            use std::cmp::Ordering;
+
             let mut bymonthday = vec![];
 
             for v in opts_bymonthday {
-                if *v > 0 {
-                    bymonthday.push(*v);
-                } else if *v < 0 {
-                    bynmonthday.push(*v);
+                match v.cmp(&0) {
+                    Ordering::Greater => bymonthday.push(*v),
+                    Ordering::Less => bynmonthday.push(*v),
+                    Ordering::Equal => {}
                 }
             }
 
@@ -138,17 +142,17 @@ pub fn parse_options(options: &Options) -> Result<ParsedOptions, RRuleParseError
         tzid,
         dtstart,
         wkst: partial_options.wkst.unwrap(),
-        bysetpos: partial_options.bysetpos.unwrap_or(vec![]),
-        bymonth: partial_options.bymonth.unwrap_or(vec![]),
-        bymonthday: partial_options.bymonthday.unwrap_or(vec![]),
+        bysetpos: partial_options.bysetpos.unwrap_or_default(),
+        bymonth: partial_options.bymonth.unwrap_or_default(),
+        bymonthday: partial_options.bymonthday.unwrap_or_default(),
         bynmonthday,
-        byyearday: partial_options.byyearday.unwrap_or(vec![]),
-        byweekno: partial_options.byweekno.unwrap_or(vec![]),
+        byyearday: partial_options.byyearday.unwrap_or_default(),
+        byweekno: partial_options.byweekno.unwrap_or_default(),
         byweekday,
         bynweekday,
-        byhour: partial_options.byhour.unwrap_or(vec![]),
-        byminute: partial_options.byminute.unwrap_or(vec![]),
-        bysecond: partial_options.bysecond.unwrap_or(vec![]),
+        byhour: partial_options.byhour.unwrap_or_default(),
+        byminute: partial_options.byminute.unwrap_or_default(),
+        bysecond: partial_options.bysecond.unwrap_or_default(),
         byeaster: partial_options.byeaster,
     })
 }

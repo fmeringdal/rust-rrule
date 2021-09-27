@@ -198,7 +198,11 @@ pub fn is_filtered(
                 && ((current_day < ii.yearlen().unwrap()
                     && !includes(&options.byyearday, &(current_day as isize + 1))
                     && !includes(
-                        &options.byyearday.iter().map(|v| *v as isize).collect(),
+                        &options
+                            .byyearday
+                            .iter()
+                            .map(|v| *v as isize)
+                            .collect::<Vec<_>>(),
                         &(-(ii.yearlen().unwrap() as isize) + current_day as isize),
                     ))
                     || (current_day >= ii.yearlen().unwrap()
@@ -207,7 +211,11 @@ pub fn is_filtered(
                             &((current_day + 1 - ii.yearlen().unwrap()) as isize),
                         )
                         && !includes(
-                            &options.byyearday.iter().map(|v| *v as isize).collect(),
+                            &options
+                                .byyearday
+                                .iter()
+                                .map(|v| *v as isize)
+                                .collect::<Vec<_>>(),
                             &(-(ii.nextyearlen().unwrap() as isize) + current_day as isize
                                 - ii.yearlen().unwrap() as isize),
                         )))),
@@ -222,12 +230,13 @@ pub fn remove_filtered_days(
 ) -> Result<bool, RRuleIterError> {
     let mut filtered = false;
 
-    for daycounter in start..end {
-        match dayset[daycounter] {
+    // Loop over `start..end`
+    for daysetcounter in dayset.iter_mut().take(end).skip(start) {
+        match daysetcounter {
             Some(current_day) => {
-                filtered = is_filtered(ii, current_day as usize, &ii.options)?;
+                filtered = is_filtered(ii, *current_day as usize, ii.options)?;
                 if filtered {
-                    dayset[daycounter] = None;
+                    *daysetcounter = None;
                 }
             }
             None => continue,

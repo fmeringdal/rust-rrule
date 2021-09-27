@@ -176,7 +176,7 @@ pub fn rebuild_year(year: i32, options: &ParsedOptions) -> Result<YearInfo, RRul
 
             lnumweeks = 52 + (pymod(weekst, 7) / 4) as isize;
         } else {
-            lnumweeks = -1 as isize;
+            lnumweeks = -1;
         }
 
         if options.byweekno.iter().any(|&weekno| weekno == lnumweeks) {

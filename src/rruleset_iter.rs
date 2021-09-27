@@ -1,24 +1,24 @@
+use crate::datetime::DateTime;
 use crate::rruleset::RRuleSet;
 use crate::{rrule_iter::RRuleIter, RRule};
-use chrono::prelude::*;
-use chrono_tz::Tz;
+use chrono::TimeZone;
 use std::collections::HashMap;
 use std::iter::Iterator;
 
 pub struct RRuleSetIter<'a> {
-    pub queue: HashMap<usize, DateTime<Tz>>,
+    pub queue: HashMap<usize, DateTime>,
     pub rrule_iters: Vec<RRuleIter<'a>>,
     pub exrules: &'a Vec<RRule>,
     pub exdates: HashMap<i64, ()>,
     // Sorted additional dates in decreasing order
-    pub rdates: Vec<DateTime<Tz>>,
+    pub rdates: Vec<DateTime>,
 }
 
 impl<'a> Iterator for RRuleSetIter<'a> {
-    type Item = DateTime<Tz>;
+    type Item = DateTime;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let mut next_date: Option<(usize, DateTime<Tz>)> = None;
+        let mut next_date: Option<(usize, DateTime)> = None;
 
         for (i, rrule_iter) in self.rrule_iters.iter_mut().enumerate() {
             let rrule_queue = self.queue.remove(&i);
@@ -27,12 +27,12 @@ impl<'a> Iterator for RRuleSetIter<'a> {
                 Some(d) => next_rrule_date = Some(d),
                 None => {
                     // should be method on self
-                    next_rrule_date = generate(rrule_iter, &mut self.exrules, &mut self.exdates);
+                    next_rrule_date = generate(rrule_iter, self.exrules, &mut self.exdates);
                 }
             }
 
-            match next_rrule_date {
-                Some(next_rrule_date) => match next_date {
+            if let Some(next_rrule_date) = next_rrule_date {
+                match next_date {
                     None => next_date = Some((i, next_rrule_date)),
                     Some(date) => {
                         if date.1 >= next_rrule_date {
@@ -46,13 +46,12 @@ impl<'a> Iterator for RRuleSetIter<'a> {
                             self.queue.insert(i, next_rrule_date);
                         }
                     }
-                },
-                None => {}
+                }
             }
         }
 
         // TODO: RDates should be prefiltered before starting iteration
-        match generate_date(&mut self.rdates, &self.exrules, &mut self.exdates) {
+        match generate_date(&mut self.rdates, self.exrules, &mut self.exdates) {
             Some(first_rdate) => {
                 let next_date = match next_date {
                     Some(next_date) => {
@@ -78,10 +77,10 @@ impl<'a> Iterator for RRuleSetIter<'a> {
 }
 
 fn generate_date(
-    dates: &mut Vec<DateTime<Tz>>,
-    exrules: &Vec<RRule>,
+    dates: &mut Vec<DateTime>,
+    exrules: &[RRule],
     exdates: &mut HashMap<i64, ()>,
-) -> Option<DateTime<Tz>> {
+) -> Option<DateTime> {
     if dates.is_empty() {
         return None;
     }
@@ -99,9 +98,9 @@ fn generate_date(
 
 fn generate(
     rrule_iter: &mut RRuleIter,
-    exrules: &Vec<RRule>,
+    exrules: &[RRule],
     exdates: &mut HashMap<i64, ()>,
-) -> Option<DateTime<Tz>> {
+) -> Option<DateTime> {
     let mut date = rrule_iter.next();
     while !accept_generated_date(&date, exrules, exdates) {
         date = rrule_iter.next();
@@ -111,8 +110,8 @@ fn generate(
 }
 
 fn accept_generated_date(
-    date: &Option<DateTime<Tz>>,
-    exrules: &Vec<RRule>,
+    date: &Option<DateTime>,
+    exrules: &[RRule],
     exdates: &mut HashMap<i64, ()>,
 ) -> bool {
     match date {
@@ -140,7 +139,7 @@ fn accept_generated_date(
 }
 
 impl<'a> IntoIterator for &'a RRuleSet {
-    type Item = DateTime<Tz>;
+    type Item = DateTime;
 
     type IntoIter = RRuleSetIter<'a>;
 

@@ -100,7 +100,7 @@
 //! use rrule::{RRule, Options, Frequency, Weekday};
 //!
 //! // Build options that starts first day in 2020 at 9:00AM and occurs daily 5 times
-//! let mut options = Options::new()
+//! let mut options = Options::default()
 //!     .dtstart(UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
 //!     .count(5)
 //!     .freq(Frequency::Daily)
@@ -129,7 +129,7 @@
 //! use rrule::{RRule, RRuleSet, Options, Frequency, Weekday};
 //!
 //! // Build options for rrule that occurs weekly on Tuesday and Wednesday
-//! let rrule_options = Options::new()
+//! let rrule_options = Options::default()
 //!     .dtstart(UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
 //!     .count(4)
 //!     .freq(Frequency::Weekly)
@@ -142,7 +142,7 @@
 //!
 //!
 //! // Build options for exrule that occurs weekly on Wednesday
-//! let mut exrule_options = Options::new()
+//! let mut exrule_options = Options::default()
 //!     .dtstart(UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
 //!     .count(4)
 //!     .freq(Frequency::Weekly)
@@ -154,7 +154,7 @@
 //! let mut exrule = RRule::new(exrule_options);
 //!
 //! // Now create the RRuleSet and add rrule and exrule
-//! let mut rrule_set = RRuleSet::new();
+//! let mut rrule_set = RRuleSet::default();
 //! rrule_set.rrule(rrule);
 //! rrule_set.exrule(exrule);
 //!
@@ -179,7 +179,7 @@
 //! use rrule::{RRule, RRuleSet, Options, Frequency, Weekday};
 //!
 //! // Build options for rrule that occurs daily at 9:00 for 4 times
-//! let rrule_options = Options::new()
+//! let rrule_options = Options::default()
 //!     .dtstart(Berlin.ymd(2020, 1, 1).and_hms(9, 0, 0))
 //!     .count(4)
 //!     .freq(Frequency::Daily)
@@ -193,7 +193,7 @@
 //! let exdate = UTC.ymd(2020, 1, 2).and_hms(8, 0, 0);
 //!
 //! // Now create the RRuleSet and add rrule and exdate
-//! let mut rrule_set = RRuleSet::new();
+//! let mut rrule_set = RRuleSet::default();
 //! rrule_set.rrule(rrule);
 //! rrule_set.exdate(exdate);
 //!
