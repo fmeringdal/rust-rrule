@@ -1,53 +1,89 @@
+use crate::datetime::DateTime;
 use crate::iter::{
     build_poslist, increment_counter_date, make_timeset, remove_filtered_days, IterInfo,
+    RRuleIterError,
 };
 use crate::{datetime::from_ordinal, RRule};
 use crate::{datetime::Time, Frequency};
-use chrono::{prelude::*, Duration};
-use chrono_tz::{Tz, UTC};
+use chrono::{Datelike, TimeZone, Timelike};
+use chrono_tz::UTC;
 use std::collections::VecDeque;
 
 const MAX_YEAR: i32 = 9999;
 
 pub struct RRuleIter<'a> {
     /// Date the iterator is currently at.
-    pub counter_date: DateTime<Tz>,
+    pub counter_date: DateTime,
     pub ii: IterInfo<'a>,
     pub timeset: Vec<Time>,
     // Buffer of datetimes not yet yielded
-    pub buffer: VecDeque<DateTime<Tz>>,
+    pub buffer: VecDeque<DateTime>,
     /// Indicate of iterator should not return more items.
     /// Once set set `true` is will always return `None`.
     pub finished: bool,
     /// Number of events that should still be generated before the end.
     /// Counter always goes down after each iteration.
     pub count: Option<u32>,
+    /// Store the last error so it can be handled by the user.
+    pub error: Option<RRuleIterError>,
 }
 
 impl<'a> RRuleIter<'a> {
+    /// Return `true` if an error has occurred.
+    pub fn has_err(&self) -> bool {
+        self.error.is_some()
+    }
+    /// Return an the last error while iterating.
+    pub fn get_err(&self) -> &Option<RRuleIterError> {
+        &self.error
+    }
+
+    fn new(rrule: &'a RRule) -> Result<Self, RRuleIterError> {
+        let ii = IterInfo::new(&rrule.options)?;
+        let counter_date = ii.options.dtstart;
+
+        let timeset = make_timeset(&ii, &counter_date, &ii.options)?;
+        let count = ii.options.count.clone();
+
+        Ok(RRuleIter {
+            counter_date,
+            ii,
+            timeset,
+            buffer: VecDeque::new(),
+            finished: false,
+            count,
+            error: None,
+        })
+    }
     /// Generate a list of dates that will be added to the buffer.
     /// Returns true if finished, no more items should/can be returned.
-    pub fn generate(&mut self) -> bool {
+    pub fn generate(&mut self) -> Result<bool, RRuleIterError> {
+        // If there already was an error, return the error again.
+        if let Some(err) = self.get_err() {
+            return Err(err.clone());
+        }
         // Do early check if done (if known)
         if self.finished {
-            return true;
+            return Ok(true);
         }
         // Check if the count is set, and if 0
         match self.count {
-            Some(count) if count == 0 => return true,
+            Some(count) if count == 0 => return Ok(true),
             _ => (),
         };
         // Check if `MAX_YEAR` is reached.
         if self.counter_date.year() > MAX_YEAR {
-            log::warn!("Iterator reached maximum year `{}`.", MAX_YEAR);
-            return true;
+            return Err(RRuleIterError(format!(
+                "Iterator reached maximum year `{}`.",
+                MAX_YEAR
+            )));
         }
 
         // Get general info about recurrence rules
         let options = self.ii.options;
 
         if options.interval == 0 {
-            return true;
+            return Ok(true);
         }
 
         // Loop until there is at least 1 item in the buffer.
@@ -57,14 +93,14 @@ impl<'a> RRuleIter<'a> {
                 self.counter_date.year() as isize,
                 self.counter_date.month() as usize,
                 self.counter_date.day() as usize,
-            );
+            )?;
 
             let mut dayset = dayset
                 .into_iter()
                 .map(|s| Some(s as isize))
                 .collect::<Vec<Option<isize>>>();
 
-            let filtered = remove_filtered_days(&mut dayset, start, end, &self.ii);
+            let filtered = remove_filtered_days(&mut dayset, start, end, &self.ii)?;
 
             if options.bysetpos.len() > 0 {
                 let poslist = build_poslist(
@@ -75,7 +111,7 @@ impl<'a> RRuleIter<'a> {
                     &self.ii,
                     &dayset,
                     &options.tzid,
-                );
+                )?;
 
                 for j in 0..poslist.len() {
                     let res = poslist[j];
@@ -93,7 +129,7 @@ impl<'a> RRuleIter<'a> {
                             }
                             // This means that the real count is 0, because of the decrement above
                             if count == 1 {
-                                return true;
+                                return Ok(true);
                             }
                         }
                     }
@@ -112,14 +148,14 @@ impl<'a> RRuleIter<'a> {
                     let date = from_ordinal(year_ordinal + current_day as i64, &UTC);
                     // We apply the local-TZ here,
                     let date = options.tzid.ymd(date.year(), date.month(), date.day());
-                    for k in 0..self.timeset.len() {
-                        let res = date.and_hms(0, 0, 0)
-                            + Duration::hours(self.timeset[k].hour as i64)
-                            + Duration::minutes(self.timeset[k].minute as i64)
-                            + Duration::seconds(self.timeset[k].second as i64);
+                    for timeset in &self.timeset {
+                        let res = date
+                            .and_hms(0, 0, 0)
+                            .checked_add_signed(timeset.duration_from_midnight())
+                            .ok_or_else(|| RRuleIterError("Invalid datetime.".to_owned()))?;
 
                         if options.until.is_some() && res > options.until.unwrap() {
-                            return true;
+                            return Ok(true);
                         }
                         if res >= options.dtstart {
                             self.buffer.push_back(res);
@@ -131,7 +167,7 @@ impl<'a> RRuleIter<'a> {
                                 }
                                 // This means that the real count is 0, because of the decrement above
                                 if count == 1 {
-                                    return true;
+                                    return Ok(true);
                                 }
                             }
                         }
@@ -140,10 +176,10 @@ impl<'a> RRuleIter<'a> {
             }
 
             // Handle frequency and interval
-            self.counter_date = increment_counter_date(self.counter_date, &options, filtered);
+            self.counter_date = increment_counter_date(self.counter_date, &options, filtered)?;
 
             if self.counter_date.year() > MAX_YEAR {
-                return true;
+                return Ok(true);
             }
 
             if options.freq == Frequency::Hourly
@@ -156,21 +192,21 @@ impl<'a> RRuleIter<'a> {
                     self.counter_date.minute() as usize,
                     self.counter_date.second() as usize,
                     0,
-                );
+                )?;
             }
 
             let year = self.counter_date.year();
             let month = self.counter_date.month();
 
-            self.ii.rebuild(year as isize, month as usize);
+            self.ii.rebuild(year as isize, month as usize)?;
         }
         // Indicate that there might be more items on the next iteration.
-        false
+        Ok(false)
     }
 }
 
 impl<'a> Iterator for RRuleIter<'a> {
-    type Item = DateTime<Tz>;
+    type Item = DateTime;
 
     fn next(&mut self) -> Option<Self::Item> {
         if !self.buffer.is_empty() {
@@ -181,7 +217,14 @@ impl<'a> Iterator for RRuleIter<'a> {
             return None;
         }
 
-        self.finished = self.generate();
+        self.finished = match self.generate() {
+            Ok(finished) => finished,
+            Err(err) => {
+                log::error!("{}", err);
+                self.error = Some(err);
+                true
+            }
+        };
 
         if self.buffer.is_empty() {
             self.finished = true;
@@ -191,25 +234,33 @@ impl<'a> Iterator for RRuleIter<'a> {
 }
 
 impl<'a> IntoIterator for &'a RRule {
-    type Item = DateTime<Tz>;
+    type Item = DateTime;
 
     type IntoIter = RRuleIter<'a>;
 
     fn into_iter(self) -> Self::IntoIter {
-        let ii = IterInfo::new(&self.options);
-        let counter_date = ii.options.dtstart;
-        // ii.rebuild(counter_date.year() as isize, counter_date.month() as usize);
-
-        let timeset = make_timeset(&ii, &counter_date, &ii.options);
-        let count = ii.options.count.clone();
-
-        RRuleIter {
-            counter_date,
-            ii,
-            timeset,
-            buffer: VecDeque::new(),
-            finished: false,
-            count,
+        match RRuleIter::new(self) {
+            Ok(iter) => iter,
+            Err(err) => {
+                // Print error and create iterator that will ways return the error if used.
+                log::error!("{}", err);
+                let error = Some(err);
+                // This is mainly a dummy object, as it will ways return the error when called.
+                RRuleIter {
+                    counter_date: self.options.dtstart,
+                    ii: IterInfo {
+                        options: &self.options,
+                        yearinfo: None,
+                        monthinfo: None,
+                        eastermask: None,
+                    },
+                    timeset: vec![],
+                    buffer: VecDeque::new(),
+                    finished: false,
+                    count: None,
+                    error,
+                }
+            }
         }
     }
 }

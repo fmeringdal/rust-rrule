@@ -1,6 +1,7 @@
-use chrono::prelude::*;
+use crate::iter::RRuleIterError;
+use chrono::{offset::LocalResult, TimeZone, Utc};
 
-pub fn easter(y: isize, offset: isize) -> Vec<isize> {
+pub fn easter(y: isize, offset: isize) -> Result<Vec<isize>, RRuleIterError> {
     let a = y % 19;
     let b = (y as f32 / 100_f32).floor() as isize;
     let c = y % 100;
@@ -15,14 +16,27 @@ pub fn easter(y: isize, offset: isize) -> Vec<isize> {
     let m = ((a + 11 * h + 22 * l) as f32 / 451_f32).floor() as isize;
     let month = ((h + l - 7 * m + 114) as f32 / 31_f32).floor() as u32;
     let day = ((h + l - 7 * m + 114) % 31) + 1;
-    let date = Utc
-        .ymd(y as i32, month, (day + offset) as u32)
-        .and_hms(0, 0, 0);
-    let year_start = Utc.ymd(y as i32, 1, 1).and_hms(0, 0, 0);
-    return vec![
+
+    let year = y as i32;
+    let day = (day + offset) as u32;
+    let date = match Utc.ymd_opt(year, month, day) {
+        LocalResult::None => Err(RRuleIterError(format!(
+            "Invalid date in UTC timezone: `{}/{}/{}`",
+            year, month, day
+        ))),
+        LocalResult::Single(date) => Ok(date),
+        LocalResult::Ambiguous(date1, date2) => Err(RRuleIterError(format!(
+            "Invalid date in UTC timezone: `{}/{}/{}` \
+                this date is ambiguous it can be: `{}` or `{}`",
+            year, month, day, date1, date2
+        ))),
+    }?
+    .and_hms(0, 0, 0);
+    let year_start = Utc.ymd(year, 1, 1).and_hms(0, 0, 0);
+    return Ok(vec![
         ((date.timestamp() - year_start.timestamp()) as f32 / (60 * 60 * 24) as f32).ceil()
             as isize,
-    ];
+    ]);
 }
 
 #[cfg(test)]
@@ -31,13 +45,13 @@ mod test_easter_masks {
 
     #[test]
     fn easter_mask() {
-        let mask = easter(1997, 0);
+        let mask = easter(1997, 0).unwrap();
         assert_eq!(mask[0], 88);
-        let mask = easter(1998, 0);
+        let mask = easter(1998, 0).unwrap();
         assert_eq!(mask[0], 101);
-        let mask = easter(1999, 0);
+        let mask = easter(1999, 0).unwrap();
         assert_eq!(mask[0], 93);
-        let mask = easter(2000, 0);
+        let mask = easter(2000, 0).unwrap();
         assert_eq!(mask[0], 113);
     }
 }

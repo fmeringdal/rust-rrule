@@ -1,9 +1,10 @@
+use super::RRuleIterError;
 use crate::datetime::{to_ordinal, Time};
 use crate::iter::easter::easter;
 use crate::iter::monthinfo::{rebuild_month, MonthInfo};
 use crate::iter::yearinfo::{rebuild_year, YearInfo};
 use crate::options::{Frequency, ParsedOptions};
-use chrono::prelude::*;
+use chrono::{Datelike, TimeZone};
 
 pub struct IterInfo<'a> {
     pub yearinfo: Option<YearInfo>,
@@ -13,7 +14,7 @@ pub struct IterInfo<'a> {
 }
 
 impl<'a> IterInfo<'a> {
-    pub fn new(options: &'a ParsedOptions) -> Self {
+    pub fn new(options: &'a ParsedOptions) -> Result<Self, RRuleIterError> {
         let mut ii = Self {
             options,
             yearinfo: None,
@@ -21,14 +22,14 @@ impl<'a> IterInfo<'a> {
             eastermask: None,
         };
         let counter_date = ii.options.dtstart;
-        ii.rebuild(counter_date.year() as isize, counter_date.month() as usize);
+        ii.rebuild(counter_date.year() as isize, counter_date.month() as usize)?;
 
-        ii
+        Ok(ii)
     }
 
-    pub fn rebuild(&mut self, year: isize, month: usize) {
+    pub fn rebuild(&mut self, year: isize, month: usize) -> Result<(), RRuleIterError> {
         if self.monthinfo.is_none() || year != self.monthinfo.as_ref().unwrap().lastyear {
-            self.yearinfo = Some(rebuild_year(year as i32, &self.options));
+            self.yearinfo = Some(rebuild_year(year as i32, &self.options)?);
         }
 
         if !self.options.bynweekday.is_empty()
@@ -43,13 +44,14 @@ impl<'a> IterInfo<'a> {
                     &yearinfo.mrange,
                     &yearinfo.wdaymask,
                     &self.options,
-                ));
+                )?);
             }
         }
 
         if let Some(byeaster) = self.options.byeaster {
-            self.eastermask = Some(easter(year, byeaster));
+            self.eastermask = Some(easter(year, byeaster)?);
         }
+        Ok(())
     }
 
     pub fn lastyear(&self) -> Option<isize> {
@@ -106,16 +108,18 @@ impl<'a> IterInfo<'a> {
         self.yearinfo.as_ref().unwrap().nmdaymask
     }
 
-    pub fn ydayset(&self) -> (Vec<usize>, usize, usize) {
-        let yearlen = self.yearlen().unwrap();
+    pub fn ydayset(&self) -> Result<(Vec<usize>, usize, usize), RRuleIterError> {
+        let yearlen = self
+            .yearlen()
+            .ok_or_else(|| RRuleIterError("`yearlen()` returned `None`".to_owned()))?;
         let mut v = Vec::with_capacity(yearlen);
         for i in 0..yearlen {
             v.push(i);
         }
-        (v, 0, yearlen)
+        Ok((v, 0, yearlen))
     }
 
-    pub fn mdayset(&self, month: usize) -> (Vec<usize>, usize, usize) {
+    pub fn mdayset(&self, month: usize) -> Result<(Vec<usize>, usize, usize), RRuleIterError> {
         let mrange = self.mrange();
         let start = mrange[month - 1];
         let end = mrange[month];
@@ -123,15 +127,21 @@ impl<'a> IterInfo<'a> {
         for i in start..end {
             set[i] = i;
         }
-        (set, start, end)
+        Ok((set, start, end))
     }
 
-    pub fn wdayset(&self, year: isize, month: usize, day: usize) -> (Vec<usize>, usize, usize) {
+    pub fn wdayset(
+        &self,
+        year: isize,
+        month: usize,
+        day: usize,
+    ) -> Result<(Vec<usize>, usize, usize), RRuleIterError> {
         let set_len = self.yearlen().unwrap() + 7;
         let mut set = vec![0; set_len];
 
         let mut i = (to_ordinal(
-            &Utc.ymd(year as i32, month as u32, day as u32)
+            &chrono::Utc
+                .ymd(year as i32, month as u32, day as u32)
                 .and_hms(0, 0, 0),
         ) - self.yearordinal().unwrap()) as usize;
 
@@ -146,19 +156,25 @@ impl<'a> IterInfo<'a> {
                 break;
             }
         }
-        (set, start, i)
+        Ok((set, start, i))
     }
 
-    pub fn ddayset(&self, year: isize, month: usize, day: usize) -> (Vec<usize>, usize, usize) {
+    pub fn ddayset(
+        &self,
+        year: isize,
+        month: usize,
+        day: usize,
+    ) -> Result<(Vec<usize>, usize, usize), RRuleIterError> {
         let mut set = vec![0; self.yearlen().unwrap()];
 
         let i = (to_ordinal(
-            &Utc.ymd(year as i32, month as u32, day as u32)
+            &chrono::Utc
+                .ymd(year as i32, month as u32, day as u32)
                 .and_hms(0, 0, 0),
         ) - self.yearordinal().unwrap()) as usize;
 
         set[i] = i;
-        (set, i, i + 1)
+        Ok((set, i, i + 1))
     }
 
     pub fn htimeset(&self, hour: usize, _: usize, second: usize, millisecond: usize) -> Vec<Time> {
@@ -200,7 +216,7 @@ impl<'a> IterInfo<'a> {
         year: isize,
         month: usize,
         day: usize,
-    ) -> (Vec<usize>, usize, usize) {
+    ) -> Result<(Vec<usize>, usize, usize), RRuleIterError> {
         match freq {
             Frequency::Yearly => self.ydayset(),
             Frequency::Monthly => self.mdayset(month),
@@ -217,12 +233,12 @@ impl<'a> IterInfo<'a> {
         minute: usize,
         second: usize,
         millisecond: usize,
-    ) -> Vec<Time> {
+    ) -> Result<Vec<Time>, RRuleIterError> {
         match freq {
-            Frequency::Hourly => self.htimeset(hour, minute, second, millisecond),
-            Frequency::Minutely => self.mtimeset(hour, minute, second, millisecond),
-            Frequency::Secondly => self.stimeset(hour, minute, second, millisecond),
-            _ => panic!("Invalid freq"),
+            Frequency::Hourly => Ok(self.htimeset(hour, minute, second, millisecond)),
+            Frequency::Minutely => Ok(self.mtimeset(hour, minute, second, millisecond)),
+            Frequency::Secondly => Ok(self.stimeset(hour, minute, second, millisecond)),
+            _ => Err(RRuleIterError("Invalid freq".to_owned())),
         }
     }
 }

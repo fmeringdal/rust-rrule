@@ -1,4 +1,5 @@
 use crate::datetime::DateTime;
+use crate::iter::RRuleIterError;
 use crate::options::RRuleParseError;
 use crate::rrule::RRule;
 use crate::rrulestr::build_rruleset;
@@ -45,6 +46,33 @@ impl RRuleSet {
     /// The max limit is `65535`. If you need more please use `into_iter` directly.
     pub fn all(&self, limit: u16) -> Vec<DateTime> {
         self.into_iter().take(limit as usize).collect()
+    }
+
+    /// TODO: **Work in progress**
+    /// Returns all the recurrences of the rrule.
+    /// Limit must be set in order to prevent infinite loops.
+    /// The max limit is `65535`. If you need more please use `into_iter` directly.
+    ///
+    /// In case where the iterator ended with an errors the error will be included,
+    /// otherwise the second value of the return tuple will be `None`.
+    pub fn all_with_error(&self, limit: u16) -> (Vec<DateTime>, Option<RRuleIterError>) {
+        let mut iterator = self.into_iter();
+        let mut list = vec![];
+        let err = None;
+        for _i in 0..limit {
+            let next = iterator.next();
+            match next {
+                Some(value) => list.push(value),
+                None => {
+                    // TODO add error handling in RRuleSetIter
+                    // if iterator.has_err() {
+                    //     err = iterator.get_err().clone();
+                    // }
+                    break;
+                }
+            }
+        }
+        (list, err)
     }
 
     /// Returns the last recurrence before the given datetime instance.

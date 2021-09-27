@@ -9,6 +9,7 @@ This project follows the [Semantic Versioning standard](https://semver.org/).
 ### Changed
 - Renamed `Frequenzy` to `Frequency`
 - Add limit to `all()`, prevent infinite loops.
+- Added/Improved error handling for RRule iterator.
 
 ### Deprecated
 

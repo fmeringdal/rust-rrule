@@ -1,8 +1,10 @@
 use crate::datetime::{get_weekday_val, get_year_len, to_ordinal};
 use crate::iter::masks::MASKS;
-use crate::options::*;
 use crate::utils::pymod;
-use chrono::prelude::*;
+use crate::ParsedOptions;
+use chrono::{Datelike, TimeZone, Utc};
+
+use super::RRuleIterError;
 
 #[derive(Debug)]
 pub struct YearInfo {
@@ -55,7 +57,7 @@ fn base_year_masks(year: i32) -> BaseMasks {
     }
 }
 
-pub fn rebuild_year(year: i32, options: &ParsedOptions) -> YearInfo {
+pub fn rebuild_year(year: i32, options: &ParsedOptions) -> Result<YearInfo, RRuleIterError> {
     let firstyday = Utc.ymd(year, 1, 1).and_hms_milli(0, 0, 0, 0);
 
     let yearlen = get_year_len(year) as usize;
@@ -79,7 +81,7 @@ pub fn rebuild_year(year: i32, options: &ParsedOptions) -> YearInfo {
     };
 
     if options.byweekno.is_empty() {
-        return result;
+        return Ok(result);
     }
 
     let mut wnomask = vec![0; yearlen + 7];
@@ -160,13 +162,14 @@ pub fn rebuild_year(year: i32, options: &ParsedOptions) -> YearInfo {
         if !options.byweekno.iter().any(|&weekno| weekno == -1) {
             let lyearweekday = get_weekday_val(&Utc.ymd(year - 1, 1, 1).weekday()) as usize;
 
-            let lno1wkst = pymod((7 - lyearweekday + options.wkst) as isize, 7);
+            let lno1wkst = pymod(7 - lyearweekday as isize + options.wkst as isize, 7);
 
             let lyearlen = get_year_len(year - 1);
             let weekst;
             if lno1wkst >= 4 {
                 //lno1wkst = 0;
-                weekst = lyearlen as isize + pymod((lyearweekday - options.wkst) as isize, 7);
+                weekst =
+                    lyearlen as isize + pymod(lyearweekday as isize - options.wkst as isize, 7);
             } else {
                 weekst = yearlen as isize - no1wkst;
             }
@@ -185,5 +188,5 @@ pub fn rebuild_year(year: i32, options: &ParsedOptions) -> YearInfo {
 
     result.wnomask = Some(wnomask);
 
-    result
+    Ok(result)
 }

@@ -1,4 +1,5 @@
 use chrono::prelude::*;
+use chrono::Duration;
 use chrono::Utc;
 use chrono_tz::Tz;
 
@@ -16,6 +17,8 @@ pub fn to_ordinal(date: &chrono::DateTime<Utc>) -> i64 {
     // sec / 60 = min
     // min / 60 = hours
     // hours / 24 = days
+    // TODO can be replaced with `ordinal` or `ordinal0`
+    // https://docs.rs/chrono/0.4.19/chrono/trait.Datelike.html#tymethod.ordinal
     date.timestamp() / 60 / 60 / 24
 }
 
@@ -70,5 +73,15 @@ impl Time {
 
     pub fn time(&self) -> usize {
         (self.hour * 60 * 60 + self.minute * 60 + self.second) * 1000 + self.millisecond
+    }
+
+    pub fn to_naive_time(&self) -> NaiveTime {
+        NaiveTime::from_hms(self.hour as u32, self.minute as u32, self.second as u32)
+    }
+
+    pub fn duration_from_midnight(&self) -> Duration {
+        Duration::hours(self.hour as i64)
+            + Duration::minutes(self.minute as i64)
+            + Duration::seconds(self.second as i64)
     }
 }

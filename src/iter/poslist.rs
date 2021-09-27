@@ -1,8 +1,8 @@
+use super::RRuleIterError;
 use crate::datetime::from_ordinal;
 use crate::datetime::{DateTime, Time};
 use crate::iter::iterinfo::IterInfo;
 use crate::utils::pymod;
-use chrono::prelude::*;
 use chrono_tz::Tz;
 
 pub fn build_poslist(
@@ -13,24 +13,29 @@ pub fn build_poslist(
     ii: &IterInfo,
     dayset: &Vec<Option<isize>>,
     tz: &Tz,
-) -> Vec<DateTime> {
+) -> Result<Vec<DateTime>, RRuleIterError> {
     let mut poslist = vec![];
+    if timeset.is_empty() {
+        // This will prevent the divide by 0 and out of bounds in this function.
+        return Err(RRuleIterError("`timeset` can not be empty".to_owned()));
+    }
 
-    for j in 0..bysetpost.len() {
+    for pos in bysetpost {
         let daypos;
         let timepos;
-        let pos = bysetpost[j];
-        if pos < 0 {
-            daypos = (pos as f32 / timeset.len() as f32).floor() as isize;
-            timepos = pymod(pos as isize, timeset.len() as isize);
+        if *pos < 0 {
+            daypos = (*pos as f32 / timeset.len() as f32).floor() as isize;
+            timepos = pymod(*pos as isize, timeset.len() as isize);
         } else {
-            daypos = ((pos - 1) as f32 / timeset.len() as f32) as isize;
-            timepos = pymod(pos as isize - 1, timeset.len() as isize);
+            daypos = ((*pos - 1) as f32 / timeset.len() as f32) as isize;
+            timepos = pymod(*pos as isize - 1, timeset.len() as isize);
         }
 
         let mut tmp = vec![];
         for k in start..end {
-            let val = dayset[k];
+            let val = dayset
+                .get(k)
+                .ok_or_else(|| RRuleIterError("Index out of bounds `dayset`".to_owned()))?;
             match val {
                 Some(v) => tmp.push(v),
                 None => (),
@@ -40,17 +45,27 @@ pub fn build_poslist(
         let i;
         if daypos < 0 {
             let index = tmp.len() as isize + daypos;
-            i = tmp[index as usize];
+            i = **tmp
+                .get(index as usize)
+                .ok_or_else(|| RRuleIterError("Index out of bounds `tmp`".to_owned()))?;
         } else {
-            i = tmp[daypos as usize]; // TODO Panics when it goes out of bounds
+            i = **tmp
+                .get(daypos as usize)
+                .ok_or_else(|| RRuleIterError("Index out of bounds `tmp`".to_owned()))?;
         }
 
         let date = from_ordinal(ii.yearordinal().unwrap() + i as i64, tz);
-        let res = tz.ymd(date.year(), date.month(), date.day()).and_hms(
-            timeset[timepos as usize].hour as u32,
-            timeset[timepos as usize].minute as u32,
-            timeset[timepos as usize].second as u32,
-        );
+        // Create new Date + Time combination
+        // Use Date and Timezone from `date`
+        // Use Time from `timeset`.
+        let time = timeset[timepos as usize].to_naive_time();
+        let res = date.date().and_time(time).ok_or_else(|| {
+            RRuleIterError(format!(
+                "Time from `timeset` invalid `{} + {}`",
+                date.date(),
+                time
+            ))
+        })?;
 
         if !poslist.iter().any(|&p| p == res) {
             poslist.push(res);
@@ -59,5 +74,5 @@ pub fn build_poslist(
 
     poslist.sort_by_key(|a| a.timestamp());
 
-    poslist
+    Ok(poslist)
 }

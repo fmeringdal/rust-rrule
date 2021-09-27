@@ -1,3 +1,4 @@
+use super::RRuleIterError;
 use crate::options::*;
 use crate::utils::pymod;
 
@@ -15,50 +16,85 @@ pub fn rebuild_month(
     mrange: &[usize],
     wdaymask: &[usize],
     options: &ParsedOptions,
-) -> MonthInfo {
+) -> Result<MonthInfo, RRuleIterError> {
     let mut result = MonthInfo {
         lastyear: year,
         lastmonth: month,
         nwdaymask: vec![],
     };
 
+    // Build up `ranges`
     let mut ranges: Vec<(isize, isize)> = vec![];
     if options.freq == Frequency::Yearly {
         if options.bymonth.is_empty() {
-            ranges = vec![(0, yearlen as isize)];
+            ranges = vec![(0, yearlen as isize - 1)];
         } else {
-            for j in 0..options.bymonth.len() {
-                let m = options.bymonth[j];
-                ranges.push((mrange[m - 1] as isize, mrange[m] as isize))
+            for month in &options.bymonth {
+                if *month == 0 {
+                    return Err(RRuleIterError(
+                        "Month `0` does not exists, 1-12 expected".to_owned(),
+                    ));
+                }
+                let first = *mrange
+                    .get(month - 1)
+                    .ok_or_else(|| RRuleIterError("Index out of bounds `mrange`".to_owned()))?
+                    as isize;
+                let last = *mrange
+                    .get(*month)
+                    .ok_or_else(|| RRuleIterError("Index out of bounds `mrange`".to_owned()))?
+                    as isize;
+                ranges.push((first, last - 1))
             }
         }
     } else if options.freq == Frequency::Monthly {
-        ranges.push((mrange[month - 1] as isize, mrange[month] as isize));
+        if month == 0 {
+            return Err(RRuleIterError(
+                "Month `0` does not exists, 1-12 expected".to_owned(),
+            ));
+        }
+        let first = *mrange
+            .get(month - 1)
+            .ok_or_else(|| RRuleIterError("Index out of bounds `mrange`".to_owned()))?
+            as isize;
+        let last = *mrange
+            .get(month)
+            .ok_or_else(|| RRuleIterError("Index out of bounds `mrange`".to_owned()))?
+            as isize;
+        ranges.push((first, last - 1));
     }
 
     if ranges.is_empty() {
-        return result;
+        return Ok(result);
     }
 
     // Weekly frequency won't get here, so we may not
     // care about cross-year weekly periods.
     result.nwdaymask = vec![0; yearlen];
 
-    for j in 0..ranges.len() {
-        let rang = ranges[j];
-        let first = rang.0;
-        let last = rang.1 - 1;
-
-        for k in 0..options.bynweekday.len() {
+    // Loop over `ranges`
+    for (first, last) in ranges {
+        for bynweekday in &options.bynweekday {
             let mut i: isize;
-            let wday = options.bynweekday[k][0];
-            let n = options.bynweekday[k][1];
+            let wday = *bynweekday
+                .get(0)
+                .ok_or_else(|| RRuleIterError("Index out of bounds `bynweekday`".to_owned()))?;
+            let n = *bynweekday
+                .get(1)
+                .ok_or_else(|| RRuleIterError("Index out of bounds `bynweekday`".to_owned()))?;
             if n < 0 {
                 i = last + (n + 1) * 7;
-                i -= pymod(wdaymask[i as usize] as isize - wday, 7);
+                let wday_from_mask: isize = *wdaymask
+                    .get(i as usize)
+                    .ok_or_else(|| RRuleIterError("Index out of bounds `wdaymask`".to_owned()))?
+                    as isize;
+                i -= pymod(wday_from_mask - wday, 7);
             } else {
                 i = first + (n - 1) * 7;
-                i += pymod(7 - wdaymask[i as usize] as isize + wday, 7);
+                let wday_from_mask: isize = *wdaymask
+                    .get(i as usize)
+                    .ok_or_else(|| RRuleIterError("Index out of bounds `wdaymask`".to_owned()))?
+                    as isize;
+                i += pymod(7 - wday_from_mask + wday, 7);
             }
             if first <= i && i <= last {
                 result.nwdaymask[i as usize] = 1;
@@ -66,5 +102,5 @@ pub fn rebuild_month(
         }
     }
 
-    result
+    Ok(result)
 }
