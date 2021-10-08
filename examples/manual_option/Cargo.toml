@@ -1,0 +1,12 @@
+[package]
+name = "manual_option"
+version = "0.1.0"
+authors = ["Ralph Bisschops <ralph.bisschops.dev@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+chrono = "0.4.19"
+chrono-tz = "0.5.3"
+
+[dependencies.rrule]
+path = "../../rrule"

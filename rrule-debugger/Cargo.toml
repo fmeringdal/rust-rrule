@@ -1,0 +1,23 @@
+[package]
+name = "rrule-debugger"
+version = "0.1.0"
+edition = "2018"
+authors = ["Ralph Bisschops <ralph.bisschops.dev@gmail.com>"]
+publish = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rrule = { version = "0.7.0", path = "../rrule" }
+chrono = "0.4.19"
+chrono-tz = "0.5.3"
+structopt = "0.3.23"
+rrule-afl-fuzz = { version = "0.1.0", path = "../rrule-afl-fuzz" }
+
+
+[features]
+default = []
+
+no-validation-limits = ["rrule/no-validation-limits"]
+
+by-easter = ["rrule/by-easter"]

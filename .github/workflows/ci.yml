@@ -16,6 +16,10 @@ jobs:
       run: cargo build
     - name: Run tests
       run: cargo test
+    - name: Run tests by-easter
+      run: cargo test --features "by-easter"
+    - name: Run tests no-validation-limits
+      run: cargo test --features "no-validation-limits"
     - name: Format
       run: cargo fmt -- --check
     - name: Linting

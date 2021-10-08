@@ -1,20 +1,18 @@
-[package]
-name = "rrule"
-description = "A pure Rust implementation of recurrence rules as defined in the iCalendar RFC."
-license = "MIT"
-version = "0.6.0"
-documentation = "https://docs.rs/rrule"
-repository = "https://github.com/fmeringdal/rust_rrule"
-authors = ["Fredrik Meringdal"]
-edition = "2018"
+[workspace]
+members = [
+    "rrule",
+    "rrule-debugger",
+    "examples/*",
+]
 
-keywords = ["calendar", "rrule", "ical"]
-categories = ["date-and-time"]
+# These are the 2 packages to mainly work on.
+# So `cargo test` and `cargo run` both work.
+default-members = ["rrule", "rrule-debugger"]
 
-[dependencies]
-chrono = "0.4.19"
-chrono-tz = "0.5.3"
-lazy_static = "1.4.0"
-regex = "1.4.1"
-serde = {version = "1.0", features = ["derive"]}
-log = "0.4.14"
+[profile.dev]
+# Always have overflow checks until crate is stable, see roadmap.
+overflow-checks = true
+
+[profile.release]
+# Always have overflow checks until crate is stable, see roadmap.
+overflow-checks = true

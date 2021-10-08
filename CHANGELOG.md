@@ -2,27 +2,45 @@
 All notable changes to this project will be documented in this file.
 This project follows the [Semantic Versioning standard](https://semver.org/).
 
-## Version 0.6.0 (2021-xx-xx)
+## Version 0.7.0 (2021-xx-xx)
 
 ### Added
 - Added `forbid(unsafe_code)` into repo. We don't ever need unsafe code.
+- Added additional testing crates: `rrule-debugger` and `rrule-afl-fuzz`.
+(only used internally and for debugging)
+- Added `examples` folder and moved some code from documentation into examples.
+- New and improved error handling consolidated into one object, `RRuleError`.
+- Added new method to `RRule`, `all_with_error`, similar to `all` but
+returns all dates it could get until it encountered an error.
+- Added arbitrary limits for safety reasons.
+See [ReadMe](README.md#validation_limits) for more info.
 
 ### Changed
-- Renamed `Frequenzy` to `Frequency`
+- License change, from MIT to (MIT or Apache 2.0).
+- Massive code restructuring. Split into `core`, `iter`, `parser` and `validator`.
+- Renamed `Frequenzy` to `Frequency`.
 - Add limit to `all()`, prevent infinite loops.
-- Added/Improved error handling for RRule iterator.
+- `ParsedOptions` and `Options` change of types and field names.
+- `Options` functions changed, for example `byminute` -> `by_minute`.
+- `by_easter` is now opt-in with feature flag `by-easter`.
+- `RRule` can only be crated using `new` function with a valid `ParsedOptions`.
+- `RRule.option` is no longer public, but can be read by using `get_options()`.
+- `RRuleIter` and `RRuleSetIter` are now part of the public API.
 
 ### Deprecated
 
 ### Removed
+- `RRuleSet::new()` replaced with `RRuleSet::default()`.
 
 ### Fixed
 - Replaced panic on incorrect datetime with error.
 - Fix timezone conversions when `TZID` and `Z` is present.
-- Stabilized `RRule` parsing from string. Fixed possible panics.
+- Stabilized `RRule` parsing from string. Fixed a lot of possible panics.
 
 ### Security
+- Added security notice to [README.md](README.md).
+- The validation of `RRule` improved the stability of the crate a lot.
 
-## Pre version 0.5.9 (2021-07-02)
+## Pre version 0.6.0 (2021-07-02)
 All changes before 2021-07-02 where not documented.
 This is everything before and including: fa8308944a4d2ead0a6ccfa6ee53b76b399e045f

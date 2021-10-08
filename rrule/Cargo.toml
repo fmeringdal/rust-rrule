@@ -1,0 +1,36 @@
+[package]
+name = "rrule"
+description = "A pure Rust implementation of recurrence rules as defined in the iCalendar RFC."
+license = "MIT OR Apache-2.0"
+version = "0.7.0"
+documentation = "https://docs.rs/rrule"
+repository = "https://github.com/fmeringdal/rust_rrule"
+authors = ["Fredrik Meringdal", "Ralph Bisschops <ralph.bisschops.dev@gmail.com>"]
+edition = "2018"
+readme = "../README.md"
+keywords = ["calendar", "rrule", "ical"]
+categories = ["date-and-time"]
+
+[dependencies]
+chrono = "0.4.19"
+chrono-tz = "0.5.3"
+lazy_static = "1.4.0"
+regex = "1.4.1"
+serde = {version = "1.0", features = ["derive"]}
+log = "0.4.14"
+
+[features]
+default = []
+
+# Disbale validator limits. This will disable the arbirary limits set on the amount of itterations
+# and other properties in order to prevent overflowing numbers.
+# Setting this flag remove all the limit.
+#
+# NOTE: removing the validator limits might result in more panics during runtime.
+# For example when a date reached outside of the chrono limits.
+# Never allow this when you are allowing users input that is used in RRule.
+# This can result in DoS because of panics.
+no-validation-limits = []
+
+# Allows the enabling of the `by_easter` field and `BYEASTER` parser.
+by-easter = []

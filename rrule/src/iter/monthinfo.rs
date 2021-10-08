@@ -1,0 +1,104 @@
+use super::utils::pymod;
+use crate::{Frequency, ParsedOptions, RRuleError};
+
+#[derive(Debug)]
+pub struct MonthInfo {
+    pub last_year: i32,
+    pub last_month: u8,
+    // TODO: Only ever set to 0 and 1
+    pub neg_weekday_mask: Vec<i8>,
+}
+
+pub fn rebuild_month(
+    year: i32,
+    month: u8,
+    year_len: u32,
+    month_range: &[u16],
+    weekday_mask: &[u8],
+    options: &ParsedOptions,
+) -> Result<MonthInfo, RRuleError> {
+    let mut result = MonthInfo {
+        last_year: year,
+        last_month: month,
+        neg_weekday_mask: vec![],
+    };
+
+    // Build up `ranges`
+    let mut ranges: Vec<(isize, isize)> = vec![];
+    if options.freq == Frequency::Yearly {
+        if options.by_month.is_empty() {
+            ranges = vec![(0, year_len as isize - 1)];
+        } else {
+            for month in &options.by_month {
+                if month == &0 {
+                    return Err(RRuleError::new_iter_err(
+                        "Month `0` does not exists, 1-12 expected",
+                    ));
+                }
+                let first = *month_range
+                    .get(*month as usize - 1)
+                    .ok_or_else(|| RRuleError::new_iter_err("Index out of bounds `month_range`"))?
+                    as isize;
+                let last = *month_range
+                    .get(*month as usize)
+                    .ok_or_else(|| RRuleError::new_iter_err("Index out of bounds `month_range`"))?
+                    as isize;
+                ranges.push((first, last - 1))
+            }
+        }
+    } else if options.freq == Frequency::Monthly {
+        if month == 0 {
+            return Err(RRuleError::new_iter_err(
+                "Month `0` does not exists, 1-12 expected",
+            ));
+        }
+        let first = *month_range
+            .get(month as usize - 1)
+            .ok_or_else(|| RRuleError::new_iter_err("Index out of bounds `month_range`"))?
+            as isize;
+        let last = *month_range
+            .get(month as usize)
+            .ok_or_else(|| RRuleError::new_iter_err("Index out of bounds `month_range`"))?
+            as isize;
+        ranges.push((first, last - 1));
+    }
+
+    if ranges.is_empty() {
+        return Ok(result);
+    }
+
+    // Weekly frequency won't get here, so we may not
+    // care about cross-year weekly periods.
+    result.neg_weekday_mask = vec![0; year_len as usize];
+
+    // Loop over `ranges`
+    for (first, last) in ranges {
+        for by_n_week_day in &options.by_n_weekday {
+            let mut i: isize;
+            let weekday = *by_n_week_day
+                .get(0)
+                .ok_or_else(|| RRuleError::new_iter_err("Index out of bounds `by_n_week_day`"))?;
+            let n = *by_n_week_day
+                .get(1)
+                .ok_or_else(|| RRuleError::new_iter_err("Index out of bounds `by_n_week_day`"))?;
+            if n < 0 {
+                i = last + (n as isize + 1) * 7;
+                let weekday_from_mask: isize = *weekday_mask.get(i as usize).ok_or_else(|| {
+                    RRuleError::new_iter_err("Index out of bounds `weekday_from_mask`")
+                })? as isize;
+                i -= pymod(weekday_from_mask - weekday as isize, 7);
+            } else {
+                i = first + (n as isize - 1) * 7;
+                let weekday_from_mask: isize = *weekday_mask.get(i as usize).ok_or_else(|| {
+                    RRuleError::new_iter_err("Index out of bounds `weekday_from_mask`")
+                })? as isize;
+                i += pymod(7 - weekday_from_mask + weekday as isize, 7);
+            }
+            if first <= i && i <= last {
+                result.neg_weekday_mask[i as usize] = 1;
+            }
+        }
+    }
+
+    Ok(result)
+}
