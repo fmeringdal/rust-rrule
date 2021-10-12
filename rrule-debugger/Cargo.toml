@@ -10,7 +10,7 @@ publish = false
 [dependencies]
 rrule = { version = "0.7.0", path = "../rrule" }
 chrono = "0.4.19"
-chrono-tz = "0.5.3"
+chrono-tz = "0.6.0"
 structopt = "0.3.23"
 rrule-afl-fuzz = { version = "0.1.0", path = "../rrule-afl-fuzz" }
 

@@ -27,6 +27,7 @@ See [ReadMe](README.md#validation_limits) for more info.
 - `RRule.option` is no longer public, but can be read by using `get_properties()`.
 - `RRuleIter` and `RRuleSetIter` are now part of the public API.
 - `NWeekday` has totally changed, but serves the same purpose.
+- Updated `chrono-tz` from `0.5.3` to `0.6.0`.
 
 ### Deprecated
 

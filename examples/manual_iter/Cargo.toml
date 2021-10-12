@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 chrono = "0.4.19"
-chrono-tz = "0.5.3"
+chrono-tz = "0.6.0"
 
 [dependencies.rrule]
 path = "../../rrule"
