@@ -1,15 +1,13 @@
 use chrono::{DateTime, Local, TimeZone};
 use chrono_tz::{Europe::Berlin, Tz, UTC};
-use rrule::{Frequency, Options, RRule, RRuleSet};
+use rrule::{Frequency, ParsedOptions, RRule, RRuleSet};
 
 fn main() {
     // Build options for rrule that occurs daily at 9:00 for 4 times
-    let rrule_options = Options::default()
+    let rrule_options = ParsedOptions::default()
         .dt_start(Berlin.ymd(2020, 1, 1).and_hms(9, 0, 0))
         .count(4)
-        .freq(Frequency::Daily)
-        .build()
-        .unwrap();
+        .freq(Frequency::Daily);
 
     let rrule = RRule::new(rrule_options).expect("RRule invalid");
 

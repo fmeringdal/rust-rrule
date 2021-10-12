@@ -1,6 +1,5 @@
 use super::datetime::DateTime;
-use crate::{parser::parse_options, RRuleError};
-use chrono::{Month, Utc, Weekday};
+use chrono::{Month, TimeZone, Utc, Weekday};
 use chrono_tz::{Tz, UTC};
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
@@ -32,34 +31,19 @@ impl Display for Frequency {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub enum NWeekdayIdentifier {
-    Every,
+pub enum NWeekday {
+    Every(Weekday),
     /// Value from -366 to -1 and 1 to 366 depending on frequency
-    Identifier(i16),
-}
-
-#[derive(Copy, Clone, Debug)]
-pub struct NWeekday {
-    pub weekday: Weekday,
-    pub n: NWeekdayIdentifier,
+    Nth(i16, Weekday),
 }
 
 impl NWeekday {
-    pub fn new(weekday: Weekday, n: NWeekdayIdentifier) -> Self {
-        Self { weekday, n }
-    }
-
-    pub fn nth(&self, n: NWeekdayIdentifier) -> Self {
-        if self.n == n {
-            return *self;
+    /// Create new week occurrence
+    pub fn new(number: Option<i16>, weekday: Weekday) -> Self {
+        match number {
+            Some(number) => Self::Nth(number, weekday),
+            None => Self::Every(weekday),
         }
-        Self::new(self.weekday, n)
-    }
-}
-
-impl PartialEq for NWeekday {
-    fn eq(&self, other: &Self) -> bool {
-        self.n == other.n && self.weekday == other.weekday
     }
 }
 
@@ -108,11 +92,9 @@ pub struct ParsedOptions {
     /// Can be a value from -53 to -1 and 1 to 53.
     pub by_week_no: Vec<i8>,
     /// The days of the week the rules should be recurring.
-    /// Should be a value of `Weekday` but with a prefix of -366 to 366 depending on frequency.
+    /// Should be a value of `Weekday` and optionally with a prefix of -366 to 366 depending on frequency.
     /// Corresponds with `BYDAY` field.
-    // TODO value should be structured differently. Meaning is now a bit unclear sometimes.
-    pub by_weekday: Vec<i16>,
-    pub by_n_weekday: Vec<Vec<i16>>,
+    pub by_weekday: Vec<NWeekday>,
     /// The hours to apply the recurrence to.
     /// Can be a value from 0 to 23.
     pub by_hour: Vec<u8>,
@@ -129,67 +111,64 @@ pub struct ParsedOptions {
     pub by_easter: Option<i16>,
 }
 
-#[derive(Debug, Clone, Default)]
-pub struct Options {
-    pub freq: Option<Frequency>,
-    pub interval: Option<u16>,
-    pub count: Option<u32>,
-    pub until: Option<DateTime>,
-    pub tz: Option<Tz>,
-    pub dt_start: Option<DateTime>,
-    pub week_start: Option<Weekday>,
-    pub by_set_pos: Option<Vec<i32>>,
-    pub by_month: Option<Vec<u8>>,
-    pub by_month_day: Option<Vec<i8>>,
-    pub by_year_day: Option<Vec<i16>>,
-    pub by_week_no: Option<Vec<i8>>,
-    pub by_weekday: Option<Vec<NWeekday>>,
-    pub by_hour: Option<Vec<u8>>,
-    pub by_minute: Option<Vec<u8>>,
-    pub by_second: Option<Vec<u8>>,
-    pub by_easter: Option<i16>,
+impl Default for ParsedOptions {
+    fn default() -> Self {
+        Self {
+            freq: Frequency::Yearly,
+            interval: 1,
+            count: None,
+            until: None,
+            tz: UTC,
+            dt_start: UTC.ymd(1970, 1, 1).and_hms(0, 0, 0), // Unix Epoch
+            week_start: Weekday::Mon,
+            by_set_pos: Vec::new(),
+            by_month: Vec::new(),
+            by_month_day: Vec::new(),
+            by_n_month_day: Vec::new(),
+            by_year_day: Vec::new(),
+            by_week_no: Vec::new(),
+            by_weekday: Vec::new(),
+            by_hour: Vec::new(),
+            by_minute: Vec::new(),
+            by_second: Vec::new(),
+            by_easter: None,
+        }
+    }
 }
 
-impl Options {
-    // TODO: better name
-    fn is_some_or_none<'a, T>(prop1: &'a Option<T>, prop2: &'a Option<T>) -> &'a Option<T> {
-        if prop2.is_some() {
-            return prop2;
-        }
-        prop1
-    }
-
-    pub fn concat(opt1: &Self, opt2: &Self) -> Self {
+impl ParsedOptions {
+    pub fn new(freq: Frequency, dt_start: DateTime) -> Self {
         Self {
-            freq: Self::is_some_or_none(&opt1.freq, &opt2.freq).clone(),
-            interval: *Self::is_some_or_none(&opt1.interval, &opt2.interval),
-            count: *Self::is_some_or_none(&opt1.count, &opt2.count),
-            until: *Self::is_some_or_none(&opt1.until, &opt2.until),
-            tz: *Self::is_some_or_none(&opt1.tz, &opt2.tz),
-            dt_start: *Self::is_some_or_none(&opt1.dt_start, &opt2.dt_start),
-            week_start: *Self::is_some_or_none(&opt1.week_start, &opt2.week_start),
-            by_set_pos: Self::is_some_or_none(&opt1.by_set_pos, &opt2.by_set_pos).clone(),
-            by_month: Self::is_some_or_none(&opt1.by_month, &opt2.by_month).clone(),
-            by_month_day: Self::is_some_or_none(&opt1.by_month_day, &opt2.by_month_day).clone(),
-            by_year_day: Self::is_some_or_none(&opt1.by_year_day, &opt2.by_year_day).clone(),
-            by_week_no: Self::is_some_or_none(&opt1.by_week_no, &opt2.by_week_no).clone(),
-            by_weekday: Self::is_some_or_none(&opt1.by_weekday, &opt2.by_weekday).clone(),
-            by_hour: Self::is_some_or_none(&opt1.by_hour, &opt2.by_hour).clone(),
-            by_minute: Self::is_some_or_none(&opt1.by_minute, &opt2.by_minute).clone(),
-            by_second: Self::is_some_or_none(&opt1.by_second, &opt2.by_second).clone(),
-            by_easter: *Self::is_some_or_none(&opt1.by_easter, &opt2.by_easter),
+            freq,
+            interval: 1,
+            count: None,
+            until: None,
+            tz: dt_start.timezone(),
+            dt_start,
+            week_start: Weekday::Mon,
+            by_set_pos: Vec::new(),
+            by_month: Vec::new(),
+            by_month_day: Vec::new(),
+            by_n_month_day: Vec::new(),
+            by_year_day: Vec::new(),
+            by_week_no: Vec::new(),
+            by_weekday: Vec::new(),
+            by_hour: Vec::new(),
+            by_minute: Vec::new(),
+            by_second: Vec::new(),
+            by_easter: None,
         }
     }
 
     /// The FREQ rule part identifies the type of recurrence rule.
     pub fn freq(mut self, freq: Frequency) -> Self {
-        self.freq = Some(freq);
+        self.freq = freq;
         self
     }
 
     /// The interval between each freq iteration.
     pub fn interval(mut self, interval: u16) -> Self {
-        self.interval = Some(interval);
+        self.interval = interval;
         self
     }
 
@@ -209,15 +188,15 @@ impl Options {
     /// The recurrence start. Recurrences generated by the rrule will
     /// be in the same time zone as the start date.
     pub fn dt_start(mut self, dt_start: DateTime) -> Self {
-        self.dt_start = Some(dt_start);
-        self.tz = Some(dt_start.timezone());
+        self.dt_start = dt_start;
+        self.tz = dt_start.timezone();
         self
     }
 
     /// The week start day. This will affect recurrences based on weekly periods.
     /// The default week start is [`Weekday::Mon`].
     pub fn week_start(mut self, week_start: Weekday) -> Self {
-        self.week_start = Some(week_start);
+        self.week_start = week_start;
         self
     }
 
@@ -227,33 +206,31 @@ impl Options {
     /// a MONTHLY frequency, and a by_weekday of (MO, TU, WE, TH, FR), will result in the last
     /// work day of every month.
     pub fn by_set_pos(mut self, by_set_pos: Vec<i32>) -> Self {
-        self.by_set_pos = Some(by_set_pos);
+        self.by_set_pos = by_set_pos;
         self
     }
 
     /// If given, it must be either an integer, or a sequence of integers, meaning
     /// the months to apply the recurrence to.
     pub fn by_month(mut self, by_month: Vec<Month>) -> Self {
-        self.by_month = Some(
-            by_month
-                .iter()
-                .map(|month| month.number_from_month() as u8)
-                .collect(),
-        );
+        self.by_month = by_month
+            .iter()
+            .map(|month| month.number_from_month() as u8)
+            .collect();
         self
     }
 
     /// If given, it must be either an integer, or a sequence of integers, meaning
     /// the month days to apply the recurrence to.
     pub fn by_month_day(mut self, by_month_day: Vec<i8>) -> Self {
-        self.by_month_day = Some(by_month_day);
+        self.by_month_day = by_month_day;
         self
     }
 
     /// If given, it must be either an integer, or a sequence of integers, meaning
     /// the year days to apply the recurrence to.
     pub fn by_year_day(mut self, by_year_day: Vec<i16>) -> Self {
-        self.by_year_day = Some(by_year_day);
+        self.by_year_day = by_year_day;
         self
     }
 
@@ -262,7 +239,7 @@ impl Options {
     /// described in ISO8601, that is, the first week of the year is that containing
     /// at least four days of the new year.
     pub fn by_week_no(mut self, by_week_no: Vec<i8>) -> Self {
-        self.by_week_no = Some(by_week_no);
+        self.by_week_no = by_week_no;
         self
     }
 
@@ -270,33 +247,30 @@ impl Options {
     /// of the weekday constants (MO, TU, etc), or a sequence of these constants.
     /// When given, these variables will define the weekdays where the recurrence
     /// will be applied.
-    pub fn by_weekday(mut self, by_weekday: Vec<Weekday>) -> Self {
-        let by_weekday = by_weekday
-            .iter()
-            .map(|w| NWeekday::new(*w, NWeekdayIdentifier::Every))
-            .collect();
-        self.by_weekday = Some(by_weekday);
+    /// An nth occurrence prefix can be given.
+    pub fn by_weekday(mut self, by_weekday: Vec<NWeekday>) -> Self {
+        self.by_weekday = by_weekday;
         self
     }
 
     /// If given, it must be either an integer, or a sequence of integers,
     /// meaning the hours to apply the recurrence to.
     pub fn by_hour(mut self, by_hour: Vec<u8>) -> Self {
-        self.by_hour = Some(by_hour);
+        self.by_hour = by_hour;
         self
     }
 
     /// If given, it must be either an integer, or a sequence of integers,
     /// meaning the minutes to apply the recurrence to.
     pub fn by_minute(mut self, by_minute: Vec<u8>) -> Self {
-        self.by_minute = Some(by_minute);
+        self.by_minute = by_minute;
         self
     }
 
     /// If given, it must be either an integer, or a sequence of integers,
     /// meaning the seconds to apply the recurrence to.
     pub fn by_second(mut self, by_second: Vec<u8>) -> Self {
-        self.by_second = Some(by_second);
+        self.by_second = by_second;
         self
     }
 
@@ -307,11 +281,5 @@ impl Options {
     pub fn by_easter(mut self, by_easter: i16) -> Self {
         self.by_easter = Some(by_easter);
         self
-    }
-
-    /// Parses the options and build `ParsedOptions` if they are valid.
-    /// Otherwise an `RRuleError` will be returned.
-    pub fn build(self) -> Result<ParsedOptions, RRuleError> {
-        parse_options(&self)
     }
 }

@@ -1,16 +1,17 @@
 use chrono::{DateTime, TimeZone, Utc, Weekday};
 use chrono_tz::{Tz, UTC};
+use rrule::NWeekday;
 use std::convert::TryInto;
 
 // https://doc.rust-lang.org/std/mem/fn.size_of.html
 
-/// Uses max 1 + 5*11 = 56 bytes
-pub fn take_vec_of_vec_i16(input: &mut &[u8]) -> Vec<Vec<i16>> {
+/// Uses max 1 + 5*4 = 21 bytes
+pub fn take_vec_of_nweekday(input: &mut &[u8]) -> Vec<NWeekday> {
     let max_amount_of_items = 5;
     let amount_of_items = take_byte(input) % (max_amount_of_items + 1);
     let mut list = vec![];
     for _i in 0..amount_of_items {
-        list.push(take_vec_i16(input));
+        list.push(take_nweekday(input));
     }
     list
 }
@@ -97,6 +98,7 @@ pub fn take_datetime(input: &mut &[u8]) -> DateTime<Tz> {
 }
 
 /// Uses 1 byte
+/// If no bytes left it will always return default (`Mon`)
 pub fn take_weekday(input: &mut &[u8]) -> Weekday {
     match take_byte(input) % 7 {
         0 => Weekday::Mon,
@@ -119,6 +121,15 @@ pub fn take_byte(input: &mut &[u8]) -> u8 {
     let (int_bytes, rest) = input.split_at(byte_len);
     *input = rest;
     u8::from_be_bytes(int_bytes.try_into().unwrap())
+}
+
+/// Uses max 1+2+1 = 4 byte
+/// If no bytes left it will always return default (`Every(Mon)`)
+pub fn take_nweekday(input: &mut &[u8]) -> NWeekday {
+    match take_byte(input) % 2 {
+        0 => NWeekday::Every(take_weekday(input)),
+        _ => NWeekday::Nth(take_data_i16(input), take_weekday(input)),
+    }
 }
 
 /// Uses 1 byte

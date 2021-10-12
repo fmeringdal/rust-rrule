@@ -5,7 +5,7 @@ use super::{
     utils::to_ordinal,
     yearinfo::{rebuild_year, YearInfo},
 };
-use crate::{core::Time, Frequency, ParsedOptions, RRuleError};
+use crate::{core::Time, Frequency, NWeekday, ParsedOptions, RRuleError};
 use chrono::{Datelike, TimeZone};
 
 pub struct IterInfo<'a> {
@@ -45,7 +45,17 @@ impl<'a> IterInfo<'a> {
             self.year_info = Some(rebuild_year(year, self.options)?);
         }
 
-        if !self.options.by_n_weekday.is_empty()
+        let by_weekday_nth_only = self
+            .options
+            .by_weekday
+            .iter()
+            .filter(|by_weekday| match by_weekday {
+                NWeekday::Every(_) => false,
+                NWeekday::Nth(_, _) => true,
+            })
+            .count();
+
+        if by_weekday_nth_only != 0
             && ((self.month_info.is_none()
                 || month != self.month_info.as_ref().unwrap().last_month)
                 || (self.month_info.is_none()

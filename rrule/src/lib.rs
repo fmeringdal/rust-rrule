@@ -103,7 +103,7 @@ mod iter;
 mod parser;
 mod validator;
 
-pub use crate::core::{Frequency, NWeekday, Options, ParsedOptions, RRule, RRuleSet};
+pub use crate::core::{Frequency, NWeekday, ParsedOptions, RRule, RRuleSet};
 pub use chrono::Weekday;
 pub use error::RRuleError;
 pub use iter::{RRuleIter, RRuleSetIter};

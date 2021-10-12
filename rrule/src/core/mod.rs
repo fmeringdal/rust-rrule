@@ -5,5 +5,5 @@ mod rruleset;
 
 pub use self::rrule::RRule;
 pub use datetime::{DateTime, Time};
-pub use options::{Frequency, NWeekday, NWeekdayIdentifier, Options, ParsedOptions};
+pub use options::{Frequency, NWeekday, ParsedOptions};
 pub use rruleset::RRuleSet;

@@ -1,3 +1,3 @@
-# Manual Option
+# Manual ParsedOptions
 
-Create an `Options` object to create a `RRule`.
+Create an `ParsedOptions` object to create a `RRule`.

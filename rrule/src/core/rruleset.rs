@@ -1,14 +1,28 @@
 use super::{datetime::DateTime, rrule::RRule};
 use crate::{parser::build_rruleset, RRuleError};
+use chrono::TimeZone;
+use chrono_tz::UTC;
 use std::str::FromStr;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct RRuleSet {
     pub rrule: Vec<RRule>,
     pub rdate: Vec<DateTime>,
     pub exrule: Vec<RRule>,
     pub exdate: Vec<DateTime>,
-    pub dt_start: Option<DateTime>,
+    pub dt_start: DateTime,
+}
+
+impl Default for RRuleSet {
+    fn default() -> Self {
+        Self {
+            rrule: vec![],
+            rdate: vec![],
+            exrule: vec![],
+            exdate: vec![],
+            dt_start: UTC.ymd(1970, 1, 1).and_hms(0, 0, 0), // Unix Epoch
+        }
+    }
 }
 
 impl RRuleSet {

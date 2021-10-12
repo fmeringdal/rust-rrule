@@ -1,6 +1,6 @@
 use chrono::{Datelike, TimeZone};
 use chrono_tz::UTC;
-use rrule::{Frequency, Options, RRule, RRuleSet, Weekday};
+use rrule::{Frequency, NWeekday, ParsedOptions, RRule, RRuleSet, Weekday};
 
 /// ## Construct `RRuleSet` from one `rrule` and `exrule`
 /// The rrule will occur weekly on Tuesday and Wednesday and the exrule
@@ -8,25 +8,24 @@ use rrule::{Frequency, Options, RRule, RRuleSet, Weekday};
 /// weekly recurrences on Wednesday only.
 fn main() {
     // Build options for rrule that occurs weekly on Tuesday and Wednesday
-    let rrule_options = Options::default()
+    let rrule_options = ParsedOptions::default()
         .dt_start(UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
         .count(4)
         .freq(Frequency::Weekly)
-        .by_weekday(vec![Weekday::Tue, Weekday::Wed])
-        .build()
-        .unwrap();
+        .by_weekday(vec![
+            NWeekday::Every(Weekday::Tue),
+            NWeekday::Every(Weekday::Wed),
+        ]);
 
     // Construct `RRule` from options
     let rrule = RRule::new(rrule_options).expect("RRule invalid");
 
     // Build options for exrule that occurs weekly on Wednesday
-    let exrule_options = Options::default()
+    let exrule_options = ParsedOptions::default()
         .dt_start(UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
         .count(4)
         .freq(Frequency::Weekly)
-        .by_weekday(vec![Weekday::Wed])
-        .build()
-        .unwrap();
+        .by_weekday(vec![NWeekday::Every(Weekday::Wed)]);
 
     // Construct `RRule` from options
     let exrule = RRule::new(exrule_options).expect("RRule invalid");

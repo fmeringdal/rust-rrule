@@ -14,6 +14,8 @@ impl RRule {
     /// creating an RRule struct.
     /// If the options are not valid it will return an error.
     pub fn new(options: ParsedOptions) -> Result<Self, RRuleError> {
+        let datetime = options.dt_start;
+        let options = crate::parser::finalize_parsed_options(options, &datetime)?;
         let validated_options = validate_options(options)?;
         Ok(Self {
             options: validated_options,

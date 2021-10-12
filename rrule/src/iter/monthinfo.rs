@@ -1,5 +1,5 @@
 use super::utils::pymod;
-use crate::{Frequency, ParsedOptions, RRuleError};
+use crate::{Frequency, NWeekday, ParsedOptions, RRuleError};
 
 #[derive(Debug)]
 pub struct MonthInfo {
@@ -73,29 +73,34 @@ pub fn rebuild_month(
 
     // Loop over `ranges`
     for (first, last) in ranges {
-        for by_n_week_day in &options.by_n_weekday {
-            let mut i: isize;
-            let weekday = *by_n_week_day
-                .get(0)
-                .ok_or_else(|| RRuleError::new_iter_err("Index out of bounds `by_n_week_day`"))?;
-            let n = *by_n_week_day
-                .get(1)
-                .ok_or_else(|| RRuleError::new_iter_err("Index out of bounds `by_n_week_day`"))?;
-            if n < 0 {
-                i = last + (n as isize + 1) * 7;
-                let weekday_from_mask: isize = *weekday_mask.get(i as usize).ok_or_else(|| {
-                    RRuleError::new_iter_err("Index out of bounds `weekday_from_mask`")
-                })? as isize;
-                i -= pymod(weekday_from_mask - weekday as isize, 7);
-            } else {
-                i = first + (n as isize - 1) * 7;
-                let weekday_from_mask: isize = *weekday_mask.get(i as usize).ok_or_else(|| {
-                    RRuleError::new_iter_err("Index out of bounds `weekday_from_mask`")
-                })? as isize;
-                i += pymod(7 - weekday_from_mask + weekday as isize, 7);
-            }
-            if first <= i && i <= last {
-                result.neg_weekday_mask[i as usize] = 1;
+        for by_weekday in &options.by_weekday {
+            // Only check Nth occurrences here
+            if let NWeekday::Nth(number, weekday) = by_weekday {
+                let mut i: isize;
+                if *number < 0 {
+                    i = last + (*number as isize + 1) * 7;
+                    let weekday_from_mask: isize =
+                        *weekday_mask.get(i as usize).ok_or_else(|| {
+                            RRuleError::new_iter_err("Index out of bounds `weekday_from_mask`")
+                        })? as isize;
+                    i -= pymod(
+                        weekday_from_mask - weekday.num_days_from_monday() as isize,
+                        7,
+                    );
+                } else {
+                    i = first + (*number as isize - 1) * 7;
+                    let weekday_from_mask: isize =
+                        *weekday_mask.get(i as usize).ok_or_else(|| {
+                            RRuleError::new_iter_err("Index out of bounds `weekday_from_mask`")
+                        })? as isize;
+                    i += pymod(
+                        7 - weekday_from_mask + weekday.num_days_from_monday() as isize,
+                        7,
+                    );
+                }
+                if first <= i && i <= last {
+                    result.neg_weekday_mask[i as usize] = 1;
+                }
             }
         }
     }

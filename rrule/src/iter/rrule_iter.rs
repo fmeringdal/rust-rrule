@@ -198,7 +198,6 @@ impl<'a> RRuleIter<'a> {
 
             // Handle frequency and interval
             self.counter_date = increment_counter_date(self.counter_date, &options, filtered)?;
-            // dbg!(self.counter_date);
 
             if options.freq == Frequency::Hourly
                 || options.freq == Frequency::Minutely

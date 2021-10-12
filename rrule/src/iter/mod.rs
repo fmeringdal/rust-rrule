@@ -13,7 +13,7 @@ mod yearinfo;
 use crate::{
     core::{DateTime, Time},
     validator::FREQ_HOURLY_INTERVAL_MAX,
-    Frequency, ParsedOptions, RRuleError,
+    Frequency, NWeekday, ParsedOptions, RRuleError,
 };
 use chrono::{Datelike, Duration, Timelike};
 use iterinfo::IterInfo;
@@ -321,9 +321,18 @@ fn is_filtered(
     let by_week_no: bool =
         !options.by_week_no.is_empty() && (ii.week_no_mask().unwrap()[current_day as usize]) == 0;
 
-    let by_weekday: bool = !options.by_weekday.is_empty()
+    let by_weekday_every_week_only = options
+        .by_weekday
+        .iter()
+        .filter_map(|by_weekday| match by_weekday {
+            // Filter out only `Every` occurrences.
+            NWeekday::Every(weekday) => Some(weekday.num_days_from_monday() as i16),
+            NWeekday::Nth(_number, _weekday) => None,
+        })
+        .collect::<Vec<_>>();
+    let by_weekday: bool = !by_weekday_every_week_only.is_empty()
         && !includes(
-            &options.by_weekday,
+            &by_weekday_every_week_only,
             &(ii.weekday_mask()[current_day as usize] as i16),
         );
 

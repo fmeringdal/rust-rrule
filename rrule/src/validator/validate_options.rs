@@ -1,6 +1,6 @@
 use std::{fmt::Display, ops::RangeInclusive};
 
-use crate::{Frequency, ParsedOptions, RRuleError};
+use crate::{Frequency, NWeekday, ParsedOptions, RRuleError};
 
 /// Range of values that a weekday can be.
 /// Range: `0..=6`
@@ -165,11 +165,30 @@ pub fn validate_options_forced(option: &ParsedOptions) -> Result<(), RRuleError>
     }
 
     // By_weekday:
-    // TODO: Value should be structured differently.
-    validate_range_for_vec(&((-366 - 7)..=(366 + 7)), &option.by_weekday, "BYDAY")?;
-
-    // By_n_week_day:
-    // TODO? Not part of spec itself. Used in iter? Should this by empty at start?
+    // - Check if value for `Nth` is within range.
+    //   Range depends on frequency and can only happen weekly, so `/7` from normal count.
+    let range = match option.freq {
+        Frequency::Yearly => (-366 / 7)..=(366 / 7 + 1),
+        Frequency::Monthly => (-31 / 7)..=(31 / 7 + 1),
+        Frequency::Weekly => (-53 / 7)..=(53 / 7 + 1),
+        Frequency::Daily => (-366 / 7)..=(366 / 7 + 1), // TODO is this range correct?
+        Frequency::Hourly => (-24 / 7)..=(24 / 7 + 1),
+        Frequency::Minutely => (-60 / 7)..=(60 / 7 + 1),
+        Frequency::Secondly => (-60 / 7)..=(60 / 7 + 1),
+    };
+    for item in &option.by_weekday {
+        if let NWeekday::Nth(number, _weekday) = item {
+            // If value not in range = error
+            if !range.contains(number) {
+                return Err(RRuleError::new_validation_err(format!(
+                    "`BYDAY` nth occurrence is `{}`, but is not allowed outside of the range: `{}..={}`.",
+                    number,
+                    range.start(),
+                    range.end()
+                )));
+            }
+        }
+    }
 
     // By_hour:
     // - Can be a value from 0 to 23.

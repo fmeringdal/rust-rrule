@@ -16,21 +16,27 @@ returns all dates it could get until it encountered an error.
 See [ReadMe](README.md#validation_limits) for more info.
 
 ### Changed
-- License change, from MIT to (MIT or Apache 2.0).
+- License change, from MIT to (MIT or Apache 2.0). (#27)
 - Massive code restructuring. Split into `core`, `iter`, `parser` and `validator`.
 - Renamed `Frequenzy` to `Frequency`.
 - Add limit to `all()`, prevent infinite loops.
+- `ParsedOptions` and `Options` are merged together. (#22)
 - `ParsedOptions` and `Options` change of types and field names.
 - `Options` functions changed, for example `byminute` -> `by_minute`.
-- `by_easter` is now opt-in with feature flag `by-easter`.
+- `by_easter` is now opt-in with feature flag `by-easter`. (#26)
 - `RRule` can only be crated using `new` function with a valid `ParsedOptions`.
 - `RRule.option` is no longer public, but can be read by using `get_options()`.
 - `RRuleIter` and `RRuleSetIter` are now part of the public API.
+- `NWeekday` has totally changed, but serves the same purpose.
 
 ### Deprecated
 
 ### Removed
 - `RRuleSet::new()` replaced with `RRuleSet::default()`.
+- `ParsedOptions` and `Options` are now combined as `ParsedOptions`. (#22)
+- `NWeekdayIdentifier` replaced with new version of `NWeekday`.
+- `by_n_weekday` field removed from `ParsedOptions`, combined into `by_weekday`.
+- `concat` and `build` in `Options` are removed, no longer needed.
 
 ### Fixed
 - Replaced panic on incorrect datetime with error.

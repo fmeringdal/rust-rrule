@@ -1,9 +1,27 @@
+#![allow(dead_code)]
+#![allow(unused_imports)]
 use chrono::{DateTime, TimeZone, Weekday};
 use chrono_tz::{Tz, UTC};
 use rrule::{Frequency, ParsedOptions, RRule};
 
 /// This function can be used to test anything and can be changes as you wish.
 pub fn run_debug_function() {
+    test_from_string();
+    // test_parsed_options();
+}
+
+fn test_from_string() {
+    let rrule: RRule = "DTSTART;TZID=America/New_York:19970519T090000\n\
+    RRULE:FREQ=YEARLY;BYDAY=20MO"
+        .parse()
+        .unwrap();
+    println!("RRule: {:#?}", rrule);
+    let (list, err) = rrule.all_with_error(20);
+    println!("Error: {:#?}", err);
+    crate::print_all_datetimes(list);
+}
+
+fn test_parsed_options() {
     let options = ParsedOptions {
         freq: Frequency::Daily,
         interval: 1,
@@ -21,7 +39,6 @@ pub fn run_debug_function() {
         by_second: vec![0],
         by_year_day: vec![],
         by_month_day: vec![],
-        by_n_weekday: vec![],
         by_n_month_day: vec![],
         by_easter: Some(0),
     };

@@ -22,18 +22,17 @@ pub fn take_rrule_from_data(mut data: &[u8]) -> Option<RRule> {
     // 6  => by_n_month_day
     // 11 => by_year_day
     // 6  => by_week_no
-    // 11 => by_weekday
-    // 56 => by_n_weekday
+    // 21 => by_weekday
     // 6  => by_hour
     // 6  => by_minute
     // 6  => by_second
     // 3  => by_easter
     // ---------------
-    // Total: 212 bytes
+    // Total: 166 bytes
     //
     // We use at least x bytes of data.
     // If we don't have enough data it will just use default data (`0` or `vec![]`).
-    // if data.len() < 212 {
+    // if data.len() < 166 {
     //     return None;
     // }
     let options = ParsedOptions {
@@ -70,8 +69,7 @@ pub fn take_rrule_from_data(mut data: &[u8]) -> Option<RRule> {
         by_n_month_day: take_vec_i8(&mut data),
         by_year_day: take_vec_i16(&mut data),
         by_week_no: take_vec_i8(&mut data),
-        by_weekday: take_vec_i16(&mut data),
-        by_n_weekday: take_vec_of_vec_i16(&mut data),
+        by_weekday: take_vec_of_nweekday(&mut data),
         by_hour: take_vec_u8(&mut data),
         by_minute: take_vec_u8(&mut data),
         by_second: take_vec_u8(&mut data),
