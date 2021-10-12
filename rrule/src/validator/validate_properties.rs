@@ -31,7 +31,7 @@ pub static YEAR_RANGE: RangeInclusive<i32> = -262_000..=262_000;
 /// This check should always be done and just enforces limits set by the standard.
 /// Validation will always be enforced and can not be disabled using feature flags.
 ///
-pub fn validate_options_forced(option: &RRuleProperties) -> Result<(), RRuleError> {
+pub fn validate_properties_forced(option: &RRuleProperties) -> Result<(), RRuleError> {
     // Freq:
     // - Enum, so always valid on its own.
 

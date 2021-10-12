@@ -67,7 +67,7 @@ pub(crate) fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleError> {
 /// If RRule contains invalid parts and [`RRuleError`] will be returned.
 /// This should never panic, but it might in odd cases.
 /// Please report if it does panic.
-pub(crate) fn parse_rrule_string_to_options(input: &str) -> Result<RRuleProperties, RRuleError> {
+pub(crate) fn parse_rrule_string_to_properties(input: &str) -> Result<RRuleProperties, RRuleError> {
     let input = preprocess_rrule_string(input);
 
     let ParsedInput {
@@ -90,71 +90,71 @@ pub(crate) fn parse_rrule_string_to_options(input: &str) -> Result<RRuleProperti
 }
 
 /// Fill in some additional field in order to make iter work correctly.
-pub(crate) fn finalize_parsed_options(
-    mut options: RRuleProperties,
+pub(crate) fn finalize_parsed_properties(
+    mut properties: RRuleProperties,
     dt_start: &DateTime,
 ) -> Result<RRuleProperties, RRuleError> {
     use std::cmp::Ordering;
     // TEMP: move negative months to other list
     let mut by_month_day = vec![];
-    let mut by_n_month_day = options.by_n_month_day;
-    for by_month_day_item in options.by_month_day {
+    let mut by_n_month_day = properties.by_n_month_day;
+    for by_month_day_item in properties.by_month_day {
         match by_month_day_item.cmp(&0) {
             Ordering::Greater => by_month_day.push(by_month_day_item),
             Ordering::Less => by_n_month_day.push(by_month_day_item),
             Ordering::Equal => {}
         }
     }
-    options.by_month_day = by_month_day;
-    options.by_n_month_day = by_n_month_day;
+    properties.by_month_day = by_month_day;
+    properties.by_n_month_day = by_n_month_day;
 
     // Can only be set to true if feature flag is set.
     let by_easter_is_some = if cfg!(feature = "by-easter") {
-        options.by_easter.is_some()
+        properties.by_easter.is_some()
     } else {
         false
     };
 
-    // Add some freq specific additional options
-    if !(!options.by_week_no.is_empty()
-        || !options.by_year_day.is_empty()
-        || !options.by_month_day.is_empty()
-        || !options.by_n_month_day.is_empty()
-        || !options.by_weekday.is_empty()
+    // Add some freq specific additional properties
+    if !(!properties.by_week_no.is_empty()
+        || !properties.by_year_day.is_empty()
+        || !properties.by_month_day.is_empty()
+        || !properties.by_n_month_day.is_empty()
+        || !properties.by_weekday.is_empty()
         || by_easter_is_some)
     {
-        match options.freq {
+        match properties.freq {
             Frequency::Yearly => {
-                if options.by_month.is_empty() {
-                    options.by_month = vec![dt_start.month() as u8];
+                if properties.by_month.is_empty() {
+                    properties.by_month = vec![dt_start.month() as u8];
                 }
-                options.by_month_day = vec![dt_start.day() as i8];
+                properties.by_month_day = vec![dt_start.day() as i8];
             }
             Frequency::Monthly => {
-                options.by_month_day = vec![dt_start.day() as i8];
+                properties.by_month_day = vec![dt_start.day() as i8];
             }
             Frequency::Weekly => {
-                options.by_weekday = vec![NWeekday::Every(dt_start.weekday())];
+                properties.by_weekday = vec![NWeekday::Every(dt_start.weekday())];
             }
             _ => (),
         };
     }
 
     // by_hour
-    if options.by_hour.is_empty() && options.freq < Frequency::Hourly {
-        options.by_hour = vec![dt_start.hour() as u8];
+    if properties.by_hour.is_empty() && properties.freq < Frequency::Hourly {
+        properties.by_hour = vec![dt_start.hour() as u8];
     }
 
     // by_minute
-    if options.by_minute.is_empty() && options.freq < Frequency::Minutely {
-        options.by_minute = vec![dt_start.minute() as u8];
+    if properties.by_minute.is_empty() && properties.freq < Frequency::Minutely {
+        properties.by_minute = vec![dt_start.minute() as u8];
     }
 
     // by_second
-    if options.by_second.is_empty() && options.freq < Frequency::Secondly {
-        options.by_second = vec![dt_start.second() as u8];
+    if properties.by_second.is_empty() && properties.freq < Frequency::Secondly {
+        properties.by_second = vec![dt_start.second() as u8];
     }
-    Ok(options)
+    Ok(properties)
 }
 
 fn parse_datestring_bit<T: FromStr>(
@@ -870,7 +870,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleError> {
                     continue;
                 }
 
-                rrule_vals.push(finalize_parsed_options(parse_rule(line)?, &dt_start)?);
+                rrule_vals.push(finalize_parsed_properties(parse_rule(line)?, &dt_start)?);
             }
             "EXRULE" => {
                 if !parsed_line.params.is_empty() {
@@ -882,7 +882,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleError> {
                     continue;
                 }
                 // TODO: why is it parsed_line.value here and line for RRULE ?? Do some testing
-                exrule_vals.push(finalize_parsed_options(
+                exrule_vals.push(finalize_parsed_properties(
                     parse_rule(&parsed_line.value)?,
                     &dt_start,
                 )?);
@@ -1018,7 +1018,7 @@ mod test {
 
     #[test]
     fn it_works_2() {
-        let res = parse_rrule_string_to_options("DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR");
+        let res = parse_rrule_string_to_properties("DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR");
         assert!(res.is_ok());
     }
 
@@ -1040,9 +1040,9 @@ mod test {
         assert!(res.is_ok());
         let res = res.unwrap();
         assert_eq!(res.rrule.len(), 1);
-        assert_eq!(res.rrule[0].get_options().interval, 1);
-        assert_eq!(res.rrule[0].get_options().count.unwrap(), 5);
-        assert_eq!(res.rrule[0].get_options().freq, Frequency::Daily);
+        assert_eq!(res.rrule[0].get_properties().interval, 1);
+        assert_eq!(res.rrule[0].get_properties().count.unwrap(), 5);
+        assert_eq!(res.rrule[0].get_properties().freq, Frequency::Daily);
     }
 
     #[test]
@@ -1053,8 +1053,8 @@ mod test {
         assert!(res.is_ok());
         let res = res.unwrap();
         assert_eq!(res.exrule.len(), 1);
-        assert_eq!(res.exrule[0].get_options().interval, 2);
-        assert_eq!(res.exrule[0].get_options().freq, Frequency::Weekly);
+        assert_eq!(res.exrule[0].get_properties().interval, 2);
+        assert_eq!(res.exrule[0].get_properties().freq, Frequency::Weekly);
     }
 
     ////////////////////////////////////////////////////
@@ -1074,7 +1074,7 @@ mod test {
             "RRUle:test",
         ];
         for test_case in &test_cases {
-            let res = parse_rrule_string_to_options(test_case);
+            let res = parse_rrule_string_to_properties(test_case);
             assert!(res.is_err());
         }
     }
@@ -1152,7 +1152,7 @@ mod test {
 
     #[test]
     fn parses_byday_as_nweekday_when_n_is_first() {
-        let res = parse_rrule_string_to_options("DTSTART;VALUE=DATE:20200701\nRRULE:FREQ=MONTHLY;UNTIL=20210303T090000Z;INTERVAL=1;BYDAY=1WE").unwrap();
+        let res = parse_rrule_string_to_properties("DTSTART;VALUE=DATE:20200701\nRRULE:FREQ=MONTHLY;UNTIL=20210303T090000Z;INTERVAL=1;BYDAY=1WE").unwrap();
         assert_eq!(res.by_weekday, vec![NWeekday::new(Some(1), Weekday::Wed)]);
     }
 
@@ -1219,7 +1219,7 @@ mod test {
     #[test]
     #[ignore = "`dt_start` should be set, although error message is incorrect."]
     fn parses_rrule_without_dtstart() {
-        let res = parse_rrule_string_to_options("FREQ=DAILY;COUNT=7");
+        let res = parse_rrule_string_to_properties("FREQ=DAILY;COUNT=7");
         println!("Res: {:?}", res);
         assert!(res.is_ok());
         let res = res.unwrap();
@@ -1337,14 +1337,14 @@ mod test {
     fn test_zulu() {
         let rrule_str = "DTSTART:20210405T150000Z\nRRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO";
         let rrule: RRule = rrule_str.parse().unwrap();
-        assert_eq!(rrule.get_options().freq, Frequency::Weekly);
+        assert_eq!(rrule.get_properties().freq, Frequency::Weekly);
         assert_eq!(
-            rrule.get_options().by_weekday,
+            rrule.get_properties().by_weekday,
             vec![NWeekday::new(None, Weekday::Mon)]
         );
-        assert_eq!(rrule.get_options().interval, 1);
+        assert_eq!(rrule.get_properties().interval, 1);
         assert_eq!(
-            rrule.get_options().dt_start,
+            rrule.get_properties().dt_start,
             UTC.ymd(2021, 4, 5).and_hms(15, 0, 0)
         );
     }

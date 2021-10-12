@@ -24,7 +24,7 @@ See [ReadMe](README.md#validation_limits) for more info.
 - `Options` functions changed, for example `byminute` -> `by_minute`.
 - `by_easter` is now opt-in with feature flag `by-easter`. (#26)
 - `RRule` can only be crated using `new` function with a valid `RRuleProperties`.
-- `RRule.option` is no longer public, but can be read by using `get_options()`.
+- `RRule.option` is no longer public, but can be read by using `get_properties()`.
 - `RRuleIter` and `RRuleSetIter` are now part of the public API.
 - `NWeekday` has totally changed, but serves the same purpose.
 

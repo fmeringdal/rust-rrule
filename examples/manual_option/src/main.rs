@@ -3,14 +3,14 @@ use chrono_tz::UTC;
 use rrule::{Frequency, RRule, RRuleProperties};
 
 fn main() {
-    // Build options that starts first day in 2020 at 9:00AM and occurs daily 5 times
-    let options = RRuleProperties::default()
+    // Build properties that starts first day in 2020 at 9:00AM and occurs daily 5 times
+    let properties = RRuleProperties::default()
         .dt_start(UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
         .count(5)
         .freq(Frequency::Daily);
 
-    // Construct `RRule` from options
-    let rrule = RRule::new(options).expect("RRule invalid");
+    // Construct `RRule` from properties
+    let rrule = RRule::new(properties).expect("RRule invalid");
     let recurrences = rrule.all(100);
     for i in 0..5 {
         assert_eq!(recurrences[i].year(), 2020);

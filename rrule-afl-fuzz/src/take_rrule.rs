@@ -35,7 +35,7 @@ pub fn take_rrule_from_data(mut data: &[u8]) -> Option<RRule> {
     // if data.len() < 166 {
     //     return None;
     // }
-    let options = RRuleProperties {
+    let properties = RRuleProperties {
         freq: match take_byte(&mut data) % 7 {
             0 => Frequency::Yearly,
             1 => Frequency::Monthly,
@@ -82,7 +82,7 @@ pub fn take_rrule_from_data(mut data: &[u8]) -> Option<RRule> {
         #[cfg(not(feature = "by-easter"))]
         by_easter: None,
     };
-    match RRule::new(options) {
+    match RRule::new(properties) {
         Ok(rrule) => Some(rrule),
         Err(err) => {
             println!("{}", err);

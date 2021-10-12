@@ -12,29 +12,29 @@ pub struct IterInfo<'a> {
     year_info: Option<YearInfo>,
     month_info: Option<MonthInfo>,
     easter_mask: Option<Vec<isize>>,
-    options: &'a RRuleProperties,
+    properties: &'a RRuleProperties,
 }
 
 impl<'a> IterInfo<'a> {
     /// Only used to create a dummy instance of this because
     /// `into_iter` does not return an error.
-    pub(crate) fn new_no_rebuild(options: &'a RRuleProperties) -> Self {
+    pub(crate) fn new_no_rebuild(properties: &'a RRuleProperties) -> Self {
         Self {
-            options,
+            properties,
             year_info: None,
             month_info: None,
             easter_mask: None,
         }
     }
 
-    pub fn new(options: &'a RRuleProperties) -> Result<Self, RRuleError> {
+    pub fn new(properties: &'a RRuleProperties) -> Result<Self, RRuleError> {
         let mut ii = Self {
-            options,
+            properties,
             year_info: None,
             month_info: None,
             easter_mask: None,
         };
-        let counter_date = ii.options.dt_start;
+        let counter_date = ii.properties.dt_start;
         ii.rebuild(counter_date.year(), counter_date.month() as u8)?;
 
         Ok(ii)
@@ -42,11 +42,11 @@ impl<'a> IterInfo<'a> {
 
     pub fn rebuild(&mut self, year: i32, month: u8) -> Result<(), RRuleError> {
         if self.month_info.is_none() || year != self.month_info.as_ref().unwrap().last_year {
-            self.year_info = Some(rebuild_year(year, self.options)?);
+            self.year_info = Some(rebuild_year(year, self.properties)?);
         }
 
         let by_weekday_nth_only = self
-            .options
+            .properties
             .by_weekday
             .iter()
             .filter(|by_weekday| match by_weekday {
@@ -68,13 +68,13 @@ impl<'a> IterInfo<'a> {
                     year_info.year_len,
                     year_info.month_range,
                     year_info.weekday_mask,
-                    self.options,
+                    self.properties,
                 )?);
             }
         }
 
         #[cfg(feature = "by-easter")]
-        if let Some(by_easter) = self.options.by_easter {
+        if let Some(by_easter) = self.properties.by_easter {
             self.easter_mask = Some(easter(year, by_easter)?);
         }
         Ok(())
@@ -194,7 +194,7 @@ impl<'a> IterInfo<'a> {
             set[i as usize] = i;
             i += 1;
             if self.weekday_mask()[i as usize]
-                == self.options.week_start.num_days_from_monday() as u8
+                == self.properties.week_start.num_days_from_monday() as u8
             {
                 break;
             }
@@ -222,7 +222,7 @@ impl<'a> IterInfo<'a> {
 
     pub fn hour_timeset(&self, hour: u8, _minute: u8, second: u8, millisecond: u16) -> Vec<Time> {
         let mut set = self
-            .options
+            .properties
             .by_minute
             .iter()
             .map(|minute| self.min_timeset(hour, *minute, second, millisecond))
@@ -234,7 +234,7 @@ impl<'a> IterInfo<'a> {
 
     pub fn min_timeset(&self, hour: u8, minute: u8, _second: u8, millisecond: u16) -> Vec<Time> {
         let mut set = self
-            .options
+            .properties
             .by_second
             .iter()
             .map(|second| Time::new(hour, minute, *second, millisecond))
@@ -279,7 +279,7 @@ impl<'a> IterInfo<'a> {
         }
     }
 
-    pub fn get_options(&'a self) -> &'a RRuleProperties {
-        self.options
+    pub fn get_properties(&'a self) -> &'a RRuleProperties {
+        self.properties
     }
 }

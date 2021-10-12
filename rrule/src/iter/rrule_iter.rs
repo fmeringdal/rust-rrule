@@ -38,12 +38,12 @@ impl<'a> RRuleIter<'a> {
     }
 
     fn new(rrule: &'a RRule) -> Result<Self, RRuleError> {
-        let ii = IterInfo::new(rrule.get_options())?;
-        let ii_options = ii.get_options();
-        let counter_date = ii_options.dt_start;
+        let ii = IterInfo::new(rrule.get_properties())?;
+        let ii_properties = ii.get_properties();
+        let counter_date = ii_properties.dt_start;
 
-        let timeset = make_timeset(&ii, &counter_date, ii_options)?;
-        let count = ii_options.count;
+        let timeset = make_timeset(&ii, &counter_date, ii_properties)?;
+        let count = ii_properties.count;
 
         Ok(RRuleIter {
             counter_date,
@@ -73,14 +73,14 @@ impl<'a> RRuleIter<'a> {
         };
 
         // Get general info about recurrence rules
-        let options = self.ii.get_options().clone();
+        let properties = self.ii.get_properties().clone();
 
-        if options.interval == 0 {
+        if properties.interval == 0 {
             return Ok(true);
         }
 
         // If `counter_date` is later then `until` date, we can stop
-        if let Some(until) = options.until {
+        if let Some(until) = properties.until {
             if self.counter_date > until {
                 return Ok(false);
             }
@@ -100,14 +100,14 @@ impl<'a> RRuleIter<'a> {
             }
 
             let (dayset, start, end) = self.ii.get_dayset(
-                &self.ii.get_options().freq,
+                &self.ii.get_properties().freq,
                 self.counter_date.year(),
                 self.counter_date.month() as u8,
                 self.counter_date.day() as u8,
             )?;
 
             // If `counter_date` is later then `until` date, we can stop
-            if let Some(until) = options.until {
+            if let Some(until) = properties.until {
                 if self.counter_date > until {
                     return Ok(false);
                 }
@@ -124,29 +124,29 @@ impl<'a> RRuleIter<'a> {
                 .map(|day| day.map(|day| day as i32))
                 .collect::<Vec<Option<i32>>>();
 
-            if !options.by_set_pos.is_empty() {
+            if !properties.by_set_pos.is_empty() {
                 let pos_list = build_pos_list(
-                    &options.by_set_pos,
+                    &properties.by_set_pos,
                     &self.timeset,
                     start,
                     end,
                     &self.ii,
                     &dayset,
-                    &options.tz,
+                    &properties.tz,
                 )?;
 
                 for res in pos_list {
-                    if options.until.is_some() && res > options.until.unwrap() {
+                    if properties.until.is_some() && res > properties.until.unwrap() {
                         continue; // or break ?
                     }
 
-                    if res >= options.dt_start {
+                    if res >= properties.dt_start {
                         self.buffer.push_back(res);
 
                         if let Some(count) = self.count {
                             if count > 0 {
                                 self.count = Some(count - 1);
-                                // self.ii.options.count = Some(count - 1);
+                                // self.ii.properties.count = Some(count - 1);
                             }
                             // This means that the real count is 0, because of the decrement above
                             if count == 1 {
@@ -168,23 +168,23 @@ impl<'a> RRuleIter<'a> {
                     // just below we'll end up double-applying.
                     let date = from_ordinal(year_ordinal + current_day as i64, &UTC);
                     // We apply the local-TZ here,
-                    let date = options.tz.ymd(date.year(), date.month(), date.day());
+                    let date = properties.tz.ymd(date.year(), date.month(), date.day());
                     for timeset in &self.timeset {
                         let res = date
                             .and_hms(0, 0, 0)
                             .checked_add_signed(timeset.duration_from_midnight())
                             .ok_or_else(|| RRuleError::new_iter_err("Invalid datetime."))?;
 
-                        if options.until.is_some() && res > options.until.unwrap() {
+                        if properties.until.is_some() && res > properties.until.unwrap() {
                             return Ok(true);
                         }
-                        if res >= options.dt_start {
+                        if res >= properties.dt_start {
                             self.buffer.push_back(res);
 
                             if let Some(count) = self.count {
                                 if count > 0 {
                                     self.count = Some(count - 1);
-                                    // self.ii.options.count = Some(count - 1);
+                                    // self.ii.properties.count = Some(count - 1);
                                 }
                                 // This means that the real count is 0, because of the decrement above
                                 if count == 1 {
@@ -197,14 +197,14 @@ impl<'a> RRuleIter<'a> {
             }
 
             // Handle frequency and interval
-            self.counter_date = increment_counter_date(self.counter_date, &options, filtered)?;
+            self.counter_date = increment_counter_date(self.counter_date, &properties, filtered)?;
 
-            if options.freq == Frequency::Hourly
-                || options.freq == Frequency::Minutely
-                || options.freq == Frequency::Secondly
+            if properties.freq == Frequency::Hourly
+                || properties.freq == Frequency::Minutely
+                || properties.freq == Frequency::Secondly
             {
                 self.timeset = self.ii.get_timeset(
-                    &options.freq,
+                    &properties.freq,
                     self.counter_date.hour() as u8,
                     self.counter_date.minute() as u8,
                     self.counter_date.second() as u8,
@@ -264,8 +264,8 @@ impl<'a> IntoIterator for &'a RRule {
                 let error = Some(err);
                 // This is mainly a dummy object, as it will ways return the error when called.
                 RRuleIter {
-                    counter_date: self.get_options().dt_start,
-                    ii: IterInfo::new_no_rebuild(self.get_options()),
+                    counter_date: self.get_properties().dt_start,
+                    ii: IterInfo::new_no_rebuild(self.get_properties()),
                     timeset: vec![],
                     buffer: VecDeque::new(),
                     finished: false,

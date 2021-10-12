@@ -59,7 +59,7 @@ fn base_year_masks(year: i32) -> BaseMasks {
     }
 }
 
-pub fn rebuild_year(year: i32, options: &RRuleProperties) -> Result<YearInfo, RRuleError> {
+pub fn rebuild_year(year: i32, properties: &RRuleProperties) -> Result<YearInfo, RRuleError> {
     let first_year_day = Utc.ymd(year, 1, 1).and_hms_milli(0, 0, 0, 0);
 
     let year_len = get_year_len(year) as u32;
@@ -82,20 +82,20 @@ pub fn rebuild_year(year: i32, options: &RRuleProperties) -> Result<YearInfo, RR
         weekday_mask: base_masks.weekday_mask,
     };
 
-    if options.by_week_no.is_empty() {
+    if properties.by_week_no.is_empty() {
         return Ok(result);
     }
 
     let mut week_no_mask = vec![0; year_len as usize + 7];
 
-    let option_week_start = options.week_start.num_days_from_monday() as u8;
+    let option_week_start = properties.week_start.num_days_from_monday() as u8;
     let mut no1_week_start = pymod((7 - year_weekday + option_week_start) as isize, 7);
     let first_week_start = no1_week_start;
     let year_len_ext = if no1_week_start >= 4 {
         no1_week_start = 0;
         // Number of days in the year, plus the days we got
         // from last year.
-        result.year_len as isize + pymod(year_weekday as isize - options.week_start as isize, 7)
+        result.year_len as isize + pymod(year_weekday as isize - properties.week_start as isize, 7)
     } else {
         // Number of days in the year, minus the days we
         // left in last year.
@@ -107,7 +107,7 @@ pub fn rebuild_year(year: i32, options: &RRuleProperties) -> Result<YearInfo, RR
     //const num_weeks = Math.floor(div + mod / 4)
     let num_weeks = div + (year_mod / 4);
 
-    for &(mut n) in &options.by_week_no {
+    for &(mut n) in &properties.by_week_no {
         if n < 0 {
             n += (num_weeks + 1) as i8;
         }
@@ -127,13 +127,14 @@ pub fn rebuild_year(year: i32, options: &RRuleProperties) -> Result<YearInfo, RR
         for _ in 0..7 {
             week_no_mask[i as usize] = 1;
             i += 1;
-            if result.weekday_mask[i as usize] == options.week_start.num_days_from_monday() as u8 {
+            if result.weekday_mask[i as usize] == properties.week_start.num_days_from_monday() as u8
+            {
                 break;
             }
         }
     }
 
-    if options.by_week_no.iter().any(|&week_no| week_no == 1) {
+    if properties.by_week_no.iter().any(|&week_no| week_no == 1) {
         // Check week number 1 of next year as well
         // orig-TODO : Check -num_weeks for next year.
         let mut i = no1_week_start + num_weeks * 7;
@@ -147,7 +148,7 @@ pub fn rebuild_year(year: i32, options: &RRuleProperties) -> Result<YearInfo, RR
                 week_no_mask[i as usize] = 1;
                 i += 1;
                 if result.weekday_mask[i as usize]
-                    == options.week_start.num_days_from_monday() as u8
+                    == properties.week_start.num_days_from_monday() as u8
                 {
                     break;
                 }
@@ -163,18 +164,20 @@ pub fn rebuild_year(year: i32, options: &RRuleProperties) -> Result<YearInfo, RR
         // days from last year's last week number in
         // this year.
         let lnum_weeks;
-        if !options.by_week_no.iter().any(|&week_no| week_no == -1) {
+        if !properties.by_week_no.iter().any(|&week_no| week_no == -1) {
             let lyear_weekday = Utc.ymd(year - 1, 1, 1).weekday().num_days_from_monday() as u8;
 
-            let ln_no1_week_start =
-                pymod(7 - lyear_weekday as isize + options.week_start as isize, 7);
+            let ln_no1_week_start = pymod(
+                7 - lyear_weekday as isize + properties.week_start as isize,
+                7,
+            );
 
             let lyear_len = get_year_len(year - 1);
             let week_start;
             if ln_no1_week_start >= 4 {
                 //ln_no1_week_start = 0;
                 week_start = lyear_len as isize
-                    + pymod(lyear_weekday as isize - options.week_start as isize, 7);
+                    + pymod(lyear_weekday as isize - properties.week_start as isize, 7);
             } else {
                 week_start = year_len as isize - no1_week_start;
             }
@@ -184,7 +187,7 @@ pub fn rebuild_year(year: i32, options: &RRuleProperties) -> Result<YearInfo, RR
             lnum_weeks = -1;
         }
 
-        if options
+        if properties
             .by_week_no
             .iter()
             .any(|&week_no| week_no == lnum_weeks)

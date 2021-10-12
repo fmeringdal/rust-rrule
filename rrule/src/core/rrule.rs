@@ -1,30 +1,30 @@
-use super::{datetime::DateTime, options::*};
-use crate::{validator::validate_options, RRuleError};
+use super::{datetime::DateTime, properties::*};
+use crate::{validator::validate_properties, RRuleError};
 use std::str::FromStr;
 
 /// A validated Recurrence Rule that can be used to create an iterator.
 #[derive(Clone, Debug)]
 pub struct RRule {
     /// The properties specified by this rule.
-    options: RRuleProperties,
+    properties: RRuleProperties,
 }
 
 impl RRule {
-    /// Create and validate the given options and make sure they are valid before
+    /// Create and validate the given properties and make sure they are valid before
     /// creating an RRule struct.
-    /// If the options are not valid it will return an error.
-    pub fn new(options: RRuleProperties) -> Result<Self, RRuleError> {
-        let datetime = options.dt_start;
-        let options = crate::parser::finalize_parsed_options(options, &datetime)?;
-        let validated_options = validate_options(options)?;
+    /// If the properties are not valid it will return an error.
+    pub fn new(properties: RRuleProperties) -> Result<Self, RRuleError> {
+        let datetime = properties.dt_start;
+        let properties = crate::parser::finalize_parsed_properties(properties, &datetime)?;
+        let validated_properties = validate_properties(properties)?;
         Ok(Self {
-            options: validated_options,
+            properties: validated_properties,
         })
     }
 
     /// Get the parameters set by the RRule.
-    pub fn get_options(&self) -> &RRuleProperties {
-        &self.options
+    pub fn get_properties(&self) -> &RRuleProperties {
+        &self.properties
     }
 
     /// Returns all the recurrences of the rrule.
@@ -90,7 +90,7 @@ impl FromStr for RRule {
     type Err = RRuleError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let options = crate::parser::parse_rrule_string_to_options(s)?;
-        RRule::new(options)
+        let properties = crate::parser::parse_rrule_string_to_properties(s)?;
+        RRule::new(properties)
     }
 }

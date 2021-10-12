@@ -7,8 +7,8 @@ use rrule::{Frequency, NWeekday, RRule, RRuleProperties, RRuleSet, Weekday};
 /// will occur weekly on Wednesday, and therefore the end result will contain
 /// weekly recurrences on Wednesday only.
 fn main() {
-    // Build options for rrule that occurs weekly on Tuesday and Wednesday
-    let rrule_options = RRuleProperties::default()
+    // Build properties for rrule that occurs weekly on Tuesday and Wednesday
+    let rrule_properties = RRuleProperties::default()
         .dt_start(UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
         .count(4)
         .freq(Frequency::Weekly)
@@ -17,18 +17,18 @@ fn main() {
             NWeekday::Every(Weekday::Wed),
         ]);
 
-    // Construct `RRule` from options
-    let rrule = RRule::new(rrule_options).expect("RRule invalid");
+    // Construct `RRule` from properties
+    let rrule = RRule::new(rrule_properties).expect("RRule invalid");
 
-    // Build options for exrule that occurs weekly on Wednesday
-    let exrule_options = RRuleProperties::default()
+    // Build properties for exrule that occurs weekly on Wednesday
+    let exrule_properties = RRuleProperties::default()
         .dt_start(UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
         .count(4)
         .freq(Frequency::Weekly)
         .by_weekday(vec![NWeekday::Every(Weekday::Wed)]);
 
-    // Construct `RRule` from options
-    let exrule = RRule::new(exrule_options).expect("RRule invalid");
+    // Construct `RRule` from properties
+    let exrule = RRule::new(exrule_properties).expect("RRule invalid");
 
     // Now create the RRuleSet and add rrule and exrule
     let mut rrule_set = RRuleSet::default();

@@ -17,8 +17,8 @@ pub fn ymd_hms(
     UTC.ymd(year, month, day).and_hms(hour, minute, second)
 }
 
-pub fn test_recurring_rrule(options: RRuleProperties, expected_dates: &Vec<DateTime<Tz>>) {
-    let rrule = RRule::new(options).unwrap();
+pub fn test_recurring_rrule(properties: RRuleProperties, expected_dates: &Vec<DateTime<Tz>>) {
+    let rrule = RRule::new(properties).unwrap();
     let res = rrule.all(100);
 
     println!("Actual: {:?}", res);

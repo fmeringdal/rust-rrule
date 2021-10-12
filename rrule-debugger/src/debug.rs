@@ -7,7 +7,7 @@ use rrule::{Frequency, RRule, RRuleProperties};
 /// This function can be used to test anything and can be changes as you wish.
 pub fn run_debug_function() {
     test_from_string();
-    // test_parsed_options();
+    // test_parsed_properties();
 }
 
 fn test_from_string() {
@@ -21,8 +21,8 @@ fn test_from_string() {
     crate::print_all_datetimes(list);
 }
 
-fn test_parsed_options() {
-    let options = RRuleProperties {
+fn test_parsed_properties() {
+    let properties = RRuleProperties {
         freq: Frequency::Daily,
         interval: 1,
         count: Some(20),
@@ -42,7 +42,7 @@ fn test_parsed_options() {
         by_n_month_day: vec![],
         by_easter: Some(0),
     };
-    let rrule = RRule::new(options).unwrap();
+    let rrule = RRule::new(properties).unwrap();
     let (list, err) = rrule.all_with_error(50);
     println!("Error: {:#?}", err);
     crate::print_all_datetimes(list);

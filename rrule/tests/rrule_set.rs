@@ -9,7 +9,7 @@ use rrule::{Frequency, NWeekday, RRule, RRuleProperties, RRuleSet, Weekday};
 fn rrule_and_exrule() {
     let mut set = RRuleSet::default();
 
-    let options1 = RRuleProperties {
+    let properties1 = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(6),
         by_month: vec![],
@@ -29,9 +29,9 @@ fn rrule_and_exrule() {
         interval: 1,
         by_easter: None,
     };
-    let rrule = RRule::new(options1).unwrap();
+    let rrule = RRule::new(properties1).unwrap();
     set.rrule(rrule);
-    let options2 = RRuleProperties {
+    let properties2 = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![],
@@ -51,7 +51,7 @@ fn rrule_and_exrule() {
         interval: 1,
         by_easter: None,
     };
-    let exrule = RRule::new(options2).unwrap();
+    let exrule = RRule::new(properties2).unwrap();
     set.exrule(exrule);
 
     test_recurring_rrule_set(
@@ -100,7 +100,7 @@ fn setdate_and_exrule() {
     set.rdate(ymd_hms(1997, 9, 16, 9, 0, 0));
     set.rdate(ymd_hms(1997, 9, 18, 9, 0, 0));
 
-    let options = RRuleProperties {
+    let properties = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![],
@@ -120,7 +120,7 @@ fn setdate_and_exrule() {
         interval: 1,
         by_easter: None,
     };
-    let exrrule = RRule::new(options).unwrap();
+    let exrrule = RRule::new(properties).unwrap();
     set.exrule(exrrule);
 
     test_recurring_rrule_set(
@@ -137,7 +137,7 @@ fn setdate_and_exrule() {
 fn rrule_and_exdate() {
     let mut set = RRuleSet::default();
 
-    let options = RRuleProperties {
+    let properties = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(6),
         by_month: vec![],
@@ -157,7 +157,7 @@ fn rrule_and_exdate() {
         interval: 1,
         by_easter: None,
     };
-    let rrule = RRule::new(options).unwrap();
+    let rrule = RRule::new(properties).unwrap();
     set.rrule(rrule);
 
     set.exdate(ymd_hms(1997, 9, 2, 9, 0, 0));
@@ -178,7 +178,7 @@ fn rrule_and_exdate() {
 fn rrule_and_exyearly_yearly_big() {
     let mut set = RRuleSet::default();
 
-    let options = RRuleProperties {
+    let properties = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(13),
         by_month: vec![9],
@@ -198,10 +198,10 @@ fn rrule_and_exyearly_yearly_big() {
         interval: 1,
         by_easter: None,
     };
-    let rrule = RRule::new(options).unwrap();
+    let rrule = RRule::new(properties).unwrap();
     set.rrule(rrule);
 
-    let options = RRuleProperties {
+    let properties = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(10),
         by_month: vec![9],
@@ -221,7 +221,7 @@ fn rrule_and_exyearly_yearly_big() {
         interval: 1,
         by_easter: None,
     };
-    let rrule = RRule::new(options).unwrap();
+    let rrule = RRule::new(properties).unwrap();
     set.exrule(rrule);
 
     test_recurring_rrule_set(
@@ -238,7 +238,7 @@ fn rrule_and_exyearly_yearly_big() {
 fn before() {
     let mut set = RRuleSet::default();
 
-    let options = RRuleProperties {
+    let properties = RRuleProperties {
         freq: Frequency::Yearly,
         count: None,
         by_month: vec![9],
@@ -258,10 +258,10 @@ fn before() {
         interval: 1,
         by_easter: None,
     };
-    let rrule = RRule::new(options).unwrap();
+    let rrule = RRule::new(properties).unwrap();
     set.rrule(rrule);
 
-    let options = RRuleProperties {
+    let properties = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(10),
         by_month: vec![9],
@@ -281,7 +281,7 @@ fn before() {
         interval: 1,
         by_easter: None,
     };
-    let rrule = RRule::new(options).unwrap();
+    let rrule = RRule::new(properties).unwrap();
     set.exrule(rrule);
 
     assert_eq!(
@@ -294,7 +294,7 @@ fn before() {
 fn after() {
     let mut set = RRuleSet::default();
 
-    let options = RRuleProperties {
+    let properties = RRuleProperties {
         freq: Frequency::Yearly,
         count: None,
         by_month: vec![9],
@@ -314,10 +314,10 @@ fn after() {
         interval: 1,
         by_easter: None,
     };
-    let rrule = RRule::new(options).unwrap();
+    let rrule = RRule::new(properties).unwrap();
     set.rrule(rrule);
 
-    let options = RRuleProperties {
+    let properties = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(10),
         by_month: vec![9],
@@ -337,7 +337,7 @@ fn after() {
         interval: 1,
         by_easter: None,
     };
-    let rrule = RRule::new(options).unwrap();
+    let rrule = RRule::new(properties).unwrap();
     set.exrule(rrule);
 
     assert_eq!(
@@ -350,7 +350,7 @@ fn after() {
 fn between() {
     let mut set = RRuleSet::default();
 
-    let options = RRuleProperties {
+    let properties = RRuleProperties {
         freq: Frequency::Yearly,
         count: None,
         by_month: vec![9],
@@ -370,10 +370,10 @@ fn between() {
         interval: 1,
         by_easter: None,
     };
-    let rrule = RRule::new(options).unwrap();
+    let rrule = RRule::new(properties).unwrap();
     set.rrule(rrule);
 
-    let options = RRuleProperties {
+    let properties = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(10),
         by_month: vec![9],
@@ -393,7 +393,7 @@ fn between() {
         interval: 1,
         by_easter: None,
     };
-    let rrule = RRule::new(options).unwrap();
+    let rrule = RRule::new(properties).unwrap();
     set.exrule(rrule);
 
     common::check_occurrences(
@@ -414,7 +414,7 @@ fn between() {
 fn before_70s() {
     let mut set = RRuleSet::default();
 
-    let options = RRuleProperties {
+    let properties = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(2),
         by_month: vec![1],
@@ -434,7 +434,7 @@ fn before_70s() {
         interval: 1,
         by_easter: None,
     };
-    let rrule = RRule::new(options).unwrap();
+    let rrule = RRule::new(properties).unwrap();
     set.rrule(rrule);
 
     test_recurring_rrule_set(

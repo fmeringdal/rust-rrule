@@ -15,7 +15,7 @@ pub fn rebuild_month(
     year_len: u32,
     month_range: &[u16],
     weekday_mask: &[u8],
-    options: &RRuleProperties,
+    properties: &RRuleProperties,
 ) -> Result<MonthInfo, RRuleError> {
     let mut result = MonthInfo {
         last_year: year,
@@ -25,11 +25,11 @@ pub fn rebuild_month(
 
     // Build up `ranges`
     let mut ranges: Vec<(isize, isize)> = vec![];
-    if options.freq == Frequency::Yearly {
-        if options.by_month.is_empty() {
+    if properties.freq == Frequency::Yearly {
+        if properties.by_month.is_empty() {
             ranges = vec![(0, year_len as isize - 1)];
         } else {
-            for month in &options.by_month {
+            for month in &properties.by_month {
                 if month == &0 {
                     return Err(RRuleError::new_iter_err(
                         "Month `0` does not exists, 1-12 expected",
@@ -46,7 +46,7 @@ pub fn rebuild_month(
                 ranges.push((first, last - 1))
             }
         }
-    } else if options.freq == Frequency::Monthly {
+    } else if properties.freq == Frequency::Monthly {
         if month == 0 {
             return Err(RRuleError::new_iter_err(
                 "Month `0` does not exists, 1-12 expected",
@@ -73,7 +73,7 @@ pub fn rebuild_month(
 
     // Loop over `ranges`
     for (first, last) in ranges {
-        for by_weekday in &options.by_weekday {
+        for by_weekday in &properties.by_weekday {
             // Only check Nth occurrences here
             if let NWeekday::Nth(number, weekday) = by_weekday {
                 let mut i: isize;

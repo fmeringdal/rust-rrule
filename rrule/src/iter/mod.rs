@@ -96,19 +96,19 @@ fn decrement_date_until_valid(
 
 fn increment_counter_date(
     counter_date: DateTime,
-    options: &RRuleProperties,
+    properties: &RRuleProperties,
     filtered: bool,
 ) -> Result<DateTime, RRuleError> {
-    match options.freq {
+    match properties.freq {
         Frequency::Yearly => {
-            let new_year = counter_date.year() + options.interval as i32;
+            let new_year = counter_date.year() + properties.interval as i32;
             checks::check_year_range(new_year)?;
             counter_date
                 .with_year(new_year)
                 .ok_or_else(|| RRuleError::new_iter_err(format!("Year `{}` is invalid", new_year)))
         }
         Frequency::Monthly => {
-            let new_month = counter_date.month() + options.interval as u32;
+            let new_month = counter_date.month() + properties.interval as u32;
             if new_month > 12 {
                 let mut year_div = new_month / 12;
                 let mut new_month = new_month % 12;
@@ -125,16 +125,16 @@ fn increment_counter_date(
         }
         Frequency::Weekly => {
             let weekday = counter_date.weekday().num_days_from_monday();
-            let option_week_start = options.week_start.num_days_from_monday();
+            let option_week_start = properties.week_start.num_days_from_monday();
             // Calculate amount of day to move forward.
             let day_delta = if option_week_start > weekday {
                 // `weekday` and `option_week_start` can only be in range `0..=6`
                 // `option_week_start` > `weekday` so:
                 // `(weekday + 1 + 6 - option_week_start)` > 0 so can never be negative.
-                (options.interval as u32) * 7 - (weekday + 7 - option_week_start)
+                (properties.interval as u32) * 7 - (weekday + 7 - option_week_start)
             } else {
                 // This can also never be negative
-                (options.interval as u32) * 7 - (weekday - option_week_start)
+                (properties.interval as u32) * 7 - (weekday - option_week_start)
             };
             checked_add_datetime_duration(
                 counter_date,
@@ -144,16 +144,17 @@ fn increment_counter_date(
         }
         Frequency::Daily => checked_add_datetime_duration(
             counter_date,
-            Duration::days(options.interval as i64),
+            Duration::days(properties.interval as i64),
             Some("please decrease `INTERVAL`"),
         ),
         Frequency::Hourly => {
             let mut new_hours = counter_date.hour();
             if filtered {
-                let temp_value = ((23 - new_hours) as f32 / options.interval as f32).floor() as u32;
+                let temp_value =
+                    ((23 - new_hours) as f32 / properties.interval as f32).floor() as u32;
                 new_hours += checked_mul_u32(
                     temp_value,
-                    options.interval as u32,
+                    properties.interval as u32,
                     Some("please decrease `INTERVAL`"),
                 )?;
             }
@@ -164,11 +165,11 @@ fn increment_counter_date(
             loop {
                 new_hours = checked_add_u32(
                     new_hours,
-                    options.interval as u32,
+                    properties.interval as u32,
                     Some("please decrease `INTERVAL`"),
                 )?;
-                if options.by_hour.is_empty()
-                    || options
+                if properties.by_hour.is_empty()
+                    || properties
                         .by_hour
                         .iter()
                         .any(|bh| *bh == (new_hours % 24) as u8)
@@ -211,11 +212,12 @@ fn increment_counter_date(
             let minutes = counter_date.minute();
             if filtered {
                 // Jump to one iteration before next day
-                let temp_value = (1439. - ((hours * 60 + minutes) as f32 / options.interval as f32))
+                let temp_value = (1439.
+                    - ((hours * 60 + minutes) as f32 / properties.interval as f32))
                     .floor() as u32;
                 minutes_inc = checked_mul_u32(
                     temp_value,
-                    options.interval as u32,
+                    properties.interval as u32,
                     Some("please decrease `INTERVAL`"),
                 )?;
             }
@@ -231,14 +233,15 @@ fn increment_counter_date(
             loop {
                 counter_date = checked_add_datetime_duration(
                     counter_date,
-                    Duration::minutes(options.interval as i64),
+                    Duration::minutes(properties.interval as i64),
                     Some("please decrease `INTERVAL`"),
                 )?;
                 let hours = counter_date.hour() as u8;
                 let minutes = counter_date.minute() as u8;
 
-                if (options.by_hour.is_empty() || includes(&options.by_hour, &hours))
-                    && (options.by_minute.is_empty() || includes(&options.by_minute, &minutes))
+                if (properties.by_hour.is_empty() || includes(&properties.by_hour, &hours))
+                    && (properties.by_minute.is_empty()
+                        || includes(&properties.by_minute, &minutes))
                 {
                     break;
                 }
@@ -260,11 +263,11 @@ fn increment_counter_date(
             if filtered {
                 // Jump to one iteration before next day
                 let temp_value = (86399.
-                    - ((hours * 3600 + minutes * 60 + seconds) as f32 / options.interval as f32))
+                    - ((hours * 3600 + minutes * 60 + seconds) as f32 / properties.interval as f32))
                     .floor() as u32;
                 seconds_inc = checked_mul_u32(
                     temp_value,
-                    options.interval as u32,
+                    properties.interval as u32,
                     Some("please decrease `INTERVAL`"),
                 )?;
             }
@@ -280,16 +283,18 @@ fn increment_counter_date(
             loop {
                 counter_date = checked_add_datetime_duration(
                     counter_date,
-                    Duration::seconds(options.interval as i64),
+                    Duration::seconds(properties.interval as i64),
                     Some("please decrease `INTERVAL`"),
                 )?;
                 let hours = counter_date.hour() as u8;
                 let minutes = counter_date.minute() as u8;
                 let seconds = counter_date.second() as u8;
 
-                if (options.by_hour.is_empty() || includes(&options.by_hour, &hours))
-                    && (options.by_minute.is_empty() || includes(&options.by_minute, &minutes))
-                    && (options.by_second.is_empty() || includes(&options.by_second, &seconds))
+                if (properties.by_hour.is_empty() || includes(&properties.by_hour, &hours))
+                    && (properties.by_minute.is_empty()
+                        || includes(&properties.by_minute, &minutes))
+                    && (properties.by_second.is_empty()
+                        || includes(&properties.by_second, &seconds))
                 {
                     break;
                 }
@@ -309,19 +314,19 @@ fn increment_counter_date(
 fn is_filtered(
     ii: &IterInfo,
     current_day: u64,
-    options: &RRuleProperties,
+    properties: &RRuleProperties,
 ) -> Result<bool, RRuleError> {
     // TODO break this up into parts because this is unmaintainable.
 
-    let by_month: bool = !options.by_month.is_empty()
-        && !options
+    let by_month: bool = !properties.by_month.is_empty()
+        && !properties
             .by_month
             .contains(&ii.month_mask()[current_day as usize]);
 
-    let by_week_no: bool =
-        !options.by_week_no.is_empty() && (ii.week_no_mask().unwrap()[current_day as usize]) == 0;
+    let by_week_no: bool = !properties.by_week_no.is_empty()
+        && (ii.week_no_mask().unwrap()[current_day as usize]) == 0;
 
-    let by_weekday_every_week_only = options
+    let by_weekday_every_week_only = properties
         .by_weekday
         .iter()
         .filter_map(|by_weekday| match by_weekday {
@@ -342,37 +347,37 @@ fn is_filtered(
 
     // Can only be set to true if feature flag is set.
     let by_easter: bool = if cfg!(feature = "by-easter") {
-        options.by_easter.is_some()
+        properties.by_easter.is_some()
             && !(includes(ii.easter_mask().unwrap(), &(current_day as isize)))
     } else {
         false
     };
 
-    let by_month_day: bool = (!options.by_month_day.is_empty()
-        || !options.by_n_month_day.is_empty())
+    let by_month_day: bool = (!properties.by_month_day.is_empty()
+        || !properties.by_n_month_day.is_empty())
         && !includes(
-            &options.by_month_day,
+            &properties.by_month_day,
             &(ii.month_day_mask()[current_day as usize]),
         )
         && !includes(
-            &options.by_n_month_day,
+            &properties.by_n_month_day,
             &(ii.neg_month_day_mask()[current_day as usize]),
         );
 
-    let by_year_day: bool = !options.by_year_day.is_empty()
+    let by_year_day: bool = !properties.by_year_day.is_empty()
         && ((current_day < ii.year_len().unwrap() as u64
-            && !includes(&options.by_year_day, &(current_day as i16 + 1))
+            && !includes(&properties.by_year_day, &(current_day as i16 + 1))
             && !includes(
-                &options.by_year_day,
+                &properties.by_year_day,
                 &(current_day as i16 - ii.year_len().unwrap() as i16),
             ))
             || (current_day >= ii.year_len().unwrap() as u64
                 && !includes(
-                    &options.by_year_day,
+                    &properties.by_year_day,
                     &(current_day as i16 + 1 - ii.year_len().unwrap() as i16),
                 )
                 && !includes(
-                    &options.by_year_day,
+                    &properties.by_year_day,
                     &(current_day as i16
                         - ii.next_year_len().unwrap() as i16
                         - ii.year_len().unwrap() as i16),
@@ -398,7 +403,7 @@ fn remove_filtered_days(
     for day_set_counter in day_set.iter_mut().take(end as usize).skip(start as usize) {
         match day_set_counter {
             Some(current_day) => {
-                filtered = is_filtered(ii, *current_day, ii.get_options())?;
+                filtered = is_filtered(ii, *current_day, ii.get_properties())?;
                 if filtered {
                     *day_set_counter = None;
                 }
@@ -409,19 +414,19 @@ fn remove_filtered_days(
     Ok(filtered)
 }
 
-fn build_timeset(options: &RRuleProperties) -> Vec<Time> {
-    let millisecond_mod = (options.dt_start.timestamp_millis() % 1000) as u16;
+fn build_timeset(properties: &RRuleProperties) -> Vec<Time> {
+    let millisecond_mod = (properties.dt_start.timestamp_millis() % 1000) as u16;
 
-    if options.freq > Frequency::Daily {
+    if properties.freq > Frequency::Daily {
         return vec![];
     }
 
     let mut timeset = Vec::with_capacity(
-        options.by_hour.len() * options.by_minute.len() * options.by_second.len(),
+        properties.by_hour.len() * properties.by_minute.len() * properties.by_second.len(),
     );
-    for hour in &options.by_hour {
-        for minute in &options.by_minute {
-            for second in &options.by_second {
+    for hour in &properties.by_hour {
+        for minute in &properties.by_minute {
+            for second in &properties.by_second {
                 timeset.push(Time::new(*hour, *minute, *second, millisecond_mod));
             }
         }
@@ -433,27 +438,27 @@ fn build_timeset(options: &RRuleProperties) -> Vec<Time> {
 fn make_timeset(
     ii: &IterInfo,
     counter_date: &DateTime,
-    options: &RRuleProperties,
+    properties: &RRuleProperties,
 ) -> Result<Vec<Time>, RRuleError> {
-    if options.freq < Frequency::Hourly {
-        return Ok(build_timeset(options));
+    if properties.freq < Frequency::Hourly {
+        return Ok(build_timeset(properties));
     }
 
-    if (options.freq >= Frequency::Hourly
-        && !options.by_hour.is_empty()
-        && !options
+    if (properties.freq >= Frequency::Hourly
+        && !properties.by_hour.is_empty()
+        && !properties
             .by_hour
             .iter()
             .any(|&h| h == counter_date.hour() as u8))
-        || (options.freq >= Frequency::Minutely
-            && !options.by_minute.is_empty()
-            && !options
+        || (properties.freq >= Frequency::Minutely
+            && !properties.by_minute.is_empty()
+            && !properties
                 .by_minute
                 .iter()
                 .any(|&m| m == counter_date.minute() as u8))
-        || (options.freq >= Frequency::Secondly
-            && !options.by_second.is_empty()
-            && !options
+        || (properties.freq >= Frequency::Secondly
+            && !properties.by_second.is_empty()
+            && !properties
                 .by_second
                 .iter()
                 .any(|&s| s == counter_date.second() as u8))
@@ -462,7 +467,7 @@ fn make_timeset(
     }
 
     ii.get_timeset(
-        &options.freq,
+        &properties.freq,
         counter_date.hour() as u8,
         counter_date.minute() as u8,
         counter_date.second() as u8,
