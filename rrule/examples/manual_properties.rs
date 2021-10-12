@@ -1,3 +1,7 @@
+//! # Manual RRuleProperties
+//!
+//! Create an `RRuleProperties` object to create a `RRule`.
+
 use chrono::{Datelike, TimeZone, Timelike};
 use chrono_tz::UTC;
 use rrule::{Frequency, RRule, RRuleProperties};
@@ -19,4 +23,5 @@ fn main() {
         assert_eq!(recurrences[i].hour(), 9);
     }
     assert_eq!(recurrences.len(), 5);
+    println!("Done, everything worked.");
 }

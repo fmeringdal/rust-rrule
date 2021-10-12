@@ -2,7 +2,6 @@
 members = [
     "rrule",
     "rrule-debugger",
-    "examples/*",
 ]
 
 # These are the 2 packages to mainly work on.

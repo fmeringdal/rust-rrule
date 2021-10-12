@@ -1,3 +1,7 @@
+//! # Manual RRuleSet
+//!
+//! Create an `RRuleSet` object manually.
+
 use chrono::{Datelike, TimeZone};
 use chrono_tz::UTC;
 use rrule::{Frequency, NWeekday, RRule, RRuleProperties, RRuleSet, Weekday};
@@ -43,4 +47,5 @@ fn main() {
     }
 
     assert_eq!(recurrences.len(), 2);
+    println!("Done, everything worked.");
 }

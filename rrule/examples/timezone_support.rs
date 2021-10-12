@@ -1,3 +1,9 @@
+//! # Timezone Support
+//!
+//! This examples uses `RRuleSet` with one `RRule` that yields recurrences
+//! in the Europe/Berlin timezone, and one EXDATE that is specified
+//! in UTC and collides with one of those recurrences.
+
 use chrono::{DateTime, Local, TimeZone};
 use chrono_tz::{Europe::Berlin, Tz, UTC};
 use rrule::{Frequency, RRule, RRuleProperties, RRuleSet};
@@ -41,4 +47,6 @@ fn main() {
         .iter()
         .map(|d| d.with_timezone(&Local))
         .collect();
+
+    println!("Done, everything worked.");
 }

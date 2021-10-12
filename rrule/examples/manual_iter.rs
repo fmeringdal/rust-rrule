@@ -1,3 +1,7 @@
+//! # Manual Iterations
+//!
+//! Manually iterate over an `RRule`.
+
 use chrono::Datelike;
 use rrule::{RRule, RRuleIter};
 
