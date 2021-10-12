@@ -5,8 +5,8 @@ use super::{
 use crate::{RRuleError, RRuleProperties};
 use chrono::{Datelike, TimeZone, Utc};
 
-#[derive(Debug)]
-pub struct YearInfo {
+#[derive(Debug, Clone)]
+pub(crate) struct YearInfo {
     /// Amount of days in the current year (365 or 366)
     pub year_len: u32,
     /// Amount of days in the next year (365 or 366)
@@ -27,7 +27,8 @@ pub struct YearInfo {
     pub week_no_mask: Option<Vec<u8>>,
 }
 
-pub struct BaseMasks {
+#[derive(Debug)]
+pub(crate) struct BaseMasks {
     month_mask: &'static [u8],
     month_day_mask: &'static [i8],
     neg_month_day_mask: &'static [i8],
@@ -59,7 +60,10 @@ fn base_year_masks(year: i32) -> BaseMasks {
     }
 }
 
-pub fn rebuild_year(year: i32, properties: &RRuleProperties) -> Result<YearInfo, RRuleError> {
+pub(crate) fn rebuild_year(
+    year: i32,
+    properties: &RRuleProperties,
+) -> Result<YearInfo, RRuleError> {
     let first_year_day = Utc.ymd(year, 1, 1).and_hms_milli(0, 0, 0, 0);
 
     let year_len = get_year_len(year) as u32;

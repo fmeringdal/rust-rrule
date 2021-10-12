@@ -10,6 +10,7 @@ use chrono::{Datelike, TimeZone, Timelike};
 use chrono_tz::UTC;
 use std::collections::VecDeque;
 
+#[derive(Debug, Clone)]
 pub struct RRuleIter<'a> {
     /// Date the iterator is currently at.
     counter_date: DateTime,

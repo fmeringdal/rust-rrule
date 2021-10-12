@@ -1,10 +1,10 @@
 use chrono::{Duration, NaiveTime};
 use chrono_tz::Tz;
 
-pub type DateTime = chrono::DateTime<Tz>;
+pub(crate) type DateTime = chrono::DateTime<Tz>;
 
-#[derive(Debug)]
-pub struct Time {
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct Time {
     pub hour: u8,
     pub minute: u8,
     pub second: u8,
@@ -26,7 +26,7 @@ impl Time {
             + self.millisecond as u64
     }
 
-    pub fn to_naive_time(&self) -> NaiveTime {
+    pub fn to_naive_time(self) -> NaiveTime {
         NaiveTime::from_hms(self.hour as u32, self.minute as u32, self.second as u32)
     }
 

@@ -1,15 +1,15 @@
 use super::utils::pymod;
 use crate::{Frequency, NWeekday, RRuleError, RRuleProperties};
 
-#[derive(Debug)]
-pub struct MonthInfo {
+#[derive(Debug, Clone)]
+pub(crate) struct MonthInfo {
     pub last_year: i32,
     pub last_month: u8,
     // TODO: Only ever set to 0 and 1
     pub neg_weekday_mask: Vec<i8>,
 }
 
-pub fn rebuild_month(
+pub(crate) fn rebuild_month(
     year: i32,
     month: u8,
     year_len: u32,

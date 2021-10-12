@@ -3,13 +3,13 @@ use chrono::{TimeZone, Utc};
 use chrono_tz::Tz;
 
 /// Convert number of days since unix epoch back to `DataTime`
-pub fn from_ordinal(ordinal: i64, tz: &Tz) -> DateTime {
+pub(crate) fn from_ordinal(ordinal: i64, tz: &Tz) -> DateTime {
     let timestamp = ordinal * 24 * 60 * 60;
     tz.timestamp(timestamp as i64, 0)
 }
 
 /// Return number of days since unix epoch (rounded down)
-pub fn to_ordinal(date: &chrono::DateTime<Utc>) -> i64 {
+pub(crate) fn to_ordinal(date: &chrono::DateTime<Utc>) -> i64 {
     // Number of seconds since Unix epoch
     // sec / 60 = min
     // min / 60 = hours
@@ -20,7 +20,7 @@ pub fn to_ordinal(date: &chrono::DateTime<Utc>) -> i64 {
 }
 
 /// Return true if given year is a leap year
-pub fn is_leap_year(year: i32) -> bool {
+pub(crate) fn is_leap_year(year: i32) -> bool {
     // Every 4 years, and every 100 years
     // but not if dividable by 400.
     year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)
@@ -28,14 +28,14 @@ pub fn is_leap_year(year: i32) -> bool {
 
 /// Return amount of days in year,
 /// So 365 or 366 depending on the year
-pub fn get_year_len(year: i32) -> u16 {
+pub(crate) fn get_year_len(year: i32) -> u16 {
     if is_leap_year(year) {
         return 366;
     }
     365
 }
 
-pub fn pymod(a: isize, b: isize) -> isize {
+pub(crate) fn pymod(a: isize, b: isize) -> isize {
     let r = a % b;
     // If r and b differ in sign, add b to wrap the result to the correct sign.
     if (r > 0 && b < 0) || (r < 0 && b > 0) {
@@ -44,7 +44,7 @@ pub fn pymod(a: isize, b: isize) -> isize {
     r
 }
 
-pub fn includes<T>(v: &[T], el: &T) -> bool
+pub(crate) fn includes<T>(v: &[T], el: &T) -> bool
 where
     T: PartialEq,
 {

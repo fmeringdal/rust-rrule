@@ -16,7 +16,9 @@ pub(crate) use validate_properties::{DAY_RANGE, MONTH_RANGE, YEAR_RANGE};
 
 /// Validate [`RRuleProperties`] and make sure it meets all requirements.
 /// This function always need to be called before creating an [`RRule`] struct.
-pub fn validate_properties(properties: RRuleProperties) -> Result<RRuleProperties, RRuleError> {
+pub(crate) fn validate_properties(
+    properties: RRuleProperties,
+) -> Result<RRuleProperties, RRuleError> {
     // Validate required checks (defined by RFC 5545)
     validate_properties::validate_properties_forced(&properties)?;
     // Validate (optional) sanity checks. (arbitrary limits)

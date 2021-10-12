@@ -5,24 +5,24 @@ use crate::{Frequency, NWeekday, RRuleError, RRuleProperties};
 /// Range of values that a weekday can be.
 /// Range: `0..=6`
 #[allow(dead_code)]
-pub static WEEKDAY_RANGE: RangeInclusive<u8> = 0..=6;
+pub(crate) static WEEKDAY_RANGE: RangeInclusive<u8> = 0..=6;
 
 /// Range of values that a day can be.
 /// Range: `1..=31`
-pub static DAY_RANGE: RangeInclusive<u8> = 1..=31;
+pub(crate) static DAY_RANGE: RangeInclusive<u8> = 1..=31;
 
 /// Range of values that a month can be.
 /// Range: `1..=12`
-pub static MONTH_RANGE: RangeInclusive<u8> = 1..=12;
+pub(crate) static MONTH_RANGE: RangeInclusive<u8> = 1..=12;
 
 /// Range of values that a year can be.
 /// Range:
 ///  - `-10_000..=10_000`
 ///  - `-262_000..=262_000` when `no-validation-limits` flag is set
 #[cfg(not(feature = "no-validation-limits"))]
-pub static YEAR_RANGE: RangeInclusive<i32> = -10_000..=10_000;
+pub(crate) static YEAR_RANGE: RangeInclusive<i32> = -10_000..=10_000;
 #[cfg(feature = "no-validation-limits")]
-pub static YEAR_RANGE: RangeInclusive<i32> = -262_000..=262_000;
+pub(crate) static YEAR_RANGE: RangeInclusive<i32> = -262_000..=262_000;
 
 /// Check if rules are valid as defined by the RFC and crate limitations.
 /// It checks all values in the [`RRuleProperties`] and makes sure that they are in
@@ -31,7 +31,7 @@ pub static YEAR_RANGE: RangeInclusive<i32> = -262_000..=262_000;
 /// This check should always be done and just enforces limits set by the standard.
 /// Validation will always be enforced and can not be disabled using feature flags.
 ///
-pub fn validate_properties_forced(option: &RRuleProperties) -> Result<(), RRuleError> {
+pub(crate) fn validate_properties_forced(option: &RRuleProperties) -> Result<(), RRuleError> {
     // Freq:
     // - Enum, so always valid on its own.
 

@@ -253,7 +253,7 @@ const WDAY: WdayMask = [
 ];
 
 #[derive(Clone)]
-pub struct Masks {
+pub(crate) struct Masks {
     pub weekday: WdayMask,
     pub month_365: Mask365,
     pub month_365_range: MonthRangeMask,
@@ -265,7 +265,7 @@ pub struct Masks {
     pub neg_month_day_366: Mask366Signed,
 }
 
-pub const MASKS: Masks = Masks {
+pub(crate) const MASKS: Masks = Masks {
     weekday: WDAY,
     month_365: M365,
     month_365_range: M365_RANGE,

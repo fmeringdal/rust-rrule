@@ -8,7 +8,8 @@ use super::{
 use crate::{core::Time, Frequency, NWeekday, RRuleError, RRuleProperties};
 use chrono::{Datelike, TimeZone};
 
-pub struct IterInfo<'a> {
+#[derive(Debug, Clone)]
+pub(crate) struct IterInfo<'a> {
     year_info: Option<YearInfo>,
     month_info: Option<MonthInfo>,
     easter_mask: Option<Vec<isize>>,

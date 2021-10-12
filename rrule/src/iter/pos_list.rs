@@ -6,7 +6,7 @@ use crate::{
 };
 use chrono_tz::Tz;
 
-pub fn build_pos_list(
+pub(crate) fn build_pos_list(
     by_set_pos: &[i32],
     timeset: &[Time],
     start: u64,

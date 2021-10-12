@@ -3,6 +3,7 @@ use crate::{core::DateTime, RRule, RRuleError, RRuleSet};
 use chrono::TimeZone;
 use std::{collections::HashMap, iter::Iterator};
 
+#[derive(Debug, Clone)]
 pub struct RRuleSetIter<'a> {
     queue: HashMap<usize, DateTime>,
     rrule_iters: Vec<RRuleIter<'a>>,

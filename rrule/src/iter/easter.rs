@@ -5,7 +5,7 @@ use chrono::{offset::LocalResult, TimeZone, Utc};
 
 // TODO remove this clippy `allow` flag and give variables proper names.
 #[allow(clippy::many_single_char_names)]
-pub fn easter(y: i32, offset: i16) -> Result<Vec<isize>, RRuleError> {
+pub(crate) fn easter(y: i32, offset: i16) -> Result<Vec<isize>, RRuleError> {
     let a = y % 19;
     let b = (y as f32 / 100_f32).floor() as i32;
     let c = y % 100;
