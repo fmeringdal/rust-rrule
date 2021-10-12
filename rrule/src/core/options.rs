@@ -48,7 +48,7 @@ impl NWeekday {
 }
 
 #[derive(Debug, Clone)]
-pub struct ParsedOptions {
+pub struct RRuleProperties {
     /// The frequency of the rule.
     /// For example: yearly, weekly, hourly
     pub freq: Frequency,
@@ -111,7 +111,7 @@ pub struct ParsedOptions {
     pub by_easter: Option<i16>,
 }
 
-impl Default for ParsedOptions {
+impl Default for RRuleProperties {
     fn default() -> Self {
         Self {
             freq: Frequency::Yearly,
@@ -136,7 +136,7 @@ impl Default for ParsedOptions {
     }
 }
 
-impl ParsedOptions {
+impl RRuleProperties {
     pub fn new(freq: Frequency, dt_start: DateTime) -> Self {
         Self {
             freq,

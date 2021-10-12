@@ -1,10 +1,10 @@
 use chrono::{Datelike, TimeZone, Timelike};
 use chrono_tz::UTC;
-use rrule::{Frequency, ParsedOptions, RRule};
+use rrule::{Frequency, RRule, RRuleProperties};
 
 fn main() {
     // Build options that starts first day in 2020 at 9:00AM and occurs daily 5 times
-    let options = ParsedOptions::default()
+    let options = RRuleProperties::default()
         .dt_start(UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
         .count(5)
         .freq(Frequency::Daily);

@@ -3,11 +3,11 @@ mod common;
 use chrono::{Datelike, TimeZone};
 use chrono_tz::UTC;
 use common::{test_recurring_rrule, ymd_hms};
-use rrule::{Frequency, NWeekday, ParsedOptions, RRule, Weekday};
+use rrule::{Frequency, NWeekday, RRule, RRuleProperties, Weekday};
 
 #[test]
 fn yearly() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![9],
@@ -39,7 +39,7 @@ fn yearly() {
 
 #[test]
 fn yearly_interval() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![9],
@@ -71,7 +71,7 @@ fn yearly_interval() {
 
 #[test]
 fn yearly_interval_large() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![9],
@@ -104,7 +104,7 @@ fn yearly_interval_large() {
 #[test]
 #[cfg(feature = "by-easter")]
 fn yearly_by_easter() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![],
@@ -137,7 +137,7 @@ fn yearly_by_easter() {
 #[test]
 #[cfg(feature = "by-easter")]
 fn yearly_by_easterpos() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![],
@@ -170,7 +170,7 @@ fn yearly_by_easterpos() {
 #[test]
 #[cfg(feature = "by-easter")]
 fn yearly_by_easterpos_neg() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![],
@@ -202,7 +202,7 @@ fn yearly_by_easterpos_neg() {
 
 #[test]
 fn yearly_by_month() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![1, 3],
@@ -234,7 +234,7 @@ fn yearly_by_month() {
 
 #[test]
 fn yearly_by_monthday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![],
@@ -266,7 +266,7 @@ fn yearly_by_monthday() {
 
 #[test]
 fn yearly_by_month_and_monthday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![1, 3],
@@ -298,7 +298,7 @@ fn yearly_by_month_and_monthday() {
 
 #[test]
 fn yearly_by_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![],
@@ -330,7 +330,7 @@ fn yearly_by_weekday() {
 
 #[test]
 fn yearly_by_nweekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![],
@@ -365,7 +365,7 @@ fn yearly_by_nweekday() {
 
 #[test]
 fn yearly_by_nweekday_large() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![],
@@ -400,7 +400,7 @@ fn yearly_by_nweekday_large() {
 
 #[test]
 fn yearly_by_month_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![1, 3],
@@ -432,7 +432,7 @@ fn yearly_by_month_and_weekday() {
 
 #[test]
 fn yearly_by_month_and_nweekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![1, 3],
@@ -467,7 +467,7 @@ fn yearly_by_month_and_nweekday() {
 
 #[test]
 fn yearly_by_month_and_nweekday_large() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![1, 3],
@@ -502,7 +502,7 @@ fn yearly_by_month_and_nweekday_large() {
 
 #[test]
 fn yearly_by_monthday_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![],
@@ -534,7 +534,7 @@ fn yearly_by_monthday_and_weekday() {
 
 #[test]
 fn yearly_by_month_and_monthday_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![1, 3],
@@ -566,7 +566,7 @@ fn yearly_by_month_and_monthday_and_weekday() {
 
 #[test]
 fn yearly_by_yearday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(4),
         by_month: vec![],
@@ -599,7 +599,7 @@ fn yearly_by_yearday() {
 
 #[test]
 fn yearly_by_yeardayneg() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(4),
         by_month: vec![],
@@ -632,7 +632,7 @@ fn yearly_by_yeardayneg() {
 
 #[test]
 fn yearly_by_month_and_yearday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(4),
         by_month: vec![4, 7],
@@ -665,7 +665,7 @@ fn yearly_by_month_and_yearday() {
 
 #[test]
 fn yearly_by_weekno() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![],
@@ -697,7 +697,7 @@ fn yearly_by_weekno() {
 
 #[test]
 fn yearly_by_weekno_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![],
@@ -729,7 +729,7 @@ fn yearly_by_weekno_and_weekday() {
 
 #[test]
 fn yearly_by_weekno_and_weekday_large() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![],
@@ -761,7 +761,7 @@ fn yearly_by_weekno_and_weekday_large() {
 
 #[test]
 fn yearly_by_weekno_and_weekday_last() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![],
@@ -793,7 +793,7 @@ fn yearly_by_weekno_and_weekday_last() {
 
 #[test]
 fn yearly_by_weekno_and_weekday53_last() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![],
@@ -825,7 +825,7 @@ fn yearly_by_weekno_and_weekday53_last() {
 
 #[test]
 fn yearly_by_hour() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![9],
@@ -857,7 +857,7 @@ fn yearly_by_hour() {
 
 #[test]
 fn yearly_by_minute() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![9],
@@ -889,7 +889,7 @@ fn yearly_by_minute() {
 
 #[test]
 fn yearly_by_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![9],
@@ -921,7 +921,7 @@ fn yearly_by_second() {
 
 #[test]
 fn yearly_by_hour_and_minute() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![9],
@@ -953,7 +953,7 @@ fn yearly_by_hour_and_minute() {
 
 #[test]
 fn yearly_by_hour_and_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![9],
@@ -985,7 +985,7 @@ fn yearly_by_hour_and_second() {
 
 #[test]
 fn yearly_by_minute_and_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![9],
@@ -1017,7 +1017,7 @@ fn yearly_by_minute_and_second() {
 
 #[test]
 fn yearly_by_hour_and_minute_and_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![9],
@@ -1049,7 +1049,7 @@ fn yearly_by_hour_and_minute_and_second() {
 
 #[test]
 fn yearly_by_setpos() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![],
@@ -1081,7 +1081,7 @@ fn yearly_by_setpos() {
 
 #[test]
 fn monthly() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -1113,7 +1113,7 @@ fn monthly() {
 
 #[test]
 fn monthly_interval() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -1145,7 +1145,7 @@ fn monthly_interval() {
 
 #[test]
 fn monthly_interval_large() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -1178,7 +1178,7 @@ fn monthly_interval_large() {
 #[test]
 #[cfg(feature = "by-easter")]
 fn monthly_by_easter() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -1211,7 +1211,7 @@ fn monthly_by_easter() {
 #[test]
 #[cfg(feature = "by-easter")]
 fn monthly_by_easterpos() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -1244,7 +1244,7 @@ fn monthly_by_easterpos() {
 #[test]
 #[cfg(feature = "by-easter")]
 fn monthly_by_easterpos_neg() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -1276,7 +1276,7 @@ fn monthly_by_easterpos_neg() {
 
 #[test]
 fn monthly_neg_by_monthday_janfeb_for_nonleapyear() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(4),
         by_month: vec![],
@@ -1309,7 +1309,7 @@ fn monthly_neg_by_monthday_janfeb_for_nonleapyear() {
 
 #[test]
 fn monthly_neg_by_monthday_janfeb_for_leapyear() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(4),
         by_month: vec![],
@@ -1342,7 +1342,7 @@ fn monthly_neg_by_monthday_janfeb_for_leapyear() {
 
 #[test]
 fn monthly_neg_monthday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(6),
         by_month: vec![],
@@ -1377,7 +1377,7 @@ fn monthly_neg_monthday() {
 
 #[test]
 fn monthly_by_month() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![1, 3],
@@ -1409,7 +1409,7 @@ fn monthly_by_month() {
 
 #[test]
 fn monthly_by_monthday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -1441,7 +1441,7 @@ fn monthly_by_monthday() {
 
 #[test]
 fn monthly_by_month_and_monthday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![1, 3],
@@ -1473,7 +1473,7 @@ fn monthly_by_month_and_monthday() {
 
 #[test]
 fn monthly_by_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -1505,7 +1505,7 @@ fn monthly_by_weekday() {
 
 #[test]
 fn monthly_by_nweekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -1540,7 +1540,7 @@ fn monthly_by_nweekday() {
 
 #[test]
 fn monthly_by_nweekday_large() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -1575,7 +1575,7 @@ fn monthly_by_nweekday_large() {
 
 #[test]
 fn monthly_by_month_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![1, 3],
@@ -1607,7 +1607,7 @@ fn monthly_by_month_and_weekday() {
 
 #[test]
 fn monthly_by_month_and_nweekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![1, 3],
@@ -1642,7 +1642,7 @@ fn monthly_by_month_and_nweekday() {
 
 #[test]
 fn monthly_by_month_and_nweekday_large() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![1, 3],
@@ -1677,7 +1677,7 @@ fn monthly_by_month_and_nweekday_large() {
 
 #[test]
 fn monthly_by_monthday_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -1709,7 +1709,7 @@ fn monthly_by_monthday_and_weekday() {
 
 #[test]
 fn monthly_by_month_and_monthday_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![1, 3],
@@ -1742,7 +1742,7 @@ fn monthly_by_month_and_monthday_and_weekday() {
 #[test]
 #[ignore = "`BYYEARDAY` can not be used with the current frequency (monthly)."]
 fn monthly_by_yearday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(4),
         by_month: vec![],
@@ -1776,7 +1776,7 @@ fn monthly_by_yearday() {
 #[test]
 #[ignore = "`BYYEARDAY` can not be used with the current frequency (monthly)."]
 fn monthly_by_yeardayneg() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(4),
         by_month: vec![],
@@ -1810,7 +1810,7 @@ fn monthly_by_yeardayneg() {
 #[test]
 #[ignore = "`BYYEARDAY` can not be used with the current frequency (monthly)."]
 fn monthly_by_month_and_yearday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(4),
         by_month: vec![4, 7],
@@ -1844,7 +1844,7 @@ fn monthly_by_month_and_yearday() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (monthly)."]
 fn monthly_by_weekno() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -1879,7 +1879,7 @@ fn monthly_by_weekno() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (monthly)."]
 fn monthly_by_weekno_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -1914,7 +1914,7 @@ fn monthly_by_weekno_and_weekday() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (monthly)."]
 fn monthly_by_weekno_and_weekday_large() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -1947,7 +1947,7 @@ fn monthly_by_weekno_and_weekday_large() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (monthly)."]
 fn monthly_by_weekno_and_weekday_last() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -1980,7 +1980,7 @@ fn monthly_by_weekno_and_weekday_last() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (monthly)."]
 fn monthly_by_weekno_and_weekday53() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -2012,7 +2012,7 @@ fn monthly_by_weekno_and_weekday53() {
 
 #[test]
 fn monthly_by_hour() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -2044,7 +2044,7 @@ fn monthly_by_hour() {
 
 #[test]
 fn monthly_by_minute() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -2076,7 +2076,7 @@ fn monthly_by_minute() {
 
 #[test]
 fn monthly_by_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -2108,7 +2108,7 @@ fn monthly_by_second() {
 
 #[test]
 fn monthly_by_hour_and_minute() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -2140,7 +2140,7 @@ fn monthly_by_hour_and_minute() {
 
 #[test]
 fn monthly_by_hour_and_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -2172,7 +2172,7 @@ fn monthly_by_hour_and_second() {
 
 #[test]
 fn monthly_by_minute_and_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -2204,7 +2204,7 @@ fn monthly_by_minute_and_second() {
 
 #[test]
 fn monthly_by_hour_and_minute_and_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -2236,7 +2236,7 @@ fn monthly_by_hour_and_minute_and_second() {
 
 #[test]
 fn monthly_by_setpos() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Monthly,
         count: Some(3),
         by_month: vec![],
@@ -2268,7 +2268,7 @@ fn monthly_by_setpos() {
 
 #[test]
 fn weekly() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![],
@@ -2300,7 +2300,7 @@ fn weekly() {
 
 #[test]
 fn weekly_interval() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![],
@@ -2332,7 +2332,7 @@ fn weekly_interval() {
 
 #[test]
 fn weekly_interval_large() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![],
@@ -2364,7 +2364,7 @@ fn weekly_interval_large() {
 
 #[test]
 fn weekly_by_month() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(6),
         by_month: vec![1, 3],
@@ -2400,7 +2400,7 @@ fn weekly_by_month() {
 #[test]
 #[ignore = "`BYMONTHDAY` can not be used with the current frequency (weekly)."]
 fn weekly_by_monthday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![],
@@ -2433,7 +2433,7 @@ fn weekly_by_monthday() {
 #[test]
 #[ignore = "`BYMONTHDAY` can not be used with the current frequency (weekly)."]
 fn weekly_by_month_and_monthday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![1, 3],
@@ -2465,7 +2465,7 @@ fn weekly_by_month_and_monthday() {
 
 #[test]
 fn weekly_by_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![],
@@ -2498,7 +2498,7 @@ fn weekly_by_weekday() {
 // ! why isnt this using nweekday ???
 #[test]
 fn weekly_by_nweekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![],
@@ -2530,7 +2530,7 @@ fn weekly_by_nweekday() {
 
 #[test]
 fn weekly_by_month_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![1, 3],
@@ -2563,7 +2563,7 @@ fn weekly_by_month_and_weekday() {
 #[test]
 #[ignore = "`BYMONTHDAY` can not be used with the current frequency (weekly)."]
 fn weekly_by_monthday_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![],
@@ -2596,7 +2596,7 @@ fn weekly_by_monthday_and_weekday() {
 #[test]
 #[ignore = "`BYMONTHDAY` can not be used with the current frequency (weekly)."]
 fn weekly_by_month_monthday_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![1, 3],
@@ -2629,7 +2629,7 @@ fn weekly_by_month_monthday_and_weekday() {
 #[test]
 #[ignore = "`BYYEARDAY` can not be used with the current frequency (weekly)."]
 fn weekly_by_yearday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(4),
         by_month: vec![],
@@ -2663,7 +2663,7 @@ fn weekly_by_yearday() {
 #[test]
 #[ignore = "`BYYEARDAY` can not be used with the current frequency (weekly)."]
 fn weekly_by_yeardayneg() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(4),
         by_month: vec![],
@@ -2697,7 +2697,7 @@ fn weekly_by_yeardayneg() {
 #[test]
 #[ignore = "`BYYEARDAY` can not be used with the current frequency (weekly)."]
 fn weekly_by_month_yearday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(4),
         by_month: vec![1, 7],
@@ -2731,7 +2731,7 @@ fn weekly_by_month_yearday() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (weekly)."]
 fn weekly_by_weekno() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![],
@@ -2764,7 +2764,7 @@ fn weekly_by_weekno() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (weekly)."]
 fn weekly_by_weekno_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![],
@@ -2797,7 +2797,7 @@ fn weekly_by_weekno_and_weekday() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (weekly)."]
 fn weekly_by_weekno_and_weekday_large() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![],
@@ -2830,7 +2830,7 @@ fn weekly_by_weekno_and_weekday_large() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (weekly)."]
 fn weekly_by_weekno_and_weekday_last() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![],
@@ -2863,7 +2863,7 @@ fn weekly_by_weekno_and_weekday_last() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (weekly)."]
 fn weekly_by_weekno_and_weekday53() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![],
@@ -2895,7 +2895,7 @@ fn weekly_by_weekno_and_weekday53() {
 
 #[test]
 fn weekly_by_hour() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![],
@@ -2927,7 +2927,7 @@ fn weekly_by_hour() {
 
 #[test]
 fn weekly_by_minute() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![],
@@ -2959,7 +2959,7 @@ fn weekly_by_minute() {
 
 #[test]
 fn weekly_by_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![],
@@ -2991,7 +2991,7 @@ fn weekly_by_second() {
 
 #[test]
 fn weekly_by_hour_and_minute() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![],
@@ -3023,7 +3023,7 @@ fn weekly_by_hour_and_minute() {
 
 #[test]
 fn weekly_by_hour_and_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![],
@@ -3055,7 +3055,7 @@ fn weekly_by_hour_and_second() {
 
 #[test]
 fn weekly_by_minute_and_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![],
@@ -3087,7 +3087,7 @@ fn weekly_by_minute_and_second() {
 
 #[test]
 fn weekly_by_hour_and_minute_and_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(5),
         by_month: vec![],
@@ -3121,7 +3121,7 @@ fn weekly_by_hour_and_minute_and_second() {
 
 #[test]
 fn weekly_by_setpos() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![],
@@ -3153,7 +3153,7 @@ fn weekly_by_setpos() {
 
 #[test]
 fn daily() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![],
@@ -3185,7 +3185,7 @@ fn daily() {
 
 #[test]
 fn daily_interval() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![],
@@ -3217,7 +3217,7 @@ fn daily_interval() {
 
 #[test]
 fn daily_interval_large() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![],
@@ -3249,7 +3249,7 @@ fn daily_interval_large() {
 
 #[test]
 fn daily_by_month() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![1, 3],
@@ -3281,7 +3281,7 @@ fn daily_by_month() {
 
 #[test]
 fn daily_by_monthday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![],
@@ -3313,7 +3313,7 @@ fn daily_by_monthday() {
 
 #[test]
 fn daily_by_month_and_monthday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![1, 3],
@@ -3345,7 +3345,7 @@ fn daily_by_month_and_monthday() {
 
 #[test]
 fn daily_by_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![],
@@ -3377,7 +3377,7 @@ fn daily_by_weekday() {
 
 #[test]
 fn daily_by_month_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![1, 3],
@@ -3409,7 +3409,7 @@ fn daily_by_month_and_weekday() {
 
 #[test]
 fn daily_by_monthday_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![],
@@ -3441,7 +3441,7 @@ fn daily_by_monthday_and_weekday() {
 
 #[test]
 fn daily_by_month_and_monthday_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![1, 3],
@@ -3474,7 +3474,7 @@ fn daily_by_month_and_monthday_and_weekday() {
 #[test]
 #[ignore = "`BYYEARDAY` can not be used with the current frequency (daily)."]
 fn daily_by_yearday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(4),
         by_month: vec![],
@@ -3508,7 +3508,7 @@ fn daily_by_yearday() {
 #[test]
 #[ignore = "`BYYEARDAY` can not be used with the current frequency (daily)."]
 fn daily_by_yeardayneg() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(4),
         by_month: vec![],
@@ -3542,7 +3542,7 @@ fn daily_by_yeardayneg() {
 #[test]
 #[ignore = "`BYYEARDAY` can not be used with the current frequency (daily)."]
 fn daily_by_month_and_yearday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(4),
         by_month: vec![1, 7],
@@ -3576,7 +3576,7 @@ fn daily_by_month_and_yearday() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (daily)."]
 fn daily_by_weekno() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![],
@@ -3611,7 +3611,7 @@ fn daily_by_weekno() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (daily)."]
 fn daily_by_weekno_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![],
@@ -3646,7 +3646,7 @@ fn daily_by_weekno_and_weekday() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (daily)."]
 fn daily_by_weekno_and_weekday_large() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![],
@@ -3679,7 +3679,7 @@ fn daily_by_weekno_and_weekday_large() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (daily)."]
 fn daily_by_weekno_and_weekday_last() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![],
@@ -3712,7 +3712,7 @@ fn daily_by_weekno_and_weekday_last() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (daily)."]
 fn daily_by_weekno_and_weekday53() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![],
@@ -3744,7 +3744,7 @@ fn daily_by_weekno_and_weekday53() {
 
 #[test]
 fn daily_by_hour() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![],
@@ -3776,7 +3776,7 @@ fn daily_by_hour() {
 
 #[test]
 fn daily_by_minute() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![],
@@ -3808,7 +3808,7 @@ fn daily_by_minute() {
 
 #[test]
 fn daily_by_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![],
@@ -3840,7 +3840,7 @@ fn daily_by_second() {
 
 #[test]
 fn daily_by_hour_and_minute() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![],
@@ -3872,7 +3872,7 @@ fn daily_by_hour_and_minute() {
 
 #[test]
 fn daily_by_hour_and_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![],
@@ -3904,7 +3904,7 @@ fn daily_by_hour_and_second() {
 
 #[test]
 fn daily_by_minute_and_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![],
@@ -3936,7 +3936,7 @@ fn daily_by_minute_and_second() {
 
 #[test]
 fn daily_by_hour_and_minute_and_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![],
@@ -3968,7 +3968,7 @@ fn daily_by_hour_and_minute_and_second() {
 
 #[test]
 fn daily_by_setpos() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![],
@@ -4000,7 +4000,7 @@ fn daily_by_setpos() {
 
 #[test]
 fn hourly() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(3),
         by_month: vec![],
@@ -4032,7 +4032,7 @@ fn hourly() {
 
 #[test]
 fn hourly_interval() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(3),
         by_month: vec![],
@@ -4064,7 +4064,7 @@ fn hourly_interval() {
 
 #[test]
 fn hourly_interval_large() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(3),
         by_month: vec![],
@@ -4096,7 +4096,7 @@ fn hourly_interval_large() {
 
 #[test]
 fn hourly_by_month() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(3),
         by_month: vec![1, 3],
@@ -4128,7 +4128,7 @@ fn hourly_by_month() {
 
 #[test]
 fn hourly_by_monthday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(3),
         by_month: vec![],
@@ -4160,7 +4160,7 @@ fn hourly_by_monthday() {
 
 #[test]
 fn hourly_by_month_and_monthday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(3),
         by_month: vec![1, 3],
@@ -4192,7 +4192,7 @@ fn hourly_by_month_and_monthday() {
 
 #[test]
 fn hourly_by_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(5),
         by_month: vec![],
@@ -4226,7 +4226,7 @@ fn hourly_by_weekday() {
 
 #[test]
 fn hourly_by_month_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(3),
         by_month: vec![1, 3],
@@ -4258,7 +4258,7 @@ fn hourly_by_month_and_weekday() {
 
 #[test]
 fn hourly_by_monthday_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(3),
         by_month: vec![],
@@ -4290,7 +4290,7 @@ fn hourly_by_monthday_and_weekday() {
 
 #[test]
 fn hourly_by_month_and_monthday_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(3),
         by_month: vec![1, 3],
@@ -4322,7 +4322,7 @@ fn hourly_by_month_and_monthday_and_weekday() {
 
 #[test]
 fn hourly_by_yearday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(8),
         by_month: vec![],
@@ -4359,7 +4359,7 @@ fn hourly_by_yearday() {
 
 #[test]
 fn hourly_by_yeardayneg() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(8),
         by_month: vec![],
@@ -4396,7 +4396,7 @@ fn hourly_by_yeardayneg() {
 
 #[test]
 fn hourly_by_month_and_yearday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(4),
         by_month: vec![4, 7],
@@ -4430,7 +4430,7 @@ fn hourly_by_month_and_yearday() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (hourly)."]
 fn hourly_by_weekno() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(3),
         by_month: vec![],
@@ -4463,7 +4463,7 @@ fn hourly_by_weekno() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (hourly)."]
 fn hourly_by_weekno_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(3),
         by_month: vec![],
@@ -4496,7 +4496,7 @@ fn hourly_by_weekno_and_weekday() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (hourly)."]
 fn hourly_by_weekno_and_weekday_large() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(3),
         by_month: vec![],
@@ -4529,7 +4529,7 @@ fn hourly_by_weekno_and_weekday_large() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (hourly)."]
 fn hourly_by_weekno_and_weekday_last() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(3),
         by_month: vec![],
@@ -4562,7 +4562,7 @@ fn hourly_by_weekno_and_weekday_last() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (hourly)."]
 fn hourly_by_weekno_and_weekday53() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(3),
         by_month: vec![],
@@ -4594,7 +4594,7 @@ fn hourly_by_weekno_and_weekday53() {
 
 #[test]
 fn hourly_by_hour() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(3),
         by_month: vec![],
@@ -4626,7 +4626,7 @@ fn hourly_by_hour() {
 
 #[test]
 fn hourly_by_minute() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(3),
         by_month: vec![],
@@ -4658,7 +4658,7 @@ fn hourly_by_minute() {
 
 #[test]
 fn hourly_by_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(3),
         by_month: vec![],
@@ -4690,7 +4690,7 @@ fn hourly_by_second() {
 
 #[test]
 fn hourly_by_hour_and_minute() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(3),
         by_month: vec![],
@@ -4722,7 +4722,7 @@ fn hourly_by_hour_and_minute() {
 
 #[test]
 fn hourly_by_hour_and_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(3),
         by_month: vec![],
@@ -4754,7 +4754,7 @@ fn hourly_by_hour_and_second() {
 
 #[test]
 fn hourly_by_minute_and_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(3),
         by_month: vec![],
@@ -4786,7 +4786,7 @@ fn hourly_by_minute_and_second() {
 
 #[test]
 fn hourly_by_hour_and_minute_and_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(5),
         by_month: vec![],
@@ -4820,7 +4820,7 @@ fn hourly_by_hour_and_minute_and_second() {
 
 #[test]
 fn hourly_by_setpos() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Hourly,
         count: Some(3),
         by_month: vec![],
@@ -4852,7 +4852,7 @@ fn hourly_by_setpos() {
 
 #[test]
 fn minutely() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(3),
         by_month: vec![],
@@ -4884,7 +4884,7 @@ fn minutely() {
 
 #[test]
 fn minutely_interval() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(3),
         by_month: vec![],
@@ -4916,7 +4916,7 @@ fn minutely_interval() {
 
 #[test]
 fn minutely_interval_large() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(3),
         by_month: vec![],
@@ -4948,7 +4948,7 @@ fn minutely_interval_large() {
 
 #[test]
 fn minutely_by_month() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(3),
         by_month: vec![1, 3],
@@ -4980,7 +4980,7 @@ fn minutely_by_month() {
 
 #[test]
 fn minutely_by_monthday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(3),
         by_month: vec![],
@@ -5012,7 +5012,7 @@ fn minutely_by_monthday() {
 
 #[test]
 fn minutely_by_month_and_monthday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(3),
         by_month: vec![1, 3],
@@ -5044,7 +5044,7 @@ fn minutely_by_month_and_monthday() {
 
 #[test]
 fn minutely_by_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(3),
         by_month: vec![],
@@ -5076,7 +5076,7 @@ fn minutely_by_weekday() {
 
 #[test]
 fn minutely_by_month_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(3),
         by_month: vec![1, 3],
@@ -5108,7 +5108,7 @@ fn minutely_by_month_and_weekday() {
 
 #[test]
 fn minutely_by_monthday_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(3),
         by_month: vec![],
@@ -5140,7 +5140,7 @@ fn minutely_by_monthday_and_weekday() {
 
 #[test]
 fn minutely_by_month_and_monthday_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(3),
         by_month: vec![1, 3],
@@ -5172,7 +5172,7 @@ fn minutely_by_month_and_monthday_and_weekday() {
 
 #[test]
 fn minutely_by_yearday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(4),
         by_month: vec![],
@@ -5205,7 +5205,7 @@ fn minutely_by_yearday() {
 
 #[test]
 fn minutely_by_yeardayneg() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(4),
         by_month: vec![],
@@ -5238,7 +5238,7 @@ fn minutely_by_yeardayneg() {
 
 #[test]
 fn minutely_by_month_and_yearday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(4),
         by_month: vec![4, 7],
@@ -5272,7 +5272,7 @@ fn minutely_by_month_and_yearday() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (minutely)."]
 fn minutely_by_weekno() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(3),
         by_month: vec![],
@@ -5305,7 +5305,7 @@ fn minutely_by_weekno() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (minutely)."]
 fn minutely_by_weekno_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(3),
         by_month: vec![],
@@ -5338,7 +5338,7 @@ fn minutely_by_weekno_and_weekday() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (minutely)."]
 fn minutely_by_weekno_and_weekday_large() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(3),
         by_month: vec![],
@@ -5371,7 +5371,7 @@ fn minutely_by_weekno_and_weekday_large() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (minutely)."]
 fn minutely_by_weekno_and_weekday_last() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(3),
         by_month: vec![],
@@ -5404,7 +5404,7 @@ fn minutely_by_weekno_and_weekday_last() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (minutely)."]
 fn minutely_by_weekno_and_weekday53() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(3),
         by_month: vec![],
@@ -5436,7 +5436,7 @@ fn minutely_by_weekno_and_weekday53() {
 
 #[test]
 fn minutely_by_hour() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(3),
         by_month: vec![],
@@ -5468,7 +5468,7 @@ fn minutely_by_hour() {
 
 #[test]
 fn minutely_by_minute() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(3),
         by_month: vec![],
@@ -5500,7 +5500,7 @@ fn minutely_by_minute() {
 
 #[test]
 fn minutely_by_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(3),
         by_month: vec![],
@@ -5532,7 +5532,7 @@ fn minutely_by_second() {
 
 #[test]
 fn minutely_by_hour_and_minute() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(3),
         by_month: vec![],
@@ -5564,7 +5564,7 @@ fn minutely_by_hour_and_minute() {
 
 #[test]
 fn minutely_by_hour_and_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(3),
         by_month: vec![],
@@ -5596,7 +5596,7 @@ fn minutely_by_hour_and_second() {
 
 #[test]
 fn minutely_by_minute_and_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(3),
         by_month: vec![],
@@ -5628,7 +5628,7 @@ fn minutely_by_minute_and_second() {
 
 #[test]
 fn minutely_by_hour_and_minute_and_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(5),
         by_month: vec![],
@@ -5662,7 +5662,7 @@ fn minutely_by_hour_and_minute_and_second() {
 
 #[test]
 fn minutely_by_setpos() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Minutely,
         count: Some(3),
         by_month: vec![],
@@ -5694,7 +5694,7 @@ fn minutely_by_setpos() {
 
 #[test]
 fn secondly() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(3),
         by_month: vec![],
@@ -5726,7 +5726,7 @@ fn secondly() {
 
 #[test]
 fn secondly_interval() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(3),
         by_month: vec![],
@@ -5758,7 +5758,7 @@ fn secondly_interval() {
 
 #[test]
 fn secondly_interval_large_under_limit() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(3),
         by_month: vec![],
@@ -5791,7 +5791,7 @@ fn secondly_interval_large_under_limit() {
 #[test]
 #[cfg(feature = "no-validation-limits")]
 fn secondly_interval_large() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(3),
         by_month: vec![],
@@ -5823,7 +5823,7 @@ fn secondly_interval_large() {
 
 #[test]
 fn secondly_by_month() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(3),
         by_month: vec![1, 3],
@@ -5855,7 +5855,7 @@ fn secondly_by_month() {
 
 #[test]
 fn secondly_by_monthday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(3),
         by_month: vec![],
@@ -5887,7 +5887,7 @@ fn secondly_by_monthday() {
 
 #[test]
 fn secondly_by_month_and_monthday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(3),
         by_month: vec![1, 3],
@@ -5919,7 +5919,7 @@ fn secondly_by_month_and_monthday() {
 
 #[test]
 fn secondly_by_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(3),
         by_month: vec![],
@@ -5951,7 +5951,7 @@ fn secondly_by_weekday() {
 
 #[test]
 fn secondly_by_month_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(3),
         by_month: vec![1, 3],
@@ -5983,7 +5983,7 @@ fn secondly_by_month_and_weekday() {
 
 #[test]
 fn secondly_by_monthday_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(3),
         by_month: vec![],
@@ -6015,7 +6015,7 @@ fn secondly_by_monthday_and_weekday() {
 
 #[test]
 fn secondly_by_month_and_monthday_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(3),
         by_month: vec![1, 3],
@@ -6047,7 +6047,7 @@ fn secondly_by_month_and_monthday_and_weekday() {
 
 #[test]
 fn secondly_by_yearday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(4),
         by_month: vec![],
@@ -6080,7 +6080,7 @@ fn secondly_by_yearday() {
 
 #[test]
 fn secondly_by_yeardayneg() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(4),
         by_month: vec![],
@@ -6113,7 +6113,7 @@ fn secondly_by_yeardayneg() {
 
 #[test]
 fn secondly_by_month_and_yearday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(4),
         by_month: vec![4, 7],
@@ -6147,7 +6147,7 @@ fn secondly_by_month_and_yearday() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (secondly)."]
 fn secondly_by_weekno() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(3),
         by_month: vec![],
@@ -6180,7 +6180,7 @@ fn secondly_by_weekno() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (secondly)."]
 fn secondly_by_weekno_and_weekday() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(3),
         by_month: vec![],
@@ -6213,7 +6213,7 @@ fn secondly_by_weekno_and_weekday() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (secondly)."]
 fn secondly_by_weekno_and_weekday_large() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(3),
         by_month: vec![],
@@ -6246,7 +6246,7 @@ fn secondly_by_weekno_and_weekday_large() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (secondly)."]
 fn secondly_by_weekno_and_weekday_last() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(3),
         by_month: vec![],
@@ -6279,7 +6279,7 @@ fn secondly_by_weekno_and_weekday_last() {
 #[test]
 #[ignore = "`BYWEEKNO` can not be used with the current frequency (secondly)."]
 fn secondly_by_weekno_and_weekday53() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(3),
         by_month: vec![],
@@ -6313,7 +6313,7 @@ fn secondly_by_weekno_and_weekday53() {
 #[ignore = "This assumes it will just loop over 9*60*60=32400 seconds. \
 This will thus trigger the loop_limit."]
 fn secondly_by_hour() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(3),
         by_month: vec![],
@@ -6345,7 +6345,7 @@ fn secondly_by_hour() {
 
 #[test]
 fn secondly_by_minute() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(3),
         by_month: vec![],
@@ -6377,7 +6377,7 @@ fn secondly_by_minute() {
 
 #[test]
 fn secondly_by_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(3),
         by_month: vec![],
@@ -6411,7 +6411,7 @@ fn secondly_by_second() {
 #[ignore = "This assumes it will just loop over 9*60*60=32400 seconds. \
 This will thus trigger the loop_limit."]
 fn secondly_by_hour_and_minute() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(3),
         by_month: vec![],
@@ -6445,7 +6445,7 @@ fn secondly_by_hour_and_minute() {
 #[ignore = "This assumes it will just loop over 9*60*60=32400 seconds. \
 This will thus trigger the loop_limit."]
 fn secondly_by_hour_and_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(3),
         by_month: vec![],
@@ -6477,7 +6477,7 @@ fn secondly_by_hour_and_second() {
 
 #[test]
 fn secondly_by_minute_and_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(3),
         by_month: vec![],
@@ -6511,7 +6511,7 @@ fn secondly_by_minute_and_second() {
 #[ignore = "This assumes it will just loop over 9*60*60=32400 seconds. \
 This will thus trigger the loop_limit."]
 fn secondly_by_hour_and_minute_and_second() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Secondly,
         count: Some(5),
         by_month: vec![],
@@ -6545,7 +6545,7 @@ fn secondly_by_hour_and_minute_and_second() {
 
 #[test]
 fn until_not_matching() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(3),
         by_month: vec![],
@@ -6577,7 +6577,7 @@ fn until_not_matching() {
 
 #[test]
 fn until_matching() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(4),
         by_month: vec![],
@@ -6609,7 +6609,7 @@ fn until_matching() {
 
 #[test]
 fn until_single() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(1),
         by_month: vec![],
@@ -6636,7 +6636,7 @@ fn until_single() {
 #[ignore = "`UNTIL` is `1997-09-01T09:00:00+00:00`, but `DTSTART` (`1997-09-02T09:00:00+00:00`) \
 is later. That should not be happening."]
 fn until_empty() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(1),
         by_month: vec![],
@@ -6661,7 +6661,7 @@ fn until_empty() {
 
 #[test]
 fn until_with_date() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(4),
         by_month: vec![],
@@ -6693,7 +6693,7 @@ fn until_with_date() {
 
 #[test]
 fn week_start_interval_mo() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![],
@@ -6725,7 +6725,7 @@ fn week_start_interval_mo() {
 
 #[test]
 fn week_start_interval_su() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Weekly,
         count: Some(3),
         by_month: vec![],
@@ -6763,7 +6763,7 @@ fn test_timezones_weekly() {
         Europe::Berlin,
     };
 
-    let rrule_options = ParsedOptions::default()
+    let rrule_options = RRuleProperties::default()
         .dt_start(UTC.ymd(2021, 1, 1).and_hms(9, 0, 0))
         .count(2)
         .freq(Frequency::Weekly)
@@ -6774,7 +6774,7 @@ fn test_timezones_weekly() {
     }
 
     // NYC (-5)
-    let rrule_options = ParsedOptions::default()
+    let rrule_options = RRuleProperties::default()
         .dt_start(New_York.ymd(2021, 1, 1).and_hms(9, 0, 0))
         .count(1)
         .freq(Frequency::Weekly)
@@ -6785,7 +6785,7 @@ fn test_timezones_weekly() {
     }
 
     // How about Berlin (+1)
-    let rrule_options = ParsedOptions::default()
+    let rrule_options = RRuleProperties::default()
         .dt_start(Berlin.ymd(2021, 1, 1).and_hms(9, 0, 0))
         .count(1)
         .freq(Frequency::Weekly)
@@ -6796,7 +6796,7 @@ fn test_timezones_weekly() {
     }
 
     // Los Angeles (-7)
-    let rrule_options = ParsedOptions::default()
+    let rrule_options = RRuleProperties::default()
         .dt_start(Los_Angeles.ymd(2021, 1, 1).and_hms(9, 0, 0))
         .count(1)
         .freq(Frequency::Weekly)

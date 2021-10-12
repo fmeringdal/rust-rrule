@@ -1,4 +1,4 @@
-use crate::{ParsedOptions, RRuleError};
+use crate::{RRuleError, RRuleProperties};
 
 /// Maximum value of `option.interval` when frequency is yearly.
 /// Limit: 10000 years
@@ -37,7 +37,7 @@ pub static FREQ_MINUTELY_INTERVAL_MAX: u16 = 10_000;
 pub static FREQ_SECONDLY_INTERVAL_MAX: u16 = 50_000;
 
 /// Check (arbitrary) validator limits.
-/// It checks all values in the [`ParsedOptions`] and makes sure that they are in
+/// It checks all values in the [`RRuleProperties`] and makes sure that they are in
 /// a reasonable range. If the function returns `Ok`, no errors where found.
 ///
 /// This will prevent the creation of iterators that will always fail.
@@ -47,7 +47,7 @@ pub static FREQ_SECONDLY_INTERVAL_MAX: u16 = 50_000;
 /// When `no-validation-limits` feature is set this function will always return `Ok`.
 /// See README.md for more info.
 #[cfg(not(feature = "no-validation-limits"))]
-pub fn check_limits(option: &ParsedOptions) -> Result<(), RRuleError> {
+pub fn check_limits(option: &RRuleProperties) -> Result<(), RRuleError> {
     use crate::{validator::YEAR_RANGE, Frequency};
     use chrono::Datelike;
 
@@ -91,7 +91,7 @@ pub fn check_limits(option: &ParsedOptions) -> Result<(), RRuleError> {
 }
 
 /// Check validator limits.
-/// It checks all values in the [`ParsedOptions`] and makes sure that they are in
+/// It checks all values in the [`RRuleProperties`] and makes sure that they are in
 /// a reasonable range. If the function returns `Ok`, no errors where found.
 ///
 /// This will prevent the creation of iterators that will always fail.
@@ -101,6 +101,6 @@ pub fn check_limits(option: &ParsedOptions) -> Result<(), RRuleError> {
 /// When `no-validation-limits` feature is set this function will always return `Ok`.
 /// See README.md for more info.
 #[cfg(feature = "no-validation-limits")]
-pub fn check_limits(_option: &ParsedOptions) -> Result<(), RRuleError> {
+pub fn check_limits(_option: &RRuleProperties) -> Result<(), RRuleError> {
     Ok(())
 }

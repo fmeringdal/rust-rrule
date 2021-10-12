@@ -3,13 +3,13 @@ mod common;
 use chrono::TimeZone;
 use chrono_tz::UTC;
 use common::{test_recurring_rrule_set, ymd_hms};
-use rrule::{Frequency, NWeekday, ParsedOptions, RRule, RRuleSet, Weekday};
+use rrule::{Frequency, NWeekday, RRule, RRuleProperties, RRuleSet, Weekday};
 
 #[test]
 fn rrule_and_exrule() {
     let mut set = RRuleSet::default();
 
-    let options1 = ParsedOptions {
+    let options1 = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(6),
         by_month: vec![],
@@ -31,7 +31,7 @@ fn rrule_and_exrule() {
     };
     let rrule = RRule::new(options1).unwrap();
     set.rrule(rrule);
-    let options2 = ParsedOptions {
+    let options2 = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![],
@@ -100,7 +100,7 @@ fn setdate_and_exrule() {
     set.rdate(ymd_hms(1997, 9, 16, 9, 0, 0));
     set.rdate(ymd_hms(1997, 9, 18, 9, 0, 0));
 
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(3),
         by_month: vec![],
@@ -137,7 +137,7 @@ fn setdate_and_exrule() {
 fn rrule_and_exdate() {
     let mut set = RRuleSet::default();
 
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(6),
         by_month: vec![],
@@ -178,7 +178,7 @@ fn rrule_and_exdate() {
 fn rrule_and_exyearly_yearly_big() {
     let mut set = RRuleSet::default();
 
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(13),
         by_month: vec![9],
@@ -201,7 +201,7 @@ fn rrule_and_exyearly_yearly_big() {
     let rrule = RRule::new(options).unwrap();
     set.rrule(rrule);
 
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(10),
         by_month: vec![9],
@@ -238,7 +238,7 @@ fn rrule_and_exyearly_yearly_big() {
 fn before() {
     let mut set = RRuleSet::default();
 
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: None,
         by_month: vec![9],
@@ -261,7 +261,7 @@ fn before() {
     let rrule = RRule::new(options).unwrap();
     set.rrule(rrule);
 
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(10),
         by_month: vec![9],
@@ -294,7 +294,7 @@ fn before() {
 fn after() {
     let mut set = RRuleSet::default();
 
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: None,
         by_month: vec![9],
@@ -317,7 +317,7 @@ fn after() {
     let rrule = RRule::new(options).unwrap();
     set.rrule(rrule);
 
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(10),
         by_month: vec![9],
@@ -350,7 +350,7 @@ fn after() {
 fn between() {
     let mut set = RRuleSet::default();
 
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: None,
         by_month: vec![9],
@@ -373,7 +373,7 @@ fn between() {
     let rrule = RRule::new(options).unwrap();
     set.rrule(rrule);
 
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(10),
         by_month: vec![9],
@@ -414,7 +414,7 @@ fn between() {
 fn before_70s() {
     let mut set = RRuleSet::default();
 
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Yearly,
         count: Some(2),
         by_month: vec![1],

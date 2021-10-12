@@ -13,7 +13,7 @@ mod yearinfo;
 use crate::{
     core::{DateTime, Time},
     validator::FREQ_HOURLY_INTERVAL_MAX,
-    Frequency, NWeekday, ParsedOptions, RRuleError,
+    Frequency, NWeekday, RRuleError, RRuleProperties,
 };
 use chrono::{Datelike, Duration, Timelike};
 use iterinfo::IterInfo;
@@ -96,7 +96,7 @@ fn decrement_date_until_valid(
 
 fn increment_counter_date(
     counter_date: DateTime,
-    options: &ParsedOptions,
+    options: &RRuleProperties,
     filtered: bool,
 ) -> Result<DateTime, RRuleError> {
     match options.freq {
@@ -309,7 +309,7 @@ fn increment_counter_date(
 fn is_filtered(
     ii: &IterInfo,
     current_day: u64,
-    options: &ParsedOptions,
+    options: &RRuleProperties,
 ) -> Result<bool, RRuleError> {
     // TODO break this up into parts because this is unmaintainable.
 
@@ -409,7 +409,7 @@ fn remove_filtered_days(
     Ok(filtered)
 }
 
-fn build_timeset(options: &ParsedOptions) -> Vec<Time> {
+fn build_timeset(options: &RRuleProperties) -> Vec<Time> {
     let millisecond_mod = (options.dt_start.timestamp_millis() % 1000) as u16;
 
     if options.freq > Frequency::Daily {
@@ -433,7 +433,7 @@ fn build_timeset(options: &ParsedOptions) -> Vec<Time> {
 fn make_timeset(
     ii: &IterInfo,
     counter_date: &DateTime,
-    options: &ParsedOptions,
+    options: &RRuleProperties,
 ) -> Result<Vec<Time>, RRuleError> {
     if options.freq < Frequency::Hourly {
         return Ok(build_timeset(options));

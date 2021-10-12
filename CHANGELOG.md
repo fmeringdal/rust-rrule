@@ -20,11 +20,10 @@ See [ReadMe](README.md#validation_limits) for more info.
 - Massive code restructuring. Split into `core`, `iter`, `parser` and `validator`.
 - Renamed `Frequenzy` to `Frequency`.
 - Add limit to `all()`, prevent infinite loops.
-- `ParsedOptions` and `Options` are merged together. (#22)
-- `ParsedOptions` and `Options` change of types and field names.
+- `ParsedOptions` and `Options` are merged together into `RRuleProperties`. (#22)
 - `Options` functions changed, for example `byminute` -> `by_minute`.
 - `by_easter` is now opt-in with feature flag `by-easter`. (#26)
-- `RRule` can only be crated using `new` function with a valid `ParsedOptions`.
+- `RRule` can only be crated using `new` function with a valid `RRuleProperties`.
 - `RRule.option` is no longer public, but can be read by using `get_options()`.
 - `RRuleIter` and `RRuleSetIter` are now part of the public API.
 - `NWeekday` has totally changed, but serves the same purpose.
@@ -33,7 +32,7 @@ See [ReadMe](README.md#validation_limits) for more info.
 
 ### Removed
 - `RRuleSet::new()` replaced with `RRuleSet::default()`.
-- `ParsedOptions` and `Options` are now combined as `ParsedOptions`. (#22)
+- `ParsedOptions` and `Options` are now combined as `RRuleProperties`. (#22)
 - `NWeekdayIdentifier` replaced with new version of `NWeekday`.
 - `by_n_weekday` field removed from `ParsedOptions`, combined into `by_weekday`.
 - `concat` and `build` in `Options` are removed, no longer needed.

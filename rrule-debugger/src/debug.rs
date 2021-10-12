@@ -2,7 +2,7 @@
 #![allow(unused_imports)]
 use chrono::{DateTime, TimeZone, Weekday};
 use chrono_tz::{Tz, UTC};
-use rrule::{Frequency, ParsedOptions, RRule};
+use rrule::{Frequency, RRule, RRuleProperties};
 
 /// This function can be used to test anything and can be changes as you wish.
 pub fn run_debug_function() {
@@ -22,7 +22,7 @@ fn test_from_string() {
 }
 
 fn test_parsed_options() {
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: Frequency::Daily,
         interval: 1,
         count: Some(20),

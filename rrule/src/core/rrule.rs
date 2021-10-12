@@ -6,14 +6,14 @@ use std::str::FromStr;
 #[derive(Clone, Debug)]
 pub struct RRule {
     /// The properties specified by this rule.
-    options: ParsedOptions,
+    options: RRuleProperties,
 }
 
 impl RRule {
     /// Create and validate the given options and make sure they are valid before
     /// creating an RRule struct.
     /// If the options are not valid it will return an error.
-    pub fn new(options: ParsedOptions) -> Result<Self, RRuleError> {
+    pub fn new(options: RRuleProperties) -> Result<Self, RRuleError> {
         let datetime = options.dt_start;
         let options = crate::parser::finalize_parsed_options(options, &datetime)?;
         let validated_options = validate_options(options)?;
@@ -23,7 +23,7 @@ impl RRule {
     }
 
     /// Get the parameters set by the RRule.
-    pub fn get_options(&self) -> &ParsedOptions {
+    pub fn get_options(&self) -> &RRuleProperties {
         &self.options
     }
 

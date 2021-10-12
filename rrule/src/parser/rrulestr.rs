@@ -1,6 +1,6 @@
 use crate::{
     core::{DateTime, RRule, RRuleSet},
-    Frequency, NWeekday, ParsedOptions, RRuleError,
+    Frequency, NWeekday, RRuleError, RRuleProperties,
 };
 use chrono::{Datelike, NaiveDate, NaiveDateTime, TimeZone, Timelike, Weekday};
 use chrono_tz::{Tz, UTC};
@@ -67,7 +67,7 @@ pub(crate) fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleError> {
 /// If RRule contains invalid parts and [`RRuleError`] will be returned.
 /// This should never panic, but it might in odd cases.
 /// Please report if it does panic.
-pub(crate) fn parse_rrule_string_to_options(input: &str) -> Result<ParsedOptions, RRuleError> {
+pub(crate) fn parse_rrule_string_to_options(input: &str) -> Result<RRuleProperties, RRuleError> {
     let input = preprocess_rrule_string(input);
 
     let ParsedInput {
@@ -91,9 +91,9 @@ pub(crate) fn parse_rrule_string_to_options(input: &str) -> Result<ParsedOptions
 
 /// Fill in some additional field in order to make iter work correctly.
 pub(crate) fn finalize_parsed_options(
-    mut options: ParsedOptions,
+    mut options: RRuleProperties,
     dt_start: &DateTime,
-) -> Result<ParsedOptions, RRuleError> {
+) -> Result<RRuleProperties, RRuleError> {
     use std::cmp::Ordering;
     // TEMP: move negative months to other list
     let mut by_month_day = vec![];
@@ -391,7 +391,7 @@ fn stringval_to_intvec<T: FromStr + Ord + PartialEq + Copy, F: Fn(T) -> bool>(
     Ok(parsed_vals)
 }
 
-fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<ParsedOptions, RRuleError> {
+fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProperties, RRuleError> {
     // Store all parts independently so we can see if things are double set or missing.
     let mut freq = None;
     let mut interval = None;
@@ -655,7 +655,7 @@ fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<ParsedOptio
     }
 
     // Check if manditory fields are set
-    Ok(ParsedOptions {
+    Ok(RRuleProperties {
         freq: freq.ok_or_else(|| {
             RRuleError::new_parse_err(format!("Property `FREQ` was missing in `{}`", line))
         })?,
@@ -732,7 +732,7 @@ fn parse_weekday(val: &str) -> Result<Vec<NWeekday>, RRuleError> {
     Ok(wdays)
 }
 
-fn parse_rule_line(rfc_string: &str) -> Result<Option<ParsedOptions>, RRuleError> {
+fn parse_rule_line(rfc_string: &str) -> Result<Option<RRuleProperties>, RRuleError> {
     let rfc_string = rfc_string.trim();
     // If this part is empty return back
     if rfc_string.is_empty() {
@@ -756,7 +756,7 @@ fn parse_rule_line(rfc_string: &str) -> Result<Option<ParsedOptions>, RRuleError
 
         match key {
             "EXRULE" | "RRULE" => Ok(Some(parse_rrule(rfc_string, None)?)),
-            "DTSTART" => Ok(Some(ParsedOptions::new(
+            "DTSTART" => Ok(Some(RRuleProperties::new(
                 Frequency::Yearly, // TODO this value should not be a default
                 parse_dtstart(rfc_string)?,
             ))),
@@ -812,7 +812,7 @@ fn extract_name(line: String) -> LineName {
     }
 }
 
-fn parse_rule(rfc_string: &str) -> Result<ParsedOptions, RRuleError> {
+fn parse_rule(rfc_string: &str) -> Result<RRuleProperties, RRuleError> {
     let mut option = None;
     for line in rfc_string.split('\n') {
         let parsed_line = parse_rule_line(line)?;
@@ -840,9 +840,9 @@ fn parse_rule(rfc_string: &str) -> Result<ParsedOptions, RRuleError> {
 
 #[derive(Debug)]
 struct ParsedInput {
-    rrule_vals: Vec<ParsedOptions>,
+    rrule_vals: Vec<RRuleProperties>,
     rdate_vals: Vec<DateTime>,
-    exrule_vals: Vec<ParsedOptions>,
+    exrule_vals: Vec<RRuleProperties>,
     exdate_vals: Vec<DateTime>,
     dt_start: DateTime,
     tz: Tz,

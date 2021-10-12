@@ -1,3 +1,3 @@
-# Manual ParsedOptions
+# Manual RRuleProperties
 
-Create an `ParsedOptions` object to create a `RRule`.
+Create an `RRuleProperties` object to create a `RRule`.

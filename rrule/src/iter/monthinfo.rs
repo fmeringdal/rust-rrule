@@ -1,5 +1,5 @@
 use super::utils::pymod;
-use crate::{Frequency, NWeekday, ParsedOptions, RRuleError};
+use crate::{Frequency, NWeekday, RRuleError, RRuleProperties};
 
 #[derive(Debug)]
 pub struct MonthInfo {
@@ -15,7 +15,7 @@ pub fn rebuild_month(
     year_len: u32,
     month_range: &[u16],
     weekday_mask: &[u8],
-    options: &ParsedOptions,
+    options: &RRuleProperties,
 ) -> Result<MonthInfo, RRuleError> {
     let mut result = MonthInfo {
         last_year: year,

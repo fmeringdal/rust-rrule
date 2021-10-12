@@ -1,6 +1,6 @@
 use crate::take_data::*;
 
-use rrule::{Frequency, ParsedOptions, RRule};
+use rrule::{Frequency, RRule, RRuleProperties};
 
 /// This function uses the data to construct a deterministic input for RRule.
 /// This can also be used to reconstruct the RRule from crashes in order to debug the code.
@@ -35,7 +35,7 @@ pub fn take_rrule_from_data(mut data: &[u8]) -> Option<RRule> {
     // if data.len() < 166 {
     //     return None;
     // }
-    let options = ParsedOptions {
+    let options = RRuleProperties {
         freq: match take_byte(&mut data) % 7 {
             0 => Frequency::Yearly,
             1 => Frequency::Monthly,

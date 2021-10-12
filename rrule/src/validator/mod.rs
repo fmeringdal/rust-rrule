@@ -1,7 +1,7 @@
-//! This module includes everything needed to validate an [ParsedOptions].
+//! This module includes everything needed to validate an [RRuleProperties].
 //! And in turn create a RRule.
 
-use crate::{ParsedOptions, RRuleError};
+use crate::{RRuleError, RRuleProperties};
 
 mod check_limits;
 mod validate_options;
@@ -14,9 +14,9 @@ pub(crate) use check_limits::{
 };
 pub(crate) use validate_options::{DAY_RANGE, MONTH_RANGE, YEAR_RANGE};
 
-/// Validate [`ParsedOptions`] and make sure it meets all requirements.
+/// Validate [`RRuleProperties`] and make sure it meets all requirements.
 /// This function always need to be called before creating an [`RRule`] struct.
-pub fn validate_options(options: ParsedOptions) -> Result<ParsedOptions, RRuleError> {
+pub fn validate_options(options: RRuleProperties) -> Result<RRuleProperties, RRuleError> {
     // Validate required checks (defined by RFC 5545)
     validate_options::validate_options_forced(&options)?;
     // Validate (optional) sanity checks. (arbitrary limits)

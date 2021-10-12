@@ -5,20 +5,20 @@ use super::{
     utils::to_ordinal,
     yearinfo::{rebuild_year, YearInfo},
 };
-use crate::{core::Time, Frequency, NWeekday, ParsedOptions, RRuleError};
+use crate::{core::Time, Frequency, NWeekday, RRuleError, RRuleProperties};
 use chrono::{Datelike, TimeZone};
 
 pub struct IterInfo<'a> {
     year_info: Option<YearInfo>,
     month_info: Option<MonthInfo>,
     easter_mask: Option<Vec<isize>>,
-    options: &'a ParsedOptions,
+    options: &'a RRuleProperties,
 }
 
 impl<'a> IterInfo<'a> {
     /// Only used to create a dummy instance of this because
     /// `into_iter` does not return an error.
-    pub(crate) fn new_no_rebuild(options: &'a ParsedOptions) -> Self {
+    pub(crate) fn new_no_rebuild(options: &'a RRuleProperties) -> Self {
         Self {
             options,
             year_info: None,
@@ -27,7 +27,7 @@ impl<'a> IterInfo<'a> {
         }
     }
 
-    pub fn new(options: &'a ParsedOptions) -> Result<Self, RRuleError> {
+    pub fn new(options: &'a RRuleProperties) -> Result<Self, RRuleError> {
         let mut ii = Self {
             options,
             year_info: None,
@@ -279,7 +279,7 @@ impl<'a> IterInfo<'a> {
         }
     }
 
-    pub fn get_options(&'a self) -> &'a ParsedOptions {
+    pub fn get_options(&'a self) -> &'a RRuleProperties {
         self.options
     }
 }

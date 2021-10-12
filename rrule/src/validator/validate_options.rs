@@ -1,6 +1,6 @@
 use std::{fmt::Display, ops::RangeInclusive};
 
-use crate::{Frequency, NWeekday, ParsedOptions, RRuleError};
+use crate::{Frequency, NWeekday, RRuleError, RRuleProperties};
 
 /// Range of values that a weekday can be.
 /// Range: `0..=6`
@@ -25,13 +25,13 @@ pub static YEAR_RANGE: RangeInclusive<i32> = -10_000..=10_000;
 pub static YEAR_RANGE: RangeInclusive<i32> = -262_000..=262_000;
 
 /// Check if rules are valid as defined by the RFC and crate limitations.
-/// It checks all values in the [`ParsedOptions`] and makes sure that they are in
+/// It checks all values in the [`RRuleProperties`] and makes sure that they are in
 /// the accepted ranges. If the function returns `Ok`, no errors where found.
 ///
 /// This check should always be done and just enforces limits set by the standard.
 /// Validation will always be enforced and can not be disabled using feature flags.
 ///
-pub fn validate_options_forced(option: &ParsedOptions) -> Result<(), RRuleError> {
+pub fn validate_options_forced(option: &RRuleProperties) -> Result<(), RRuleError> {
     // Freq:
     // - Enum, so always valid on its own.
 
