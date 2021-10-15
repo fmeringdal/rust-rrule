@@ -19,6 +19,10 @@ regex = "1.4.1"
 serde = {version = "1.0", features = ["derive"]}
 log = "0.4.14"
 
+[[bin]]
+name = "rrule"
+path = "src/bin.rs"
+
 [features]
 default = []
 

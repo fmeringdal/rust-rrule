@@ -42,7 +42,7 @@ But "EXRULE" works exactly the same als "RRULE" excepts it excludes dates.
 
 If you notice that the implementation differs from the specifications above, please open an issue.
 
-## Quick start
+## Library Usage
 
 ```rust
 use rrule::RRule;
@@ -59,9 +59,18 @@ let recurrences = rrule.all(limit);
 assert_eq!(recurrences.len(), 3);
 ```
 
-## Documentation and more examples
+See more examples at [docs.rs](https://docs.rs/rrule)
 
-[Documentation and more examples](https://docs.rs/rrule)
+## Command Line Tool Usage
+Install the command line tool with:
+```bash
+cargo install rrule
+```
+
+Then run it with:
+```bash
+rrule "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3"
+```
 
 ## Safety and Security
 <a name="safety"></a>
