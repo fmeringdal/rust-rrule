@@ -1,0 +1,30 @@
+name: CI
+
+on: [push, pull_request]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run tests
+      run: cargo test
+    - name: Run tests by-easter
+      run: cargo test --features "by-easter"
+    - name: Run tests no-validation-limits
+      run: cargo test --features "no-validation-limits"
+    - name: Format
+      run: cargo fmt -- --check
+    - name: Linting
+      run: cargo clippy -- -D warnings
+    - name: Audit
+      run: |
+        cargo update
+        cargo audit
+      # Allowed to fail but this will notify us that some dependency might need an update.
+      continue-on-error: true
