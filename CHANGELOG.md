@@ -10,10 +10,12 @@ This project follows the [Semantic Versioning standard](https://semver.org/).
 (only used internally and for debugging)
 - Added `examples` folder and moved some code from documentation into examples.
 - New and improved error handling consolidated into one object, `RRuleError`.
-- Added new method to `RRule`, `all_with_error`, similar to `all` but
+- Added new method to `RRule` and `RRuleSet`: `all_with_error`, similar to `all` but
 returns all dates it could get until it encountered an error.
 - Added arbitrary limits for safety reasons.
 See [ReadMe](README.md#validation_limits) for more info.
+- Improved `rrule` command line tool.
+- New `WithError` trait, implemented for `RRuleIter` and `RRuleSetIter`.
 
 ### Changed
 - License change, from MIT to (MIT or Apache 2.0). (#27)

@@ -10,12 +10,14 @@ const CRASHES_PATH: &str = "rrule-afl-fuzz/out/default/crashes/";
 
 // Example commands:
 // ```bash
-// RUST_BACKTRACE=1 cargo run -- --id 0 rrule
+// RUST_BACKTRACE=1 cargo run --bin rrule-debugger -- --id 0 rrule
 // ```
 
-/// A basic example
+/// RRule debugger program
+///
+/// This crate is used to debug the RRule crate itself.
 #[derive(StructOpt, Debug)]
-#[structopt(name = "basic")]
+#[structopt(name = "rrule-debugger")]
 struct Opt {
     /// Activate debug mode
     #[structopt(short, long)]

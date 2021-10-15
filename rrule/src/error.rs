@@ -37,3 +37,10 @@ impl Display for RRuleError {
 }
 
 impl Error for RRuleError {}
+
+pub trait WithError {
+    /// Return `true` if an error has occurred.
+    fn has_err(&self) -> bool;
+    /// Return an the last error while iterating.
+    fn get_err(&self) -> Option<&RRuleError>;
+}

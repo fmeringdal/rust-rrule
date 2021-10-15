@@ -1,5 +1,5 @@
 use super::{rrule_iter::RRuleIter, MAX_ITER_LOOP};
-use crate::{core::DateTime, RRule, RRuleError, RRuleSet};
+use crate::{core::DateTime, RRule, RRuleError, RRuleSet, WithError};
 use chrono::TimeZone;
 use std::{collections::HashMap, iter::Iterator};
 
@@ -16,15 +16,6 @@ pub struct RRuleSetIter<'a> {
 }
 
 impl<'a> RRuleSetIter<'a> {
-    /// Return `true` if an error has occurred.
-    pub fn has_err(&self) -> bool {
-        self.error.is_some()
-    }
-    /// Return an the last error while iterating.
-    pub fn get_err(&self) -> &Option<RRuleError> {
-        &self.error
-    }
-
     fn generate_date(
         dates: &mut Vec<DateTime>,
         exrules: &[RRule],
@@ -106,6 +97,16 @@ impl<'a> RRuleSetIter<'a> {
                 true
             }
         }
+    }
+}
+
+impl<'a> WithError for RRuleSetIter<'a> {
+    fn has_err(&self) -> bool {
+        self.error.is_some()
+    }
+
+    fn get_err(&self) -> Option<&RRuleError> {
+        self.error.as_ref()
     }
 }
 

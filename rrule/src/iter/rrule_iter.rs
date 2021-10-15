@@ -4,7 +4,7 @@ use super::{
 };
 use crate::{
     core::{DateTime, Time},
-    Frequency, RRule, RRuleError,
+    Frequency, RRule, RRuleError, WithError,
 };
 use chrono::{Datelike, TimeZone, Timelike};
 use chrono_tz::UTC;
@@ -29,15 +29,6 @@ pub struct RRuleIter<'a> {
 }
 
 impl<'a> RRuleIter<'a> {
-    /// Return `true` if an error has occurred.
-    pub fn has_err(&self) -> bool {
-        self.error.is_some()
-    }
-    /// Return an the last error while iterating.
-    pub fn get_err(&self) -> Option<&RRuleError> {
-        self.error.as_ref()
-    }
-
     fn new(rrule: &'a RRule) -> Result<Self, RRuleError> {
         let ii = IterInfo::new(rrule.get_properties())?;
         let ii_properties = ii.get_properties();
@@ -220,6 +211,16 @@ impl<'a> RRuleIter<'a> {
         }
         // Indicate that there might be more items on the next iteration.
         Ok(false)
+    }
+}
+
+impl<'a> WithError for RRuleIter<'a> {
+    fn has_err(&self) -> bool {
+        self.error.is_some()
+    }
+
+    fn get_err(&self) -> Option<&RRuleError> {
+        self.error.as_ref()
     }
 }
 

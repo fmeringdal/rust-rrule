@@ -3,7 +3,7 @@
 //! Manually iterate over an `RRule`.
 
 use chrono::Datelike;
-use rrule::{RRule, RRuleIter};
+use rrule::{RRule, RRuleIter, WithError};
 
 fn main() {
     let rrule: RRule = "DTSTART;TZID=America/New_York:20200902T130000\n\

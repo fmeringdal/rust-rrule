@@ -1,5 +1,5 @@
 use super::{datetime::DateTime, properties::*};
-use crate::{validator::validate_properties, RRuleError};
+use crate::{validator::validate_properties, RRuleError, WithError};
 use std::str::FromStr;
 
 /// A validated Recurrence Rule that can be used to create an iterator.
