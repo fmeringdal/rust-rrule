@@ -169,6 +169,7 @@ The code in this project is licensed under the [MIT](LICENSE-MIT) or [Apache 2.0
 All contributions to this project will be similarly licensed.
 
 [^1]: See [validation limits](#validation_limits) sections more info.
+
 [Chrono]: https://github.com/chronotope/chrono
 [Chrono-Tz]: https://github.com/chronotope/chrono-tz/
 [ICal_spec]: https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html
