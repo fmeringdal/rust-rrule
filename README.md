@@ -162,11 +162,6 @@ To disable all arbitrary limits you can enable the `"no-validation-limits"` feat
 - [python-dateutil library](http://labix.org/python-dateutil/)
 - [rrule.js](https://github.com/jakubroztocil/rrule)
 
-## TODOS
-
-- cache
-- more tests around string parsing and validation
-
 ## License
 
 The code in this project is licensed under the [MIT](LICENSE-MIT) or [Apache 2.0](LICENSE-APACHE) license.
