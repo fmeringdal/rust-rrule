@@ -15,8 +15,8 @@ fn parse_datetime() {
     assert_eq!(
         rrule.all(50),
         vec![
-            UTC.ymd(2012, 2, 01).and_hms(2, 30, 0),
-            UTC.ymd(2012, 2, 02).and_hms(2, 30, 0)
+            UTC.ymd(2012, 2, 1).and_hms(2, 30, 0),
+            UTC.ymd(2012, 2, 2).and_hms(2, 30, 0)
         ]
     )
 }
@@ -32,8 +32,8 @@ fn parse_datetime_with_timezone() {
     assert_eq!(
         rrule.all(50),
         vec![
-            UTC.ymd(2012, 2, 01).and_hms(2, 30, 0),
-            UTC.ymd(2012, 2, 02).and_hms(2, 30, 0)
+            UTC.ymd(2012, 2, 1).and_hms(2, 30, 0),
+            UTC.ymd(2012, 2, 2).and_hms(2, 30, 0)
         ]
     )
 }
@@ -88,7 +88,7 @@ fn parse_datetime_errors_invalid_tzid_timezone() {
     };
 }
 
-/// Monthly on the 31th of the month
+/// Monthly on the 31st of the month
 #[test]
 fn monthly_on_31th() {
     let dates = "DTSTART;TZID=America/New_York:19970902T090000\n\
@@ -99,7 +99,7 @@ fn monthly_on_31th() {
     // TODO: Is this the correct behavior?
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-10-31T09:00:00-05:00",
             "1997-12-31T09:00:00-05:00",
             "1998-01-31T09:00:00-05:00",
@@ -125,7 +125,7 @@ fn monthly_on_31th_to_last() {
     // TODO: Is this the correct behavior?
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-10-01T09:00:00-04:00",
             "1997-12-01T09:00:00-05:00",
             "1998-01-01T09:00:00-05:00",

@@ -24,23 +24,16 @@ fn test_from_string() {
 fn test_parsed_properties() {
     let properties = RRuleProperties {
         freq: Frequency::Daily,
-        interval: 1,
         count: Some(20),
-        until: None,
-        tz: UTC,
         dt_start: ymd_hms(1997, 9, 2, 9, 0, 0),
         week_start: Weekday::Sun,
-        by_set_pos: vec![],
         by_month: vec![],
-        by_weekday: vec![],
         by_hour: vec![9],
-        by_week_no: vec![],
         by_minute: vec![0],
         by_second: vec![0],
         by_year_day: vec![],
-        by_month_day: vec![],
-        by_n_month_day: vec![],
         by_easter: Some(0),
+        ..Default::default()
     };
     let rrule = RRule::new(properties).unwrap();
     let (list, err) = rrule.all_with_error(50);

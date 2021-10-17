@@ -5,7 +5,7 @@ use rrule::{Frequency, RRule, RRuleProperties};
 /// This function uses the data to construct a deterministic input for RRule.
 /// This can also be used to reconstruct the RRule from crashes in order to debug the code.
 pub fn take_rrule_from_data(mut data: &[u8]) -> Option<RRule> {
-    // Bytes uses: (always account for max used)
+    // Byte uses: (always account for max used)
     // bytes => variable
     // ----------------
     // 1  => freq

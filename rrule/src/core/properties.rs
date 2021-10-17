@@ -107,7 +107,7 @@ pub struct RRuleProperties {
     /// Extension, not part of RFC spec.
     /// Amount of days/months from Easter Sunday itself.
     /// Can be a value from -366 to 366.
-    /// Note: Only used when `by-easter` feature flag is set. Otherwise it is ignored.
+    /// Note: Only used when `by-easter` feature flag is set. Otherwise, it is ignored.
     pub by_easter: Option<i16>,
 }
 
@@ -140,23 +140,9 @@ impl RRuleProperties {
     pub fn new(freq: Frequency, dt_start: DateTime) -> Self {
         Self {
             freq,
-            interval: 1,
-            count: None,
-            until: None,
             tz: dt_start.timezone(),
             dt_start,
-            week_start: Weekday::Mon,
-            by_set_pos: Vec::new(),
-            by_month: Vec::new(),
-            by_month_day: Vec::new(),
-            by_n_month_day: Vec::new(),
-            by_year_day: Vec::new(),
-            by_week_no: Vec::new(),
-            by_weekday: Vec::new(),
-            by_hour: Vec::new(),
-            by_minute: Vec::new(),
-            by_second: Vec::new(),
-            by_easter: None,
+            ..Default::default()
         }
     }
 
@@ -244,10 +230,10 @@ impl RRuleProperties {
     }
 
     /// If given, it must be either an integer (0 == MO), a sequence of integers, one
-    /// of the weekday constants (MO, TU, etc), or a sequence of these constants.
+    /// of the weekday constants (MO, TU, etc.), or a sequence of these constants.
     /// When given, these variables will define the weekdays where the recurrence
     /// will be applied.
-    /// An nth occurrence prefix can be given.
+    /// A nth occurrence prefix can be given.
     pub fn by_weekday(mut self, by_weekday: Vec<NWeekday>) -> Self {
         self.by_weekday = by_weekday;
         self

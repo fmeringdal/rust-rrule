@@ -19,12 +19,12 @@ pub struct RRuleIter<'a> {
     // Buffer of datetimes not yet yielded
     buffer: VecDeque<DateTime>,
     /// Indicate of iterator should not return more items.
-    /// Once set set `true` is will always return `None`.
+    /// Once set `true` is will always return `None`.
     finished: bool,
     /// Number of events that should still be generated before the end.
     /// Counter always goes down after each iteration.
     count: Option<u32>,
-    /// Store the last error so it can be handled by the user.
+    /// Store the last error, so it can be handled by the user.
     error: Option<RRuleError>,
 }
 
@@ -71,7 +71,7 @@ impl<'a> RRuleIter<'a> {
             return Ok(true);
         }
 
-        // If `counter_date` is later then `until` date, we can stop
+        // If `counter_date` is later than `until` date, we can stop
         if let Some(until) = properties.until {
             if self.counter_date > until {
                 return Ok(false);
@@ -98,7 +98,7 @@ impl<'a> RRuleIter<'a> {
                 self.counter_date.day() as u8,
             )?;
 
-            // If `counter_date` is later then `until` date, we can stop
+            // If `counter_date` is later than `until` date, we can stop
             if let Some(until) = properties.until {
                 if self.counter_date > until {
                     return Ok(false);

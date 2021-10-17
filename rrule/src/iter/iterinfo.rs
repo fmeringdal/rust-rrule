@@ -148,27 +148,17 @@ impl<'a> IterInfo<'a> {
         let year_len = self
             .year_len()
             .ok_or_else(|| RRuleError::new_iter_err("`year_len()` returned `None`"))?;
-        let mut v = Vec::with_capacity(year_len as usize);
-        for i in 0..year_len as u64 {
-            v.push(i);
-        }
+        let v = (0..year_len as u64).collect();
         Ok((v, 0, year_len as u64))
     }
 
     pub fn month_dayset(&self, month: u8) -> Result<(Vec<u64>, u64, u64), RRuleError> {
         let month_range = self.month_range();
         let start = month_range[month as usize - 1];
-        let end = month_range[month as usize];
-        let mut set = vec![0; self.year_len().unwrap() as usize];
-        // loop over `start..end`
-        for (i, item) in set
-            .iter_mut()
-            .enumerate()
-            .take(end as usize)
-            .skip(start as usize)
-        {
-            *item = i as u64;
-        }
+        let end = month_range[month as usize] as u64;
+        let set = (0..self.year_len().unwrap_or_default() as u64)
+            .map(|i| if i < end { i } else { 0 })
+            .collect();
         Ok((set, start as u64, end as u64))
     }
 

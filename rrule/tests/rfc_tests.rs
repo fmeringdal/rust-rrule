@@ -17,7 +17,7 @@ fn daily_10_occurrences() {
         .all(50);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-09-02T09:00:00-04:00",
             "1997-09-03T09:00:00-04:00",
             "1997-09-04T09:00:00-04:00",
@@ -35,7 +35,7 @@ fn daily_10_occurrences() {
 /// Daily until November 03, 1997
 #[test]
 fn daily_until_november() {
-    // This has been changes to make it shorter so it is not to long.
+    // This has been changes to make it shorter, so it is not too long.
     // From september-november
     let dates = "DTSTART;TZID=America/New_York:19970920T090000\n\
         RRULE:FREQ=DAILY;UNTIL=19971103T000000Z"
@@ -44,7 +44,7 @@ fn daily_until_november() {
         .all(60);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             // September
             "1997-09-20T09:00:00-04:00",
             "1997-09-21T09:00:00-04:00",
@@ -107,7 +107,7 @@ fn every_other_day() {
         .all(32);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-09-02T09:00:00-04:00",
             "1997-09-04T09:00:00-04:00",
             "1997-09-06T09:00:00-04:00",
@@ -154,7 +154,7 @@ fn every_10_days_5_occurrences() {
         .all(50);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-09-02T09:00:00-04:00",
             "1997-09-12T09:00:00-04:00",
             "1997-09-22T09:00:00-04:00",
@@ -200,7 +200,7 @@ fn weekly_10_occurrences() {
         .all(50);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-09-02T09:00:00-04:00",
             "1997-09-09T09:00:00-04:00",
             "1997-09-16T09:00:00-04:00",
@@ -218,7 +218,7 @@ fn weekly_10_occurrences() {
 /// Weekly until November 03, 1997
 #[test]
 fn weekly_until_november() {
-    // This has been changes to make it shorter so it is not to long.
+    // This has been changes to make it shorter, so it is not too long.
     // From september-november
     let dates = "DTSTART;TZID=America/New_York:19970923T090000\n\
         RRULE:FREQ=WEEKLY;UNTIL=19971105T000000Z"
@@ -227,7 +227,7 @@ fn weekly_until_november() {
         .all(60);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             // September
             "1997-09-23T09:00:00-04:00",
             "1997-09-30T09:00:00-04:00",
@@ -253,7 +253,7 @@ fn every_other_week() {
         .all(13);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-09-02T09:00:00-04:00",
             "1997-09-16T09:00:00-04:00",
             "1997-09-30T09:00:00-04:00",
@@ -311,7 +311,7 @@ fn every_other_week_some_days_until_dec() {
         .all(50);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-09-01T09:00:00-04:00",
             "1997-09-03T09:00:00-04:00",
             "1997-09-05T09:00:00-04:00",
@@ -351,7 +351,7 @@ fn every_other_week_some_days_8_occurrences() {
         .all(50);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-09-02T09:00:00-04:00",
             "1997-09-04T09:00:00-04:00",
             "1997-09-16T09:00:00-04:00",
@@ -376,7 +376,7 @@ fn monthly_on_first_friday_10_occurrences() {
         .all(50);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-09-05T09:00:00-04:00",
             "1997-10-03T09:00:00-04:00",
             "1997-11-07T09:00:00-05:00",
@@ -401,7 +401,7 @@ fn monthly_on_first_friday_until_dec() {
         .all(50);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-09-05T09:00:00-04:00",
             "1997-10-03T09:00:00-04:00",
             "1997-11-07T09:00:00-05:00",
@@ -420,7 +420,7 @@ fn every_other_month_on_first_and_last_sunday_10_occurrences() {
         .all(50);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-09-07T09:00:00-04:00",
             "1997-09-28T09:00:00-04:00",
             "1997-11-02T09:00:00-05:00",
@@ -445,7 +445,7 @@ fn monthly_on_second_to_last_monday_for_6_months() {
         .all(50);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-09-22T09:00:00-04:00",
             "1997-10-20T09:00:00-04:00",
             "1997-11-17T09:00:00-05:00",
@@ -466,7 +466,7 @@ fn monthly_on_third_to_last_day_forever() {
         .all(6);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-09-28T09:00:00-04:00",
             "1997-10-29T09:00:00-05:00",
             "1997-11-28T09:00:00-05:00",
@@ -487,7 +487,7 @@ fn monthly_on_2nd_and_15th_10_occurrences() {
         .all(20);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-09-02T09:00:00-04:00",
             "1997-09-15T09:00:00-04:00",
             "1997-10-02T09:00:00-04:00",
@@ -512,7 +512,7 @@ fn monthly_on_first_and_last_day_10_occurrences() {
         .all(20);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-09-30T09:00:00-04:00",
             "1997-10-01T09:00:00-04:00",
             "1997-10-31T09:00:00-05:00",
@@ -527,7 +527,7 @@ fn monthly_on_first_and_last_day_10_occurrences() {
     )
 }
 
-/// Every 18 months on the 10th thru 15th of the month for 10 occurrences
+/// Every 18 months on the 10th through 15th of the month for 10 occurrences
 #[test]
 fn every_18_months_10th_to_15th_10_occurrences() {
     let dates = "DTSTART;TZID=America/New_York:19970910T090000\n\
@@ -537,7 +537,7 @@ fn every_18_months_10th_to_15th_10_occurrences() {
         .all(20);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-09-10T09:00:00-04:00",
             "1997-09-11T09:00:00-04:00",
             "1997-09-12T09:00:00-04:00",
@@ -562,7 +562,7 @@ fn every_tuesday_every_other_month() {
         .all(18);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-09-02T09:00:00-04:00",
             "1997-09-09T09:00:00-04:00",
             "1997-09-16T09:00:00-04:00",
@@ -600,7 +600,7 @@ fn yearly_in_june_and_july_for_10_occurrences() {
         .all(20);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-06-10T09:00:00-04:00",
             "1997-07-10T09:00:00-04:00",
             "1998-06-10T09:00:00-04:00",
@@ -625,7 +625,7 @@ fn every_other_year_on_jan_feb_and_march_for_10_occurrences() {
         .all(20);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-03-10T09:00:00-05:00",
             "1999-01-10T09:00:00-05:00",
             "1999-02-10T09:00:00-05:00",
@@ -650,7 +650,7 @@ fn every_third_year_on_1st_100th_and_200th_day_for_10_occurrences() {
         .all(20);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-01-01T09:00:00-05:00",
             "1997-04-10T09:00:00-04:00",
             "1997-07-19T09:00:00-04:00",
@@ -675,7 +675,7 @@ fn every_20th_monday_of_year_forever() {
         .all(3);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-05-19T09:00:00-04:00",
             "1998-05-18T09:00:00-04:00",
             "1999-05-17T09:00:00-04:00",
@@ -693,7 +693,7 @@ fn monday_of_week_20_forever() {
         .all(3);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-05-12T09:00:00-04:00",
             "1998-05-11T09:00:00-04:00",
             "1999-05-17T09:00:00-04:00",
@@ -711,7 +711,7 @@ fn every_thursday_in_march_forever() {
         .all(11);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-03-13T09:00:00-05:00",
             "1997-03-20T09:00:00-05:00",
             "1997-03-27T09:00:00-05:00",
@@ -737,7 +737,7 @@ fn every_thursday_only_during_june_july_and_august_forever() {
         .all(39);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-06-05T09:00:00-04:00",
             "1997-06-12T09:00:00-04:00",
             "1997-06-19T09:00:00-04:00",
@@ -792,7 +792,7 @@ fn every_friday_the_13th_forever() {
         .all(5);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1998-02-13T09:00:00-05:00",
             "1998-03-13T09:00:00-05:00",
             "1998-11-13T09:00:00-05:00",
@@ -812,7 +812,7 @@ fn first_sat_follows_first_sunday_of_month_forever() {
         .all(10);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-09-13T09:00:00-04:00",
             "1997-10-11T09:00:00-04:00",
             "1997-11-08T09:00:00-05:00",
@@ -838,7 +838,7 @@ fn every_4_years_us_presidential_election_day_forever() {
         .all(3);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1996-11-05T09:00:00-05:00",
             "2000-11-07T09:00:00-05:00",
             "2004-11-02T09:00:00-05:00",
@@ -858,7 +858,7 @@ fn every_third_instance_of_weekday_in_month_for_3_months() {
         .all(10);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-09-04T09:00:00-04:00",
             "1997-10-07T09:00:00-04:00",
             "1997-11-06T09:00:00-05:00",
@@ -878,7 +878,7 @@ fn second_to_last_weekday_of_month() {
     // All seem to be 1 day off
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-09-29T09:00:00-05:00",
             "1997-10-30T09:00:00-05:00",
             "1997-11-27T09:00:00-05:00",
@@ -901,7 +901,7 @@ fn every_3_hours_on_specific_day() {
         .all(10);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-09-02T09:00:00-04:00",
             "1997-09-02T12:00:00-04:00",
             "1997-09-02T15:00:00-04:00", // Missing from result
@@ -919,7 +919,7 @@ fn every_15_min_for_6_occurrences() {
         .all(10);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-09-02T09:00:00-04:00",
             "1997-09-02T09:15:00-04:00",
             "1997-09-02T09:30:00-04:00",
@@ -940,7 +940,7 @@ fn every_hour_and_a_half_for_4_occurrences() {
         .all(10);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-09-02T09:00:00-04:00",
             "1997-09-02T10:30:00-04:00",
             "1997-09-02T12:00:00-04:00",
@@ -1006,7 +1006,7 @@ fn week_day_start_monday_generated_days() {
         .all(10);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-08-05T09:00:00-04:00",
             "1997-08-10T09:00:00-04:00",
             "1997-08-19T09:00:00-04:00",
@@ -1025,7 +1025,7 @@ fn week_day_start_sunday_generated_days() {
         .all(10);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "1997-08-05T09:00:00-04:00",
             "1997-08-17T09:00:00-04:00",
             "1997-08-19T09:00:00-04:00",
@@ -1044,7 +1044,7 @@ fn invalid_date_is_ignored() {
         .all(10);
     common::check_occurrences(
         &dates,
-        &vec![
+        &[
             "2007-01-15T09:00:00-05:00",
             "2007-01-30T09:00:00-05:00",
             "2007-02-15T09:00:00-05:00",

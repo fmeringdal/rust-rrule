@@ -16,11 +16,11 @@ fn main() {
     // Construct `RRule` from properties
     let rrule = RRule::new(properties).expect("RRule invalid");
     let recurrences = rrule.all(100);
-    for i in 0..5 {
-        assert_eq!(recurrences[i].year(), 2020);
-        assert_eq!(recurrences[i].month(), 1);
-        assert_eq!(recurrences[i].day(), 1 + i as u32);
-        assert_eq!(recurrences[i].hour(), 9);
+    for (i, rec) in rrule.all(100).iter().enumerate().take(5) {
+        assert_eq!(rec.year(), 2020);
+        assert_eq!(rec.month(), 1);
+        assert_eq!(rec.day(), 1 + i as u32);
+        assert_eq!(rec.hour(), 9);
     }
     assert_eq!(recurrences.len(), 5);
     println!("Done, everything worked.");

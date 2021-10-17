@@ -15,10 +15,10 @@ FOLDER_OUT="out"
 cargo afl build --features "no-validation-limits"
 # Fuzz binary
 BIN_PATH="../target/debug/rrule-afl-fuzz"
-# Env varible to set for all instances
+# Env variable to set for all instances
 FUZZ_ENV_VAR="AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1 AFL_SKIP_CPUFREQ=1 AFL_MAP_SIZE=131072"
 # What command should be used to open new terminal windows
-# 
+#
 # For Kde -> `konsole`
 # For genome -> `genome-terminal`
 # For xfce4 -> `xfce4-terminal`
@@ -37,8 +37,8 @@ if [ "$USE_CPU_CORES" = "1" ]; then
     # Start just 1 task and just run in current terminal
     eval "$FUZZ_ENV_VAR cargo afl fuzz -i $FOLDER_IN -o $FOLDER_OUT $BIN_PATH"
 else
-    # Start mutiple terminals to run commands.
-    # First will be the primary instance others are secondairy (master-slave)
+    # Start multiple terminals to run commands.
+    # First will be the primary instance others are secondary (master-slave)
     eval "$USE_TERMINAL_COMMAND \"$FUZZ_ENV_VAR cargo afl fuzz -i $FOLDER_IN -o $FOLDER_OUT -M fuzzer1 $BIN_PATH\""
     # Wait for main service to start
     sleep 5

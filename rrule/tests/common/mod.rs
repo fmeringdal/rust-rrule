@@ -17,7 +17,7 @@ pub fn ymd_hms(
     UTC.ymd(year, month, day).and_hms(hour, minute, second)
 }
 
-pub fn test_recurring_rrule(properties: RRuleProperties, expected_dates: &Vec<DateTime<Tz>>) {
+pub fn test_recurring_rrule(properties: RRuleProperties, expected_dates: &[DateTime<Tz>]) {
     let rrule = RRule::new(properties).unwrap();
     let res = rrule.all(100);
 
@@ -29,12 +29,12 @@ pub fn test_recurring_rrule(properties: RRuleProperties, expected_dates: &Vec<Da
         "Expected number of returned dates to be equal to the expected"
     );
 
-    for (actual, exptected) in res.iter().zip(expected_dates) {
-        assert_eq!(actual, exptected);
+    for (actual, expected) in res.iter().zip(expected_dates) {
+        assert_eq!(actual, expected);
     }
 }
 
-pub fn test_recurring_rrule_set(rrule_set: RRuleSet, expected_dates: &Vec<DateTime<Tz>>) {
+pub fn test_recurring_rrule_set(rrule_set: RRuleSet, expected_dates: &[DateTime<Tz>]) {
     let res = rrule_set.all(100);
 
     println!("Actual: {:?}", res);
@@ -45,8 +45,8 @@ pub fn test_recurring_rrule_set(rrule_set: RRuleSet, expected_dates: &Vec<DateTi
         "Expected number of returned dates to be equal to the expected"
     );
 
-    for (actual, exptected) in res.iter().zip(expected_dates) {
-        assert_eq!(actual, exptected);
+    for (actual, expected) in res.iter().zip(expected_dates) {
+        assert_eq!(actual, expected);
     }
 }
 
@@ -65,7 +65,7 @@ pub fn check_occurrences<S: AsRef<str> + Debug>(occurrences: &[DateTime<Tz>], ex
     assert_eq!(occurrences.len(), expected.len(), "List sizes don't match");
     for (given, expected) in occurrences.iter().zip(expected.iter()) {
         let exp_datetime = chrono::DateTime::parse_from_rfc3339(expected.as_ref()).unwrap();
-        // Compair items and check if in the same offset/timezone
+        // Compare items and check if in the same offset/timezone
         assert_eq!(
             given.to_rfc3339(),
             exp_datetime.to_rfc3339(),

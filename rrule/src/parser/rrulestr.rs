@@ -65,7 +65,7 @@ pub(crate) fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleError> {
 /// Create an [`RRule`] from [`String`] if input is valid.
 ///
 /// If RRule contains invalid parts and [`RRuleError`] will be returned.
-/// This should never panic, but it might in odd cases.
+/// This should never panic, but it might be in odd cases.
 /// Please report if it does panic.
 pub(crate) fn parse_rrule_string_to_properties(input: &str) -> Result<RRuleProperties, RRuleError> {
     let input = preprocess_rrule_string(input);
@@ -237,9 +237,9 @@ fn datestring_to_date(dt: &str, tz: &Option<Tz>) -> Result<DateTime, RRuleError>
     let datetime = create_datetime(
         dt,
         &date,
-        parse_datestring_bit(&bits, 5, dt).unwrap_or(0),
-        parse_datestring_bit(&bits, 6, dt).unwrap_or(0),
-        parse_datestring_bit(&bits, 7, dt).unwrap_or(0),
+        parse_datestring_bit(&bits, 5, dt).unwrap_or_default(),
+        parse_datestring_bit(&bits, 6, dt).unwrap_or_default(),
+        parse_datestring_bit(&bits, 7, dt).unwrap_or_default(),
     )?;
     // Apply timezone appended to the datetime before converting to UTC.
     // For more info https://icalendar.org/iCalendar-RFC-5545/3-3-5-date-time.html
@@ -392,7 +392,7 @@ fn stringval_to_intvec<T: FromStr + Ord + PartialEq + Copy, F: Fn(T) -> bool>(
 }
 
 fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProperties, RRuleError> {
-    // Store all parts independently so we can see if things are double set or missing.
+    // Store all parts independently, so we can see if things are double set or missing.
     let mut freq = None;
     let mut interval = None;
     let mut count = None;
@@ -734,7 +734,7 @@ fn parse_weekday(val: &str) -> Result<Vec<NWeekday>, RRuleError> {
 
 fn parse_rule_line(rfc_string: &str) -> Result<Option<RRuleProperties>, RRuleError> {
     let rfc_string = rfc_string.trim();
-    // If this part is empty return back
+    // If this part is empty return
     if rfc_string.is_empty() {
         return Ok(None);
     }
@@ -1001,7 +1001,7 @@ mod test {
         assert_eq!(occurrences.len(), expected.len(), "List sizes don't match");
         for (given, expected) in occurrences.iter().zip(expected.iter()) {
             let exp_datetime = chrono::DateTime::parse_from_rfc3339(expected).unwrap();
-            // Compair items and check if in the same offset/timezone
+            // Compare items and check if in the same offset/timezone
             assert_eq!(
                 given.to_rfc3339(),
                 exp_datetime.to_rfc3339(),
@@ -1229,9 +1229,9 @@ mod test {
 
         let res = build_rruleset("FREQ=DAILY;COUNT=7");
         assert!(res.is_ok());
-        let occurences = res.unwrap().all(50);
-        assert_eq!(occurences.len(), 7);
-        assert!(chrono::Utc::now().timestamp() - occurences[0].timestamp() < 2);
+        let occurrences = res.unwrap().all(50);
+        assert_eq!(occurrences.len(), 7);
+        assert!(chrono::Utc::now().timestamp() - occurrences[0].timestamp() < 2);
     }
 
     #[test]
@@ -1240,12 +1240,11 @@ mod test {
             FREQ=WEEKLY;UNTIL=20200506T035959Z;BYDAY=FR,MO,TH,TU,WE"
             .parse::<RRule>()
             .unwrap();
-        let instances: Vec<_> = rrule
+        let instances = rrule
             .into_iter()
             .skip_while(|d| *d < chrono::Local::now())
-            .take(2)
-            .collect();
-        assert_eq!(instances.len(), 0);
+            .take(2);
+        assert_eq!(instances.count(), 0);
     }
 
     #[test]
@@ -1362,7 +1361,7 @@ mod test {
                 "2021-02-22T09:30:00+01:00",
                 "2021-03-08T09:30:00+01:00",
                 "2021-03-22T09:30:00+01:00",
-                "2021-04-05T09:30:00+02:00", // Switching to summer time.
+                "2021-04-05T09:30:00+02:00", // Switching to daylight saving time.
                 "2021-04-19T09:30:00+02:00",
                 "2021-05-03T09:30:00+02:00",
             ],

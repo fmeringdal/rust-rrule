@@ -11,7 +11,7 @@ pub struct RRuleSetIter<'a> {
     exdates: HashMap<i64, ()>,
     // Sorted additional dates in decreasing order
     rdates: Vec<DateTime>,
-    /// Store the last error so it can be handled by the user.
+    /// Store the last error, so it can be handled by the user.
     error: Option<RRuleError>,
 }
 
