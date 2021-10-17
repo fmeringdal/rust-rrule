@@ -16,13 +16,8 @@ chrono = "0.4.19"
 chrono-tz = "0.6.0"
 lazy_static = "1.4.0"
 regex = "1.4.1"
-serde = {version = "1.0", features = ["derive"]}
 log = "0.4.14"
 structopt = "0.3.23"
-
-[[bin]]
-name = "rrule"
-path = "src/bin.rs"
 
 [features]
 default = []
