@@ -1218,21 +1218,22 @@ mod test {
 
     #[test]
     #[ignore = "`dt_start` should be set, although error message is incorrect."]
-    // fn parses_rrule_without_dtstart() {
-    //     let res = parse_rrule_string_to_properties("FREQ=DAILY;COUNT=7");
-    //     println!("Res: {:?}", res);
-    //     assert!(res.is_ok());
-    //     let res = res.unwrap();
-    //     assert_eq!(res.count, Some(7));
-    //     assert_eq!(res.freq, Frequency::Daily);
-    //     assert!(chrono::Utc::now().timestamp() - res.dt_start.timestamp() < 2);
-    //
-    //     let res = build_rruleset("FREQ=DAILY;COUNT=7");
-    //     assert!(res.is_ok());
-    //     let occurrences = res.unwrap().all(50);
-    //     assert_eq!(occurrences.len(), 7);
-    //     assert!(chrono::Utc::now().timestamp() - occurrences[0].timestamp() < 2);
-    // }
+    fn parses_rrule_without_dtstart() {
+        let res = parse_rrule_string_to_properties("FREQ=DAILY;COUNT=7");
+        println!("Res: {:?}", res);
+        assert!(res.is_ok());
+        let res = res.unwrap();
+        assert_eq!(res.count, Some(7));
+        assert_eq!(res.freq, Frequency::Daily);
+        assert!(chrono::Utc::now().timestamp() - res.dt_start.timestamp() < 2);
+    
+        let res = build_rruleset("FREQ=DAILY;COUNT=7");
+        assert!(res.is_ok());
+        let occurrences = res.unwrap().all(50);
+        assert_eq!(occurrences.len(), 7);
+        assert!(chrono::Utc::now().timestamp() - occurrences[0].timestamp() < 2);
+    }
+    
     #[test]
     fn avoids_infinite_loop() {
         let rrule = "DTSTART:20200427T090000\n\
