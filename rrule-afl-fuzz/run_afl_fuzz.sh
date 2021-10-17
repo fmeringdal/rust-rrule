@@ -5,7 +5,7 @@ set -e
 
 # Install https://crates.io/crates/afl
 # Need to be build with same rust version as it is running
-cargo install afl || true
+# cargo install --force afl
 
 # Create folder
 FOLDER_IN="in_raw_rrule"
