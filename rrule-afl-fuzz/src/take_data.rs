@@ -16,14 +16,18 @@ pub fn take_vec_of_nweekday(input: &mut &[u8]) -> Vec<NWeekday> {
 pub fn take_vec_usize(input: &mut &[u8]) -> Vec<usize> {
     let max_amount_of_items = 5;
     let amount_of_items = take_byte(input) % (max_amount_of_items + 1);
-    (0..amount_of_items).map(|_| take_data_usize(input)).collect()
+    (0..amount_of_items)
+        .map(|_| take_data_usize(input))
+        .collect()
 }
 
 /// Uses max 1 + 5*8 = 41 bytes
 pub fn take_vec_isize(input: &mut &[u8]) -> Vec<isize> {
     let max_amount_of_items = 5;
     let amount_of_items = take_byte(input) % (max_amount_of_items + 1);
-    (0..amount_of_items).map(|_| take_data_isize(input)).collect()
+    (0..amount_of_items)
+        .map(|_| take_data_isize(input))
+        .collect()
 }
 
 /// Uses max 1 + 5*1 = 6 bytes
