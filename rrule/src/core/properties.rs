@@ -1,10 +1,9 @@
 use super::datetime::DateTime;
 use chrono::{Month, TimeZone, Utc, Weekday};
 use chrono_tz::{Tz, UTC};
-use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, PartialOrd, Clone)]
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub enum Frequency {
     Yearly = 0,
     Monthly = 1,
