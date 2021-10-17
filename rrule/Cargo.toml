@@ -39,5 +39,5 @@ no-validation-limits = []
 # Allows the enabling of the `by_easter` field and `BYEASTER` parser.
 by-easter = []
 
-# Required ben building CLI `rrule` tool.
+# Required only for building CLI `rrule` tool.
 cli-tool = ["structopt"]
