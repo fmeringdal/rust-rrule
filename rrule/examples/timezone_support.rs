@@ -31,7 +31,7 @@ fn main() {
     assert_eq!(recurrences.len(), 3);
 
     // If you want to get back the DateTimes in another timezone you can just iterate over the result
-    // and convert them to another timezone by using the with_timzone method provided by the DateTime type.
+    // and convert them to another timezone by using the with_timezone method provided by the DateTime type.
     // Refer to the chrono and chrono-tz crates for more documentation on working with the DateTime type.
 
     // Example of converting to Moscow timezone

@@ -84,13 +84,13 @@ fn main() {
 fn read_crash_file(id: u32) -> Option<Vec<u8>> {
     let paths = std::fs::read_dir(CRASHES_PATH).unwrap();
     for path in paths {
-        let path = path.map(|path| path.path()).unwrap();
+        let path = path.unwrap().path();
         if !path.is_file() {
             continue;
         }
         let filename = path.file_name().unwrap().to_str().unwrap();
         if filename.starts_with(&format!("id:{:06},", id)) {
-            println!("Reading file {:?}", path.to_str());
+            println!("Reading file {:?}", path);
             return Some(std::fs::read(path).expect("Something went wrong reading the file"));
         }
     }
@@ -102,13 +102,13 @@ fn read_all_crash_file() -> Vec<Vec<u8>> {
     let paths = std::fs::read_dir(CRASHES_PATH).unwrap();
     let mut list = vec![];
     for path in paths {
-        let path = path.map(|path| path.path()).unwrap();
+        let path = path.unwrap().path();
         if !path.is_file() {
             continue;
         }
         let filename = path.file_name().unwrap().to_str().unwrap();
         if filename.starts_with("id:") {
-            println!("Reading file {:?}", path.to_str());
+            println!("Reading file {:?}", path);
             list.push(std::fs::read(path).expect("Something went wrong reading the file"));
         }
     }
@@ -116,9 +116,9 @@ fn read_all_crash_file() -> Vec<Vec<u8>> {
 }
 
 pub fn print_all_datetimes(list: Vec<DateTime<Tz>>) {
-    let formater = |dt: &DateTime<Tz>| -> String { format!("    \"{}\",\n", dt.to_rfc3339()) };
+    let formatter = |dt: &DateTime<Tz>| -> String { format!("    \"{}\",\n", dt.to_rfc3339()) };
     println!(
         "[\n{}]",
-        list.iter().map(formater).collect::<Vec<_>>().join(""),
+        list.iter().map(formatter).collect::<Vec<_>>().join(""),
     );
 }

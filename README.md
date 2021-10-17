@@ -20,7 +20,7 @@ Use at your own risk!
 
 This crate follows the [iCalendar (RFC-5545) specification][ICal_spec] for the "Recurrence Rule".
 The Recurrence Rule spec corresponds to the `RRule` object in this crate.
-In addition it allows for adding the ["DTSTART" property][DTSTART_property] separated by a newline.
+In addition, it allows for adding the ["DTSTART" property][DTSTART_property] separated by a newline.
 
 The crate allows for a "BYEASTER" filter. But this is opt-in with the feature flag `"by-easter"`.
 
@@ -96,7 +96,7 @@ prevalent. Numbers might overflow in some cases.
 
 ### Denial of Service (DoS) by CPU exhaustion
 The spec allows of infinitely recurring events or by searching of a datetime that meets the
-requirements but does not exists. There are various protections for this build into the crate.
+requirements but does not exist. There are various protections for this build into the crate.
 But in order to hit these limits it might take a few seconds/minutes depending on the CPU speed.
 
 This problem can be mitigating by spawning the process in a separate thread and stopping the thread
@@ -106,7 +106,7 @@ Note that by disabling the [validation limits](#validation_limits) this problem 
 made MUCH more significant.
 
 ### Denial of Service (DoS) by memory exhaustion
-The spec allows of infinitely recurring events. Thus the iterator might be practically infinite.
+The spec allows of infinitely recurring events. Thus, the iterator might be practically infinite.
 So when not setting a limit over the iterator it might create a list of events that practically
 never ends. And thus will continue until is crashes or hangs the system.
 
@@ -144,7 +144,7 @@ Limitations:
 | Formula loop limit               | 10_000                | 65_535 (u16::MAX)           |
 | Iteration limit                  | 100_000               | 4_294_967_295 (u32::MAX)    |
 
-By default the "Arbitrary Limit" are used. If you instead want to use the "Crate Limit".
+By default, the "Arbitrary Limit" are used. If you instead want to use the "Crate Limit".
 Make sure you [understand the risks that come with this](#safety).
 
 <details>

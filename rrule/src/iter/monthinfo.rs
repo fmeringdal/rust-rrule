@@ -32,7 +32,7 @@ pub(crate) fn rebuild_month(
             for month in &properties.by_month {
                 if month == &0 {
                     return Err(RRuleError::new_iter_err(
-                        "Month `0` does not exists, 1-12 expected",
+                        "Month `0` does not exist, 1-12 expected",
                     ));
                 }
                 let first = *month_range
@@ -49,7 +49,7 @@ pub(crate) fn rebuild_month(
     } else if properties.freq == Frequency::Monthly {
         if month == 0 {
             return Err(RRuleError::new_iter_err(
-                "Month `0` does not exists, 1-12 expected",
+                "Month `0` does not exist, 1-12 expected",
             ));
         }
         let first = *month_range

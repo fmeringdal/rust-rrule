@@ -58,8 +58,8 @@ impl RRule {
     }
 
     /// Returns the last recurrence before the given datetime instance.
-    /// The inc keyword defines what happens if dt is an recurrence.
-    /// With inc == true, if dt itself is an recurrence, it will be returned.
+    /// The inc keyword defines what happens if dt is a recurrence.
+    /// With inc == true, if dt itself is a recurrence, it will be returned.
     pub fn before(&self, dt: DateTime, inc: bool) -> Option<DateTime> {
         self.into_iter()
             .take_while(|d| if inc { *d <= dt } else { *d < dt })
@@ -67,8 +67,8 @@ impl RRule {
     }
 
     /// Returns the last recurrence after the given datetime instance.
-    /// The inc keyword defines what happens if dt is an recurrence.
-    /// With inc == true, if dt itself is an recurrence, it will be returned.
+    /// The inc keyword defines what happens if dt is a recurrence.
+    /// With inc == true, if dt itself is a recurrence, it will be returned.
     pub fn after(&self, dt: DateTime, inc: bool) -> Option<DateTime> {
         self.into_iter()
             .find(|d| !(if inc { *d < dt } else { *d <= dt }))

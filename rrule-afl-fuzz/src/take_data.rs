@@ -9,77 +9,56 @@ use std::convert::TryInto;
 pub fn take_vec_of_nweekday(input: &mut &[u8]) -> Vec<NWeekday> {
     let max_amount_of_items = 5;
     let amount_of_items = take_byte(input) % (max_amount_of_items + 1);
-    let mut list = vec![];
-    for _i in 0..amount_of_items {
-        list.push(take_nweekday(input));
-    }
-    list
+    let val = take_nweekday(input);
+    (0..amount_of_items).map(|_| val).collect()
 }
 
 /// Uses max 1 + 5*8 = 41 bytes
 pub fn take_vec_usize(input: &mut &[u8]) -> Vec<usize> {
     let max_amount_of_items = 5;
     let amount_of_items = take_byte(input) % (max_amount_of_items + 1);
-    let mut list = vec![];
-    for _i in 0..amount_of_items {
-        list.push(take_data_usize(input));
-    }
-    list
+    let val = take_data_usize(input);
+    (0..amount_of_items).map(|_| val).collect()
 }
 
 /// Uses max 1 + 5*8 = 41 bytes
 pub fn take_vec_isize(input: &mut &[u8]) -> Vec<isize> {
     let max_amount_of_items = 5;
     let amount_of_items = take_byte(input) % (max_amount_of_items + 1);
-    let mut list = vec![];
-    for _i in 0..amount_of_items {
-        list.push(take_data_isize(input));
-    }
-    list
+    let val = take_data_isize(input);
+    (0..amount_of_items).map(|_| val).collect()
 }
 
 /// Uses max 1 + 5*1 = 6 bytes
 pub fn take_vec_u8(input: &mut &[u8]) -> Vec<u8> {
     let max_amount_of_items = 5;
     let amount_of_items = take_byte(input) % (max_amount_of_items + 1);
-    let mut list = vec![];
-    for _i in 0..amount_of_items {
-        list.push(take_data_u8(input));
-    }
-    list
+    let val = take_data_u8(input);
+    (0..amount_of_items).map(|_| val).collect()
 }
 
 /// Uses max 1 + 5*1 = 6 bytes
 pub fn take_vec_i8(input: &mut &[u8]) -> Vec<i8> {
     let max_amount_of_items = 5;
     let amount_of_items = take_byte(input) % (max_amount_of_items + 1);
-    let mut list = vec![];
-    for _i in 0..amount_of_items {
-        list.push(take_data_i8(input));
-    }
-    list
+    let val = take_data_i8(input);
+    (0..amount_of_items).map(|_| val).collect()
 }
 
 /// Uses max 1 + 5*2 = 11 bytes
 pub fn take_vec_i16(input: &mut &[u8]) -> Vec<i16> {
     let max_amount_of_items = 5;
     let amount_of_items = take_byte(input) % (max_amount_of_items + 1);
-    let mut list = vec![];
-    for _i in 0..amount_of_items {
-        list.push(take_data_i16(input));
-    }
-    list
+    let val = take_data_i16(input);
+    (0..amount_of_items).map(|_| val).collect()
 }
 
 /// Uses max 1 + 5*4 = 21 bytes
 pub fn take_vec_i32(input: &mut &[u8]) -> Vec<i32> {
     let max_amount_of_items = 5;
     let amount_of_items = take_byte(input) % (max_amount_of_items + 1);
-    let mut list = vec![];
-    for _i in 0..amount_of_items {
-        list.push(take_data_i32(input));
-    }
-    list
+    let val = take_data_i32(input);
+    (0..amount_of_items).map(|_| val).collect()
 }
 
 /// Uses 8+4+8 = 20 bytes

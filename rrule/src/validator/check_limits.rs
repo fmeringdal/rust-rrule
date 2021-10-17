@@ -65,7 +65,7 @@ pub(crate) fn check_limits(option: &RRuleProperties) -> Result<(), RRuleError> {
     };
     if option.interval > limit {
         return Err(RRuleError::new_validation_err(format!(
-            "`INTERVAL` is `{}`, is higher then expected, make sure this is correct. \
+            "`INTERVAL` is `{}`, is higher than expected, make sure this is correct. \
             See 'validator limits' in docs for more info.",
             &option.interval,
         )));
@@ -80,7 +80,7 @@ pub(crate) fn check_limits(option: &RRuleProperties) -> Result<(), RRuleError> {
     let year = option.dt_start.year();
     if !YEAR_RANGE.contains(&year) {
         return Err(RRuleError::new_validation_err(format!(
-            "`DTSTART` year is `{}`, is higher/lower then expected, make sure this is correct. \
+            "`DTSTART` year is `{}`, is higher/lower than expected, make sure this is correct. \
             See 'validator limits' in docs for more info.",
             year,
         )));

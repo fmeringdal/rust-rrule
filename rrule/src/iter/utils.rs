@@ -73,9 +73,9 @@ mod test {
 
     #[test]
     fn includes_works() {
-        assert!(!includes(&vec![], &0));
-        assert!(includes(&vec![1], &1));
-        assert!(includes(&vec![1, 2, 3, 4], &3));
-        assert!(!includes(&vec![1, 2, 3, 4], &5));
+        assert!(!includes(&[], &0));
+        assert!(includes(&[1], &1));
+        assert!(includes(&[1, 2, 3, 4], &3));
+        assert!(!includes(&[1, 2, 3, 4], &5));
     }
 }

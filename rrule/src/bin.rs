@@ -5,7 +5,7 @@ use structopt::StructOpt;
 
 /// RRule parser and iterator
 ///
-/// This program expects an Recurrence Rule (RRule) as defined by the
+/// This program expects a Recurrence Rule (RRule) as defined by the
 /// iCalendar (RFC-5545) specification (https://icalendar.org/iCalendar-RFC-5545/)..
 ///
 /// An example of a valid RRule is:

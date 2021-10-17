@@ -24,7 +24,7 @@ pub use rruleset_iter::RRuleSetIter;
 use utils::includes;
 
 /// Used to prevent infinite loops when searching for a time.
-/// This loop might be able to be prevent by using a math in the future.
+/// This loop might be able to be prevented by using a math in the future.
 #[cfg(not(feature = "no-validation-limits"))]
 static FORMULA_LOOP_LIMIT: u16 = 10_000;
 #[cfg(feature = "no-validation-limits")]
@@ -49,11 +49,11 @@ fn decrement_date_until_valid(
         checks::check_year_range(year)?;
     }
 
-    // Set year where day is valid
+    // Set year when day is valid
     let new_date = if let Some(new_year) = new_year {
         // Set the year
         let mut new_date = date.with_year(new_year);
-        // If day does not exists in this year, decrease until valid
+        // If day does not exist in this year, decrease until valid
         // `i` can not be bigger or equal to `date.day()`
         // Because day would be `0` and should be in range of `0..=31`
         for i in 1..date.day() {
@@ -74,9 +74,9 @@ fn decrement_date_until_valid(
     } else {
         date
     };
-    // Set month where day is valid
+    // Set month when day is valid
     let mut new_date = new_date.with_month(new_month as u32);
-    // If day does not exists in this year, decrease until valid.
+    // If day does not exist in this year, decrease until valid.
     for day_number in 0..=date.day0() {
         // If Date was invalid
         if new_date.is_none() && day_number > 0 {
@@ -188,7 +188,7 @@ fn increment_counter_date(
                 && new_hours > FREQ_HOURLY_INTERVAL_MAX as u32
             {
                 return Err(RRuleError::new_iter_err(format!(
-                    "Hour interval (`{}`) is higher then expected, make sure this is correct. \
+                    "Hour interval (`{}`) is higher than expected, make sure this is correct. \
                         See 'validator limits' in docs for more info",
                     new_hours
                 )));

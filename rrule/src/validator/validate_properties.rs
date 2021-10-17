@@ -37,11 +37,11 @@ pub(crate) fn validate_properties_forced(option: &RRuleProperties) -> Result<(),
 
     // Interval:
     // - Any positive number allowed.
-    //   Value is u32, no does not allows for negative numbers anyway.
+    //   Value is u32, no does not allow for negative numbers anyway.
 
     // Count:
     // - Any positive number allowed
-    //   Value is u32, no does not allows for negative numbers anyway.
+    //   Value is u32, no does not allow for negative numbers anyway.
 
     // Until:
     // - Must be same type as `dt_start`, so Date/DateTime.
@@ -211,17 +211,15 @@ pub(crate) fn validate_properties_forced(option: &RRuleProperties) -> Result<(),
         // - Can be a value from -366 to 366.
         //   Validated below
         if let Some(by_easter) = &option.by_easter {
-            validate_range_for_vec(&(-366..=366), &vec![*by_easter], "BYEASTER")?;
+            validate_range_for_vec(&(-366..=366), &[*by_easter], "BYEASTER")?;
         }
         // - Can only be used on frequency: Yearly, Monthly, Daily
         //   Validated below
         if option.by_easter.is_some() {
-            let valid = match option.freq {
-                Frequency::Yearly => true,
-                Frequency::Monthly => true,
-                Frequency::Daily => true,
-                _ => false,
-            };
+            let valid = matches!(
+                option.freq,
+                Frequency::Yearly | Frequency::Monthly | Frequency::Daily
+            );
             if !valid {
                 return Err(RRuleError::new_validation_err(format!(
                     "`BYEASTER` can not be used with the current frequency ({}).",
