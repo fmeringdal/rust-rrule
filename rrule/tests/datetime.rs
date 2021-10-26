@@ -2,7 +2,7 @@ mod common;
 
 use chrono::TimeZone;
 use chrono_tz::UTC;
-use rrule::{RRule, RRuleError};
+use rrule::{DateFilter, RRule, RRuleError};
 use std::str::FromStr;
 
 /// Check if datetime can be parsed correctly
@@ -13,7 +13,7 @@ fn parse_datetime() {
         .expect("RRule could not be parsed");
 
     assert_eq!(
-        rrule.all(50),
+        rrule.all(50).unwrap(),
         vec![
             UTC.ymd(2012, 2, 1).and_hms(2, 30, 0),
             UTC.ymd(2012, 2, 2).and_hms(2, 30, 0)
@@ -30,7 +30,7 @@ fn parse_datetime_with_timezone() {
             .expect("RRule could not be parsed");
 
     assert_eq!(
-        rrule.all(50),
+        rrule.all(50).unwrap(),
         vec![
             UTC.ymd(2012, 2, 1).and_hms(2, 30, 0),
             UTC.ymd(2012, 2, 2).and_hms(2, 30, 0)
@@ -95,7 +95,8 @@ fn monthly_on_31th() {
         RRULE:FREQ=MONTHLY;COUNT=10;BYMONTHDAY=31"
         .parse::<RRule>()
         .unwrap()
-        .all(20);
+        .all(20)
+        .unwrap();
     // TODO: Is this the correct behavior?
     common::check_occurrences(
         &dates,
@@ -121,7 +122,8 @@ fn monthly_on_31th_to_last() {
         RRULE:FREQ=MONTHLY;COUNT=10;BYMONTHDAY=-31"
         .parse::<RRule>()
         .unwrap()
-        .all(20);
+        .all(20)
+        .unwrap();
     // TODO: Is this the correct behavior?
     common::check_occurrences(
         &dates,

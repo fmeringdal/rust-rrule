@@ -4,7 +4,7 @@
 
 use chrono::{Datelike, TimeZone, Timelike};
 use chrono_tz::UTC;
-use rrule::{Frequency, RRule, RRuleProperties};
+use rrule::{DateFilter, Frequency, RRule, RRuleProperties};
 
 fn main() {
     // Build properties that starts first day in 2020 at 9:00AM and occurs daily 5 times
@@ -15,8 +15,8 @@ fn main() {
 
     // Construct `RRule` from properties
     let rrule = RRule::new(properties).expect("RRule invalid");
-    let recurrences = rrule.all(100);
-    for (i, rec) in rrule.all(100).iter().enumerate().take(5) {
+    let recurrences = rrule.all(100).unwrap();
+    for (i, rec) in rrule.all(100).unwrap().iter().enumerate().take(5) {
         assert_eq!(rec.year(), 2020);
         assert_eq!(rec.month(), 1);
         assert_eq!(rec.day(), 1 + i as u32);

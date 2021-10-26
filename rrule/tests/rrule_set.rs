@@ -3,7 +3,7 @@ mod common;
 use chrono::TimeZone;
 use chrono_tz::UTC;
 use common::{test_recurring_rrule_set, ymd_hms};
-use rrule::{Frequency, NWeekday, RRule, RRuleProperties, RRuleSet, Weekday};
+use rrule::{DateFilter, Frequency, NWeekday, RRule, RRuleProperties, RRuleSet, Weekday};
 
 #[test]
 fn rrule_and_exrule() {
@@ -208,7 +208,9 @@ fn before() {
     set.exrule(rrule);
 
     assert_eq!(
-        set.before(ymd_hms(2015, 9, 2, 9, 0, 0), false).unwrap(),
+        set.just_before(ymd_hms(2015, 9, 2, 9, 0, 0), false)
+            .unwrap()
+            .unwrap(),
         ymd_hms(2014, 9, 2, 9, 0, 0),
     );
 }
@@ -245,7 +247,9 @@ fn after() {
     set.exrule(rrule);
 
     assert_eq!(
-        set.after(ymd_hms(2000, 9, 2, 9, 0, 0), false).unwrap(),
+        set.just_after(ymd_hms(2000, 9, 2, 9, 0, 0), false)
+            .unwrap()
+            .unwrap(),
         ymd_hms(2007, 9, 2, 9, 0, 0),
     );
 }
@@ -282,11 +286,12 @@ fn between() {
     set.exrule(rrule);
 
     common::check_occurrences(
-        &set.between(
+        &set.all_between(
             ymd_hms(2000, 9, 2, 9, 0, 0),
             ymd_hms(2010, 9, 2, 9, 0, 0),
             false,
-        ),
+        )
+        .unwrap(),
         &[
             "2007-09-02T09:00:00-00:00",
             "2008-09-02T09:00:00-00:00",

@@ -4,7 +4,7 @@
 
 use chrono::{Datelike, TimeZone};
 use chrono_tz::UTC;
-use rrule::{Frequency, NWeekday, RRule, RRuleProperties, RRuleSet, Weekday};
+use rrule::{DateFilter, Frequency, NWeekday, RRule, RRuleProperties, RRuleSet, Weekday};
 
 /// ## Construct `RRuleSet` from one `rrule` and `exrule`
 /// The rrule will occur weekly on Tuesday and Wednesday and the exrule
@@ -39,7 +39,7 @@ fn main() {
     rrule_set.rrule(rrule);
     rrule_set.exrule(exrule);
 
-    let recurrences = rrule_set.all(100);
+    let recurrences = rrule_set.all(100).unwrap();
 
     // Check that all the recurrences are on a Tuesday
     for occurrence in &recurrences {

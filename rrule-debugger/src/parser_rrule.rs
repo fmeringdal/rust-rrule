@@ -1,4 +1,4 @@
-use rrule::RRule;
+use rrule::{DateFilter, RRule};
 use std::str::FromStr;
 
 pub fn from_crash_file(id: u32, data: &[u8]) {

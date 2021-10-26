@@ -5,7 +5,7 @@ use take_rrule::take_rrule_from_data;
 
 use afl::fuzz;
 use core::str::FromStr;
-use rrule::{RRule, RRuleSet};
+use rrule::{DateFilter, RRule, RRuleSet};
 
 #[allow(clippy::single_match)]
 fn main() {
