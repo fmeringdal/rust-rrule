@@ -1,14 +1,10 @@
 use super::datetime::DateTime;
 use crate::{RRuleError, WithError};
-use std::iter::FromIterator;
 
 pub trait DateFilter<'a, T>
 where
-    Self: Sized,
-    &'a Self: 'a + IntoIterator + Sized + IntoIterator<IntoIter = T>,
+    &'a Self: 'a + Sized + IntoIterator<IntoIter = T>,
     T: Iterator<Item = DateTime> + WithError,
-    // T: Iterator<Item = DateTime> + WithError,
-    Vec<DateTime>: FromIterator<<T as Iterator>::Item>,
 {
     /// Returns all the recurrences of the rrule.
     ///
