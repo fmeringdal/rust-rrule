@@ -64,7 +64,7 @@ See more examples at [docs.rs](https://docs.rs/rrule)
 ## Command Line Tool Usage
 Install the command line tool with:
 ```bash
-cargo install rrule
+cargo install rrule --features="cli-tool"
 ```
 
 Then run it with:

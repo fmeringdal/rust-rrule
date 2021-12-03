@@ -39,6 +39,7 @@ See [ReadMe](README.md#validation_limits) for more info.
 - `NWeekdayIdentifier` replaced with new version of `NWeekday`.
 - `by_n_weekday` field removed from `ParsedOptions`, combined into `by_weekday`.
 - `concat` and `build` in `Options` are removed, no longer needed.
+- Removed `serde` dependency. (#21)
 
 ### Fixed
 - Replaced panic on incorrect datetime with error.

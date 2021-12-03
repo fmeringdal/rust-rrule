@@ -16,13 +16,12 @@ chrono = "0.4.19"
 chrono-tz = "0.6.0"
 lazy_static = "1.4.0"
 regex = "1.4.1"
-serde = {version = "1.0", features = ["derive"]}
 log = "0.4.14"
-structopt = "0.3.23"
+structopt = { version = "0.3.23", optional = true }
 
 [[bin]]
 name = "rrule"
-path = "src/bin.rs"
+required-features = ["cli-tool"]
 
 [features]
 default = []
@@ -39,3 +38,6 @@ no-validation-limits = []
 
 # Allows the enabling of the `by_easter` field and `BYEASTER` parser.
 by-easter = []
+
+# Required only for building CLI `rrule` tool.
+cli-tool = ["structopt"]
