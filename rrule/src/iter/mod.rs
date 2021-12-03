@@ -13,7 +13,7 @@ mod yearinfo;
 use crate::{
     core::{DateTime, Time},
     validator::FREQ_HOURLY_INTERVAL_MAX,
-    Frequency, NWeekday, RRuleError, RRuleProperties,
+    Frequency, NWeekday, RRule, RRuleError, RRuleProperties,
 };
 use chrono::{Datelike, Duration, Timelike};
 use iterinfo::IterInfo;
@@ -414,8 +414,10 @@ fn remove_filtered_days(
     Ok(filtered)
 }
 
-fn build_timeset(properties: &RRuleProperties) -> Vec<Time> {
-    let millisecond_mod = (properties.dt_start.timestamp_millis() % 1000) as u16;
+fn build_timeset(rrule: &RRule) -> Vec<Time> {
+    let millisecond_mod = (rrule.dt_start.timestamp_millis() % 1000) as u16;
+
+    let properties = rrule.get_properties();
 
     if properties.freq > Frequency::Daily {
         return vec![];
@@ -438,10 +440,11 @@ fn build_timeset(properties: &RRuleProperties) -> Vec<Time> {
 fn make_timeset(
     ii: &IterInfo,
     counter_date: &DateTime,
-    properties: &RRuleProperties,
+    rrule: &RRule,
 ) -> Result<Vec<Time>, RRuleError> {
+    let properties = rrule.get_properties();
     if properties.freq < Frequency::Hourly {
-        return Ok(build_timeset(properties));
+        return Ok(build_timeset(rrule));
     }
 
     if (properties.freq >= Frequency::Hourly

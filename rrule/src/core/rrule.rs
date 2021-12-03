@@ -1,27 +1,21 @@
 use super::{datetime::DateTime, properties::*};
-use crate::{validator::validate_properties, RRuleError, WithError};
+use crate::{RRuleError, WithError};
+use chrono_tz::Tz;
 use std::str::FromStr;
 
 /// A validated Recurrence Rule that can be used to create an iterator.
 #[derive(Clone, Debug)]
 pub struct RRule {
     /// The properties specified by this rule.
-    properties: RRuleProperties,
+    pub(crate) properties: RRuleProperties,
+    /// The timezone used during the creation of the events.
+    pub(crate) tz: Tz,
+    /// The start datetime of the recurring event.
+    // TODO: add info about how timezone is used.
+    pub(crate) dt_start: DateTime,
 }
 
 impl RRule {
-    /// Create and validate the given properties and make sure they are valid before
-    /// creating an RRule struct.
-    /// If the properties are not valid it will return an error.
-    pub fn new(properties: RRuleProperties) -> Result<Self, RRuleError> {
-        let datetime = properties.dt_start;
-        let properties = crate::parser::finalize_parsed_properties(properties, &datetime)?;
-        let validated_properties = validate_properties(properties)?;
-        Ok(Self {
-            properties: validated_properties,
-        })
-    }
-
     /// Get the parameters set by the RRule.
     pub fn get_properties(&self) -> &RRuleProperties {
         &self.properties
@@ -90,7 +84,8 @@ impl FromStr for RRule {
     type Err = RRuleError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let properties = crate::parser::parse_rrule_string_to_properties(s)?;
-        RRule::new(properties)
+        let rrule = crate::parser::parse_rrule_string_to_properties(s)?;
+        let dt_start = crate::parser::parse_dtstart(s)?;
+        rrule.build(dt_start)
     }
 }

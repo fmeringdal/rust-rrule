@@ -25,7 +25,6 @@ fn test_parsed_properties() {
     let properties = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(20),
-        dt_start: ymd_hms(1997, 9, 2, 9, 0, 0),
         week_start: Weekday::Sun,
         by_month: vec![],
         by_hour: vec![9],
@@ -35,7 +34,7 @@ fn test_parsed_properties() {
         by_easter: Some(0),
         ..Default::default()
     };
-    let rrule = RRule::new(properties).unwrap();
+    let rrule = properties.build(ymd_hms(1997, 9, 2, 9, 0, 0)).unwrap();
     let (list, err) = rrule.all_with_error(50);
     println!("Error: {:#?}", err);
     crate::print_all_datetimes(list);

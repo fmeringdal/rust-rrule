@@ -1,3 +1,4 @@
+use crate::core::DateTime;
 use crate::{RRuleError, RRuleProperties};
 
 /// Maximum value of `option.interval` when frequency is yearly.
@@ -47,14 +48,17 @@ pub(crate) static FREQ_SECONDLY_INTERVAL_MAX: u16 = 50_000;
 /// When `no-validation-limits` feature is set this function will always return `Ok`.
 /// See README.md for more info.
 #[cfg(not(feature = "no-validation-limits"))]
-pub(crate) fn check_limits(option: &RRuleProperties) -> Result<(), RRuleError> {
+pub(crate) fn check_limits(
+    properties: &RRuleProperties,
+    dt_start: &DateTime,
+) -> Result<(), RRuleError> {
     use crate::{validator::YEAR_RANGE, Frequency};
     use chrono::Datelike;
 
     // Interval:
     // - Value should not be to big
     //   `Chrono` is limited to +/- 262,000 years from the common epoch.
-    let limit = match &option.freq {
+    let limit = match &properties.freq {
         Frequency::Yearly => FREQ_YEARLY_INTERVAL_MAX, // 10000 years
         Frequency::Monthly => FREQ_MONTHLY_INTERVAL_MAX, // About 83 years
         Frequency::Weekly => FREQ_WEEKLY_INTERVAL_MAX, // About 19 years
@@ -63,11 +67,11 @@ pub(crate) fn check_limits(option: &RRuleProperties) -> Result<(), RRuleError> {
         Frequency::Minutely => FREQ_MINUTELY_INTERVAL_MAX, // About 7 days
         Frequency::Secondly => FREQ_SECONDLY_INTERVAL_MAX, // About 13 hours
     };
-    if option.interval > limit {
+    if properties.interval > limit {
         return Err(RRuleError::new_validation_err(format!(
             "`INTERVAL` is `{}`, is higher than expected, make sure this is correct. \
             See 'validator limits' in docs for more info.",
-            &option.interval,
+            &properties.interval,
         )));
     }
 
@@ -77,7 +81,7 @@ pub(crate) fn check_limits(option: &RRuleProperties) -> Result<(), RRuleError> {
     // Dt_start:
     // - Year should be reasonable.
     //   `Chrono` is limited to +/- 262,000 years from the common epoch.
-    let year = option.dt_start.year();
+    let year = dt_start.year();
     if !YEAR_RANGE.contains(&year) {
         return Err(RRuleError::new_validation_err(format!(
             "`DTSTART` year is `{}`, is higher/lower than expected, make sure this is correct. \
@@ -101,6 +105,6 @@ pub(crate) fn check_limits(option: &RRuleProperties) -> Result<(), RRuleError> {
 /// When `no-validation-limits` feature is set this function will always return `Ok`.
 /// See README.md for more info.
 #[cfg(feature = "no-validation-limits")]
-pub(crate) fn check_limits(_option: &RRuleProperties) -> Result<(), RRuleError> {
+pub(crate) fn check_limits(_: &RRuleProperties, _: &DateTime) -> Result<(), RRuleError> {
     Ok(())
 }

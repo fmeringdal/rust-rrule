@@ -1,5 +1,6 @@
 use std::{fmt::Display, ops::RangeInclusive};
 
+use crate::core::DateTime;
 use crate::{Frequency, NWeekday, RRuleError, RRuleProperties};
 
 /// Range of values that a weekday can be.
@@ -31,7 +32,10 @@ pub(crate) static YEAR_RANGE: RangeInclusive<i32> = -262_000..=262_000;
 /// This check should always be done and just enforces limits set by the standard.
 /// Validation will always be enforced and can not be disabled using feature flags.
 ///
-pub(crate) fn validate_properties_forced(option: &RRuleProperties) -> Result<(), RRuleError> {
+pub(crate) fn validate_properties_forced(
+    option: &RRuleProperties,
+    dt_start: &DateTime,
+) -> Result<(), RRuleError> {
     // Freq:
     // - Enum, so always valid on its own.
 
@@ -55,12 +59,12 @@ pub(crate) fn validate_properties_forced(option: &RRuleProperties) -> Result<(),
     //   Validated below
     if let Some(until) = &option.until {
         // Check if before `dt_start`
-        if until < &option.dt_start {
+        if until < dt_start {
             return Err(RRuleError::new_validation_err(format!(
                 "`UNTIL` is `{}`, but `DTSTART` (`{}`) is later. \
                 That should not be happening.",
                 until.to_rfc3339(),
-                option.dt_start.to_rfc3339()
+                dt_start.to_rfc3339()
             )));
         }
     }
