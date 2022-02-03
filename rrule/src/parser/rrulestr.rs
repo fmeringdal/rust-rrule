@@ -842,6 +842,8 @@ struct ParsedInput {
     exrule_vals: Vec<RRuleProperties>,
     exdate_vals: Vec<DateTime>,
     dt_start: DateTime,
+    // TODO: Why is this field never used?
+    #[allow(dead_code)]
     tz: Tz,
 }
 

@@ -19,7 +19,7 @@ where
     /// Limit must be set in order to prevent infinite loops.
     /// The max limit is `65535`. If you need more please use `into_iter` directly.
     ///
-    /// In case where the iterator ended with an errors the error will be included,
+    /// In case the iterator ended with an error, the error will be included,
     /// otherwise the second value of the return tuple will be `None`.
     fn all_with_error(&'a self, limit: u16) -> (Vec<DateTime>, Option<RRuleError>) {
         super::collect_with_error(self.into_iter(), &None, &None, true, limit)
@@ -46,7 +46,7 @@ where
     /// Limit must be set in order to prevent infinite loops.
     /// The max limit is `65535`. If you need more please use `into_iter` directly.
     ///
-    /// In case where the iterator ended with an errors the error will be included,
+    /// In case the iterator ended with an error, the error will be included,
     /// otherwise the second value of the return tuple will be `None`.
     fn all_before_with_error(
         &'a self,
@@ -78,7 +78,7 @@ where
     /// Limit must be set in order to prevent infinite loops.
     /// The max limit is `65535`. If you need more please use `into_iter` directly.
     ///
-    /// In case where the iterator ended with an errors the error will be included,
+    /// In case the iterator ended with an error, the error will be included,
     /// otherwise the second value of the return tuple will be `None`.
     fn all_after_with_error(
         &'a self,
@@ -114,7 +114,7 @@ where
     /// Limit must be set in order to prevent infinite loops.
     /// The max limit is `65535`. If you need more please use `into_iter` directly.
     ///
-    /// In case where the iterator ended with an errors the error will be included,
+    /// In case the iterator ended with an error, the error will be included,
     /// otherwise the second value of the return tuple will be `None`.
     fn all_between_with_error(
         &'a self,

@@ -14,9 +14,9 @@ fn main() {
         .freq(Frequency::Daily);
 
     // Construct `RRule` from properties
-    let rrule = RRule::new(properties).expect("RRule invalid");
-    let recurrences = rrule.all(100).unwrap();
-    for (i, rec) in rrule.all(100).unwrap().iter().enumerate().take(5) {
+    let rrule = RRule::new(properties).expect("RRule invalid.");
+    let recurrences = rrule.all(10).expect("Error found during iterations.");
+    for (i, rec) in recurrences.iter().enumerate() {
         assert_eq!(rec.year(), 2020);
         assert_eq!(rec.month(), 1);
         assert_eq!(rec.day(), 1 + i as u32);
