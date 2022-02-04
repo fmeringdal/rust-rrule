@@ -1,5 +1,5 @@
 use super::{rrule_iter::RRuleIter, MAX_ITER_LOOP};
-use crate::{core::DateTime, RRule, RRuleError, RRuleSet, WithError};
+use crate::{core::DateTime, DateFilter, RRule, RRuleError, RRuleSet, WithError};
 use chrono::TimeZone;
 use std::{collections::HashMap, iter::Iterator};
 
@@ -70,6 +70,7 @@ impl<'a> RRuleSetIter<'a> {
         Ok(date)
     }
 
+    // TODO should this be called `accept` or `except`?
     fn accept_generated_date(
         date: &Option<DateTime>,
         exrules: &[RRule],
@@ -84,7 +85,7 @@ impl<'a> RRuleSetIter<'a> {
                     let after = date.timezone().timestamp(dt - 1, 0);
                     let before = date.timezone().timestamp(dt + 1, 0);
                     for exrule in exrules {
-                        for date in exrule.between(after, before, true) {
+                        for date in exrule.all_between(after, before, true).unwrap() {
                             exdates.insert(date.timestamp(), ());
                         }
                     }

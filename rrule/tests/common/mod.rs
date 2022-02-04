@@ -3,7 +3,7 @@
 
 use chrono::{DateTime, TimeZone};
 use chrono_tz::{Tz, UTC};
-use rrule::{RRule, RRuleProperties, RRuleSet};
+use rrule::{DateFilter, RRule, RRuleProperties, RRuleSet};
 use std::fmt::Debug;
 
 pub fn ymd_hms(
@@ -19,7 +19,7 @@ pub fn ymd_hms(
 
 pub fn test_recurring_rrule(properties: RRuleProperties, expected_dates: &[DateTime<Tz>]) {
     let rrule = RRule::new(properties).unwrap();
-    let res = rrule.all(100);
+    let res = rrule.all(100).unwrap();
 
     println!("Actual: {:?}", res);
     println!("Expected: {:?}", expected_dates);
@@ -35,7 +35,7 @@ pub fn test_recurring_rrule(properties: RRuleProperties, expected_dates: &[DateT
 }
 
 pub fn test_recurring_rrule_set(rrule_set: RRuleSet, expected_dates: &[DateTime<Tz>]) {
-    let res = rrule_set.all(100);
+    let res = rrule_set.all(100).unwrap();
 
     println!("Actual: {:?}", res);
     println!("Expected: {:?}", expected_dates);

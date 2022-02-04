@@ -16,6 +16,8 @@ pub(crate) struct YearInfo {
     /// Get day of the week from first day of the year (1 jan)
     /// So if `YYYY/01/01` is a wednesday this value will be `2`.
     /// Can be any value from 0..=6 (monday = 0)
+    // TODO: Why is this field never used?
+    #[allow(dead_code)]
     pub year_weekday: u8,
     pub month_mask: &'static [u8],
     pub month_day_mask: &'static [i8],

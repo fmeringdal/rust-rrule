@@ -1,7 +1,4 @@
-use crate::{
-    core::{DateTime, RRule, RRuleSet},
-    Frequency, NWeekday, RRuleError, RRuleProperties,
-};
+use crate::{core::DateTime, Frequency, NWeekday, RRule, RRuleError, RRuleProperties, RRuleSet};
 use chrono::{Datelike, NaiveDate, NaiveDateTime, TimeZone, Timelike, Weekday};
 use chrono_tz::{Tz, UTC};
 use lazy_static::lazy_static;
@@ -845,6 +842,8 @@ struct ParsedInput {
     exrule_vals: Vec<RRuleProperties>,
     exdate_vals: Vec<DateTime>,
     dt_start: DateTime,
+    // TODO: Why is this field never used?
+    #[allow(dead_code)]
     tz: Tz,
 }
 
@@ -985,6 +984,7 @@ fn preprocess_rrule_string(s: &str) -> String {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::DateFilter;
 
     /// Print and compare 2 lists of dates and panic it they are not the same.
     fn check_occurrences(occurrences: Vec<DateTime>, expected: Vec<&str>) {
@@ -1206,11 +1206,12 @@ mod test {
             let tmp_now = std::time::SystemTime::now();
 
             // res.all(50);
-            res.between(
+            res.all_between(
                 UTC.timestamp_millis(915321600000),
                 UTC.timestamp_millis(920505600000),
                 true,
-            );
+            )
+            .unwrap();
             println!("All took: {:?}", tmp_now.elapsed().unwrap().as_nanos());
         }
         println!("Time took: {:?}", now.elapsed().unwrap().as_millis());
@@ -1229,7 +1230,7 @@ mod test {
 
         let res = build_rruleset("FREQ=DAILY;COUNT=7");
         assert!(res.is_ok());
-        let occurrences = res.unwrap().all(50);
+        let occurrences = res.unwrap().all(50).unwrap();
         assert_eq!(occurrences.len(), 7);
         assert!(chrono::Utc::now().timestamp() - occurrences[0].timestamp() < 2);
     }
@@ -1310,7 +1311,8 @@ mod test {
         EXDATE;TZID=Europe/Paris:20201228T093000,20210125T093000,20210208T093000"
             .parse::<RRuleSet>()
             .unwrap()
-            .all(50);
+            .all(50)
+            .unwrap();
         // This results in following set (minus exdate)
         // [
         //     2020-12-14T09:30:00CET,
@@ -1354,7 +1356,8 @@ mod test {
         RRULE:FREQ=WEEKLY;UNTIL=20210508T083000Z;INTERVAL=2;BYDAY=MO;WKST=MO"
             .parse::<RRuleSet>()
             .unwrap()
-            .all(50);
+            .all(50)
+            .unwrap();
         check_occurrences(
             dates,
             vec![

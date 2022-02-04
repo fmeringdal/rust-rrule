@@ -53,9 +53,7 @@ let rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().
 // Set hard limit in case of infinitely recurring rules.
 let limit = 100;
 // Get all recurrences of the rrule
-let recurrences = rrule.all(limit);
-// Or rrule.into_iter().take(limit as usize).collect::<Vec<_>>();
-// if you want to leverage the iterator directly
+let recurrences = rrule.all(limit).unwrap();
 assert_eq!(recurrences.len(), 3);
 ```
 

@@ -10,8 +10,8 @@ This project follows the [Semantic Versioning standard](https://semver.org/).
 (only used internally and for debugging)
 - Added `examples` folder and moved some code from documentation into examples.
 - New and improved error handling consolidated into one object, `RRuleError`.
-- Added new method to `RRule` and `RRuleSet`: `all_with_error`, similar to `all` but
-returns all dates it could get until it encountered an error.
+- Added new trait `DateFilter` for implementing methods like:
+`all_with_error`, `all_before_with_error`, `all_after_with_error` and `all_between_with_error` and moved/added methods like `all`, `just_before`, etc.
 - Added arbitrary limits for safety reasons.
 See [ReadMe](README.md#validation_limits) for more info.
 - Improved `rrule` command line tool.
@@ -30,6 +30,7 @@ See [ReadMe](README.md#validation_limits) for more info.
 - `RRuleIter` and `RRuleSetIter` are now part of the public API.
 - `NWeekday` has totally changed, but serves the same purpose.
 - Updated `chrono-tz` from `0.5.3` to `0.6.0`.
+- Function `all` was moved to `DateFilter` and returns a `Result` now.
 
 ### Deprecated
 
@@ -40,6 +41,9 @@ See [ReadMe](README.md#validation_limits) for more info.
 - `by_n_weekday` field removed from `ParsedOptions`, combined into `by_weekday`.
 - `concat` and `build` in `Options` are removed, no longer needed.
 - Removed `serde` dependency. (#21)
+- Removed function `between`, use `DateFilter::all_between` instead.
+- Removed function `after`, use `DateFilter::just_after` instead.
+- Removed function `before`, use `DateFilter::just_before` instead.
 
 ### Fixed
 - Replaced panic on incorrect datetime with error.
