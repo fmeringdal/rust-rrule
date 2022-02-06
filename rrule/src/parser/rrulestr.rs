@@ -1,7 +1,4 @@
-use crate::{
-    core::{DateTime, RRuleSet},
-    Frequency, NWeekday, RRuleError, RRuleProperties,
-};
+use crate::{core::DateTime, Frequency, NWeekday, RRuleError, RRuleProperties, RRuleSet};
 use chrono::{Datelike, NaiveDate, NaiveDateTime, TimeZone, Timelike, Weekday};
 use chrono_tz::{Tz, UTC};
 use lazy_static::lazy_static;
@@ -844,9 +841,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleError> {
         match parsed_line.name.to_uppercase().as_str() {
             "RRULE" => {
                 if !parsed_line.params.is_empty() {
-                    return Err(RRuleError::new_parse_err(
-                        "Unsupported RRULE value".to_owned(),
-                    ));
+                    return Err(RRuleError::new_parse_err("Unsupported RRULE value"));
                 }
                 if parsed_line.value.is_empty() {
                     continue;
@@ -856,9 +851,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleError> {
             }
             "EXRULE" => {
                 if !parsed_line.params.is_empty() {
-                    return Err(RRuleError::new_parse_err(
-                        "Unsupported EXRULE value".to_owned(),
-                    ));
+                    return Err(RRuleError::new_parse_err("Unsupported EXRULE value"));
                 }
                 if parsed_line.value.is_empty() {
                     continue;
@@ -872,11 +865,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleError> {
             "RDATE" => {
                 let matches = match RDATE_RE.captures(line) {
                     Some(m) => m,
-                    None => {
-                        return Err(RRuleError::new_parse_err(
-                            "Invalid RDATE specified".to_owned(),
-                        ))
-                    }
+                    None => return Err(RRuleError::new_parse_err("Invalid RDATE specified")),
                 };
                 let tz: Option<Tz> = match matches.get(1) {
                     Some(tz_str) => Some(parse_timezone(tz_str.as_str())?),
@@ -892,11 +881,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleError> {
             "EXDATE" => {
                 let matches = match EXDATE_RE.captures(line) {
                     Some(m) => m,
-                    None => {
-                        return Err(RRuleError::new_parse_err(
-                            "Invalid EXDATE specified".to_owned(),
-                        ))
-                    }
+                    None => return Err(RRuleError::new_parse_err("Invalid EXDATE specified")),
                 };
                 let tz: Option<Tz> = match matches.get(1) {
                     Some(tz_str) => Some(parse_timezone(tz_str.as_str())?),
@@ -966,6 +951,7 @@ fn preprocess_rrule_string(s: &str) -> String {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::DateFilter;
     use crate::RRule;
 
     /// Print and compare 2 lists of dates and panic it they are not the same.
@@ -1193,11 +1179,12 @@ mod test {
             let tmp_now = std::time::SystemTime::now();
 
             // res.all(50);
-            res.between(
+            res.all_between(
                 UTC.timestamp_millis(915321600000),
                 UTC.timestamp_millis(920505600000),
                 true,
-            );
+            )
+            .unwrap();
             println!("All took: {:?}", tmp_now.elapsed().unwrap().as_nanos());
         }
         println!("Time took: {:?}", now.elapsed().unwrap().as_millis());
@@ -1220,7 +1207,7 @@ mod test {
 
         let res = build_rruleset(s);
         assert!(res.is_ok());
-        let occurrences = res.unwrap().all(50);
+        let occurrences = res.unwrap().all(50).unwrap();
         assert_eq!(occurrences.len(), 7);
         assert!(chrono::Utc::now().timestamp() - occurrences[0].timestamp() < 2);
     }
@@ -1301,7 +1288,8 @@ mod test {
         EXDATE;TZID=Europe/Paris:20201228T093000,20210125T093000,20210208T093000"
             .parse::<RRuleSet>()
             .unwrap()
-            .all(50);
+            .all(50)
+            .unwrap();
         // This results in following set (minus exdate)
         // [
         //     2020-12-14T09:30:00CET,
@@ -1342,7 +1330,8 @@ mod test {
         RRULE:FREQ=WEEKLY;UNTIL=20210508T083000Z;INTERVAL=2;BYDAY=MO;WKST=MO"
             .parse::<RRuleSet>()
             .unwrap()
-            .all(50);
+            .all(50)
+            .unwrap();
         check_occurrences(
             dates,
             vec![

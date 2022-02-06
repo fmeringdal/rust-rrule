@@ -1,5 +1,5 @@
 use super::{rrule_iter::RRuleIter, MAX_ITER_LOOP};
-use crate::{core::DateTime, RRule, RRuleError, RRuleSet, WithError};
+use crate::{core::DateTime, DateFilter, RRule, RRuleError, RRuleSet, WithError};
 use chrono::TimeZone;
 use std::{collections::HashMap, iter::Iterator};
 
@@ -70,6 +70,7 @@ impl<'a> RRuleSetIter<'a> {
         Ok(date)
     }
 
+    // TODO should this be called `accept` or `except`?
     fn accept_generated_date(
         date: &Option<DateTime>,
         exrules: &[RRule],
@@ -84,7 +85,7 @@ impl<'a> RRuleSetIter<'a> {
                     let after = date.timezone().timestamp(dt - 1, 0);
                     let before = date.timezone().timestamp(dt + 1, 0);
                     for exrule in exrules {
-                        for date in exrule.between(after, before, true) {
+                        for date in exrule.all_between(after, before, true).unwrap() {
                             exdates.insert(date.timestamp(), ());
                         }
                     }
@@ -124,22 +125,20 @@ impl<'a> Iterator for RRuleSetIter<'a> {
 
         for (i, rrule_iter) in self.rrule_iters.iter_mut().enumerate() {
             let rrule_queue = self.queue.remove(&i);
-            let next_rrule_date;
-            match rrule_queue {
-                Some(d) => next_rrule_date = Some(d),
+            let next_rrule_date = match rrule_queue {
+                Some(d) => Some(d),
                 None => {
                     // should be method on self
-                    next_rrule_date =
-                        match Self::generate(rrule_iter, self.exrules, &mut self.exdates) {
-                            Ok(next_date) => next_date,
-                            Err(err) => {
-                                log::error!("{}", err);
-                                self.error = Some(err);
-                                return None;
-                            }
+                    match Self::generate(rrule_iter, self.exrules, &mut self.exdates) {
+                        Ok(next_date) => next_date,
+                        Err(err) => {
+                            log::error!("{}", err);
+                            self.error = Some(err);
+                            return None;
                         }
+                    }
                 }
-            }
+            };
 
             if let Some(next_rrule_date) = next_rrule_date {
                 match next_date {

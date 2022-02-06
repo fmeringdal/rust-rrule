@@ -2,7 +2,7 @@
 #![allow(unused_imports)]
 use chrono::{DateTime, TimeZone, Weekday};
 use chrono_tz::{Tz, UTC};
-use rrule::{Frequency, RRule, RRuleProperties};
+use rrule::{DateFilter, Frequency, RRule, RRuleProperties};
 
 /// This function can be used to test anything and can be changes as you wish.
 pub fn run_debug_function() {

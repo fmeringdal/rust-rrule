@@ -3,7 +3,7 @@ mod common;
 use chrono::{Datelike, TimeZone};
 use chrono_tz::UTC;
 use common::{test_recurring_rrule, ymd_hms};
-use rrule::{Frequency, NWeekday, RRule, RRuleProperties, Weekday};
+use rrule::{DateFilter, Frequency, NWeekday, RRule, RRuleProperties, Weekday};
 
 #[test]
 fn yearly() {
@@ -4690,7 +4690,7 @@ fn test_before_inclusive_hit() {
     let before = UTC.ymd(2012, 2, 2).and_hms(9, 30, 0);
     let inc = true;
 
-    assert_eq!(Some(before), rrule.before(before, inc));
+    assert_eq!(Some(before), rrule.just_before(before, inc).unwrap());
 }
 
 #[test]
@@ -4703,7 +4703,7 @@ fn test_before_inclusive_miss() {
     let oracle = UTC.ymd(2012, 2, 2).and_hms(9, 30, 0);
     let inc = true;
 
-    assert_eq!(Some(oracle), rrule.before(before, inc));
+    assert_eq!(Some(oracle), rrule.just_before(before, inc).unwrap());
 }
 
 #[test]
@@ -4715,7 +4715,7 @@ fn test_after_inclusive_hit() {
     let after = UTC.ymd(2012, 2, 2).and_hms(9, 30, 0);
     let inc = true;
 
-    assert_eq!(Some(after), rrule.after(after, inc));
+    assert_eq!(Some(after), rrule.just_after(after, inc).unwrap());
 }
 
 #[test]
@@ -4728,7 +4728,7 @@ fn test_after_inclusive_miss() {
     let oracle = UTC.ymd(2012, 2, 3).and_hms(9, 30, 0);
     let inc = true;
 
-    assert_eq!(Some(oracle), rrule.after(after, inc));
+    assert_eq!(Some(oracle), rrule.just_after(after, inc).unwrap());
 }
 
 #[test]
@@ -4742,7 +4742,7 @@ fn test_between_inclusive_both_miss() {
     let after = UTC.ymd(2012, 2, 4).and_hms(9, 0, 0);
     let inc = true;
 
-    assert_eq!(vec![middle], rrule.between(before, after, inc));
+    assert_eq!(vec![middle], rrule.all_between(before, after, inc).unwrap());
 }
 
 #[test]
@@ -4756,7 +4756,10 @@ fn test_between_inclusive_lower_miss() {
     let after = UTC.ymd(2012, 2, 4).and_hms(9, 30, 0);
     let inc = true;
 
-    assert_eq!(vec![middle, after], rrule.between(before, after, inc));
+    assert_eq!(
+        vec![middle, after],
+        rrule.all_between(before, after, inc).unwrap()
+    );
 }
 
 #[test]
@@ -4770,7 +4773,10 @@ fn test_between_inclusive_upper_miss() {
     let after = UTC.ymd(2012, 2, 4).and_hms(9, 0, 0);
     let inc = true;
 
-    assert_eq!(vec![before, middle], rrule.between(before, after, inc));
+    assert_eq!(
+        vec![before, middle],
+        rrule.all_between(before, after, inc).unwrap()
+    );
 }
 
 #[test]
@@ -4786,6 +4792,6 @@ fn test_between_inclusive_both_hit() {
 
     assert_eq!(
         vec![before, middle, after],
-        rrule.between(before, after, inc)
+        rrule.all_between(before, after, inc).unwrap()
     );
 }

@@ -16,6 +16,8 @@ pub(crate) struct YearInfo {
     /// Get day of the week from first day of the year (1 jan)
     /// So if `YYYY/01/01` is a wednesday this value will be `2`.
     /// Can be any value from 0..=6 (monday = 0)
+    // TODO: Why is this field never used?
+    #[allow(dead_code)]
     pub year_weekday: u8,
     pub month_mask: &'static [u8],
     pub month_day_mask: &'static [i8],
@@ -167,29 +169,23 @@ pub(crate) fn rebuild_year(
         // got days from last year, so there are no
         // days from last year's last week number in
         // this year.
-        let lnum_weeks;
-        if !properties.by_week_no.iter().any(|&week_no| week_no == -1) {
-            let lyear_weekday = Utc.ymd(year - 1, 1, 1).weekday().num_days_from_monday() as u8;
+        let lnum_weeks = if !properties.by_week_no.iter().any(|&week_no| week_no == -1) {
+            let lyear_weekday = Utc.ymd(year - 1, 1, 1).weekday().num_days_from_monday() as isize;
 
-            let ln_no1_week_start = pymod(
-                7 - lyear_weekday as isize + properties.week_start as isize,
-                7,
-            );
+            let ln_no1_week_start = pymod(7 - lyear_weekday + properties.week_start as isize, 7);
 
-            let lyear_len = get_year_len(year - 1);
-            let week_start;
-            if ln_no1_week_start >= 4 {
+            let lyear_len = get_year_len(year - 1) as isize;
+            let week_start = if ln_no1_week_start >= 4 {
                 //ln_no1_week_start = 0;
-                week_start = lyear_len as isize
-                    + pymod(lyear_weekday as isize - properties.week_start as isize, 7);
+                lyear_len + pymod(lyear_weekday - properties.week_start as isize, 7)
             } else {
-                week_start = year_len as isize - no1_week_start;
-            }
+                year_len as isize - no1_week_start
+            };
 
-            lnum_weeks = 52 + (pymod(week_start, 7) / 4) as i8;
+            52 + (pymod(week_start, 7) / 4) as i8
         } else {
-            lnum_weeks = -1;
-        }
+            -1
+        };
 
         if properties
             .by_week_no

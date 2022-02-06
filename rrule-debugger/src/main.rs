@@ -1,9 +1,11 @@
 mod debug;
 mod iter_rrule;
 mod parser_rrule;
+mod simple_logger;
 
 use chrono::DateTime;
 use chrono_tz::Tz;
+use log::LevelFilter;
 use structopt::StructOpt;
 
 const CRASHES_PATH: &str = "rrule-afl-fuzz/out/default/crashes/";
@@ -18,7 +20,7 @@ const CRASHES_PATH: &str = "rrule-afl-fuzz/out/default/crashes/";
 /// This crate is used to debug the RRule crate itself.
 #[derive(StructOpt, Debug)]
 #[structopt(name = "rrule-debugger")]
-struct Opt {
+struct Opts {
     /// Activate debug mode
     #[structopt(short, long)]
     debug: bool,
@@ -53,7 +55,10 @@ enum Commands {
 }
 
 fn main() {
-    let opts = Opt::from_args();
+    // Get command line arguments
+    let opts = Opts::from_args();
+    // Get log settings
+    initialize_logger(&opts);
 
     let data_files: Vec<Vec<u8>> = if let Some(id) = opts.id {
         vec![read_crash_file(id as u32).unwrap_or_default()]
@@ -121,4 +126,24 @@ pub fn print_all_datetimes(list: Vec<DateTime<Tz>>) {
         "[\n{}]",
         list.iter().map(formatter).collect::<Vec<_>>().join(""),
     );
+}
+
+/// Setup logger. This will select where to print the log message and how many.
+fn initialize_logger(opts: &Opts) {
+    let log_filter: LevelFilter = if opts.debug {
+        if opts.verbose >= 2 {
+            LevelFilter::Trace
+        } else {
+            LevelFilter::Debug
+        }
+    } else {
+        match opts.verbose {
+            0 => LevelFilter::Info,
+            1 => LevelFilter::Debug,
+            _ => LevelFilter::Trace,
+        }
+    };
+    // Setup logger and log level
+    log::set_logger(&simple_logger::LOGGER).unwrap();
+    log::set_max_level(log_filter);
 }

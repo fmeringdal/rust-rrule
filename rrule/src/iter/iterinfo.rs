@@ -222,8 +222,7 @@ impl<'a> IterInfo<'a> {
             .get_properties()
             .by_minute
             .iter()
-            .map(|minute| self.min_timeset(hour, *minute, second, millisecond))
-            .flatten()
+            .flat_map(|minute| self.min_timeset(hour, *minute, second, millisecond))
             .collect::<Vec<Time>>();
         set.sort_by_key(|a| a.time());
         set

@@ -6,7 +6,7 @@
 
 use chrono::{DateTime, Local, TimeZone};
 use chrono_tz::{Europe::Berlin, Tz, UTC};
-use rrule::{Frequency, RRuleProperties, RRuleSet};
+use rrule::{DateFilter, Frequency, RRuleProperties, RRuleSet};
 
 fn main() {
     // Build properties for rrule that occurs daily at 9:00 for 4 times
@@ -25,7 +25,7 @@ fn main() {
     rrule_set.rrule(rrule);
     rrule_set.exdate(exdate);
 
-    let recurrences = rrule_set.all(100);
+    let recurrences = rrule_set.all(100).unwrap();
     // RRule contained 4 recurrences but 1 was filtered away by the exdate
     assert_eq!(recurrences.len(), 3);
 
