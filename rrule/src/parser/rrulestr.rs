@@ -515,7 +515,7 @@ fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProper
             "BYMONTH" => {
                 let new_by_month = stringval_to_intvec(
                     value,
-                    |month| (1..=11).contains(&month),
+                    |month| (1..=12).contains(&month),
                     "Invalid by_month value".to_owned(),
                 )?;
                 if by_month.is_none() {
