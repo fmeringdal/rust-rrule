@@ -4,6 +4,7 @@ use crate::{
     iter::iterinfo::IterInfo,
     RRuleError,
 };
+use chrono::{Datelike, TimeZone};
 use chrono_tz::Tz;
 
 pub(crate) fn build_pos_list(
@@ -55,15 +56,18 @@ pub(crate) fn build_pos_list(
                 .ok_or_else(|| RRuleError::new_iter_err("Index out of bounds `tmp`"))?;
         }
 
-        let date = from_ordinal(ii.year_ordinal().unwrap() + i as i64, tz);
+        let date = from_ordinal(ii.year_ordinal().unwrap() + i as i64);
+        let date = tz
+            .ymd_opt(date.year(), date.month(), date.day())
+            .unwrap();
         // Create new Date + Time combination
         // Use Date and Timezone from `date`
         // Use Time from `timeset`.
         let time = timeset[time_pos as usize].to_naive_time();
-        let res = date.date().and_time(time).ok_or_else(|| {
+        let res = date.and_time(time).ok_or_else(|| {
             RRuleError::new_iter_err(format!(
                 "Time from `timeset` invalid `{} + {}`",
-                date.date(),
+                date,
                 time
             ))
         })?;
