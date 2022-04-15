@@ -56,7 +56,9 @@ pub(crate) fn build_pos_list(
                 .ok_or_else(|| RRuleError::new_iter_err("Index out of bounds `tmp`"))?;
         }
 
+        // Get ordinal which is UTC
         let date = from_ordinal(ii.year_ordinal().unwrap() + i as i64);
+        // Apply timezone
         let date = tz
             .ymd_opt(date.year(), date.month(), date.day())
             .unwrap();
