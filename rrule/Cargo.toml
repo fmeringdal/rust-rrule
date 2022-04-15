@@ -2,7 +2,7 @@
 name = "rrule"
 description = "A pure Rust implementation of recurrence rules as defined in the iCalendar RFC."
 license = "MIT OR Apache-2.0"
-version = "0.7.1"
+version = "0.7.2"
 documentation = "https://docs.rs/rrule"
 repository = "https://github.com/fmeringdal/rust_rrule"
 authors = ["Fredrik Meringdal", "Ralph Bisschops <ralph.bisschops.dev@gmail.com>"]
@@ -13,11 +13,11 @@ categories = ["date-and-time"]
 
 [dependencies]
 chrono = "0.4.19"
-chrono-tz = "0.6.0"
+chrono-tz = "0.6.1"
 lazy_static = "1.4.0"
-regex = "1.4.1"
-log = "0.4.14"
-structopt = { version = "0.3.23", optional = true }
+regex = "1.5.5"
+log = "0.4.16"
+structopt = { version = "0.3.26", optional = true }
 
 [[bin]]
 name = "rrule"

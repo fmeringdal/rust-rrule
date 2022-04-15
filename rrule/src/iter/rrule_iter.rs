@@ -7,7 +7,6 @@ use crate::{
     Frequency, RRule, RRuleError, WithError,
 };
 use chrono::{Datelike, TimeZone, Timelike};
-use chrono_tz::UTC;
 use std::collections::VecDeque;
 
 #[derive(Debug, Clone)]
@@ -158,7 +157,7 @@ impl<'a> RRuleIter<'a> {
                     let year_ordinal = self.ii.year_ordinal().unwrap();
                     // Ordinal conversion uses UTC: if we apply local-TZ here, then
                     // just below we'll end up double-applying.
-                    let date = from_ordinal(year_ordinal + current_day as i64, &UTC);
+                    let date = from_ordinal(year_ordinal + current_day as i64);
                     // We apply the local-TZ here,
                     let date = properties.tz.ymd(date.year(), date.month(), date.day());
                     for timeset in &self.timeset {
