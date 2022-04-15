@@ -392,7 +392,7 @@ fn is_filtered(
 }
 
 fn remove_filtered_days(
-    day_set: &mut Vec<Option<u64>>,
+    day_set: &mut [Option<u64>],
     start: u64,
     end: u64,
     ii: &IterInfo,

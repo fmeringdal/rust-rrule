@@ -861,9 +861,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleError> {
         match parsed_line.name.to_uppercase().as_str() {
             "RRULE" => {
                 if !parsed_line.params.is_empty() {
-                    return Err(RRuleError::new_parse_err(
-                        "Unsupported RRULE value".to_owned(),
-                    ));
+                    return Err(RRuleError::new_parse_err("Unsupported RRULE value"));
                 }
                 if parsed_line.value.is_empty() {
                     continue;
@@ -873,9 +871,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleError> {
             }
             "EXRULE" => {
                 if !parsed_line.params.is_empty() {
-                    return Err(RRuleError::new_parse_err(
-                        "Unsupported EXRULE value".to_owned(),
-                    ));
+                    return Err(RRuleError::new_parse_err("Unsupported EXRULE value"));
                 }
                 if parsed_line.value.is_empty() {
                     continue;
@@ -889,11 +885,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleError> {
             "RDATE" => {
                 let matches = match RDATE_RE.captures(line) {
                     Some(m) => m,
-                    None => {
-                        return Err(RRuleError::new_parse_err(
-                            "Invalid RDATE specified".to_owned(),
-                        ))
-                    }
+                    None => return Err(RRuleError::new_parse_err("Invalid RDATE specified")),
                 };
                 let tz: Option<Tz> = match matches.get(1) {
                     Some(tz_str) => Some(parse_timezone(tz_str.as_str())?),
@@ -909,11 +901,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleError> {
             "EXDATE" => {
                 let matches = match EXDATE_RE.captures(line) {
                     Some(m) => m,
-                    None => {
-                        return Err(RRuleError::new_parse_err(
-                            "Invalid EXDATE specified".to_owned(),
-                        ))
-                    }
+                    None => return Err(RRuleError::new_parse_err("Invalid EXDATE specified")),
                 };
                 let tz: Option<Tz> = match matches.get(1) {
                     Some(tz_str) => Some(parse_timezone(tz_str.as_str())?),

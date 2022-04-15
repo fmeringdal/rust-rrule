@@ -169,8 +169,7 @@ pub(crate) fn rebuild_year(
         // got days from last year, so there are no
         // days from last year's last week number in
         // this year.
-        let lnum_weeks;
-        if !properties.by_week_no.iter().any(|&week_no| week_no == -1) {
+        let lnum_weeks = if !properties.by_week_no.iter().any(|&week_no| week_no == -1) {
             let lyear_weekday = Utc.ymd(year - 1, 1, 1).weekday().num_days_from_monday() as u8;
 
             let ln_no1_week_start = pymod(
@@ -179,19 +178,18 @@ pub(crate) fn rebuild_year(
             );
 
             let lyear_len = get_year_len(year - 1);
-            let week_start;
-            if ln_no1_week_start >= 4 {
+            let week_start = if ln_no1_week_start >= 4 {
                 //ln_no1_week_start = 0;
-                week_start = lyear_len as isize
-                    + pymod(lyear_weekday as isize - properties.week_start as isize, 7);
+                lyear_len as isize
+                    + pymod(lyear_weekday as isize - properties.week_start as isize, 7)
             } else {
-                week_start = year_len as isize - no1_week_start;
-            }
+                year_len as isize - no1_week_start
+            };
 
-            lnum_weeks = 52 + (pymod(week_start, 7) / 4) as i8;
+            52 + (pymod(week_start, 7) / 4) as i8
         } else {
-            lnum_weeks = -1;
-        }
+            -1
+        };
 
         if properties
             .by_week_no
