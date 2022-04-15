@@ -58,19 +58,13 @@ pub(crate) fn build_pos_list(
         // Get ordinal which is UTC
         let date = from_ordinal(ii.year_ordinal().unwrap() + i as i64);
         // Apply timezone
-        let date = tz
-            .ymd_opt(date.year(), date.month(), date.day())
-            .unwrap();
+        let date = tz.ymd_opt(date.year(), date.month(), date.day()).unwrap();
         // Create new Date + Time combination
         // Use Date and Timezone from `date`
         // Use Time from `timeset`.
         let time = timeset[time_pos as usize].to_naive_time();
         let res = date.and_time(time).ok_or_else(|| {
-            RRuleError::new_iter_err(format!(
-                "Time from `timeset` invalid `{} + {}`",
-                date,
-                time
-            ))
+            RRuleError::new_iter_err(format!("Time from `timeset` invalid `{} + {}`", date, time))
         })?;
 
         if !pos_list.iter().any(|&p| p == res) {

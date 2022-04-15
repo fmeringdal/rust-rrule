@@ -1,6 +1,6 @@
 use crate::core::DateTime;
 use chrono::{TimeZone, Utc};
-use chrono_tz::{UTC};
+use chrono_tz::UTC;
 
 /// Convert number of days since unix epoch back to `DataTime`
 pub(crate) fn from_ordinal(ordinal: i64) -> DateTime {
