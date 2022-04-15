@@ -1,7 +1,6 @@
 <h1 align="center">RRule.rs</h1>
 <p align="center">A pure and efficient Rust implementation of recurrence rules as defined in the iCalendar RFC.</p>
 <p align="center">
-  <a href="https://github.com/fmeringdal/rust-rrule/actions"><img src="https://github.com/fmeringdal/rust-rrule/actions/workflows/ci.yml/badge.svg?branch=main"/></a>
   <a href="https://codecov.io/gh/fmeringdal/rust-rrule">
     <img src="https://codecov.io/gh/fmeringdal/rust-rrule/branch/main/graph/badge.svg?token=UneXhtuXWo"/>
   </a>
