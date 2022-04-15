@@ -6,25 +6,41 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  test:
-
+  lints:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
-    - name: Run tests
-      run: cargo test
-    - name: Run tests by-easter
-      run: cargo test --features "by-easter"
-    - name: Run tests no-validation-limits
-      run: cargo test --features "no-validation-limits"
-    - name: Format
-      run: cargo fmt -- --check
-    - name: Linting
-      run: cargo clippy -- -D warnings
-    - name: Audit
-      run: |
-        cargo update
-        cargo audit
-      # Allowed to fail but this will notify us that some dependency might need an update.
-      continue-on-error: true
+      - uses: actions/checkout@v2
+      - name: Format
+        run: |
+          cd rrule 
+          cargo fmt -- --check
+      - name: Linting
+        run: |
+          cd rrule
+          cargo clippy -- -D warnings
+
+  test:
+    needs: lints
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run tests
+        run: |
+          cd rrule
+          cargo test --all-features --all-targets
+
+  audit:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Audit
+        run: |
+          cd rrule
+          cargo update
+          cargo audit
+        # Allowed to fail but this will notify us that some dependency might need an update.
+        continue-on-error: true
