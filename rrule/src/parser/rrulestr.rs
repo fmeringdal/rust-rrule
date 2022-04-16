@@ -307,32 +307,24 @@ fn datestring_to_date(dt: &str, tz: &Option<Tz>) -> Result<DateTime, RRuleError>
 }
 
 fn parse_dtstart(s: &str) -> Result<DateTime, RRuleError> {
-    let caps = DTSTART_RE.captures(s);
+    let caps = DTSTART_RE.captures(s).ok_or(ParseError::MissingStartDate)?;
 
-    match caps {
-        Some(caps) => {
-            let tz: Option<Tz> = match caps.get(1) {
-                Some(tz) => Some(parse_timezone(tz.as_str())?),
-                None => None,
-            };
+    let tz: Option<Tz> = match caps.get(1) {
+        Some(tz) => Some(parse_timezone(tz.as_str())?),
+        None => None,
+    };
 
-            let dt_start_str = match caps.get(2) {
-                Some(dt) => dt.as_str(),
-                None => {
-                    return Err(RRuleError::new_parse_err(format!(
-                        "Invalid datetime: `{}`",
-                        s
-                    )))
-                }
-            };
-
-            datestring_to_date(dt_start_str, &tz)
+    let dt_start_str = match caps.get(2) {
+        Some(dt) => dt.as_str(),
+        None => {
+            return Err(RRuleError::new_parse_err(format!(
+                "Invalid datetime: `{}`",
+                s
+            )))
         }
-        None => Err(RRuleError::new_parse_err(format!(
-            "Invalid datetime: {}",
-            s
-        ))),
-    }
+    };
+
+    datestring_to_date(dt_start_str, &tz)
 }
 
 fn weekday_from_str(val: &str) -> Result<Weekday, String> {
@@ -620,17 +612,18 @@ fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProper
     })
 }
 
-fn str_to_weekday(d: &str) -> Result<Weekday, RRuleError> {
-    match d.to_uppercase().as_str() {
-        "MO" => Ok(Weekday::Mon),
-        "TU" => Ok(Weekday::Tue),
-        "WE" => Ok(Weekday::Wed),
-        "TH" => Ok(Weekday::Thu),
-        "FR" => Ok(Weekday::Fri),
-        "SA" => Ok(Weekday::Sat),
-        "SU" => Ok(Weekday::Sun),
-        _ => Err(RRuleError::new_parse_err(format!("Invalid weekday: {}", d))),
-    }
+fn str_to_weekday(d: &str) -> Result<Weekday, ParseError> {
+    let day = match &d.to_uppercase()[..] {
+        "MO" => Weekday::Mon,
+        "TU" => Weekday::Tue,
+        "WE" => Weekday::Wed,
+        "TH" => Weekday::Thu,
+        "FR" => Weekday::Fri,
+        "SA" => Weekday::Sat,
+        "SU" => Weekday::Sun,
+        _ => return Err(ParseError::InvalidWeekday(d.to_string())),
+    };
+    Ok(day)
 }
 
 /// Parse the "BYWEEKDAY" and "BYDAY" values
@@ -1118,49 +1111,11 @@ mod test {
     }
 
     #[test]
-    // #[ignore = "Only for benching"]
-    fn bench() {
-        let now = std::time::SystemTime::now();
-        for _ in 0..1000 {
-            // let res = build_rruleset("RRULE:UNTIL=19990404T110000Z;\
-            // DTSTART;TZID=America/New_York:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE").unwrap();
-            let res = build_rruleset(
-                "RRULE:UNTIL=20100404T110000Z;\
-                DTSTART;TZID=America/New_York:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE",
-            )
-            .unwrap();
-
-            // println!("Parsing took: {:?}", now.elapsed().unwrap().as_millis());
-            let tmp_now = std::time::SystemTime::now();
-
-            // res.all(50);
-            res.all_between(
-                UTC.timestamp_millis(915321600000),
-                UTC.timestamp_millis(920505600000),
-                true,
-            )
-            .unwrap();
-            println!("All took: {:?}", tmp_now.elapsed().unwrap().as_nanos());
-        }
-        println!("Time took: {:?}", now.elapsed().unwrap().as_millis());
-    }
-
-    #[test]
-    #[ignore = "`dt_start` should be set, although error message is incorrect."]
-    fn parses_rrule_without_dtstart() {
+    fn rejects_rrule_without_dtstart() {
         let res = parse_rrule_string_to_properties("FREQ=DAILY;COUNT=7");
-        println!("Res: {:?}", res);
-        assert!(res.is_ok());
-        let res = res.unwrap();
-        assert_eq!(res.count, Some(7));
-        assert_eq!(res.freq, Frequency::Daily);
-        assert!(chrono::Utc::now().timestamp() - res.dt_start.timestamp() < 2);
-
-        let res = build_rruleset("FREQ=DAILY;COUNT=7");
-        assert!(res.is_ok());
-        let occurrences = res.unwrap().all(50).unwrap();
-        assert_eq!(occurrences.len(), 7);
-        assert!(chrono::Utc::now().timestamp() - occurrences[0].timestamp() < 2);
+        assert!(res.is_err());
+        let err = res.unwrap_err();
+        assert_eq!(err, ParseError::MissingStartDate.into());
     }
 
     #[test]
