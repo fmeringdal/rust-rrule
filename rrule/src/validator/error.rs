@@ -40,4 +40,7 @@ pub enum ValidationError {
             See 'validator limits' in docs for more info."
     )]
     StartYearOutOfRange(i32),
+    #[cfg(feature = "by-easter")]
+    #[error("`BYEASTER` can only be used when `BYHOUR`, `BYMINUTE` and `BYSECOND` are set.")]
+    InvalidByRuleWithByEaster,
 }

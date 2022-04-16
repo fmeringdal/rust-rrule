@@ -93,6 +93,6 @@ pub(crate) fn check_limits(option: &RRuleProperties) -> Result<(), ValidationErr
 /// When `no-validation-limits` feature is set this function will always return `Ok`.
 /// See README.md for more info.
 #[cfg(feature = "no-validation-limits")]
-pub(crate) fn check_limits(_option: &RRuleProperties) -> Result<(), RRuleError> {
+pub(crate) fn check_limits(_option: &RRuleProperties) -> Result<(), ValidationError> {
     Ok(())
 }

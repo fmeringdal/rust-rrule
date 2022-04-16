@@ -233,10 +233,10 @@ pub(crate) fn validate_properties_forced(option: &RRuleProperties) -> Result<(),
                 Frequency::Yearly | Frequency::Monthly | Frequency::Daily
             );
             if !valid {
-                return Err(RRuleError::new_validation_err(format!(
-                    "`BYEASTER` can not be used with the current frequency ({}).",
-                    option.freq,
-                )));
+                return Err(ValidationError::InvalidByRuleAndFrequency {
+                    by_rule: "BYEASTER".into(),
+                    freq: option.freq,
+                });
             }
         }
         // - Can only be used when `by_hour`, `by_minute` and `by_second` are used.
@@ -246,9 +246,7 @@ pub(crate) fn validate_properties_forced(option: &RRuleProperties) -> Result<(),
                 || option.by_minute.is_empty()
                 || option.by_second.is_empty())
         {
-            return Err(RRuleError::new_validation_err(
-                "`BYEASTER` can only be used when `BYHOUR`, `BYMINUTE` and `BYSECOND` are set.",
-            ));
+            return Err(ValidationError::InvalidByRuleWithByEaster);
         }
     }
     #[cfg(not(feature = "by-easter"))]
