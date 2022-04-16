@@ -938,7 +938,7 @@ mod test {
         assert!(res.is_ok());
         let res = res.unwrap();
         assert_eq!(res.exrule.len(), 1);
-        let props = res.rrule[0].get_properties();
+        let props = res.exrule[0].get_properties();
         assert_eq!(props.interval, 2);
         assert_eq!(props.freq, Frequency::Weekly);
     }
