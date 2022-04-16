@@ -905,27 +905,17 @@ mod test {
     }
 
     #[test]
-    fn it_works_1() {
-        let res = build_rruleset("DTSTART:19970902T090000Z\nRRULE:FREQ=YEARLY;COUNT=3\n");
-        assert!(res.is_ok());
-    }
-
-    #[test]
-    fn it_works_2() {
-        let res = parse_rrule_string_to_properties("DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR");
-        assert!(res.is_ok());
-    }
-
-    #[test]
-    fn it_works_3() {
-        let res = build_rruleset("RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/Denver:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE");
-        assert!(res.is_ok());
-    }
-
-    #[test]
-    fn it_works_4() {
-        let res = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5\nEXDATE;TZID=Europe/Berlin:20120202T130000Z,20120203T130000Z");
-        assert!(res.is_ok());
+    fn sanity_tests() {
+        let tests = [
+"DTSTART:19970902T090000Z\nRRULE:FREQ=YEARLY;COUNT=3\n",
+"DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR",
+"RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/Denver:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE",
+"DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5\nEXDATE;TZID=Europe/Berlin:20120202T130000Z,20120203T130000Z"
+        ];
+        for test_str in tests {
+            let res = build_rruleset(test_str);
+            assert!(res.is_ok());
+        }
     }
 
     #[test]
@@ -934,9 +924,10 @@ mod test {
         assert!(res.is_ok());
         let res = res.unwrap();
         assert_eq!(res.rrule.len(), 1);
-        assert_eq!(res.rrule[0].get_properties().interval, 1);
-        assert_eq!(res.rrule[0].get_properties().count.unwrap(), 5);
-        assert_eq!(res.rrule[0].get_properties().freq, Frequency::Daily);
+        let props = res.rrule[0].get_properties();
+        assert_eq!(props.interval, 1);
+        assert_eq!(props.count.unwrap(), 5);
+        assert_eq!(props.freq, Frequency::Daily);
     }
 
     #[test]
@@ -947,8 +938,9 @@ mod test {
         assert!(res.is_ok());
         let res = res.unwrap();
         assert_eq!(res.exrule.len(), 1);
-        assert_eq!(res.exrule[0].get_properties().interval, 2);
-        assert_eq!(res.exrule[0].get_properties().freq, Frequency::Weekly);
+        let props = res.rrule[0].get_properties();
+        assert_eq!(props.interval, 2);
+        assert_eq!(props.freq, Frequency::Weekly);
     }
 
     ////////////////////////////////////////////////////
