@@ -1,9 +1,11 @@
+use crate::parser::ParseError;
+
 use super::datetime::DateTime;
 use chrono::{Month, TimeZone, Utc, Weekday};
 use chrono_tz::{Tz, UTC};
-use std::fmt::Display;
+use std::{convert::TryFrom, fmt::Display};
 
-#[derive(Debug, PartialEq, PartialOrd, Clone)]
+#[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
 pub enum Frequency {
     Yearly = 0,
     Monthly = 1,
@@ -26,6 +28,24 @@ impl Display for Frequency {
             Frequency::Secondly => "secondly",
         };
         write!(f, "{}", name)
+    }
+}
+
+impl TryFrom<&str> for Frequency {
+    type Error = ParseError;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        let freq = match &value.to_uppercase()[..] {
+            "YEARLY" => Frequency::Yearly,
+            "MONTHLY" => Frequency::Monthly,
+            "WEEKLY" => Frequency::Weekly,
+            "DAILY" => Frequency::Daily,
+            "HOURLY" => Frequency::Hourly,
+            "MINUTELY" => Frequency::Minutely,
+            "SECONDLY" => Frequency::Secondly,
+            val => return Err(ParseError::InvalidFrequency(val.to_string())),
+        };
+        Ok(freq)
     }
 }
 

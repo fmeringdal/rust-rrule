@@ -881,7 +881,6 @@ fn every_4_years_us_presidential_election_day_forever() {
 /// The third instance into the month of one of Tuesday, Wednesday, or Thursday,
 /// for the next 3 months
 #[test]
-#[ignore = "Does not work correctly"]
 fn every_third_instance_of_weekday_in_month_for_3_months() {
     let dates = "DTSTART;TZID=America/New_York:19970904T090000\n\
         RRULE:FREQ=MONTHLY;COUNT=3;BYDAY=TU,WE,TH;BYSETPOS=3"
@@ -901,7 +900,6 @@ fn every_third_instance_of_weekday_in_month_for_3_months() {
 
 /// The second-to-last weekday of the month
 #[test]
-#[ignore = "Does not work correctly"]
 fn second_to_last_weekday_of_month() {
     let dates = "DTSTART;TZID=America/New_York:19970929T090000\n\
         RRULE:FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-2"
@@ -909,11 +907,10 @@ fn second_to_last_weekday_of_month() {
         .unwrap()
         .all(7)
         .unwrap();
-    // All seem to be 1 day off
     common::check_occurrences(
         &dates,
         &[
-            "1997-09-29T09:00:00-05:00",
+            "1997-09-29T09:00:00-04:00",
             "1997-10-30T09:00:00-05:00",
             "1997-11-27T09:00:00-05:00",
             "1997-12-30T09:00:00-05:00",

@@ -4,7 +4,10 @@
 use crate::{RRuleError, RRuleProperties};
 
 mod check_limits;
+mod error;
 mod validate_properties;
+
+pub(crate) use error::ValidationError;
 
 #[allow(unused_imports)]
 pub(crate) use check_limits::{
