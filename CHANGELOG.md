@@ -24,7 +24,7 @@ Internal refactorings:
 
 - Fix [#48](https://github.com/fmeringdal/rust-rrule/issues/48)
 
-## Version 0.7.0 (2021-xx-xx)
+## Version 0.7.0 (2021-02-04)
 
 ### Added
 
