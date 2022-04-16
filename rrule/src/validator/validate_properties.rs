@@ -336,4 +336,133 @@ mod tests {
         let res = RRule::new(properties);
         assert!(res.is_ok());
     }
+
+    #[test]
+    fn rejects_by_rule_field_with_invalid_value() {
+        let tests = [
+            (
+                "BYSETPOS",
+                RRuleProperties {
+                    by_set_pos: vec![0],
+                    ..Default::default()
+                },
+            ),
+            (
+                "BYSETPOS",
+                RRuleProperties {
+                    by_set_pos: vec![1, -2, 0],
+                    ..Default::default()
+                },
+            ),
+            (
+                "BYMONTHDAY",
+                RRuleProperties {
+                    by_month_day: vec![0],
+                    ..Default::default()
+                },
+            ),
+            (
+                "BYYEARDAY",
+                RRuleProperties {
+                    by_year_day: vec![0],
+                    ..Default::default()
+                },
+            ),
+        ];
+        for (field, properties) in tests {
+            let res = validate_properties_forced(&properties);
+            assert!(res.is_err());
+            let err = res.unwrap_err();
+            assert_eq!(
+                err,
+                ValidationError::InvalidFieldValue {
+                    field: field.into(),
+                    value: "0".into()
+                }
+            );
+        }
+    }
+
+    #[test]
+    fn rejects_by_rule_field_with_value_outside_allowed_range() {
+        let tests = [
+            (
+                "BYMONTHDAY",
+                RRuleProperties {
+                    by_month_day: vec![34],
+                    ..Default::default()
+                },
+                "34",
+                "-31",
+                "31",
+            ),
+            (
+                "BYYEARDAY",
+                RRuleProperties {
+                    by_year_day: vec![17, 400],
+                    ..Default::default()
+                },
+                "400",
+                "-366",
+                "366",
+            ),
+        ];
+        for (field, properties, value, start_idx, end_idx) in tests {
+            let res = validate_properties_forced(&properties);
+            assert!(res.is_err());
+            let err = res.unwrap_err();
+            assert_eq!(
+                err,
+                ValidationError::InvalidFieldValueRange {
+                    field: field.into(),
+                    value: value.into(),
+                    start_idx: start_idx.into(),
+                    end_idx: end_idx.into()
+                }
+            );
+        }
+    }
+
+    #[test]
+    fn rejects_by_rule_value_outside_allowed_freq_range() {
+        let tests = [
+            (
+                "BYSETPOS",
+                RRuleProperties {
+                    freq: Frequency::Hourly,
+                    by_set_pos: vec![30],
+                    ..Default::default()
+                },
+                "30",
+                "-24",
+                "24",
+            ),
+            (
+                "BYSETPOS",
+                RRuleProperties {
+                    freq: Frequency::Yearly,
+                    by_set_pos: vec![400],
+                    ..Default::default()
+                },
+                "400",
+                "-366",
+                "366",
+            ),
+        ];
+        for (field, properties, value, start_idx, end_idx) in tests {
+            let res = validate_properties_forced(&properties);
+            assert!(res.is_err());
+            let err = res.unwrap_err();
+            assert_eq!(
+                err,
+                ValidationError::InvalidFieldValueRangeWithFreq {
+                    field: field.into(),
+                    freq: properties.freq,
+                    value: value.into(),
+                    start_idx: start_idx.into(),
+                    end_idx: end_idx.into(),
+                }
+            );
+        }
+    }
 }
