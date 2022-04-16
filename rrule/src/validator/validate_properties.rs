@@ -1,6 +1,8 @@
-use std::{fmt::Display, ops::RangeInclusive};
+use std::ops::RangeInclusive;
 
-use crate::{Frequency, NWeekday, RRuleError, RRuleProperties};
+use crate::{Frequency, NWeekday, RRuleProperties};
+
+use super::ValidationError;
 
 /// Range of values that a weekday can be.
 /// Range: `0..=6`
@@ -31,17 +33,17 @@ pub(crate) static YEAR_RANGE: RangeInclusive<i32> = -262_000..=262_000;
 /// This check should always be done and just enforces limits set by the standard.
 /// Validation will always be enforced and can not be disabled using feature flags.
 ///
-pub(crate) fn validate_properties_forced(option: &RRuleProperties) -> Result<(), RRuleError> {
+pub(crate) fn validate_properties_forced(option: &RRuleProperties) -> Result<(), ValidationError> {
     // Freq:
     // - Enum, so always valid on its own.
 
     // Interval:
     // - Any positive number allowed.
-    //   Value is u32, no does not allow for negative numbers anyway.
+    //   Value is u32, so does not allow for negative numbers anyway.
 
     // Count:
     // - Any positive number allowed
-    //   Value is u32, no does not allow for negative numbers anyway.
+    //   Value is u32, so does not allow for negative numbers anyway.
 
     // Until:
     // - Must be same type as `dt_start`, so Date/DateTime.
@@ -56,12 +58,10 @@ pub(crate) fn validate_properties_forced(option: &RRuleProperties) -> Result<(),
     if let Some(until) = &option.until {
         // Check if before `dt_start`
         if until < &option.dt_start {
-            return Err(RRuleError::new_validation_err(format!(
-                "`UNTIL` is `{}`, but `DTSTART` (`{}`) is later. \
-                That should not be happening.",
-                until.to_rfc3339(),
-                option.dt_start.to_rfc3339()
-            )));
+            return Err(ValidationError::UntilBeforeStart {
+                until: until.to_rfc3339(),
+                dt_start: option.dt_start.to_rfc3339(),
+            });
         }
     }
 
@@ -90,17 +90,29 @@ pub(crate) fn validate_properties_forced(option: &RRuleProperties) -> Result<(),
         Frequency::Secondly => -60..=60,
     };
     if let Err(value) = validate_range_for_vec_error(&range, &option.by_set_pos) {
-        return Err(RRuleError::new_validation_err(format!(
-            "`BYSETPOS` is `{}`, but with the current frequency ({}) is not allowed \
-            outside of the range: `{}..={}`.",
-            value,
-            option.freq,
-            range.start(),
-            range.end()
-        )));
+        return Err(ValidationError::InvalidFieldValueRangeWithFreq {
+            field: "BYSETPOS".into(),
+            value: value.to_string(),
+            freq: option.freq,
+            start_idx: range.start().to_string(),
+            end_idx: range.end().to_string(),
+        });
     }
     // - It MUST only be used in conjunction with another BYxxx rule part.
-    //   TODO
+    if !option.by_set_pos.is_empty() {
+        if option.by_easter.is_none()
+            && option.by_hour.is_empty()
+            && option.by_minute.is_empty()
+            && option.by_second.is_empty()
+            && option.by_month_day.is_empty()
+            && option.by_month.is_empty()
+            && option.by_year_day.is_empty()
+            && option.by_week_no.is_empty()
+            && option.by_weekday.is_empty()
+        {
+            return Err(ValidationError::BySetPosWithoutByRule);
+        }
+    }
 
     // By_month:
     // - Can be a value from 1 to 12.
@@ -117,10 +129,10 @@ pub(crate) fn validate_properties_forced(option: &RRuleProperties) -> Result<(),
     if !option.by_month_day.is_empty() {
         let valid = option.freq != Frequency::Weekly;
         if !valid {
-            return Err(RRuleError::new_validation_err(format!(
-                "`BYMONTHDAY` can not be used with the current frequency ({}).",
-                option.freq,
-            )));
+            return Err(ValidationError::InvalidByRuleAndFrequency {
+                by_rule: "BYMONTHDAY".into(),
+                freq: option.freq,
+            });
         }
     }
 
@@ -140,10 +152,10 @@ pub(crate) fn validate_properties_forced(option: &RRuleProperties) -> Result<(),
             Frequency::Monthly | Frequency::Weekly | Frequency::Daily
         );
         if !valid {
-            return Err(RRuleError::new_validation_err(format!(
-                "`BYYEARDAY` can not be used with the current frequency ({}).",
-                option.freq,
-            )));
+            return Err(ValidationError::InvalidByRuleAndFrequency {
+                by_rule: "BYYEARDAY".into(),
+                freq: option.freq,
+            });
         }
     }
 
@@ -157,10 +169,10 @@ pub(crate) fn validate_properties_forced(option: &RRuleProperties) -> Result<(),
     if !option.by_week_no.is_empty() {
         let valid = option.freq == Frequency::Yearly;
         if !valid {
-            return Err(RRuleError::new_validation_err(format!(
-                "`BYWEEKNO` can not be used with the current frequency ({}).",
-                option.freq,
-            )));
+            return Err(ValidationError::InvalidByRuleAndFrequency {
+                by_rule: "BYWEEKNO".into(),
+                freq: option.freq,
+            });
         }
     }
 
@@ -180,12 +192,13 @@ pub(crate) fn validate_properties_forced(option: &RRuleProperties) -> Result<(),
         if let NWeekday::Nth(number, _weekday) = item {
             // If value not in range = error
             if !range.contains(number) {
-                return Err(RRuleError::new_validation_err(format!(
-                    "`BYDAY` nth occurrence is `{}`, but is not allowed outside of the range: `{}..={}`.",
-                    number,
-                    range.start(),
-                    range.end()
-                )));
+                return Err(ValidationError::InvalidFieldValueRangeWithFreq {
+                    field: "BYDAY".into(),
+                    value: number.to_string(),
+                    freq: option.freq,
+                    start_idx: range.start().to_string(),
+                    end_idx: range.end().to_string(),
+                });
             }
         }
     }
@@ -266,38 +279,61 @@ fn validate_range_for_vec_error<'a, T: PartialOrd>(
     Ok(())
 }
 
-fn validate_range_for_vec<T: PartialOrd + Display>(
+fn validate_range_for_vec<T: PartialOrd + ToString>(
     range: &RangeInclusive<T>,
     list: &[T],
     field: &str,
-) -> Result<(), RRuleError> {
+) -> Result<(), ValidationError> {
     for item in list {
         // If value not in range = error
         if !range.contains(item) {
-            return Err(RRuleError::new_validation_err(format!(
-                "`{}` is `{}`, but is not allowed outside of the range: `{}..={}`.",
-                field,
-                item,
-                range.start(),
-                range.end()
-            )));
+            return Err(ValidationError::InvalidFieldValueRange {
+                field: field.to_string(),
+                value: item.to_string(),
+                start_idx: range.start().to_string(),
+                end_idx: range.end().to_string(),
+            });
         }
     }
     Ok(())
 }
 
-fn validate_not_equal_for_vec<T: PartialEq<T> + Display>(
+fn validate_not_equal_for_vec<T: PartialEq<T> + ToString>(
     value: &T,
     list: &[T],
     field: &str,
-) -> Result<(), RRuleError> {
-    for item in list {
-        if item == value {
-            return Err(RRuleError::new_validation_err(format!(
-                "`{}` can not be `{}`, must be larger or smaller then `{}`.",
-                field, value, value,
-            )));
-        }
+) -> Result<(), ValidationError> {
+    if list.iter().any(|item| item == value) {
+        return Err(ValidationError::InvalidFieldValue {
+            field: field.to_string(),
+            value: value.to_string(),
+        });
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::RRule;
+
+    use super::*;
+
+    #[test]
+    fn rejects_by_set_pos_without_byxxx_rule() {
+        let properties = RRuleProperties {
+            by_set_pos: vec![-1],
+            ..Default::default()
+        };
+        let res = validate_properties_forced(&properties.clone());
+        assert!(res.is_err());
+        let err = res.unwrap_err();
+        assert_eq!(err, ValidationError::BySetPosWithoutByRule);
+
+        // When creating RRule directly, the `properties.dt_start` is required and
+        // if `properties.by_set_hour` is empty then it is going to default to
+        // `properties.dt_start.hour()`, therefore there is always a BYXXX
+        // rule and the properties are accepted.
+        let res = RRule::new(properties);
+        assert!(res.is_ok());
+    }
 }

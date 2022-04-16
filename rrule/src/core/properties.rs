@@ -3,7 +3,7 @@ use chrono::{Month, TimeZone, Utc, Weekday};
 use chrono_tz::{Tz, UTC};
 use std::fmt::Display;
 
-#[derive(Debug, PartialEq, PartialOrd, Clone)]
+#[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
 pub enum Frequency {
     Yearly = 0,
     Monthly = 1,
