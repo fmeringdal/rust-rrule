@@ -4,9 +4,6 @@ use crate::{parser::ParseError, validator::ValidationError};
 
 #[derive(Error, Debug, Clone, PartialEq)]
 pub enum RRuleError {
-    // TODO: remove this variant
-    #[error("RRule parsing error: {0}")]
-    ParseError(String),
     #[error("RRule parsing error: {0}")]
     ParserError(#[from] ParseError),
     #[error("RRule validation error: {0}")]
@@ -16,10 +13,6 @@ pub enum RRuleError {
 }
 
 impl RRuleError {
-    /// Create a new parsing error with the given message.
-    pub fn new_parse_err<S: AsRef<str>>(msg: S) -> Self {
-        Self::ParseError(msg.as_ref().to_owned())
-    }
     /// Create a new iterator error with the given message.
     pub fn new_iter_err<S: AsRef<str>>(msg: S) -> Self {
         Self::IterError(msg.as_ref().to_owned())

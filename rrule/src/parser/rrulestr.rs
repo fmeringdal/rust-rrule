@@ -1,5 +1,5 @@
 use crate::{core::DateTime, Frequency, NWeekday, RRule, RRuleError, RRuleProperties, RRuleSet};
-use chrono::{Datelike, NaiveDate, NaiveDateTime, TimeZone, Timelike, Weekday};
+use chrono::{Datelike, NaiveDate, TimeZone, Timelike, Weekday};
 use chrono_tz::{Tz, UTC};
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -66,7 +66,7 @@ pub(crate) fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleError> {
 /// If RRule contains invalid parts then [`RRuleError`] will be returned.
 /// This should never panic, but it might be in odd cases.
 /// Please report if it does panic.
-pub(crate) fn parse_rrule_string_to_properties(input: &str) -> Result<RRuleProperties, RRuleError> {
+pub(crate) fn parse_rrule_string_to_properties(input: &str) -> Result<RRuleProperties, ParseError> {
     let input = preprocess_rrule_string(input);
 
     let ParsedInput {
@@ -76,14 +76,14 @@ pub(crate) fn parse_rrule_string_to_properties(input: &str) -> Result<RRulePrope
     } = parse_input(&input)?;
 
     match rrule_vals.len() {
-        0 => Err(RRuleError::new_parse_err("Invalid rrule string")),
+        0 => Err(ParseError::Generic("Invalid rrule string".into())),
         1 => {
             let rrule_opts = rrule_vals.remove(0);
             let parsed_opts = rrule_opts.dt_start(dt_start);
             Ok(parsed_opts)
         }
-        _ => Err(RRuleError::new_parse_err(
-            "To many rrules, please use `RRuleSet` instead.",
+        _ => Err(ParseError::Generic(
+            "To many rrules, please use `RRuleSet` instead.".into(),
         )),
     }
 }
@@ -92,7 +92,7 @@ pub(crate) fn parse_rrule_string_to_properties(input: &str) -> Result<RRulePrope
 pub(crate) fn finalize_parsed_properties(
     mut properties: RRuleProperties,
     dt_start: &DateTime,
-) -> Result<RRuleProperties, RRuleError> {
+) -> Result<RRuleProperties, ParseError> {
     use std::cmp::Ordering;
     // TEMP: move negative months to other list
     let mut by_month_day = vec![];
@@ -160,86 +160,64 @@ fn parse_datestring_bit<T: FromStr>(
     bits: &regex::Captures,
     i: usize,
     dt: &str,
-) -> Result<T, RRuleError> {
+) -> Result<T, ParseError> {
     match bits.get(i) {
-        Some(bit) => match bit.as_str().parse::<T>() {
-            Err(_) => Err(RRuleError::new_parse_err(format!(
-                "Invalid datetime: `{}`",
-                dt
-            ))),
-            Ok(val) => Ok(val),
-        },
-        _ => Err(RRuleError::new_parse_err(format!(
-            "Invalid datetime: `{}`",
-            dt
-        ))),
+        Some(bit) => bit
+            .as_str()
+            .parse::<T>()
+            .map_err(|_| ParseError::InvalidDateTime {
+                value: dt.into(),
+                field: "DTSTART".into(),
+            }),
+        _ => Err(ParseError::InvalidDateTime {
+            value: dt.into(),
+            field: "DTSTART".into(),
+        }),
     }
 }
 
-fn parse_timezone(tz: &str) -> Result<Tz, RRuleError> {
-    Tz::from_str(tz)
-        .map_err(|_err| RRuleError::new_parse_err(format!("Invalid timezone: `{}`", tz)))
+fn parse_timezone(tz: &str) -> Result<Tz, ParseError> {
+    Tz::from_str(tz).map_err(|_err| ParseError::InvalidTimezone(tz.into()))
 }
 
-fn create_date(dt: &str, year: i32, month: u32, day: u32) -> Result<NaiveDate, RRuleError> {
-    match NaiveDate::from_ymd_opt(year, month, day) {
-        Some(date) => Ok(date),
-        None => Err(RRuleError::new_parse_err(format!(
-            "Invalid date in: `{}`",
-            dt
-        ))),
-    }
-}
-
-fn create_datetime(
-    dt: &str,
-    date: &NaiveDate,
-    hour: u32,
-    min: u32,
-    sec: u32,
-) -> Result<NaiveDateTime, RRuleError> {
-    match date.and_hms_opt(hour, min, sec) {
-        Some(datetime) => Ok(datetime),
-        None => Err(RRuleError::new_parse_err(format!(
-            "Invalid time in: `{}`",
-            dt
-        ))),
-    }
-}
-
-fn datestring_to_date(dt: &str, tz: &Option<Tz>) -> Result<DateTime, RRuleError> {
-    let bits = DATESTR_RE.captures(dt);
-    if bits.is_none() {
-        return Err(RRuleError::new_parse_err(format!(
-            "Invalid datetime: `{}`",
-            dt
-        )));
-    }
-    let bits = bits.expect("This is checked in the lines above.");
+// TODO: errors should not be specific to DTSTART
+fn datestring_to_date(dt: &str, tz: &Option<Tz>, field: &str) -> Result<DateTime, ParseError> {
+    let bits = DATESTR_RE
+        .captures(dt)
+        .ok_or_else(|| ParseError::InvalidDateTime {
+            value: dt.into(),
+            field: field.into(),
+        })?;
     if bits.len() < 3 {
-        return Err(RRuleError::new_parse_err(format!(
-            "Invalid datetime: `{}`",
-            dt
-        )));
+        return Err(ParseError::InvalidDateTime {
+            value: dt.into(),
+            field: field.into(),
+        });
     }
 
+    let year = parse_datestring_bit(&bits, 1, dt)?;
+    let month = parse_datestring_bit(&bits, 2, dt)?;
+    let day = parse_datestring_bit(&bits, 3, dt)?;
     // Combine parts to create data time.
-    let date = create_date(
-        dt,
-        parse_datestring_bit(&bits, 1, dt)?,
-        parse_datestring_bit(&bits, 2, dt)?,
-        parse_datestring_bit(&bits, 3, dt)?,
-    )?;
+    let date =
+        NaiveDate::from_ymd_opt(year, month, day).ok_or_else(|| ParseError::InvalidDateTime {
+            value: dt.into(),
+            field: field.into(),
+        })?;
+
     // Spec defines this is a date-time OR date
     // So the time can will be set to 0:0:0 if only a date is given.
     // https://icalendar.org/iCalendar-RFC-5545/3-8-2-4-date-time-start.html
-    let datetime = create_datetime(
-        dt,
-        &date,
-        parse_datestring_bit(&bits, 5, dt).unwrap_or_default(),
-        parse_datestring_bit(&bits, 6, dt).unwrap_or_default(),
-        parse_datestring_bit(&bits, 7, dt).unwrap_or_default(),
-    )?;
+    let hour = parse_datestring_bit(&bits, 5, dt).unwrap_or_default();
+    let min = parse_datestring_bit(&bits, 6, dt).unwrap_or_default();
+    let sec = parse_datestring_bit(&bits, 7, dt).unwrap_or_default();
+    let datetime = date
+        .and_hms_opt(hour, min, sec)
+        .ok_or_else(|| ParseError::InvalidDateTime {
+            value: dt.into(),
+            field: field.into(),
+        })?;
+
     // Apply timezone appended to the datetime before converting to UTC.
     // For more info https://icalendar.org/iCalendar-RFC-5545/3-3-5-date-time.html
     let zulu_timezone_set = match bits.get(8) {
@@ -258,17 +236,18 @@ fn datestring_to_date(dt: &str, tz: &Option<Tz>) -> Result<DateTime, RRuleError>
             Some(tz) => {
                 // Use the timezone specified in the `tz`
                 match tz.from_local_datetime(&datetime) {
-                    LocalResult::None => Err(RRuleError::new_parse_err(format!(
-                        "Invalid datetime in local timezone: `{}`",
-                        dt
-                    ))),
+                    LocalResult::None => Err(ParseError::InvalidDateTimeInLocalTimezone {
+                        value: dt.into(),
+                        field: field.into(),
+                    }),
                     LocalResult::Single(date) => Ok(date),
                     LocalResult::Ambiguous(date1, date2) => {
-                        Err(RRuleError::new_parse_err(format!(
-                            "Invalid datetime in local timezone: `{}` \
-                        this datetime is ambiguous it can be: `{}` or `{}`",
-                            dt, date1, date2
-                        )))
+                        Err(ParseError::DateTimeInLocalTimezoneIsAmbiguous {
+                            value: dt.into(),
+                            field: field.into(),
+                            date1: date1.to_rfc3339(),
+                            date2: date2.to_rfc3339(),
+                        })
                     }
                 }?
                 .with_timezone(&chrono::Utc)
@@ -278,17 +257,18 @@ fn datestring_to_date(dt: &str, tz: &Option<Tz>) -> Result<DateTime, RRuleError>
                 // TODO Add option to always use UTC when this is executed on a server.
                 let local = chrono::Local;
                 match local.from_local_datetime(&datetime) {
-                    LocalResult::None => Err(RRuleError::new_parse_err(format!(
-                        "Invalid datetime in local timezone: `{}`",
-                        dt
-                    ))),
+                    LocalResult::None => Err(ParseError::InvalidDateTimeInLocalTimezone {
+                        value: dt.into(),
+                        field: field.into(),
+                    }),
                     LocalResult::Single(date) => Ok(date),
                     LocalResult::Ambiguous(date1, date2) => {
-                        Err(RRuleError::new_parse_err(format!(
-                            "Invalid datetime in local timezone: `{}` \
-                        this datetime is ambiguous it can be: `{}` or `{}`",
-                            dt, date1, date2
-                        )))
+                        Err(ParseError::DateTimeInLocalTimezoneIsAmbiguous {
+                            value: dt.into(),
+                            field: field.into(),
+                            date1: date1.to_rfc3339(),
+                            date2: date2.to_rfc3339(),
+                        })
                     }
                 }?
                 .with_timezone(&chrono::Utc)
@@ -306,7 +286,7 @@ fn datestring_to_date(dt: &str, tz: &Option<Tz>) -> Result<DateTime, RRuleError>
     Ok(datetime_with_timezone)
 }
 
-fn parse_dtstart(s: &str) -> Result<DateTime, RRuleError> {
+fn parse_dtstart(s: &str) -> Result<DateTime, ParseError> {
     let caps = DTSTART_RE.captures(s).ok_or(ParseError::MissingStartDate)?;
 
     let tz: Option<Tz> = match caps.get(1) {
@@ -314,17 +294,15 @@ fn parse_dtstart(s: &str) -> Result<DateTime, RRuleError> {
         None => None,
     };
 
-    let dt_start_str = match caps.get(2) {
-        Some(dt) => dt.as_str(),
-        None => {
-            return Err(RRuleError::new_parse_err(format!(
-                "Invalid datetime: `{}`",
-                s
-            )))
-        }
-    };
+    let dt_start_str =
+        caps.get(2)
+            .map(|dt| dt.as_str())
+            .ok_or_else(|| ParseError::InvalidDateTime {
+                value: s.into(),
+                field: "DTSTART".into(),
+            })?;
 
-    datestring_to_date(dt_start_str, &tz)
+    datestring_to_date(dt_start_str, &tz, "DTSTART")
 }
 
 fn weekday_from_str(val: &str) -> Result<Weekday, String> {
@@ -340,11 +318,11 @@ fn weekday_from_str(val: &str) -> Result<Weekday, String> {
     }
 }
 
-fn stringval_to_int<T: FromStr>(val: &str, err_msg: String) -> Result<T, RRuleError> {
+fn stringval_to_int<T: FromStr>(val: &str, err_msg: String) -> Result<T, ParseError> {
     if let Ok(val) = val.parse() {
         Ok(val)
     } else {
-        Err(RRuleError::new_parse_err(err_msg))
+        Err(ParseError::Generic(err_msg))
     }
 }
 
@@ -352,14 +330,14 @@ fn stringval_to_intvec<T: FromStr + Ord + PartialEq + Copy, F: Fn(T) -> bool>(
     val: &str,
     accept: F,
     err_msg: String,
-) -> Result<Vec<T>, RRuleError> {
+) -> Result<Vec<T>, ParseError> {
     let mut parsed_vals = vec![];
     for val in val.split(',') {
         let val = stringval_to_int(val, err_msg.clone())?;
         if accept(val) {
             parsed_vals.push(val);
         } else {
-            return Err(RRuleError::new_parse_err(err_msg));
+            return Err(ParseError::Generic(err_msg));
         }
     }
 
@@ -369,7 +347,7 @@ fn stringval_to_intvec<T: FromStr + Ord + PartialEq + Copy, F: Fn(T) -> bool>(
     Ok(parsed_vals)
 }
 
-fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProperties, RRuleError> {
+fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProperties, ParseError> {
     // Store all parts independently, so we can see if things are double set or missing.
     let mut freq = None;
     let mut interval = None;
@@ -436,7 +414,7 @@ fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProper
                 //
                 // Thus This can be in local time
                 if until.is_none() {
-                    until = Some(datestring_to_date(value, &Some(UTC))?)
+                    until = Some(datestring_to_date(value, &Some(UTC), "UNTIL")?)
                 } else {
                     return Err(ParseError::DuplicatedField("UNTIL".into())).map_err(From::from);
                 }
@@ -456,7 +434,7 @@ fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProper
                     }
                 }
                 Err(e) => {
-                    return Err(RRuleError::new_parse_err(e));
+                    return Err(ParseError::Generic(e));
                 }
             },
             "BYSETPOS" => {
@@ -574,19 +552,14 @@ fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProper
                     return Err(ParseError::DuplicatedField("BYEASTER".into())).map_err(From::from);
                 }
             }
-            _ => {
-                return Err(RRuleError::new_parse_err(format!(
-                    "Invalid property: {}",
-                    key
-                )))
-            }
+            _ => return Err(ParseError::Generic(format!("Invalid property: {}", key))),
         };
     }
 
     // Check if manditory fields are set
     Ok(RRuleProperties {
         freq: freq.ok_or_else(|| {
-            RRuleError::new_parse_err(format!("Property `FREQ` was missing in `{}`", line))
+            ParseError::Generic(format!("Property `FREQ` was missing in `{}`", line))
         })?,
         // `1` is default value according to spec.
         interval: interval.unwrap_or(1),
@@ -595,7 +568,7 @@ fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProper
         tz: tz.unwrap_or(UTC), // TODO check, I think this should be local timezone
         dt_start: dt_start.unwrap_or_else(|| UTC.ymd(1970, 1, 1).and_hms(0, 0, 0)), // Unix Epoch
         // dt_start: dt_start.ok_or_else(|| {
-        //     RRuleError::new_parse_err(format!("Property `DTSTART` was missing in `{}`", line))
+        //     ParseError::Generic(format!("Property `DTSTART` was missing in `{}`", line))
         // })?,
         week_start: week_start.unwrap_or(Weekday::Mon),
         by_set_pos: by_set_pos.unwrap_or_default(),
@@ -630,7 +603,7 @@ fn str_to_weekday(d: &str) -> Result<Weekday, ParseError> {
 /// Example: `SU,MO,TU,WE,TH,FR` or `4MO` or `-1WE`
 /// > For example, within a MONTHLY rule, +1MO (or simply 1MO) represents the first Monday
 /// > within the month, whereas -1MO represents the last Monday of the month.
-fn parse_weekday(val: &str) -> Result<Vec<NWeekday>, RRuleError> {
+fn parse_weekday(val: &str) -> Result<Vec<NWeekday>, ParseError> {
     let mut wdays = vec![];
     // Separate all days
     for day in val.split(',') {
@@ -651,7 +624,7 @@ fn parse_weekday(val: &str) -> Result<Vec<NWeekday>, RRuleError> {
                     wdays.push(NWeekday::new(Some(number), wday));
                 }
                 None => {
-                    return Err(RRuleError::new_parse_err(format!(
+                    return Err(ParseError::Generic(format!(
                         "Invalid weekday selection: {}",
                         day
                     )));
@@ -662,7 +635,7 @@ fn parse_weekday(val: &str) -> Result<Vec<NWeekday>, RRuleError> {
     Ok(wdays)
 }
 
-fn parse_rule_line(rfc_string: &str) -> Result<Option<RRuleProperties>, RRuleError> {
+fn parse_rule_line(rfc_string: &str) -> Result<Option<RRuleProperties>, ParseError> {
     let rfc_string = rfc_string.trim();
     // If this part is empty return
     if rfc_string.is_empty() {
@@ -677,7 +650,7 @@ fn parse_rule_line(rfc_string: &str) -> Result<Option<RRuleProperties>, RRuleErr
         let key = match header.get(1) {
             Some(k) => k.as_str(),
             None => {
-                return Err(RRuleError::new_parse_err(format!(
+                return Err(ParseError::Generic(format!(
                     "Invalid rule line prefix: {}",
                     rfc_string
                 )))
@@ -690,7 +663,7 @@ fn parse_rule_line(rfc_string: &str) -> Result<Option<RRuleProperties>, RRuleErr
                 Frequency::Yearly, // TODO this value should not be a default
                 parse_dtstart(rfc_string)?,
             ))),
-            _ => Err(RRuleError::new_parse_err(format!(
+            _ => Err(ParseError::Generic(format!(
                 "Unsupported RFC prop {} in {}",
                 key, &rfc_string
             ))),
@@ -742,7 +715,7 @@ fn extract_name(line: String) -> LineName {
     }
 }
 
-fn parse_rule(rfc_string: &str) -> Result<RRuleProperties, RRuleError> {
+fn parse_rule(rfc_string: &str) -> Result<RRuleProperties, ParseError> {
     let mut option = None;
     for line in rfc_string.split('\n') {
         let parsed_line = parse_rule_line(line)?;
@@ -750,7 +723,7 @@ fn parse_rule(rfc_string: &str) -> Result<RRuleProperties, RRuleError> {
             if option.is_none() {
                 option = Some(parsed_line);
             } else {
-                return Err(RRuleError::new_parse_err(format!(
+                return Err(ParseError::Generic(format!(
                     "Found to many RRule lines in `{}`.",
                     rfc_string
                 )));
@@ -761,7 +734,7 @@ fn parse_rule(rfc_string: &str) -> Result<RRuleProperties, RRuleError> {
     if let Some(option) = option {
         Ok(option)
     } else {
-        Err(RRuleError::new_parse_err(format!(
+        Err(ParseError::Generic(format!(
             "String is not a valid RRule: `{}`.",
             rfc_string
         )))
@@ -780,7 +753,7 @@ struct ParsedInput {
     tz: Tz,
 }
 
-fn parse_input(s: &str) -> Result<ParsedInput, RRuleError> {
+fn parse_input(s: &str) -> Result<ParsedInput, ParseError> {
     let mut rrule_vals = vec![];
     let mut rdate_vals = vec![];
     let mut exrule_vals = vec![];
@@ -794,7 +767,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleError> {
         match parsed_line.name.to_uppercase().as_str() {
             "RRULE" => {
                 if !parsed_line.params.is_empty() {
-                    return Err(RRuleError::new_parse_err("Unsupported RRULE value"));
+                    return Err(ParseError::Generic("Unsupported RRULE value".into()));
                 }
                 if parsed_line.value.is_empty() {
                     continue;
@@ -804,7 +777,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleError> {
             }
             "EXRULE" => {
                 if !parsed_line.params.is_empty() {
-                    return Err(RRuleError::new_parse_err("Unsupported EXRULE value"));
+                    return Err(ParseError::Generic("Unsupported EXRULE value".into()));
                 }
                 if parsed_line.value.is_empty() {
                     continue;
@@ -818,7 +791,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleError> {
             "RDATE" => {
                 let matches = match RDATE_RE.captures(line) {
                     Some(m) => m,
-                    None => return Err(RRuleError::new_parse_err("Invalid RDATE specified")),
+                    None => return Err(ParseError::Generic("Invalid RDATE specified".into())),
                 };
                 let tz: Option<Tz> = match matches.get(1) {
                     Some(tz_str) => Some(parse_timezone(tz_str.as_str())?),
@@ -834,7 +807,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleError> {
             "EXDATE" => {
                 let matches = match EXDATE_RE.captures(line) {
                     Some(m) => m,
-                    None => return Err(RRuleError::new_parse_err("Invalid EXDATE specified")),
+                    None => return Err(ParseError::Generic("Invalid EXDATE specified".into())),
                 };
                 let tz: Option<Tz> = match matches.get(1) {
                     Some(tz_str) => Some(parse_timezone(tz_str.as_str())?),
@@ -848,7 +821,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleError> {
             }
             "DTSTART" => (),
             _ => {
-                return Err(RRuleError::new_parse_err(format!(
+                return Err(ParseError::Generic(format!(
                     "Unsupported property: {}",
                     parsed_line.name
                 )))
@@ -866,12 +839,12 @@ fn parse_input(s: &str) -> Result<ParsedInput, RRuleError> {
     })
 }
 
-fn validate_date_param(params: Vec<&str>) -> Result<(), RRuleError> {
+fn validate_date_param(params: Vec<&str>) -> Result<(), ParseError> {
     for param in &params {
         match DATETIME_RE.captures(param) {
             Some(caps) if caps.len() > 0 => (),
             _ => {
-                return Err(RRuleError::new_parse_err(format!(
+                return Err(ParseError::Generic(format!(
                     "Unsupported RDATE/EXDATE parm: {}",
                     param
                 )))
@@ -885,13 +858,13 @@ fn parse_rdate(
     rdateval: &str,
     params: Vec<String>,
     tz: &Option<Tz>,
-) -> Result<Vec<DateTime>, RRuleError> {
+) -> Result<Vec<DateTime>, ParseError> {
     let params: Vec<&str> = params.iter().map(|p| p.as_str()).collect();
     validate_date_param(params)?;
 
     let mut rdatevals = vec![];
     for datestr in rdateval.split(',') {
-        rdatevals.push(datestring_to_date(datestr, tz)?);
+        rdatevals.push(datestring_to_date(datestr, tz, "RDATE")?);
     }
 
     Ok(rdatevals)
@@ -1015,7 +988,11 @@ mod test {
         assert!(res.is_err());
         assert_eq!(
             res.unwrap_err(),
-            RRuleError::new_parse_err("Invalid datetime: `20120201120000Z`")
+            ParseError::InvalidDateTime {
+                value: "20120201120000Z".into(),
+                field: "DTSTART".into()
+            }
+            .into()
         );
     }
 
@@ -1035,7 +1012,7 @@ mod test {
         assert!(res.is_err());
         assert_eq!(
             res.unwrap_err(),
-            RRuleError::new_parse_err("Invalid by_hour value")
+            ParseError::Generic("Invalid by_hour value".into()).into()
         );
 
         let res =
@@ -1043,7 +1020,7 @@ mod test {
         assert!(res.is_err());
         assert_eq!(
             res.unwrap_err(),
-            RRuleError::new_parse_err("Invalid by_hour value")
+            ParseError::Generic("Invalid by_hour value".into()).into()
         );
     }
 
@@ -1053,7 +1030,7 @@ mod test {
         assert!(res.is_err());
         assert_eq!(
             res.unwrap_err(),
-            RRuleError::new_parse_err("Invalid by_minute value")
+            ParseError::Generic("Invalid by_minute value".into()).into()
         );
 
         let res =
@@ -1061,7 +1038,7 @@ mod test {
         assert!(res.is_err());
         assert_eq!(
             res.unwrap_err(),
-            RRuleError::new_parse_err("Invalid by_minute value")
+            ParseError::Generic("Invalid by_minute value".into()).into()
         );
     }
 
@@ -1252,5 +1229,100 @@ mod test {
                 "2021-05-03T09:30:00+02:00",
             ],
         )
+    }
+
+    /// Check if datetime can be parsed correctly
+    #[test]
+    fn parse_datetime() {
+        let rrule: RRule = "DTSTART:20120201T023000Z\nFREQ=DAILY;INTERVAL=1;COUNT=2"
+            .parse()
+            .expect("RRule could not be parsed");
+
+        assert_eq!(
+            rrule.all(50).unwrap(),
+            vec![
+                UTC.ymd(2012, 2, 1).and_hms(2, 30, 0),
+                UTC.ymd(2012, 2, 2).and_hms(2, 30, 0)
+            ]
+        )
+    }
+
+    /// Check if datetime with timezone can be parsed correctly
+    #[test]
+    fn parse_datetime_with_timezone() {
+        let rrule: RRule =
+            "DTSTART;TZID=America/New_York:20120201T023000Z\nFREQ=DAILY;INTERVAL=1;COUNT=2"
+                .parse()
+                .expect("RRule could not be parsed");
+
+        assert_eq!(
+            rrule.all(50).unwrap(),
+            vec![
+                UTC.ymd(2012, 2, 1).and_hms(2, 30, 0),
+                UTC.ymd(2012, 2, 2).and_hms(2, 30, 0)
+            ]
+        )
+    }
+
+    /// Check if datetime errors are correctly handled
+    #[test]
+    fn parse_datetime_errors_invalid_hour() {
+        let res = RRule::from_str("DTSTART:20120201T323000Z\nFREQ=DAILY;INTERVAL=1;COUNT=2");
+        assert!(res.is_err());
+        let err = res.unwrap_err();
+        assert_eq!(
+            err,
+            ParseError::InvalidDateTime {
+                value: "20120201T323000Z".into(),
+                field: "DTSTART".into()
+            }
+            .into()
+        );
+    }
+
+    /// Check if datetime errors are correctly handled
+    #[test]
+    fn parse_datetime_errors_invalid_day() {
+        let res = RRule::from_str("DTSTART:20120251T023000Z\nFREQ=DAILY;INTERVAL=1;COUNT=2");
+        assert!(res.is_err());
+        let err = res.unwrap_err();
+        assert_eq!(
+            err,
+            ParseError::InvalidDateTime {
+                value: "20120251T023000Z".into(),
+                field: "DTSTART".into()
+            }
+            .into()
+        );
+    }
+
+    /// Check if datetime errors are correctly handled
+    #[test]
+    fn parse_datetime_errors_invalid_timezone() {
+        let res = RRule::from_str("DTSTART:20120251T023000T\nFREQ=DAILY;INTERVAL=1;COUNT=2");
+        assert!(res.is_err());
+        let err = res.unwrap_err();
+        assert_eq!(
+            err,
+            ParseError::InvalidDateTime {
+                value: "20120251T023000T".into(),
+                field: "DTSTART".into()
+            }
+            .into()
+        );
+    }
+
+    /// Check if datetime errors are correctly handled
+    #[test]
+    fn parse_datetime_errors_invalid_tzid_timezone() {
+        let res = RRule::from_str(
+            "DTSTART;TZID=America/Everywhere:20120251T023000Z\nFREQ=DAILY;INTERVAL=1;COUNT=2",
+        );
+        assert!(res.is_err());
+        let err = res.unwrap_err();
+        assert_eq!(
+            err,
+            ParseError::InvalidTimezone("America/Everywhere".into()).into()
+        );
     }
 }
