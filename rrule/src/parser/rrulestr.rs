@@ -180,7 +180,6 @@ fn parse_timezone(tz: &str) -> Result<Tz, ParseError> {
     Tz::from_str(tz).map_err(|_err| ParseError::InvalidTimezone(tz.into()))
 }
 
-// TODO: errors should not be specific to DTSTART
 fn datestring_to_date(dt: &str, tz: &Option<Tz>, field: &str) -> Result<DateTime, ParseError> {
     let bits = DATESTR_RE
         .captures(dt)
