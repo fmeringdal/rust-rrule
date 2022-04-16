@@ -1,12 +1,14 @@
 use thiserror::Error;
 
-use crate::validator::ValidationError;
+use crate::{parser::ParseError, validator::ValidationError};
 
 #[derive(Error, Debug, Clone, PartialEq)]
-#[non_exhaustive]
 pub enum RRuleError {
+    // TODO: remove this variant
     #[error("RRule parsing error: {0}")]
     ParseError(String),
+    #[error("RRule parsing error: {0}")]
+    ParserError(#[from] ParseError),
     #[error("RRule validation error: {0}")]
     ValidationError(#[from] ValidationError),
     #[error("RRule iterator error: {0}")]

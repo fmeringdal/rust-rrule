@@ -3,7 +3,6 @@ use thiserror::Error;
 use crate::Frequency;
 
 #[derive(Error, Debug, Clone, PartialEq)]
-#[non_exhaustive]
 pub enum ValidationError {
     #[error("BYSETPOS should only be used in conjunction with another BYxxx rule part.")]
     BySetPosWithoutByRule,

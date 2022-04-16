@@ -99,19 +99,18 @@ pub(crate) fn validate_properties_forced(option: &RRuleProperties) -> Result<(),
         });
     }
     // - It MUST only be used in conjunction with another BYxxx rule part.
-    if !option.by_set_pos.is_empty() {
-        if option.by_easter.is_none()
-            && option.by_hour.is_empty()
-            && option.by_minute.is_empty()
-            && option.by_second.is_empty()
-            && option.by_month_day.is_empty()
-            && option.by_month.is_empty()
-            && option.by_year_day.is_empty()
-            && option.by_week_no.is_empty()
-            && option.by_weekday.is_empty()
-        {
-            return Err(ValidationError::BySetPosWithoutByRule);
-        }
+    if !option.by_set_pos.is_empty()
+        && option.by_easter.is_none()
+        && option.by_hour.is_empty()
+        && option.by_minute.is_empty()
+        && option.by_second.is_empty()
+        && option.by_month_day.is_empty()
+        && option.by_month.is_empty()
+        && option.by_year_day.is_empty()
+        && option.by_week_no.is_empty()
+        && option.by_weekday.is_empty()
+    {
+        return Err(ValidationError::BySetPosWithoutByRule);
     }
 
     // By_month:

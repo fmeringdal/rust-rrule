@@ -3,7 +3,9 @@ use chrono::{Datelike, NaiveDate, NaiveDateTime, TimeZone, Timelike, Weekday};
 use chrono_tz::{Tz, UTC};
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::str::FromStr;
+use std::{convert::TryFrom, str::FromStr};
+
+use super::ParseError;
 
 // Some regex used for parsing the rrule string.
 lazy_static! {
@@ -333,19 +335,6 @@ fn parse_dtstart(s: &str) -> Result<DateTime, RRuleError> {
     }
 }
 
-fn from_str_to_freq(s: &str) -> Option<Frequency> {
-    match s.to_uppercase().as_str() {
-        "YEARLY" => Some(Frequency::Yearly),
-        "MONTHLY" => Some(Frequency::Monthly),
-        "WEEKLY" => Some(Frequency::Weekly),
-        "DAILY" => Some(Frequency::Daily),
-        "HOURLY" => Some(Frequency::Hourly),
-        "MINUTELY" => Some(Frequency::Minutely),
-        "SECONDLY" => Some(Frequency::Secondly),
-        _ => None,
-    }
-}
-
 fn weekday_from_str(val: &str) -> Result<Weekday, String> {
     match val {
         "MO" => Ok(Weekday::Mon),
@@ -422,33 +411,20 @@ fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProper
         }
 
         match key.to_uppercase().as_str() {
-            "FREQ" => match from_str_to_freq(value) {
-                Some(new_freq) => {
-                    if freq.is_none() {
-                        freq = Some(new_freq)
-                    } else {
-                        return Err(RRuleError::new_parse_err(format!(
-                            "`FREQ` was found twice in `{}`",
-                            line
-                        )));
-                    }
+            "FREQ" => {
+                let new_freq = Frequency::try_from(value)?;
+                if freq.is_none() {
+                    freq = Some(new_freq)
+                } else {
+                    return Err(ParseError::DuplicatedField("FREQ".into())).map_err(From::from);
                 }
-                None => {
-                    return Err(RRuleError::new_parse_err(format!(
-                        "Invalid frequency: `{}`",
-                        value
-                    )))
-                }
-            },
+            }
             "INTERVAL" => {
                 let new_interval = stringval_to_int(value, "Invalid interval".to_owned())?;
                 if interval.is_none() {
                     interval = Some(new_interval)
                 } else {
-                    return Err(RRuleError::new_parse_err(format!(
-                        "`INTERVAL` was found twice in `{}`",
-                        line
-                    )));
+                    return Err(ParseError::DuplicatedField("INTERVAL".into())).map_err(From::from);
                 }
             }
             "COUNT" => {
@@ -456,10 +432,7 @@ fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProper
                 if count.is_none() {
                     count = Some(new_count)
                 } else {
-                    return Err(RRuleError::new_parse_err(format!(
-                        "`COUNT` was found twice in `{}`",
-                        line
-                    )));
+                    return Err(ParseError::DuplicatedField("COUNT".into())).map_err(From::from);
                 }
             }
             "UNTIL" => {
@@ -473,10 +446,7 @@ fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProper
                 if until.is_none() {
                     until = Some(datestring_to_date(value, &Some(UTC))?)
                 } else {
-                    return Err(RRuleError::new_parse_err(format!(
-                        "`WKST` was found twice in `{}`",
-                        line
-                    )));
+                    return Err(ParseError::DuplicatedField("UNTIL".into())).map_err(From::from);
                 }
             }
             "DTSTART" | "TZID" => {
@@ -490,10 +460,7 @@ fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProper
                     if week_start.is_none() {
                         week_start = Some(new_weekday)
                     } else {
-                        return Err(RRuleError::new_parse_err(format!(
-                            "`WKST` was found twice in `{}`",
-                            line
-                        )));
+                        return Err(ParseError::DuplicatedField("WKST".into())).map_err(From::from);
                     }
                 }
                 Err(e) => {
@@ -506,10 +473,7 @@ fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProper
                 if by_set_pos.is_none() {
                     by_set_pos = Some(new_by_set_pos)
                 } else {
-                    return Err(RRuleError::new_parse_err(format!(
-                        "`BYSETPOS` was found twice in `{}`",
-                        line
-                    )));
+                    return Err(ParseError::DuplicatedField("BYSETPOS".into())).map_err(From::from);
                 }
             }
             "BYMONTH" => {
@@ -521,10 +485,7 @@ fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProper
                 if by_month.is_none() {
                     by_month = Some(new_by_month)
                 } else {
-                    return Err(RRuleError::new_parse_err(format!(
-                        "`BYMONTH` was found twice in `{}`",
-                        line
-                    )));
+                    return Err(ParseError::DuplicatedField("BYMONTH".into())).map_err(From::from);
                 }
             }
             "BYMONTHDAY" => {
@@ -536,10 +497,8 @@ fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProper
                 if by_month_day.is_none() {
                     by_month_day = Some(new_by_month_day)
                 } else {
-                    return Err(RRuleError::new_parse_err(format!(
-                        "`BYMONTHDAY` was found twice in `{}`",
-                        line
-                    )));
+                    return Err(ParseError::DuplicatedField("BYMONTHDAY".into()))
+                        .map_err(From::from);
                 }
             }
             "BYYEARDAY" => {
@@ -551,10 +510,8 @@ fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProper
                 if by_year_day.is_none() {
                     by_year_day = Some(new_by_year_day)
                 } else {
-                    return Err(RRuleError::new_parse_err(format!(
-                        "`BYYEARDAY` was found twice in `{}`",
-                        line
-                    )));
+                    return Err(ParseError::DuplicatedField("BYYEARDAY".into()))
+                        .map_err(From::from);
                 }
             }
             "BYWEEKNO" => {
@@ -566,10 +523,7 @@ fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProper
                 if by_week_no.is_none() {
                     by_week_no = Some(new_by_week_no)
                 } else {
-                    return Err(RRuleError::new_parse_err(format!(
-                        "`BYWEEKNO` was found twice in `{}`",
-                        line
-                    )));
+                    return Err(ParseError::DuplicatedField("BYWEEKNO".into())).map_err(From::from);
                 }
             }
             "BYHOUR" => {
@@ -581,10 +535,7 @@ fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProper
                 if by_hour.is_none() {
                     by_hour = Some(new_by_hour)
                 } else {
-                    return Err(RRuleError::new_parse_err(format!(
-                        "`BYHOUR` was found twice in `{}`",
-                        line
-                    )));
+                    return Err(ParseError::DuplicatedField("BYHOUR".into())).map_err(From::from);
                 }
             }
             "BYMINUTE" => {
@@ -596,10 +547,7 @@ fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProper
                 if by_minute.is_none() {
                     by_minute = Some(new_by_minute)
                 } else {
-                    return Err(RRuleError::new_parse_err(format!(
-                        "`BYMINUTE` was found twice in `{}`",
-                        line
-                    )));
+                    return Err(ParseError::DuplicatedField("BYMINUTE".into())).map_err(From::from);
                 }
             }
             "BYSECOND" => {
@@ -611,10 +559,7 @@ fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProper
                 if by_second.is_none() {
                     by_second = Some(new_by_second)
                 } else {
-                    return Err(RRuleError::new_parse_err(format!(
-                        "`BYSECOND` was found twice in `{}`",
-                        line
-                    )));
+                    return Err(ParseError::DuplicatedField("BYSECOND".into())).map_err(From::from);
                 }
             }
             "BYWEEKDAY" | "BYDAY" => {
@@ -623,10 +568,8 @@ fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProper
                 if by_weekday.is_none() {
                     by_weekday = Some(new_by_weekday)
                 } else {
-                    return Err(RRuleError::new_parse_err(format!(
-                        "`BYWEEKDAY`/`BYDAY` was found twice in `{}`",
-                        line
-                    )));
+                    return Err(ParseError::DuplicatedField("BYWEEKDAY /BYDAY".into()))
+                        .map_err(From::from);
                 }
             }
             #[cfg(feature = "by-easter")]
@@ -636,10 +579,7 @@ fn parse_rrule(line: &str, mut dt_start: Option<DateTime>) -> Result<RRuleProper
                 if by_easter.is_none() {
                     by_easter = Some(new_by_easter)
                 } else {
-                    return Err(RRuleError::new_parse_err(format!(
-                        "`BYEASTER` was found twice in `{}`",
-                        line
-                    )));
+                    return Err(ParseError::DuplicatedField("BYEASTER".into())).map_err(From::from);
                 }
             }
             _ => {
@@ -1081,7 +1021,7 @@ mod test {
         let res = build_rruleset("DTSTART:20120201120000Z\nRRULE:FREQ=DAILY;COUNT=5");
         assert!(res.is_err());
         assert_eq!(
-            res.err().unwrap(),
+            res.unwrap_err(),
             RRuleError::new_parse_err("Invalid datetime: `20120201120000Z`")
         );
     }
@@ -1091,8 +1031,8 @@ mod test {
         let res = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAIL;COUNT=5");
         assert!(res.is_err());
         assert_eq!(
-            res.err().unwrap(),
-            RRuleError::new_parse_err("Invalid frequency: `DAIL`")
+            res.unwrap_err(),
+            ParseError::InvalidFrequency("DAIL".into()).into()
         );
     }
 
@@ -1101,7 +1041,7 @@ mod test {
         let res = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5;BYHOUR=24");
         assert!(res.is_err());
         assert_eq!(
-            res.err().unwrap(),
+            res.unwrap_err(),
             RRuleError::new_parse_err("Invalid by_hour value")
         );
 
@@ -1109,7 +1049,7 @@ mod test {
             build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5;BYHOUR=5,6,25");
         assert!(res.is_err());
         assert_eq!(
-            res.err().unwrap(),
+            res.unwrap_err(),
             RRuleError::new_parse_err("Invalid by_hour value")
         );
     }
@@ -1119,7 +1059,7 @@ mod test {
         let res = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5;BYMINUTE=60");
         assert!(res.is_err());
         assert_eq!(
-            res.err().unwrap(),
+            res.unwrap_err(),
             RRuleError::new_parse_err("Invalid by_minute value")
         );
 
@@ -1127,7 +1067,7 @@ mod test {
             build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5;BYMINUTE=4,5,64");
         assert!(res.is_err());
         assert_eq!(
-            res.err().unwrap(),
+            res.unwrap_err(),
             RRuleError::new_parse_err("Invalid by_minute value")
         );
     }
