@@ -314,6 +314,9 @@ fn validate_not_equal_for_vec<T: PartialEq<T> + ToString>(
 
 #[cfg(test)]
 mod tests {
+    use chrono::TimeZone;
+    use chrono_tz::UTC;
+
     use crate::RRule;
 
     use super::*;
@@ -464,5 +467,74 @@ mod tests {
                 }
             );
         }
+    }
+
+    #[test]
+    fn rejects_invalid_by_rule_and_freq_combos() {
+        let tests = [
+            (
+                "BYMONTHDAY",
+                RRuleProperties {
+                    freq: Frequency::Weekly,
+                    by_month_day: vec![-1],
+                    ..Default::default()
+                },
+            ),
+            (
+                "BYYEARDAY",
+                RRuleProperties {
+                    freq: Frequency::Monthly,
+                    by_year_day: vec![120],
+                    ..Default::default()
+                },
+            ),
+            (
+                "BYYEARDAY",
+                RRuleProperties {
+                    freq: Frequency::Weekly,
+                    by_year_day: vec![120],
+                    ..Default::default()
+                },
+            ),
+            (
+                "BYYEARDAY",
+                RRuleProperties {
+                    freq: Frequency::Daily,
+                    by_year_day: vec![120],
+                    ..Default::default()
+                },
+            ),
+        ];
+        for (field, properties) in tests {
+            let res = validate_properties_forced(&properties);
+            assert!(res.is_err());
+            let err = res.unwrap_err();
+            assert_eq!(
+                err,
+                ValidationError::InvalidByRuleAndFrequency {
+                    by_rule: field.into(),
+                    freq: properties.freq
+                }
+            );
+        }
+    }
+
+    #[test]
+    fn rejects_start_date_after_until() {
+        let properties = RRuleProperties {
+            dt_start: UTC.ymd_opt(2020, 1, 2).and_hms_opt(0, 0, 0).unwrap(),
+            until: Some(UTC.ymd_opt(2020, 1, 1).and_hms_opt(0, 0, 0).unwrap()),
+            ..Default::default()
+        };
+        let res = validate_properties_forced(&properties);
+        assert!(res.is_err());
+        let err = res.unwrap_err();
+        assert_eq!(
+            err,
+            ValidationError::UntilBeforeStart {
+                until: properties.until.unwrap().to_rfc3339(),
+                dt_start: properties.dt_start.to_rfc3339()
+            }
+        );
     }
 }
