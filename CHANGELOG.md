@@ -9,7 +9,7 @@ This project follows the [Semantic Versioning standard](https://semver.org/).
 
 - Fix [#33](https://github.com/fmeringdal/rust-rrule/issues/33)
 - Fix [#34](https://github.com/fmeringdal/rust-rrule/issues/34)
-- Many tests were ignored because they were either invalid or the test didn't pass. Most ignored tests are now deleted or the code is fixes so that they pass.
+- Many tests were ignored because they were either invalid or the test didn't pass. Most ignored tests are now deleted or the code is fixed so that they pass.
 - Better error handling
 
 ### Changed
