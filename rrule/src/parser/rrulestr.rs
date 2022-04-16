@@ -63,7 +63,7 @@ pub(crate) fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleError> {
 
 /// Create an [`RRule`] from [`String`] if input is valid.
 ///
-/// If RRule contains invalid parts and [`RRuleError`] will be returned.
+/// If RRule contains invalid parts then [`RRuleError`] will be returned.
 /// This should never panic, but it might be in odd cases.
 /// Please report if it does panic.
 pub(crate) fn parse_rrule_string_to_properties(input: &str) -> Result<RRuleProperties, RRuleError> {
