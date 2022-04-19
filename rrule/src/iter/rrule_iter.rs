@@ -8,7 +8,6 @@ use crate::{
 };
 use chrono::{Datelike, TimeZone, Timelike};
 use chrono_tz::Tz;
-use chrono_tz::UTC;
 use std::collections::VecDeque;
 
 #[derive(Debug, Clone)]
@@ -103,8 +102,8 @@ impl<'a> RRuleIter<'a> {
             )?;
 
             // If `counter_date` is later than `until` date, we can stop
-            if let Some(until) = properties.until {
-                if self.counter_date > until {
+            if let Some(until) = &properties.until {
+                if &self.counter_date > until {
                     return Ok(false);
                 }
             }
@@ -162,7 +161,7 @@ impl<'a> RRuleIter<'a> {
                     let year_ordinal = self.ii.year_ordinal().unwrap();
                     // Ordinal conversion uses UTC: if we apply local-TZ here, then
                     // just below we'll end up double-applying.
-                    let date = from_ordinal(year_ordinal + current_day as i64, &UTC);
+                    let date = from_ordinal(year_ordinal + current_day as i64);
                     // We apply the local-TZ here,
                     let date = self.tz.ymd(date.year(), date.month(), date.day());
                     for timeset in &self.timeset {
@@ -243,7 +242,7 @@ impl<'a> Iterator for RRuleIter<'a> {
         self.finished = match self.generate() {
             Ok(finished) => finished,
             Err(err) => {
-                log::error!("{}", err);
+                log::error!("{:?}", err);
                 self.error = Some(err);
                 true
             }
@@ -266,7 +265,7 @@ impl<'a> IntoIterator for &'a RRule {
             Ok(iter) => iter,
             Err(err) => {
                 // Print error and create iterator that will ways return the error if used.
-                log::error!("{}", err);
+                log::error!("{:?}", err);
                 let error = Some(err);
                 // This is mainly a dummy object, as it will ways return the error when called.
                 RRuleIter {

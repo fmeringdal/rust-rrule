@@ -1,5 +1,5 @@
 use crate::core::DateTime;
-use crate::{RRuleError, RRuleProperties};
+use crate::{validator::ValidationError, RRuleProperties};
 
 /// Maximum value of `option.interval` when frequency is yearly.
 /// Limit: 10000 years
@@ -51,7 +51,7 @@ pub(crate) static FREQ_SECONDLY_INTERVAL_MAX: u16 = 50_000;
 pub(crate) fn check_limits(
     properties: &RRuleProperties,
     dt_start: &DateTime,
-) -> Result<(), RRuleError> {
+) -> Result<(), ValidationError> {
     use crate::{validator::YEAR_RANGE, Frequency};
     use chrono::Datelike;
 
@@ -68,11 +68,7 @@ pub(crate) fn check_limits(
         Frequency::Secondly => FREQ_SECONDLY_INTERVAL_MAX, // About 13 hours
     };
     if properties.interval > limit {
-        return Err(RRuleError::new_validation_err(format!(
-            "`INTERVAL` is `{}`, is higher than expected, make sure this is correct. \
-            See 'validator limits' in docs for more info.",
-            &properties.interval,
-        )));
+        return Err(ValidationError::TooBigInterval(properties.interval));
     }
 
     // Count:
@@ -83,11 +79,7 @@ pub(crate) fn check_limits(
     //   `Chrono` is limited to +/- 262,000 years from the common epoch.
     let year = dt_start.year();
     if !YEAR_RANGE.contains(&year) {
-        return Err(RRuleError::new_validation_err(format!(
-            "`DTSTART` year is `{}`, is higher/lower than expected, make sure this is correct. \
-            See 'validator limits' in docs for more info.",
-            year,
-        )));
+        return Err(ValidationError::StartYearOutOfRange(year));
     }
 
     // All checked, no errors found
@@ -105,6 +97,6 @@ pub(crate) fn check_limits(
 /// When `no-validation-limits` feature is set this function will always return `Ok`.
 /// See README.md for more info.
 #[cfg(feature = "no-validation-limits")]
-pub(crate) fn check_limits(_: &RRuleProperties, _: &DateTime) -> Result<(), RRuleError> {
+pub(crate) fn check_limits(_: &RRuleProperties, _: &DateTime) -> Result<(), ValidationError> {
     Ok(())
 }

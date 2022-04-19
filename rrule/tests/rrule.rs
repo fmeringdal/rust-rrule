@@ -1781,7 +1781,7 @@ fn weekly_by_weekday() {
     );
 }
 
-// ! why isn't this using nweekday ???
+// TODO: why isn't this using nweekday?
 #[test]
 fn weekly_by_nweekday() {
     let properties = RRuleProperties {

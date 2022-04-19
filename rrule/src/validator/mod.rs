@@ -2,7 +2,10 @@
 //! And in turn create a RRule.
 
 pub(crate) mod check_limits;
+mod error;
 pub(crate) mod validate_properties;
+
+pub(crate) use error::ValidationError;
 
 #[allow(unused_imports)]
 pub(crate) use check_limits::{
