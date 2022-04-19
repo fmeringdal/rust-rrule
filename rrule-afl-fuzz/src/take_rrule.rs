@@ -12,8 +12,6 @@ pub fn take_rrule_from_data(mut data: &[u8]) -> Option<RRule> {
     // 2  => interval
     // 5  => count
     // 21 => until
-    // 1  => tz
-    // 20 => dt_start
     // 1  => week_start
     // Subtotal: 51 bytes
     // 21 => by_set_pos
@@ -56,12 +54,6 @@ pub fn take_rrule_from_data(mut data: &[u8]) -> Option<RRule> {
             0 => Some(take_datetime(&mut data)),
             _ => None,
         },
-        // Just selected a few timezones
-        tz: match take_byte(&mut data) % 2 {
-            0 => chrono_tz::Europe::London,
-            _ => chrono_tz::America::New_York,
-        },
-        dt_start: take_datetime(&mut data),
         week_start: take_weekday(&mut data),
         by_set_pos: take_vec_i32(&mut data),
         by_month: take_vec_u8(&mut data),
@@ -82,7 +74,7 @@ pub fn take_rrule_from_data(mut data: &[u8]) -> Option<RRule> {
         #[cfg(not(feature = "by-easter"))]
         by_easter: None,
     };
-    match RRule::new(properties) {
+    match properties.build(take_datetime(&mut data)) {
         Ok(rrule) => Some(rrule),
         Err(err) => {
             println!("{}", err);

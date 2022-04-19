@@ -7,6 +7,7 @@ use crate::{
     Frequency, RRule, RRuleError, WithError,
 };
 use chrono::{Datelike, TimeZone, Timelike};
+use chrono_tz::Tz;
 use std::collections::VecDeque;
 
 #[derive(Debug, Clone)]
@@ -15,6 +16,8 @@ pub struct RRuleIter<'a> {
     counter_date: DateTime,
     ii: IterInfo<'a>,
     timeset: Vec<Time>,
+    dt_start: DateTime,
+    tz: Tz,
     // Buffer of datetimes not yet yielded
     buffer: VecDeque<DateTime>,
     /// Indicate of iterator should not return more items.
@@ -29,17 +32,18 @@ pub struct RRuleIter<'a> {
 
 impl<'a> RRuleIter<'a> {
     fn new(rrule: &'a RRule) -> Result<Self, RRuleError> {
-        let ii = IterInfo::new(rrule.get_properties())?;
-        let ii_properties = ii.get_properties();
-        let counter_date = ii_properties.dt_start;
+        let ii = IterInfo::new(rrule)?;
+        let counter_date = rrule.dt_start;
 
-        let timeset = make_timeset(&ii, &counter_date, ii_properties)?;
-        let count = ii_properties.count;
+        let timeset = make_timeset(&ii, &counter_date, rrule)?;
+        let count = ii.get_properties().count;
 
         Ok(RRuleIter {
             counter_date,
             ii,
             timeset,
+            dt_start: counter_date,
+            tz: rrule.tz,
             buffer: VecDeque::new(),
             finished: false,
             count,
@@ -98,8 +102,8 @@ impl<'a> RRuleIter<'a> {
             )?;
 
             // If `counter_date` is later than `until` date, we can stop
-            if let Some(until) = properties.until {
-                if self.counter_date > until {
+            if let Some(until) = &properties.until {
+                if &self.counter_date > until {
                     return Ok(false);
                 }
             }
@@ -123,7 +127,7 @@ impl<'a> RRuleIter<'a> {
                     end,
                     &self.ii,
                     &dayset,
-                    &properties.tz,
+                    &self.tz,
                 )?;
 
                 for res in pos_list {
@@ -131,7 +135,7 @@ impl<'a> RRuleIter<'a> {
                         continue; // or break ?
                     }
 
-                    if res >= properties.dt_start {
+                    if res >= self.dt_start {
                         self.buffer.push_back(res);
 
                         if let Some(count) = self.count {
@@ -159,7 +163,7 @@ impl<'a> RRuleIter<'a> {
                     // just below we'll end up double-applying.
                     let date = from_ordinal(year_ordinal + current_day as i64);
                     // We apply the local-TZ here,
-                    let date = properties.tz.ymd(date.year(), date.month(), date.day());
+                    let date = self.tz.ymd(date.year(), date.month(), date.day());
                     for timeset in &self.timeset {
                         let res = date
                             .and_hms(0, 0, 0)
@@ -169,7 +173,7 @@ impl<'a> RRuleIter<'a> {
                         if properties.until.is_some() && res > properties.until.unwrap() {
                             return Ok(true);
                         }
-                        if res >= properties.dt_start {
+                        if res >= self.dt_start {
                             self.buffer.push_back(res);
 
                             if let Some(count) = self.count {
@@ -238,7 +242,7 @@ impl<'a> Iterator for RRuleIter<'a> {
         self.finished = match self.generate() {
             Ok(finished) => finished,
             Err(err) => {
-                log::error!("{}", err);
+                log::error!("{:?}", err);
                 self.error = Some(err);
                 true
             }
@@ -261,13 +265,15 @@ impl<'a> IntoIterator for &'a RRule {
             Ok(iter) => iter,
             Err(err) => {
                 // Print error and create iterator that will ways return the error if used.
-                log::error!("{}", err);
+                log::error!("{:?}", err);
                 let error = Some(err);
                 // This is mainly a dummy object, as it will ways return the error when called.
                 RRuleIter {
-                    counter_date: self.get_properties().dt_start,
-                    ii: IterInfo::new_no_rebuild(self.get_properties()),
+                    counter_date: self.dt_start,
+                    ii: IterInfo::new_no_rebuild(self),
                     timeset: vec![],
+                    dt_start: self.dt_start,
+                    tz: self.tz,
                     buffer: VecDeque::new(),
                     finished: false,
                     count: None,

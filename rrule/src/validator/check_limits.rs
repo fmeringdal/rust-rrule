@@ -1,3 +1,4 @@
+use crate::core::DateTime;
 use crate::{validator::ValidationError, RRuleProperties};
 
 /// Maximum value of `option.interval` when frequency is yearly.
@@ -47,14 +48,17 @@ pub(crate) static FREQ_SECONDLY_INTERVAL_MAX: u16 = 50_000;
 /// When `no-validation-limits` feature is set this function will always return `Ok`.
 /// See README.md for more info.
 #[cfg(not(feature = "no-validation-limits"))]
-pub(crate) fn check_limits(option: &RRuleProperties) -> Result<(), ValidationError> {
+pub(crate) fn check_limits(
+    properties: &RRuleProperties,
+    dt_start: &DateTime,
+) -> Result<(), ValidationError> {
     use crate::{validator::YEAR_RANGE, Frequency};
     use chrono::Datelike;
 
     // Interval:
     // - Value should not be to big
     //   `Chrono` is limited to +/- 262,000 years from the common epoch.
-    let limit = match &option.freq {
+    let limit = match &properties.freq {
         Frequency::Yearly => FREQ_YEARLY_INTERVAL_MAX, // 10000 years
         Frequency::Monthly => FREQ_MONTHLY_INTERVAL_MAX, // About 83 years
         Frequency::Weekly => FREQ_WEEKLY_INTERVAL_MAX, // About 19 years
@@ -63,8 +67,8 @@ pub(crate) fn check_limits(option: &RRuleProperties) -> Result<(), ValidationErr
         Frequency::Minutely => FREQ_MINUTELY_INTERVAL_MAX, // About 7 days
         Frequency::Secondly => FREQ_SECONDLY_INTERVAL_MAX, // About 13 hours
     };
-    if option.interval > limit {
-        return Err(ValidationError::TooBigInterval(option.interval));
+    if properties.interval > limit {
+        return Err(ValidationError::TooBigInterval(properties.interval));
     }
 
     // Count:
@@ -73,7 +77,7 @@ pub(crate) fn check_limits(option: &RRuleProperties) -> Result<(), ValidationErr
     // Dt_start:
     // - Year should be reasonable.
     //   `Chrono` is limited to +/- 262,000 years from the common epoch.
-    let year = option.dt_start.year();
+    let year = dt_start.year();
     if !YEAR_RANGE.contains(&year) {
         return Err(ValidationError::StartYearOutOfRange(year));
     }
@@ -93,6 +97,6 @@ pub(crate) fn check_limits(option: &RRuleProperties) -> Result<(), ValidationErr
 /// When `no-validation-limits` feature is set this function will always return `Ok`.
 /// See README.md for more info.
 #[cfg(feature = "no-validation-limits")]
-pub(crate) fn check_limits(_option: &RRuleProperties) -> Result<(), ValidationError> {
+pub(crate) fn check_limits(_: &RRuleProperties, _: &DateTime) -> Result<(), ValidationError> {
     Ok(())
 }
