@@ -1061,34 +1061,6 @@ mod test {
     }
 
     #[test]
-    // #[ignore = "Only for benching"]
-    fn bench() {
-        let now = std::time::SystemTime::now();
-        for _ in 0..1000 {
-            // let res = build_rruleset("RRULE:UNTIL=19990404T110000Z;\
-            // DTSTART;TZID=America/New_York:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE").unwrap();
-            let res = build_rruleset(
-                "RRULE:UNTIL=20100404T110000Z;\
-                DTSTART;TZID=America/New_York:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE",
-            )
-            .unwrap();
-
-            // println!("Parsing took: {:?}", now.elapsed().unwrap().as_millis());
-            let tmp_now = std::time::SystemTime::now();
-
-            // res.all(50);
-            res.all_between(
-                UTC.timestamp_millis(915321600000),
-                UTC.timestamp_millis(920505600000),
-                true,
-            )
-            .unwrap();
-            println!("All took: {:?}", tmp_now.elapsed().unwrap().as_nanos());
-        }
-        println!("Time took: {:?}", now.elapsed().unwrap().as_millis());
-    }
-
-    #[test]
     fn rejects_rrule_without_dtstart() {
         let res = parse_rrule_string_to_properties("FREQ=DAILY;COUNT=7");
         assert!(res.is_err());
