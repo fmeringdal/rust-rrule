@@ -78,9 +78,14 @@ impl FromStr for NWeekday {
     type Err = ParseError;
 
     fn from_str(value: &str) -> Result<Self, Self::Err> {
-        let wd = &value[value.len() - 2..];
-        let wd = str_to_weekday(wd)?;
-        let nth = value[..value.len() - 2].parse::<i16>().unwrap_or_default();
+        let length = value.len();
+
+        if length < 2 {
+            return Err(ParseError::InvalidWeekday(value.to_string()));
+        }
+
+        let wd = str_to_weekday(&value[(length - 2)..])?;
+        let nth = value[..(length - 2)].parse::<i16>().unwrap_or_default();
 
         if nth == 0 {
             Ok(NWeekday::Every(wd))
@@ -345,7 +350,7 @@ impl FromStr for RRuleProperties {
 impl Display for RRuleProperties {
     /// Generates a string based on the [iCalendar RRULE spec](https://datatracker.ietf.org/doc/html/rfc5545#section-3.8.5.3).
     /// It doesn't prepend "RRULE:" to the string.
-    /// This function doesn't valid the existing object and may generate an invalid string like 'FREQ=YEARLY;INTERVAL=-1'
+    /// This function doesn't validate the existing object and may generate an invalid string like 'FREQ=YEARLY;INTERVAL=-1'
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let mut res = format!("FREQ={};", &self.freq);
 
