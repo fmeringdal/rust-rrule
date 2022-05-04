@@ -106,8 +106,8 @@ impl Display for NWeekday {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "with-serde", serde_as)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "with-serde", derive(DeserializeFromStr, SerializeDisplay))]
 pub struct RRuleProperties {
     /// The frequency of the rule.

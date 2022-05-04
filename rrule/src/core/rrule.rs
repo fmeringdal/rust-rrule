@@ -8,8 +8,8 @@ use std::fmt::Display;
 use std::str::FromStr;
 
 /// A validated Recurrence Rule that can be used to create an iterator.
-#[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "with-serde", serde_as)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "with-serde", derive(DeserializeFromStr, SerializeDisplay))]
 pub struct RRule {
     /// The properties specified by this rule.
