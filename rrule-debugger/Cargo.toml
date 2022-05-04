@@ -11,11 +11,10 @@ publish = false
 rrule = { version = "0.7.0", path = "../rrule" }
 chrono = "0.4.19"
 chrono-tz = "0.6.1"
-structopt = "0.3.26"
+clap = "3.1.15"
 rrule-afl-fuzz = { version = "0.1.0", path = "../rrule-afl-fuzz" }
 log = "0.4.16"
 yansi = "0.5.1"
-
 
 [features]
 default = []

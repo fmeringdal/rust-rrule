@@ -1,10 +1,16 @@
 use super::{datetime::DateTime, properties::*};
+use crate::core::datetime::datetime_to_ical_format;
 use crate::{DateFilter, RRuleError, RRuleIter};
 use chrono_tz::Tz;
+#[cfg(feature = "with-serde")]
+use serde_with::{serde_as, DeserializeFromStr, SerializeDisplay};
+use std::fmt::Display;
 use std::str::FromStr;
 
 /// A validated Recurrence Rule that can be used to create an iterator.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "with-serde", serde_as)]
+#[cfg_attr(feature = "with-serde", derive(DeserializeFromStr, SerializeDisplay))]
 pub struct RRule {
     /// The properties specified by this rule.
     pub(crate) properties: RRuleProperties,
@@ -29,6 +35,15 @@ impl FromStr for RRule {
         let rrule = crate::parser::parse_rrule_string_to_properties(s)?;
         let dt_start = crate::parser::parse_dtstart(s)?;
         rrule.build(dt_start)
+    }
+}
+
+impl Display for RRule {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let properties = self.properties.to_string();
+        let datetime = datetime_to_ical_format(&self.dt_start, self.tz);
+
+        write!(f, "DTSTART{}\n{}", datetime, properties)
     }
 }
 

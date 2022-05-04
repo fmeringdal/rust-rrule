@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 This project follows the [Semantic Versioning standard](https://semver.org/).
 
+## Unreleased (2022-05-xx)
+
+### Added
+
+- There is a new `with-serde` feature to enable serialization and deserialization on `RRuleProperties` and `RRule`.
+- `RRuleProperties` and `RRule` structs now implement `Display` and `FromStr` to convert from and to strings.
+
+### Changed
+
+- API change: `dt_start` and `tz` moved from `RRuleProperties` to `RRule`
+ 
 ## Version 0.7.2 (2022-04-16)
 
 ### Fixed

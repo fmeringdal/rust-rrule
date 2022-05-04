@@ -21,12 +21,25 @@ jobs:
 
   test:
     needs: lints
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.target.os }}
+    name: ${{ matrix.target.name }} / ${{ matrix.version }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        target:
+        - { name: Linux, os: ubuntu-latest, triple: x86_64-unknown-linux-gnu }
+        - { name: macOS, os: macos-latest, triple: x86_64-apple-darwin }
+        - { name: Windows, os: windows-2022, triple: x86_64-pc-windows-msvc }
+        version:
+        - 1.54.0 # MSRV
+        - stable
     steps:
       - uses: actions/checkout@v2
+      - name: Install ${{ matrix.version }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.version }}-${{ matrix.target.triple }}
+          profile: minimal
+          override: true
       - name: Run tests
         run: |
           cd rrule
