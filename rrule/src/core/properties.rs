@@ -83,7 +83,7 @@ impl FromStr for NWeekday {
         let nth = value[..value.len() - 2].parse::<i16>().unwrap_or_default();
 
         if nth == 0 {
-            return Ok(NWeekday::Every(wd));
+            Ok(NWeekday::Every(wd))
         } else {
             Ok(NWeekday::new(Some(nth), wd))
         }
