@@ -49,5 +49,5 @@ by-easter = []
 # Required only for building CLI `rrule` tool.
 cli-tool = ["clap"]
 
-# Required only for building CLI `rrule` tool.
+# Enable serde for some of the public structs
 with-serde = ["serde", "serde_with", "chrono/serde", "chrono-tz/serde"]
