@@ -5,14 +5,14 @@ use crate::validator::{check_limits, validate_properties};
 use crate::{RRule, RRuleError};
 use chrono::{Month, Utc, Weekday};
 use chrono_tz::UTC;
-#[cfg(feature = "with-serde")]
+#[cfg(feature = "serde")]
 use serde_with::{serde_as, DeserializeFromStr, SerializeDisplay};
 use std::fmt::Display;
 use std::fmt::Formatter;
 use std::str::FromStr;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
-#[cfg_attr(feature = "with-serde", derive(DeserializeFromStr, SerializeDisplay))]
+#[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
 pub enum Frequency {
     Yearly = 0,
     Monthly = 1,
@@ -57,7 +57,7 @@ impl FromStr for Frequency {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(feature = "with-serde", derive(DeserializeFromStr, SerializeDisplay))]
+#[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
 pub enum NWeekday {
     Every(Weekday),
     /// Value from -366 to -1 and 1 to 366 depending on frequency
@@ -111,9 +111,9 @@ impl Display for NWeekday {
     }
 }
 
-#[cfg_attr(feature = "with-serde", serde_as)]
+#[cfg_attr(feature = "serde", serde_as)]
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "with-serde", derive(DeserializeFromStr, SerializeDisplay))]
+#[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
 pub struct RRuleProperties {
     /// The frequency of the rule.
     /// For example: yearly, weekly, hourly
@@ -127,7 +127,7 @@ pub struct RRuleProperties {
     pub count: Option<u32>,
     /// The end date after which new events will no longer be generated.
     /// If the `DateTime` is equal to an instance of the event it will be the last event.
-    #[cfg_attr(feature = "with-serde", serde_as(as = "DisplayFromStr"))]
+    #[cfg_attr(feature = "serde", serde_as(as = "DisplayFromStr"))]
     pub until: Option<DateTime>,
     /// The start day of the week.
     /// This will affect recurrences based on weekly periods.

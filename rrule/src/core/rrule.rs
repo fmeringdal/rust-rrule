@@ -2,15 +2,15 @@ use super::{datetime::DateTime, properties::*};
 use crate::core::datetime::datetime_to_ical_format;
 use crate::{DateFilter, RRuleError, RRuleIter};
 use chrono_tz::Tz;
-#[cfg(feature = "with-serde")]
+#[cfg(feature = "serde")]
 use serde_with::{serde_as, DeserializeFromStr, SerializeDisplay};
 use std::fmt::Display;
 use std::str::FromStr;
 
 /// A validated Recurrence Rule that can be used to create an iterator.
-#[cfg_attr(feature = "with-serde", serde_as)]
+#[cfg_attr(feature = "serde", serde_as)]
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(feature = "with-serde", derive(DeserializeFromStr, SerializeDisplay))]
+#[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
 pub struct RRule {
     /// The properties specified by this rule.
     pub(crate) properties: RRuleProperties,

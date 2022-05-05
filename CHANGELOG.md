@@ -7,7 +7,7 @@ This project follows the [Semantic Versioning standard](https://semver.org/).
 
 ### Added
 
-- There is a new `with-serde` feature to enable serialization and deserialization on `RRuleProperties` and `RRule`.
+- There is a new `serde` feature to enable serialization and deserialization on `RRuleProperties` and `RRule`.
 - `RRuleProperties` and `RRule` structs now implement `Display` and `FromStr` to convert from and to strings.
 
 ### Changed
