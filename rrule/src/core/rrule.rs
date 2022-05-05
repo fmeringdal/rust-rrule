@@ -2,6 +2,8 @@ use super::{datetime::DateTime, properties::*};
 use crate::core::datetime::datetime_to_ical_format;
 use crate::{DateFilter, RRuleError, RRuleIter};
 use chrono_tz::Tz;
+#[cfg(feature = "diesel")]
+use diesel::{AsExpression, FromSqlRow};
 #[cfg(feature = "serde")]
 use serde_with::{serde_as, DeserializeFromStr, SerializeDisplay};
 use std::fmt::Display;
@@ -11,6 +13,8 @@ use std::str::FromStr;
 #[cfg_attr(feature = "serde", serde_as)]
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
+#[cfg_attr(feature = "diesel", derive(AsExpression, FromSqlRow))]
+#[cfg_attr(feature = "diesel", sql_type = "diesel::sql_types::Text")]
 pub struct RRule {
     /// The properties specified by this rule.
     pub(crate) properties: RRuleProperties,

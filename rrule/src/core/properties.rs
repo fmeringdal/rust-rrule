@@ -5,6 +5,8 @@ use crate::validator::{check_limits, validate_properties};
 use crate::{RRule, RRuleError};
 use chrono::{Month, Utc, Weekday};
 use chrono_tz::UTC;
+#[cfg(feature = "diesel")]
+use diesel::{AsExpression, FromSqlRow};
 #[cfg(feature = "serde")]
 use serde_with::{serde_as, DeserializeFromStr, SerializeDisplay};
 use std::fmt::Display;
@@ -114,6 +116,8 @@ impl Display for NWeekday {
 #[cfg_attr(feature = "serde", serde_as)]
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
+#[cfg_attr(feature = "diesel", derive(AsExpression, FromSqlRow))]
+#[cfg_attr(feature = "diesel", sql_type = "diesel::sql_types::Text")]
 pub struct RRuleProperties {
     /// The frequency of the rule.
     /// For example: yearly, weekly, hourly
