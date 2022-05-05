@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 This project follows the [Semantic Versioning standard](https://semver.org/).
 
-## Unreleased (2022-05-xx)
+## Version 0.7.3 (2022-05-05)
 
 ### Added
 
