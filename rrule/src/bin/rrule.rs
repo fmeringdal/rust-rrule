@@ -1,7 +1,7 @@
 use std::{fmt::Display, str::FromStr};
 
+use clap::Parser;
 use rrule::{RRule, RRuleSet, WithError};
-use structopt::StructOpt;
 
 /// RRule parser and iterator
 ///
@@ -13,16 +13,16 @@ use structopt::StructOpt;
 /// - `DTSTART:20120201T093000Z\nRRULE:FREQ=YEARLY`
 ///
 /// - `DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;BYDAY=MO,FR`
-#[derive(StructOpt, Debug)]
-#[structopt(
+#[derive(Parser, Debug)]
+#[clap(
     name = "rrule",
     about = "A parser and iterator for recurrence rules as defined in the iCalendar RFC."
 )]
-struct Opt {
+struct Opts {
     /// Limit the amount of iteration
     /// If no limit is set, it will default to `100`.
     /// The maximum limit is `65535`.
-    #[structopt(short, long)]
+    #[clap(short, long)]
     limit: Option<u16>,
 
     /// The RRule string you want to iterator over.
@@ -30,7 +30,7 @@ struct Opt {
 }
 
 fn main() -> Result<(), String> {
-    let opts = Opt::from_args();
+    let opts: Opts = Parser::parse();
 
     let limit = opts.limit.unwrap_or(100);
     let rrule_str = opts.input.replace("\\n", "\n");

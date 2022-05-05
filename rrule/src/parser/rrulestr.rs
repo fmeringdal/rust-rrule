@@ -3,7 +3,7 @@ use chrono::{Datelike, NaiveDate, TimeZone, Timelike, Weekday};
 use chrono_tz::{Tz, UTC};
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::{convert::TryFrom, str::FromStr};
+use std::str::FromStr;
 
 use super::ParseError;
 
@@ -61,7 +61,7 @@ pub(crate) fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleError> {
 
 /// Create an [`RRule`] from [`String`] if input is valid.
 ///
-/// If RRule contains invalid parts then [`RRuleError`] will be returned.
+/// If RRule contains invalid parts then [`ParseError`] will be returned.
 /// This should never panic, but it might be in odd cases.
 /// Please report if it does panic.
 pub(crate) fn parse_rrule_string_to_properties(input: &str) -> Result<RRuleProperties, ParseError> {
@@ -81,7 +81,7 @@ pub(crate) fn parse_rrule_string_to_properties(input: &str) -> Result<RRulePrope
     }
 }
 
-/// Fill in some additional field in order to make iter work correctly.
+/// Fill in some additional fields in order to make iter work correctly.
 pub(crate) fn finalize_parsed_properties(
     mut properties: RRuleProperties,
     dt_start: &DateTime,
@@ -173,7 +173,11 @@ fn parse_timezone(tz: &str) -> Result<Tz, ParseError> {
     Tz::from_str(tz).map_err(|_err| ParseError::InvalidTimezone(tz.into()))
 }
 
-fn datestring_to_date(dt: &str, tz: &Option<Tz>, field: &str) -> Result<DateTime, ParseError> {
+pub(crate) fn datestring_to_date(
+    dt: &str,
+    tz: &Option<Tz>,
+    field: &str,
+) -> Result<DateTime, ParseError> {
     let bits = DATESTR_RE
         .captures(dt)
         .ok_or_else(|| ParseError::InvalidDateTime {
@@ -267,13 +271,9 @@ fn datestring_to_date(dt: &str, tz: &Option<Tz>, field: &str) -> Result<DateTime
             }
         }
     };
-    let datetime_with_timezone = if let Some(tz) = tz {
-        // Apply timezone from `TZID=` part (if any)
-        datetime.with_timezone(tz)
-    } else {
-        // If no timezone is give, set datetime as UTC
-        datetime.with_timezone(&UTC)
-    };
+
+    // Apply timezone from `TZID=` part (if any), else set datetime as UTC
+    let datetime_with_timezone = datetime.with_timezone(&tz.unwrap_or(UTC));
 
     Ok(datetime_with_timezone)
 }
@@ -295,19 +295,6 @@ pub(crate) fn parse_dtstart(s: &str) -> Result<DateTime, ParseError> {
             })?;
 
     datestring_to_date(dt_start_str, &tz, "DTSTART")
-}
-
-fn weekday_from_str(val: &str) -> Result<Weekday, String> {
-    match val {
-        "MO" => Ok(Weekday::Mon),
-        "TU" => Ok(Weekday::Tue),
-        "WE" => Ok(Weekday::Wed),
-        "TH" => Ok(Weekday::Thu),
-        "FR" => Ok(Weekday::Fri),
-        "SA" => Ok(Weekday::Sat),
-        "SU" => Ok(Weekday::Sun),
-        _ => Err(format!("Invalid weekday: {}", val)),
-    }
 }
 
 fn stringval_to_int<T: FromStr>(val: &str, err_msg: String) -> Result<T, ParseError> {
@@ -374,7 +361,7 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
 
         match key.to_uppercase().as_str() {
             "FREQ" => {
-                let new_freq = Frequency::try_from(value)?;
+                let new_freq = Frequency::from_str(value)?;
                 if freq.is_none() {
                     freq = Some(new_freq)
                 } else {
@@ -417,7 +404,7 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
                 // tz = Some(dtstart_opts.timezone());
                 // dt_start = Some(dtstart_opts);
             }
-            "WKST" => match weekday_from_str(value) {
+            "WKST" => match str_to_weekday(value) {
                 Ok(new_weekday) => {
                     if week_start.is_none() {
                         week_start = Some(new_weekday)
@@ -426,7 +413,7 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
                     }
                 }
                 Err(e) => {
-                    return Err(ParseError::Generic(e));
+                    return Err(e);
                 }
             },
             "BYSETPOS" => {
@@ -572,7 +559,7 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
     })
 }
 
-fn str_to_weekday(d: &str) -> Result<Weekday, ParseError> {
+pub(crate) fn str_to_weekday(d: &str) -> Result<Weekday, ParseError> {
     let day = match &d.to_uppercase()[..] {
         "MO" => Weekday::Mon,
         "TU" => Weekday::Tue,
@@ -584,6 +571,18 @@ fn str_to_weekday(d: &str) -> Result<Weekday, ParseError> {
         _ => return Err(ParseError::InvalidWeekday(d.to_string())),
     };
     Ok(day)
+}
+
+pub(crate) fn weekday_to_str(d: &Weekday) -> String {
+    match d {
+        Weekday::Mon => "MO".to_string(),
+        Weekday::Tue => "TU".to_string(),
+        Weekday::Wed => "WE".to_string(),
+        Weekday::Thu => "TH".to_string(),
+        Weekday::Fri => "FR".to_string(),
+        Weekday::Sat => "SA".to_string(),
+        Weekday::Sun => "SU".to_string(),
+    }
 }
 
 /// Parse the "BYWEEKDAY" and "BYDAY" values
@@ -698,7 +697,7 @@ fn extract_name(line: String) -> LineName {
     }
 }
 
-fn parse_rule(rfc_string: &str) -> Result<RRuleProperties, ParseError> {
+pub(crate) fn parse_rule(rfc_string: &str) -> Result<RRuleProperties, ParseError> {
     let mut option = None;
     for line in rfc_string.split('\n') {
         let parsed_line = parse_rule_line(line)?;
@@ -707,7 +706,7 @@ fn parse_rule(rfc_string: &str) -> Result<RRuleProperties, ParseError> {
                 option = Some(parsed_line);
             } else {
                 return Err(ParseError::Generic(format!(
-                    "Found to many RRule lines in `{}`.",
+                    "Found too many RRule lines in `{}`.",
                     rfc_string
                 )));
             }
@@ -888,7 +887,7 @@ mod test {
         let tests = [
 "DTSTART:19970902T090000Z\nRRULE:FREQ=YEARLY;COUNT=3\n",
 "DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR",
-"RRULE:UNTIL=19990404T110000Z;DTSTART;TZID=America/Denver:19990104T110000Z;FREQ=WEEKLY;BYDAY=TU,WE",
+"DTSTART;TZID=America/Denver:19990104T110000Z\nRRULE:UNTIL=19990404T110000Z;FREQ=WEEKLY;BYDAY=TU,WE",
 "DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5\nEXDATE;TZID=Europe/Berlin:20120202T130000Z,20120203T130000Z"
         ];
         for test_str in tests {
@@ -1221,7 +1220,7 @@ mod test {
     #[test]
     fn parse_datetime_with_timezone() {
         let rrule: RRule =
-            "DTSTART;TZID=America/New_York:20120201T023000Z\nFREQ=DAILY;INTERVAL=1;COUNT=2"
+            "DTSTART;TZID=America/New_York:20120201T023000Z\nRRULE:FREQ=DAILY;INTERVAL=1;COUNT=2"
                 .parse()
                 .expect("RRule could not be parsed");
 
@@ -1286,7 +1285,7 @@ mod test {
     #[test]
     fn parse_datetime_errors_invalid_tzid_timezone() {
         let res = RRule::from_str(
-            "DTSTART;TZID=America/Everywhere:20120251T023000Z\nFREQ=DAILY;INTERVAL=1;COUNT=2",
+            "DTSTART;TZID=America/Everywhere:20120251T023000Z\nRRULE:FREQ=DAILY;INTERVAL=1;COUNT=2",
         );
         assert!(res.is_err());
         let err = res.unwrap_err();

@@ -5,8 +5,8 @@ mod simple_logger;
 
 use chrono::DateTime;
 use chrono_tz::Tz;
+use clap::Parser;
 use log::LevelFilter;
-use structopt::StructOpt;
 
 const CRASHES_PATH: &str = "rrule-afl-fuzz/out/default/crashes/";
 
@@ -18,32 +18,32 @@ const CRASHES_PATH: &str = "rrule-afl-fuzz/out/default/crashes/";
 /// RRule debugger program
 ///
 /// This crate is used to debug the RRule crate itself.
-#[derive(StructOpt, Debug)]
-#[structopt(name = "rrule-debugger")]
+#[derive(Parser, Debug)]
+#[clap(name = "rrule-debugger")]
 struct Opts {
     /// Activate debug mode
-    #[structopt(short, long)]
+    #[clap(short, long)]
     debug: bool,
 
     /// Verbose mode (-v, -vv, -vvv, etc.)
-    #[structopt(short, long, parse(from_occurrences))]
+    #[clap(short, long, parse(from_occurrences))]
     verbose: u8,
 
     /// Run id
-    #[structopt(short, long)]
+    #[clap(short, long)]
     id: Option<u8>,
 
     /// Run all
-    #[structopt(short, long)]
+    #[clap(short, long)]
     all: bool,
 
     /// All available subcommand
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     cmd: Commands,
 }
 
 /// All available subcommands for testing.
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 enum Commands {
     /// Check data from parser
     Parser {},
@@ -56,7 +56,7 @@ enum Commands {
 
 fn main() {
     // Get command line arguments
-    let opts = Opts::from_args();
+    let opts: Opts = Parser::parse();
     // Get log settings
     initialize_logger(&opts);
 

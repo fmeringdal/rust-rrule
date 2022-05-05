@@ -10,6 +10,7 @@ edition = "2018"
 readme = "../README.md"
 keywords = ["calendar", "rrule", "ical"]
 categories = ["date-and-time"]
+rust-version = "1.54"
 
 [dependencies]
 chrono = "0.4.19"
@@ -17,8 +18,13 @@ chrono-tz = "0.6.1"
 lazy_static = "1.4.0"
 log = "0.4.16"
 regex = "1.5.5"
-structopt = { version = "0.3.26", optional = true }
+clap = { version = "3.1.15", optional = true, features = ["derive"] }
 thiserror = "1.0.30"
+serde_with = { version = "1.13.0", optional = true }
+
+[dev-dependencies]
+serde_json = "1.0.80"
+orig_serde = { package = "serde", version = "1.0.137", default-features = false }
 
 [[bin]]
 name = "rrule"
@@ -41,4 +47,7 @@ no-validation-limits = []
 by-easter = []
 
 # Required only for building CLI `rrule` tool.
-cli-tool = ["structopt"]
+cli-tool = ["clap"]
+
+# Enable serde for some of the public structs
+serde = ["serde_with", "chrono/serde", "chrono-tz/serde"]

@@ -1,12 +1,18 @@
 use super::datetime::DateTime;
-use crate::parser::ParseError;
+use crate::parser::parse_rule;
+use crate::parser::{str_to_weekday, weekday_to_str, ParseError};
 use crate::validator::{check_limits, validate_properties};
 use crate::{RRule, RRuleError};
 use chrono::{Month, Utc, Weekday};
 use chrono_tz::UTC;
-use std::{convert::TryFrom, fmt::Display};
+#[cfg(feature = "serde")]
+use serde_with::{serde_as, DeserializeFromStr, SerializeDisplay};
+use std::fmt::Display;
+use std::fmt::Formatter;
+use std::str::FromStr;
 
-#[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
 pub enum Frequency {
     Yearly = 0,
     Monthly = 1,
@@ -32,10 +38,10 @@ impl Display for Frequency {
     }
 }
 
-impl TryFrom<&str> for Frequency {
-    type Error = ParseError;
+impl FromStr for Frequency {
+    type Err = ParseError;
 
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
         let freq = match &value.to_uppercase()[..] {
             "YEARLY" => Frequency::Yearly,
             "MONTHLY" => Frequency::Monthly,
@@ -50,7 +56,8 @@ impl TryFrom<&str> for Frequency {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
 pub enum NWeekday {
     Every(Weekday),
     /// Value from -366 to -1 and 1 to 366 depending on frequency
@@ -67,7 +74,46 @@ impl NWeekday {
     }
 }
 
-#[derive(Debug, Clone)]
+impl FromStr for NWeekday {
+    type Err = ParseError;
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        let length = value.len();
+
+        if length < 2 {
+            return Err(ParseError::InvalidWeekday(value.to_string()));
+        }
+
+        let wd = str_to_weekday(&value[(length - 2)..])?;
+        let nth = value[..(length - 2)].parse::<i16>().unwrap_or_default();
+
+        if nth == 0 {
+            Ok(NWeekday::Every(wd))
+        } else {
+            Ok(NWeekday::new(Some(nth), wd))
+        }
+    }
+}
+
+impl Display for NWeekday {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let name = match self {
+            NWeekday::Every(weekday) => weekday_to_str(weekday),
+            NWeekday::Nth(number, weekday) => {
+                if *number == 0 {
+                    weekday_to_str(weekday)
+                } else {
+                    format!("{}{}", number, weekday_to_str(weekday))
+                }
+            }
+        };
+        write!(f, "{}", name)
+    }
+}
+
+#[cfg_attr(feature = "serde", serde_as)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
 pub struct RRuleProperties {
     /// The frequency of the rule.
     /// For example: yearly, weekly, hourly
@@ -81,6 +127,7 @@ pub struct RRuleProperties {
     pub count: Option<u32>,
     /// The end date after which new events will no longer be generated.
     /// If the `DateTime` is equal to an instance of the event it will be the last event.
+    #[cfg_attr(feature = "serde", serde_as(as = "DisplayFromStr"))]
     pub until: Option<DateTime>,
     /// The start day of the week.
     /// This will affect recurrences based on weekly periods.
@@ -289,5 +336,148 @@ impl RRuleProperties {
             tz: dt_start.timezone(),
             dt_start,
         })
+    }
+}
+
+impl FromStr for RRuleProperties {
+    type Err = ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        parse_rule(s)
+    }
+}
+
+impl Display for RRuleProperties {
+    /// Generates a string based on the [iCalendar RRULE spec](https://datatracker.ietf.org/doc/html/rfc5545#section-3.8.5.3).
+    /// It doesn't prepend "RRULE:" to the string.
+    /// This function doesn't validate the existing object and may generate an invalid string like 'FREQ=YEARLY;INTERVAL=-1'
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let mut res = format!("FREQ={};", &self.freq);
+
+        if let Some(until) = &self.until {
+            res.push_str(&format!("UNTIL={};", until.format("%Y%m%dT%H%M%SZ")));
+        }
+
+        if let Some(count) = &self.count {
+            res.push_str(&format!("COUNT={};", count));
+        }
+
+        // One interval is the default, no need to expose it.
+        if self.interval != 1 {
+            res.push_str(&format!("INTERVAL={};", &self.interval));
+        }
+
+        // Monday is the default, no need to expose it.
+        if self.week_start != Weekday::Mon {
+            res.push_str(&format!("WKST={};", &self.week_start));
+        }
+
+        if !self.by_set_pos.is_empty() {
+            res.push_str(&format!(
+                "BYSETPOS={};",
+                self.by_set_pos
+                    .iter()
+                    .map(|v| v.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            ));
+        }
+
+        if !self.by_month.is_empty() {
+            res.push_str(&format!(
+                "BYMONTH={};",
+                self.by_month
+                    .iter()
+                    .map(|v| v.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            ));
+        }
+
+        if !self.by_month_day.is_empty() {
+            res.push_str(&format!(
+                "BYMONTHDAY={};",
+                self.by_month_day
+                    .iter()
+                    .map(|v| v.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            ));
+        }
+
+        if !self.by_week_no.is_empty() {
+            res.push_str(&format!(
+                "BYWEEKNO={};",
+                self.by_week_no
+                    .iter()
+                    .map(|v| v.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            ));
+        }
+
+        if !self.by_hour.is_empty() {
+            res.push_str(&format!(
+                "BYHOUR={};",
+                self.by_hour
+                    .iter()
+                    .map(|v| v.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            ));
+        }
+
+        if !self.by_minute.is_empty() {
+            res.push_str(&format!(
+                "BYMINUTE={};",
+                self.by_minute
+                    .iter()
+                    .map(|v| v.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            ));
+        }
+
+        if !self.by_second.is_empty() {
+            res.push_str(&format!(
+                "BYSECOND={};",
+                self.by_second
+                    .iter()
+                    .map(|v| v.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            ));
+        }
+
+        if !self.by_year_day.is_empty() {
+            res.push_str(&format!(
+                "BYYEARDAY={};",
+                self.by_year_day
+                    .iter()
+                    .map(|v| v.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            ));
+        }
+
+        if !self.by_weekday.is_empty() {
+            res.push_str(&format!(
+                "BYDAY={};",
+                self.by_weekday
+                    .iter()
+                    .map(|v| v.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            ));
+        }
+
+        #[cfg(feature = "by-easter")]
+        if let Some(by_easter) = &self.by_easter {
+            res.push_str(&format!("BYEASTER={};", by_easter));
+        }
+
+        res = res.trim_end_matches(';').to_string();
+
+        write!(f, "{}", res)
     }
 }
