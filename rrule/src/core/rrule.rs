@@ -35,6 +35,11 @@ impl RRule {
 impl FromStr for RRule {
     type Err = RRuleError;
 
+    /// Create an [`RRule`] from [`String`] if input is valid.
+    ///
+    /// If RRule contains invalid parts then [`ParseError`] will be returned.
+    /// This should never panic, but it might be in odd cases.
+    /// Please report if it does panic.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let rrule = crate::parser::parse_rrule_string_to_properties(s)?;
         let dt_start = crate::parser::parse_dtstart(s)?;

@@ -49,7 +49,7 @@ fn main() -> Result<(), String> {
 
 fn parse_rule<R: FromStr>(rrule_str: &str) -> Result<R, String>
 where
-    <R as FromStr>::Err: std::fmt::Display,
+    <R as FromStr>::Err: Display,
 {
     match rrule_str.parse() {
         Ok(rrule) => Ok(rrule),

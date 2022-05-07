@@ -923,10 +923,10 @@ fn second_to_last_weekday_of_month() {
 
 /// Every 3 hours from 9:00 AM to 5:00 PM on a specific day
 #[test]
-#[ignore = "Does not work correctly"]
 fn every_3_hours_on_specific_day() {
+    // https://www.rfc-editor.org/errata/eid3883
     let dates = "DTSTART;TZID=America/New_York:19970902T090000\n\
-        RRULE:FREQ=HOURLY;INTERVAL=3;UNTIL=19970902T170000Z"
+        RRULE:FREQ=HOURLY;INTERVAL=3;UNTIL=19970902T210000Z"
         .parse::<RRule>()
         .unwrap()
         .all(10)

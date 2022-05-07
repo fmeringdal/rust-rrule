@@ -14,8 +14,8 @@
 //!
 //! # Generating occurrences
 //! `RRule` and `RRuleSet` both implement `DateFilter` which implements methods for easy filtering:
-//! - `all`: Generate all recurrences that matches the rules (with a limit to prevent infinite loops).
-//! - `all_between`: Generate all recurrences that matches the rules and are between two given dates.
+//! - `all`: Generate all recurrences that match the rules (with a limit to prevent infinite loops).
+//! - `all_between`: Generate all recurrences that match the rules and are between two given dates.
 //! - `just_before`: Generate the last recurrence that matches the rules and is before a given date.
 //! - `just_after`: Generate the first recurrence that matches the rules and is after a given date.
 //! - ...

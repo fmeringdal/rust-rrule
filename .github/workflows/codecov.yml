@@ -18,6 +18,6 @@ jobs:
           cargo build --verbose
           curl -L https://github.com/mozilla/grcov/releases/latest/download/grcov-x86_64-unknown-linux-gnu.tar.bz2 | tar jxf -
           LLVM_PROFILE_FILE="rrule-%p-%m.profraw" cargo test --all-features --verbose
-          ./grcov . --binary-path ../target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o lcov.info
+          ./grcov . --binary-path ../target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "tests/*" --ignore "examples/*" --ignore "bin/*" -o lcov.info
           bash <(curl -s https://codecov.io/bash) -f lcov.info
           echo "Uploaded code coverage"
