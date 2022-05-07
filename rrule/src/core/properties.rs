@@ -379,29 +379,30 @@ impl Display for RRuleProperties {
     /// It doesn't prepend "RRULE:" to the string.
     /// This function doesn't validate the existing object and may generate an invalid string like 'FREQ=YEARLY;INTERVAL=-1'
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let mut res = format!("FREQ={};", &self.freq);
+        let mut res = Vec::with_capacity(15);
+        res.push(format!("FREQ={}", &self.freq));
 
         if let Some(until) = &self.until {
-            res.push_str(&format!("UNTIL={};", until.format("%Y%m%dT%H%M%SZ")));
+            res.push(format!("UNTIL={}", until.format("%Y%m%dT%H%M%SZ")));
         }
 
         if let Some(count) = &self.count {
-            res.push_str(&format!("COUNT={};", count));
+            res.push(format!("COUNT={}", count));
         }
 
         // One interval is the default, no need to expose it.
         if self.interval != 1 {
-            res.push_str(&format!("INTERVAL={};", &self.interval));
+            res.push(format!("INTERVAL={}", &self.interval));
         }
 
         // Monday is the default, no need to expose it.
         if self.week_start != Weekday::Mon {
-            res.push_str(&format!("WKST={};", &self.week_start));
+            res.push(format!("WKST={}", &self.week_start));
         }
 
         if !self.by_set_pos.is_empty() {
-            res.push_str(&format!(
-                "BYSETPOS={};",
+            res.push(format!(
+                "BYSETPOS={}",
                 self.by_set_pos
                     .iter()
                     .map(|v| v.to_string())
@@ -411,8 +412,8 @@ impl Display for RRuleProperties {
         }
 
         if !self.by_month.is_empty() {
-            res.push_str(&format!(
-                "BYMONTH={};",
+            res.push(format!(
+                "BYMONTH={}",
                 self.by_month
                     .iter()
                     .map(|v| v.to_string())
@@ -422,8 +423,8 @@ impl Display for RRuleProperties {
         }
 
         if !self.by_month_day.is_empty() {
-            res.push_str(&format!(
-                "BYMONTHDAY={};",
+            res.push(format!(
+                "BYMONTHDAY={}",
                 self.by_month_day
                     .iter()
                     .map(|v| v.to_string())
@@ -433,8 +434,8 @@ impl Display for RRuleProperties {
         }
 
         if !self.by_week_no.is_empty() {
-            res.push_str(&format!(
-                "BYWEEKNO={};",
+            res.push(format!(
+                "BYWEEKNO={}",
                 self.by_week_no
                     .iter()
                     .map(|v| v.to_string())
@@ -444,8 +445,8 @@ impl Display for RRuleProperties {
         }
 
         if !self.by_hour.is_empty() {
-            res.push_str(&format!(
-                "BYHOUR={};",
+            res.push(format!(
+                "BYHOUR={}",
                 self.by_hour
                     .iter()
                     .map(|v| v.to_string())
@@ -455,8 +456,8 @@ impl Display for RRuleProperties {
         }
 
         if !self.by_minute.is_empty() {
-            res.push_str(&format!(
-                "BYMINUTE={};",
+            res.push(format!(
+                "BYMINUTE={}",
                 self.by_minute
                     .iter()
                     .map(|v| v.to_string())
@@ -466,8 +467,8 @@ impl Display for RRuleProperties {
         }
 
         if !self.by_second.is_empty() {
-            res.push_str(&format!(
-                "BYSECOND={};",
+            res.push(format!(
+                "BYSECOND={}",
                 self.by_second
                     .iter()
                     .map(|v| v.to_string())
@@ -477,8 +478,8 @@ impl Display for RRuleProperties {
         }
 
         if !self.by_year_day.is_empty() {
-            res.push_str(&format!(
-                "BYYEARDAY={};",
+            res.push(format!(
+                "BYYEARDAY={}",
                 self.by_year_day
                     .iter()
                     .map(|v| v.to_string())
@@ -488,8 +489,8 @@ impl Display for RRuleProperties {
         }
 
         if !self.by_weekday.is_empty() {
-            res.push_str(&format!(
-                "BYDAY={};",
+            res.push(format!(
+                "BYDAY={}",
                 self.by_weekday
                     .iter()
                     .map(|v| v.to_string())
@@ -500,11 +501,9 @@ impl Display for RRuleProperties {
 
         #[cfg(feature = "by-easter")]
         if let Some(by_easter) = &self.by_easter {
-            res.push_str(&format!("BYEASTER={};", by_easter));
+            res.push(format!("BYEASTER={}", by_easter));
         }
 
-        res = res.trim_end_matches(';').to_string();
-
-        write!(f, "{}", res)
+        write!(f, "{}", res.join(";"))
     }
 }
