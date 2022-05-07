@@ -57,7 +57,6 @@ pub(crate) fn validate_properties_forced(
     //   https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html
     // - Value should be later then `dt_start`.
     //   TODO: Does this need to be checked? Will always return no events anyway.
-    //   TODO: Add test for this.
     //   Validated below
     if let Some(until) = &properties.until {
         // Check if before `dt_start`
