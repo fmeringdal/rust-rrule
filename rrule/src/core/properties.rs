@@ -1,6 +1,6 @@
 use super::datetime::DateTime;
 use crate::parser::parse_rule;
-use crate::parser::{str_to_weekday, weekday_to_str, ParseError};
+use crate::parser::ParseError;
 use crate::validator::{check_limits, validate_properties};
 use crate::{RRule, RRuleError};
 use chrono::{Month, Utc, Weekday};
@@ -24,7 +24,7 @@ pub enum Frequency {
 }
 
 impl Display for Frequency {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let name = match self {
             Frequency::Yearly => "yearly",
             Frequency::Monthly => "monthly",
@@ -96,18 +96,45 @@ impl FromStr for NWeekday {
 }
 
 impl Display for NWeekday {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let name = match self {
-            NWeekday::Every(weekday) => weekday_to_str(weekday),
-            NWeekday::Nth(number, weekday) => {
-                if *number == 0 {
-                    weekday_to_str(weekday)
-                } else {
-                    format!("{}{}", number, weekday_to_str(weekday))
-                }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let weekday = match self {
+            NWeekday::Every(wd) => weekday_to_str(wd),
+            NWeekday::Nth(number, wd) => {
+                let mut wd_str = weekday_to_str(wd);
+                if *number != 1 {
+                    wd_str = format!("{}{}", number, wd_str)
+                };
+                wd_str
             }
         };
-        write!(f, "{}", name)
+
+        write!(f, "{}", weekday)
+    }
+}
+
+fn str_to_weekday(d: &str) -> Result<Weekday, ParseError> {
+    let day = match &d.to_uppercase()[..] {
+        "MO" => Weekday::Mon,
+        "TU" => Weekday::Tue,
+        "WE" => Weekday::Wed,
+        "TH" => Weekday::Thu,
+        "FR" => Weekday::Fri,
+        "SA" => Weekday::Sat,
+        "SU" => Weekday::Sun,
+        _ => return Err(ParseError::InvalidWeekday(d.to_string())),
+    };
+    Ok(day)
+}
+
+fn weekday_to_str(d: &Weekday) -> String {
+    match d {
+        Weekday::Mon => "MO".to_string(),
+        Weekday::Tue => "TU".to_string(),
+        Weekday::Wed => "WE".to_string(),
+        Weekday::Thu => "TH".to_string(),
+        Weekday::Fri => "FR".to_string(),
+        Weekday::Sat => "SA".to_string(),
+        Weekday::Sun => "SU".to_string(),
     }
 }
 

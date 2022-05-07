@@ -17,7 +17,7 @@ pub enum ValidationError {
     },
     #[error(
         "`{field}` is `{value}`, but with the current frequency ({freq}) is not allowed \
-            outside of the range: `{start_idx}..={end_idx}`."
+            outside the range: `{start_idx}..={end_idx}`."
     )]
     InvalidFieldValueRangeWithFreq {
         field: String,

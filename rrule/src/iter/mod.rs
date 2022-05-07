@@ -183,7 +183,7 @@ fn increment_counter_date(
                     ));
                 }
             }
-            // If higher then expected this will return an error
+            // If higher than expected this will return an error
             if !cfg!(feature = "no-validation-limits")
                 && new_hours > FREQ_HOURLY_INTERVAL_MAX as u32
             {

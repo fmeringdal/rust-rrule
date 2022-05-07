@@ -18,7 +18,6 @@ lazy_static! {
     static ref RDATE_RE: Regex = Regex::new(r"(?m)RDATE(?:;TZID=([^:=]+))?").unwrap();
     static ref EXDATE_RE: Regex = Regex::new(r"(?m)EXDATE(?:;TZID=([^:=]+))?").unwrap();
     static ref DATETIME_RE: Regex = Regex::new(r"(?m)(VALUE=DATE(-TIME)?)|(TZID=)").unwrap();
-    static ref NWEEKDAY_REGEX: Regex = Regex::new(r"(?m)^([+-]?\d{1,2})([A-Z]{2})$").unwrap();
 }
 
 /// Create [`RRuleSet`] from parsing the String.
@@ -404,10 +403,14 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
                 // tz = Some(dtstart_opts.timezone());
                 // dt_start = Some(dtstart_opts);
             }
-            "WKST" => match str_to_weekday(value) {
+            "WKST" => match value.parse::<NWeekday>() {
                 Ok(new_weekday) => {
                     if week_start.is_none() {
-                        week_start = Some(new_weekday)
+                        let wd = match new_weekday {
+                            NWeekday::Every(wd) => wd,
+                            NWeekday::Nth(_n, wd) => wd,
+                        };
+                        week_start = Some(wd)
                     } else {
                         return Err(ParseError::DuplicatedField("WKST".into())).map_err(From::from);
                     }
@@ -512,7 +515,7 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
                 }
             }
             "BYWEEKDAY" | "BYDAY" => {
-                let new_by_weekday = parse_weekday(value)?;
+                let new_by_weekday = parse_weekdays(value)?;
 
                 if by_weekday.is_none() {
                     by_weekday = Some(new_by_weekday)
@@ -559,64 +562,15 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
     })
 }
 
-pub(crate) fn str_to_weekday(d: &str) -> Result<Weekday, ParseError> {
-    let day = match &d.to_uppercase()[..] {
-        "MO" => Weekday::Mon,
-        "TU" => Weekday::Tue,
-        "WE" => Weekday::Wed,
-        "TH" => Weekday::Thu,
-        "FR" => Weekday::Fri,
-        "SA" => Weekday::Sat,
-        "SU" => Weekday::Sun,
-        _ => return Err(ParseError::InvalidWeekday(d.to_string())),
-    };
-    Ok(day)
-}
-
-pub(crate) fn weekday_to_str(d: &Weekday) -> String {
-    match d {
-        Weekday::Mon => "MO".to_string(),
-        Weekday::Tue => "TU".to_string(),
-        Weekday::Wed => "WE".to_string(),
-        Weekday::Thu => "TH".to_string(),
-        Weekday::Fri => "FR".to_string(),
-        Weekday::Sat => "SA".to_string(),
-        Weekday::Sun => "SU".to_string(),
-    }
-}
-
 /// Parse the "BYWEEKDAY" and "BYDAY" values
 /// Example: `SU,MO,TU,WE,TH,FR` or `4MO` or `-1WE`
 /// > For example, within a MONTHLY rule, +1MO (or simply 1MO) represents the first Monday
 /// > within the month, whereas -1MO represents the last Monday of the month.
-fn parse_weekday(val: &str) -> Result<Vec<NWeekday>, ParseError> {
+fn parse_weekdays(val: &str) -> Result<Vec<NWeekday>, ParseError> {
     let mut wdays = vec![];
     // Separate all days
     for day in val.split(',') {
-        // Each day is 2 characters long
-        if day.len() == 2 {
-            // MO, TU, ...
-            let wday = str_to_weekday(day)?;
-            wdays.push(NWeekday::new(None, wday));
-        } else {
-            // When a day has values in front or behind it
-            // Parse `4MO` and `-1WE`
-            match NWEEKDAY_REGEX.captures(day) {
-                Some(parts) => {
-                    // Will only panic when regex is incorrect
-                    let number = parts.get(1).unwrap().as_str().parse().unwrap();
-                    let wdaypart = parts.get(2).unwrap();
-                    let wday = str_to_weekday(wdaypart.as_str())?;
-                    wdays.push(NWeekday::new(Some(number), wday));
-                }
-                None => {
-                    return Err(ParseError::Generic(format!(
-                        "Invalid weekday selection: {}",
-                        day
-                    )));
-                }
-            }
-        }
+        wdays.push(day.parse::<NWeekday>()?);
     }
     Ok(wdays)
 }
@@ -739,8 +693,8 @@ fn parse_input(s: &str) -> Result<ParsedInput, ParseError> {
     let mut exdate_vals = vec![];
     let dt_start = parse_dtstart(s)?;
 
-    let lines: Vec<&str> = s.split('\n').collect();
-    for line in &lines {
+    let lines = s.split('\n');
+    for line in lines {
         let parsed_line = break_down_line(line);
         match parsed_line.name.to_uppercase().as_str() {
             "RRULE" => {
@@ -751,7 +705,10 @@ fn parse_input(s: &str) -> Result<ParsedInput, ParseError> {
                     continue;
                 }
 
-                rrule_vals.push(finalize_parsed_properties(parse_rule(line)?, &dt_start)?);
+                rrule_vals.push(finalize_parsed_properties(
+                    parse_rule(&parsed_line.value)?,
+                    &dt_start,
+                )?);
             }
             "EXRULE" => {
                 if !parsed_line.params.is_empty() {
@@ -760,7 +717,6 @@ fn parse_input(s: &str) -> Result<ParsedInput, ParseError> {
                 if parsed_line.value.is_empty() {
                     continue;
                 }
-                // TODO: why is it parsed_line.value here and line for RRULE ?? Do some testing
                 exrule_vals.push(finalize_parsed_properties(
                     parse_rule(&parsed_line.value)?,
                     &dt_start,
@@ -940,7 +896,7 @@ mod test {
         for test_case in &test_cases {
             let res = parse_rrule_string_to_properties(test_case);
             assert!(res.is_err());
-            let res = crate::parser::parse_dtstart(test_case);
+            let res = parse_dtstart(test_case);
             assert!(res.is_err());
         }
     }

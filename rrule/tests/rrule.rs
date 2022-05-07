@@ -1246,7 +1246,7 @@ fn monthly_by_month_and_monthday_and_weekday() {
 }
 
 #[test]
-#[ignore = "`BYYEARDAY` can not be used with the current frequency (monthly)."]
+#[should_panic(expected = "`BYYEARDAY` can not be used with the current frequency (monthly).")]
 fn monthly_by_yearday() {
     let properties = RRuleProperties {
         freq: Frequency::Monthly,
@@ -1270,56 +1270,7 @@ fn monthly_by_yearday() {
 }
 
 #[test]
-#[ignore = "`BYYEARDAY` can not be used with the current frequency (monthly)."]
-fn monthly_by_yeardayneg() {
-    let properties = RRuleProperties {
-        freq: Frequency::Monthly,
-        count: Some(4),
-        by_hour: vec![9],
-        by_minute: vec![0],
-        by_second: vec![0],
-        by_year_day: vec![-365, -266, -166, -1],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1997, 12, 31, 9, 0, 0),
-            ymd_hms(1998, 1, 1, 9, 0, 0),
-            ymd_hms(1998, 4, 10, 9, 0, 0),
-            ymd_hms(1998, 7, 19, 9, 0, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYYEARDAY` can not be used with the current frequency (monthly)."]
-fn monthly_by_month_and_yearday() {
-    let properties = RRuleProperties {
-        freq: Frequency::Monthly,
-        count: Some(4),
-        by_month: vec![4, 7],
-        by_hour: vec![9],
-        by_minute: vec![0],
-        by_second: vec![0],
-        by_year_day: vec![1, 100, 200, 365],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1998, 4, 10, 9, 0, 0),
-            ymd_hms(1998, 7, 19, 9, 0, 0),
-            ymd_hms(1999, 4, 10, 9, 0, 0),
-            ymd_hms(1999, 7, 19, 9, 0, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (monthly)."]
+#[should_panic(expected = "`BYWEEKNO` can not be used with the current frequency (monthly).")]
 fn monthly_by_weekno() {
     let properties = RRuleProperties {
         freq: Frequency::Monthly,
@@ -1337,106 +1288,6 @@ fn monthly_by_weekno() {
             ymd_hms(1998, 5, 11, 9, 0, 0),
             ymd_hms(1998, 5, 12, 9, 0, 0),
             ymd_hms(1998, 5, 13, 9, 0, 0),
-        ],
-    );
-}
-
-// That's a nice one. The first days of week number one
-// may be in the last year.
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (monthly)."]
-fn monthly_by_weekno_and_weekday() {
-    let properties = RRuleProperties {
-        freq: Frequency::Monthly,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Mon)],
-        by_hour: vec![9],
-        by_week_no: vec![1],
-        by_minute: vec![0],
-        by_second: vec![0],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1997, 12, 29, 9, 0, 0),
-            ymd_hms(1999, 1, 4, 9, 0, 0),
-            ymd_hms(2000, 1, 3, 9, 0, 0),
-        ],
-    );
-}
-
-// Another nice test. The last days of week number 52/53
-// may be in the next year.
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (monthly)."]
-fn monthly_by_weekno_and_weekday_large() {
-    let properties = RRuleProperties {
-        freq: Frequency::Monthly,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Sun)],
-        by_hour: vec![9],
-        by_week_no: vec![52],
-        by_minute: vec![0],
-        by_second: vec![0],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1997, 12, 28, 9, 0, 0),
-            ymd_hms(1998, 12, 27, 9, 0, 0),
-            ymd_hms(2000, 1, 2, 9, 0, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (monthly)."]
-fn monthly_by_weekno_and_weekday_last() {
-    let properties = RRuleProperties {
-        freq: Frequency::Monthly,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Sun)],
-        by_hour: vec![9],
-        by_week_no: vec![-1],
-        by_minute: vec![0],
-        by_second: vec![0],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1997, 12, 28, 9, 0, 0),
-            ymd_hms(1999, 1, 3, 9, 0, 0),
-            ymd_hms(2000, 1, 2, 9, 0, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (monthly)."]
-fn monthly_by_weekno_and_weekday53() {
-    let properties = RRuleProperties {
-        freq: Frequency::Monthly,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Mon)],
-        by_hour: vec![9],
-        by_week_no: vec![53],
-        by_minute: vec![0],
-        by_second: vec![0],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1998, 12, 28, 9, 0, 0),
-            ymd_hms(2004, 12, 27, 9, 0, 0),
-            ymd_hms(2009, 12, 28, 9, 0, 0),
         ],
     );
 }
@@ -1713,7 +1564,7 @@ fn weekly_by_month() {
 }
 
 #[test]
-#[ignore = "`BYMONTHDAY` can not be used with the current frequency (weekly)."]
+#[should_panic(expected = "`BYMONTHDAY` can not be used with the current frequency (weekly).")]
 fn weekly_by_monthday() {
     let properties = RRuleProperties {
         freq: Frequency::Weekly,
@@ -1731,30 +1582,6 @@ fn weekly_by_monthday() {
             ymd_hms(1997, 9, 3, 9, 0, 0),
             ymd_hms(1997, 10, 1, 9, 0, 0),
             ymd_hms(1997, 10, 3, 9, 0, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYMONTHDAY` can not be used with the current frequency (weekly)."]
-fn weekly_by_month_and_monthday() {
-    let properties = RRuleProperties {
-        freq: Frequency::Weekly,
-        count: Some(3),
-        by_month: vec![1, 3],
-        by_hour: vec![9],
-        by_minute: vec![0],
-        by_second: vec![0],
-        by_month_day: vec![5, 7],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1998, 1, 5, 9, 0, 0),
-            ymd_hms(1998, 1, 7, 9, 0, 0),
-            ymd_hms(1998, 3, 5, 9, 0, 0),
         ],
     );
 }
@@ -1828,56 +1655,7 @@ fn weekly_by_month_and_weekday() {
 }
 
 #[test]
-#[ignore = "`BYMONTHDAY` can not be used with the current frequency (weekly)."]
-fn weekly_by_monthday_and_weekday() {
-    let properties = RRuleProperties {
-        freq: Frequency::Weekly,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Tue), NWeekday::Every(Weekday::Thu)],
-        by_hour: vec![9],
-        by_minute: vec![0],
-        by_second: vec![0],
-        by_month_day: vec![1, 3],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1998, 1, 1, 9, 0, 0),
-            ymd_hms(1998, 2, 3, 9, 0, 0),
-            ymd_hms(1998, 3, 3, 9, 0, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYMONTHDAY` can not be used with the current frequency (weekly)."]
-fn weekly_by_month_monthday_and_weekday() {
-    let properties = RRuleProperties {
-        freq: Frequency::Weekly,
-        count: Some(3),
-        by_month: vec![1, 3],
-        by_weekday: vec![NWeekday::Every(Weekday::Tue), NWeekday::Every(Weekday::Thu)],
-        by_hour: vec![9],
-        by_minute: vec![0],
-        by_second: vec![0],
-        by_month_day: vec![1, 3],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1998, 1, 1, 9, 0, 0),
-            ymd_hms(1998, 3, 3, 9, 0, 0),
-            ymd_hms(2001, 3, 1, 9, 0, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYYEARDAY` can not be used with the current frequency (weekly)."]
+#[should_panic(expected = "`BYYEARDAY` can not be used with the current frequency (weekly).")]
 fn weekly_by_yearday() {
     let properties = RRuleProperties {
         freq: Frequency::Weekly,
@@ -1901,56 +1679,7 @@ fn weekly_by_yearday() {
 }
 
 #[test]
-#[ignore = "`BYYEARDAY` can not be used with the current frequency (weekly)."]
-fn weekly_by_yeardayneg() {
-    let properties = RRuleProperties {
-        freq: Frequency::Weekly,
-        count: Some(4),
-        by_hour: vec![9],
-        by_minute: vec![0],
-        by_second: vec![0],
-        by_year_day: vec![-365, -266, -166, -1],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1997, 12, 31, 9, 0, 0),
-            ymd_hms(1998, 1, 1, 9, 0, 0),
-            ymd_hms(1998, 4, 10, 9, 0, 0),
-            ymd_hms(1998, 7, 19, 9, 0, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYYEARDAY` can not be used with the current frequency (weekly)."]
-fn weekly_by_month_yearday() {
-    let properties = RRuleProperties {
-        freq: Frequency::Weekly,
-        count: Some(4),
-        by_month: vec![1, 7],
-        by_hour: vec![9],
-        by_minute: vec![0],
-        by_second: vec![0],
-        by_year_day: vec![1, 100, 200, 365],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1998, 1, 1, 9, 0, 0),
-            ymd_hms(1998, 7, 19, 9, 0, 0),
-            ymd_hms(1999, 1, 1, 9, 0, 0),
-            ymd_hms(1999, 7, 19, 9, 0, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (weekly)."]
+#[should_panic(expected = "`BYWEEKNO` can not be used with the current frequency (weekly).")]
 fn weekly_by_weekno() {
     let properties = RRuleProperties {
         freq: Frequency::Weekly,
@@ -1968,102 +1697,6 @@ fn weekly_by_weekno() {
             ymd_hms(1998, 5, 11, 9, 0, 0),
             ymd_hms(1998, 5, 12, 9, 0, 0),
             ymd_hms(1998, 5, 13, 9, 0, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (weekly)."]
-fn weekly_by_weekno_and_weekday() {
-    let properties = RRuleProperties {
-        freq: Frequency::Weekly,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Mon)],
-        by_hour: vec![9],
-        by_week_no: vec![1],
-        by_minute: vec![0],
-        by_second: vec![0],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1997, 12, 29, 9, 0, 0),
-            ymd_hms(1999, 1, 4, 9, 0, 0),
-            ymd_hms(2000, 1, 3, 9, 0, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (weekly)."]
-fn weekly_by_weekno_and_weekday_large() {
-    let properties = RRuleProperties {
-        freq: Frequency::Weekly,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Sun)],
-        by_hour: vec![9],
-        by_week_no: vec![52],
-        by_minute: vec![0],
-        by_second: vec![0],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1997, 12, 28, 9, 0, 0),
-            ymd_hms(1998, 12, 27, 9, 0, 0),
-            ymd_hms(2000, 1, 2, 9, 0, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (weekly)."]
-fn weekly_by_weekno_and_weekday_last() {
-    let properties = RRuleProperties {
-        freq: Frequency::Weekly,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Sun)],
-        by_hour: vec![9],
-        by_week_no: vec![-1],
-        by_minute: vec![0],
-        by_second: vec![0],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1997, 12, 28, 9, 0, 0),
-            ymd_hms(1999, 1, 3, 9, 0, 0),
-            ymd_hms(2000, 1, 2, 9, 0, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (weekly)."]
-fn weekly_by_weekno_and_weekday53() {
-    let properties = RRuleProperties {
-        freq: Frequency::Weekly,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Mon)],
-        by_hour: vec![9],
-        by_week_no: vec![53],
-        by_minute: vec![0],
-        by_second: vec![0],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1998, 12, 28, 9, 0, 0),
-            ymd_hms(2004, 12, 27, 9, 0, 0),
-            ymd_hms(2009, 12, 28, 9, 0, 0),
         ],
     );
 }
@@ -2472,7 +2105,7 @@ fn daily_by_month_and_monthday_and_weekday() {
 }
 
 #[test]
-#[ignore = "`BYYEARDAY` can not be used with the current frequency (daily)."]
+#[should_panic(expected = "`BYYEARDAY` can not be used with the current frequency (daily).")]
 fn daily_by_yearday() {
     let properties = RRuleProperties {
         freq: Frequency::Daily,
@@ -2496,56 +2129,7 @@ fn daily_by_yearday() {
 }
 
 #[test]
-#[ignore = "`BYYEARDAY` can not be used with the current frequency (daily)."]
-fn daily_by_yeardayneg() {
-    let properties = RRuleProperties {
-        freq: Frequency::Daily,
-        count: Some(4),
-        by_hour: vec![9],
-        by_minute: vec![0],
-        by_second: vec![0],
-        by_year_day: vec![-365, -266, -166, -1],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1997, 12, 31, 9, 0, 0),
-            ymd_hms(1998, 1, 1, 9, 0, 0),
-            ymd_hms(1998, 4, 10, 9, 0, 0),
-            ymd_hms(1998, 7, 19, 9, 0, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYYEARDAY` can not be used with the current frequency (daily)."]
-fn daily_by_month_and_yearday() {
-    let properties = RRuleProperties {
-        freq: Frequency::Daily,
-        count: Some(4),
-        by_month: vec![1, 7],
-        by_hour: vec![9],
-        by_minute: vec![0],
-        by_second: vec![0],
-        by_year_day: vec![1, 100, 200, 365],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1998, 1, 1, 9, 0, 0),
-            ymd_hms(1998, 7, 19, 9, 0, 0),
-            ymd_hms(1999, 1, 1, 9, 0, 0),
-            ymd_hms(1999, 7, 19, 9, 0, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (daily)."]
+#[should_panic(expected = "`BYWEEKNO` can not be used with the current frequency (daily).")]
 fn daily_by_weekno() {
     let properties = RRuleProperties {
         freq: Frequency::Daily,
@@ -2563,106 +2147,6 @@ fn daily_by_weekno() {
             ymd_hms(1998, 5, 11, 9, 0, 0),
             ymd_hms(1998, 5, 12, 9, 0, 0),
             ymd_hms(1998, 5, 13, 9, 0, 0),
-        ],
-    );
-}
-
-// That's a nice one. The first days of week number one
-// may be in the last year.
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (daily)."]
-fn daily_by_weekno_and_weekday() {
-    let properties = RRuleProperties {
-        freq: Frequency::Daily,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Mon)],
-        by_hour: vec![9],
-        by_week_no: vec![1],
-        by_minute: vec![0],
-        by_second: vec![0],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1997, 12, 29, 9, 0, 0),
-            ymd_hms(1999, 1, 4, 9, 0, 0),
-            ymd_hms(2000, 1, 3, 9, 0, 0),
-        ],
-    );
-}
-
-// Another nice test. The last days of week number 52/53
-// may be in the next year.
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (daily)."]
-fn daily_by_weekno_and_weekday_large() {
-    let properties = RRuleProperties {
-        freq: Frequency::Daily,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Sun)],
-        by_hour: vec![9],
-        by_week_no: vec![52],
-        by_minute: vec![0],
-        by_second: vec![0],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1997, 12, 28, 9, 0, 0),
-            ymd_hms(1998, 12, 27, 9, 0, 0),
-            ymd_hms(2000, 1, 2, 9, 0, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (daily)."]
-fn daily_by_weekno_and_weekday_last() {
-    let properties = RRuleProperties {
-        freq: Frequency::Daily,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Sun)],
-        by_hour: vec![9],
-        by_week_no: vec![-1],
-        by_minute: vec![0],
-        by_second: vec![0],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1997, 12, 28, 9, 0, 0),
-            ymd_hms(1999, 1, 3, 9, 0, 0),
-            ymd_hms(2000, 1, 2, 9, 0, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (daily)."]
-fn daily_by_weekno_and_weekday53() {
-    let properties = RRuleProperties {
-        freq: Frequency::Daily,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Sun)],
-        by_hour: vec![9],
-        by_week_no: vec![53],
-        by_minute: vec![0],
-        by_second: vec![0],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1998, 12, 28, 9, 0, 0),
-            ymd_hms(2004, 12, 27, 9, 0, 0),
-            ymd_hms(2009, 12, 28, 9, 0, 0),
         ],
     );
 }
@@ -3131,7 +2615,7 @@ fn hourly_by_month_and_yearday() {
 }
 
 #[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (hourly)."]
+#[should_panic(expected = "`BYWEEKNO` can not be used with the current frequency (hourly).")]
 fn hourly_by_weekno() {
     let properties = RRuleProperties {
         freq: Frequency::Hourly,
@@ -3148,98 +2632,6 @@ fn hourly_by_weekno() {
             ymd_hms(1998, 5, 11, 0, 0, 0),
             ymd_hms(1998, 5, 11, 1, 0, 0),
             ymd_hms(1998, 5, 11, 2, 0, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (hourly)."]
-fn hourly_by_weekno_and_weekday() {
-    let properties = RRuleProperties {
-        freq: Frequency::Hourly,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Mon)],
-        by_week_no: vec![1],
-        by_minute: vec![0],
-        by_second: vec![0],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1997, 12, 29, 0, 0, 0),
-            ymd_hms(1997, 12, 29, 1, 0, 0),
-            ymd_hms(1997, 12, 29, 2, 0, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (hourly)."]
-fn hourly_by_weekno_and_weekday_large() {
-    let properties = RRuleProperties {
-        freq: Frequency::Hourly,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Sun)],
-        by_week_no: vec![52],
-        by_minute: vec![0],
-        by_second: vec![0],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1997, 12, 28, 0, 0, 0),
-            ymd_hms(1997, 12, 28, 1, 0, 0),
-            ymd_hms(1997, 12, 28, 2, 0, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (hourly)."]
-fn hourly_by_weekno_and_weekday_last() {
-    let properties = RRuleProperties {
-        freq: Frequency::Hourly,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Sun)],
-        by_week_no: vec![-1],
-        by_minute: vec![0],
-        by_second: vec![0],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1997, 12, 28, 0, 0, 0),
-            ymd_hms(1997, 12, 28, 1, 0, 0),
-            ymd_hms(1997, 12, 28, 2, 0, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (hourly)."]
-fn hourly_by_weekno_and_weekday53() {
-    let properties = RRuleProperties {
-        freq: Frequency::Hourly,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Mon)],
-        by_week_no: vec![53],
-        by_minute: vec![0],
-        by_second: vec![0],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1998, 12, 28, 0, 0, 0),
-            ymd_hms(1998, 12, 28, 1, 0, 0),
-            ymd_hms(1998, 12, 28, 2, 0, 0),
         ],
     );
 }
@@ -3680,7 +3072,7 @@ fn minutely_by_month_and_yearday() {
 }
 
 #[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (minutely)."]
+#[should_panic(expected = "`BYWEEKNO` can not be used with the current frequency (minutely).")]
 fn minutely_by_weekno() {
     let properties = RRuleProperties {
         freq: Frequency::Minutely,
@@ -3696,94 +3088,6 @@ fn minutely_by_weekno() {
             ymd_hms(1998, 5, 11, 0, 0, 0),
             ymd_hms(1998, 5, 11, 0, 1, 0),
             ymd_hms(1998, 5, 11, 0, 2, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (minutely)."]
-fn minutely_by_weekno_and_weekday() {
-    let properties = RRuleProperties {
-        freq: Frequency::Minutely,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Mon)],
-        by_week_no: vec![1],
-        by_second: vec![0],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1997, 12, 29, 0, 0, 0),
-            ymd_hms(1997, 12, 29, 0, 1, 0),
-            ymd_hms(1997, 12, 29, 0, 2, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (minutely)."]
-fn minutely_by_weekno_and_weekday_large() {
-    let properties = RRuleProperties {
-        freq: Frequency::Minutely,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Sun)],
-        by_week_no: vec![52],
-        by_second: vec![0],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1997, 12, 28, 0, 0, 0),
-            ymd_hms(1997, 12, 28, 0, 1, 0),
-            ymd_hms(1997, 12, 28, 0, 2, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (minutely)."]
-fn minutely_by_weekno_and_weekday_last() {
-    let properties = RRuleProperties {
-        freq: Frequency::Minutely,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Sun)],
-        by_week_no: vec![-1],
-        by_second: vec![0],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1997, 12, 28, 0, 0, 0),
-            ymd_hms(1997, 12, 28, 0, 1, 0),
-            ymd_hms(1997, 12, 28, 0, 2, 0),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (minutely)."]
-fn minutely_by_weekno_and_weekday53() {
-    let properties = RRuleProperties {
-        freq: Frequency::Minutely,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Mon)],
-        by_week_no: vec![53],
-        by_second: vec![0],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1998, 12, 28, 0, 0, 0),
-            ymd_hms(1998, 12, 28, 0, 1, 0),
-            ymd_hms(1998, 12, 28, 0, 2, 0),
         ],
     );
 }
@@ -4227,7 +3531,7 @@ fn secondly_by_month_and_yearday() {
 }
 
 #[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (secondly)."]
+#[should_panic(expected = "`BYWEEKNO` can not be used with the current frequency (secondly).")]
 fn secondly_by_weekno() {
     let properties = RRuleProperties {
         freq: Frequency::Secondly,
@@ -4246,93 +3550,8 @@ fn secondly_by_weekno() {
     );
 }
 
+#[cfg(feature = "no-validation-limits")]
 #[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (secondly)."]
-fn secondly_by_weekno_and_weekday() {
-    let properties = RRuleProperties {
-        freq: Frequency::Secondly,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Mon)],
-        by_week_no: vec![1],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1997, 12, 29, 0, 0, 0),
-            ymd_hms(1997, 12, 29, 0, 0, 1),
-            ymd_hms(1997, 12, 29, 0, 0, 2),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (secondly)."]
-fn secondly_by_weekno_and_weekday_large() {
-    let properties = RRuleProperties {
-        freq: Frequency::Secondly,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Sun)],
-        by_week_no: vec![52],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1997, 12, 28, 0, 0, 0),
-            ymd_hms(1997, 12, 28, 0, 0, 1),
-            ymd_hms(1997, 12, 28, 0, 0, 2),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (secondly)."]
-fn secondly_by_weekno_and_weekday_last() {
-    let properties = RRuleProperties {
-        freq: Frequency::Secondly,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Sun)],
-        by_week_no: vec![-1],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1997, 12, 28, 0, 0, 0),
-            ymd_hms(1997, 12, 28, 0, 0, 1),
-            ymd_hms(1997, 12, 28, 0, 0, 2),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "`BYWEEKNO` can not be used with the current frequency (secondly)."]
-fn secondly_by_weekno_and_weekday53() {
-    let properties = RRuleProperties {
-        freq: Frequency::Secondly,
-        count: Some(3),
-        by_weekday: vec![NWeekday::Every(Weekday::Mon)],
-        by_week_no: vec![53],
-        ..Default::default()
-    };
-    test_recurring_rrule(
-        properties,
-        ymd_hms(1997, 9, 2, 9, 0, 0),
-        &[
-            ymd_hms(1998, 12, 28, 0, 0, 0),
-            ymd_hms(1998, 12, 28, 0, 0, 1),
-            ymd_hms(1998, 12, 28, 0, 0, 2),
-        ],
-    );
-}
-
-#[test]
-#[ignore = "This assumes it will just loop over 9*60*60=32400 seconds. \
-This will thus trigger the loop_limit."]
 fn secondly_by_hour() {
     let properties = RRuleProperties {
         freq: Frequency::Secondly,
@@ -4389,9 +3608,8 @@ fn secondly_by_second() {
     );
 }
 
+#[cfg(feature = "no-validation-limits")]
 #[test]
-#[ignore = "This assumes it will just loop over 9*60*60=32400 seconds. \
-This will thus trigger the loop_limit."]
 fn secondly_by_hour_and_minute() {
     let properties = RRuleProperties {
         freq: Frequency::Secondly,
@@ -4411,9 +3629,8 @@ fn secondly_by_hour_and_minute() {
     );
 }
 
+#[cfg(feature = "no-validation-limits")]
 #[test]
-#[ignore = "This assumes it will just loop over 9*60*60=32400 seconds. \
-This will thus trigger the loop_limit."]
 fn secondly_by_hour_and_second() {
     let properties = RRuleProperties {
         freq: Frequency::Secondly,
@@ -4453,9 +3670,8 @@ fn secondly_by_minute_and_second() {
     );
 }
 
+#[cfg(feature = "no-validation-limits")]
 #[test]
-#[ignore = "This assumes it will just loop over 9*60*60=32400 seconds. \
-This will thus trigger the loop_limit."]
 fn secondly_by_hour_and_minute_and_second() {
     let properties = RRuleProperties {
         freq: Frequency::Secondly,
@@ -4541,9 +3757,9 @@ fn until_single() {
 }
 
 #[test]
-#[ignore = "`UNTIL` is `1997-09-01T09:00:00+00:00`, but `DTSTART` (`1997-09-02T09:00:00+00:00`) \
-is later. That should not be happening."]
-fn until_empty() {
+#[should_panic(expected = "`UNTIL` is `1997-09-01T09:00:00+00:00`, but `DTSTART` \
+(`1997-09-02T09:00:00+00:00`) is later. That should not be happening.")]
+fn until_past() {
     let properties = RRuleProperties {
         freq: Frequency::Daily,
         count: Some(1),
