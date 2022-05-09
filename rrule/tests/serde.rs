@@ -1,6 +1,6 @@
 use chrono::TimeZone;
 use chrono_tz::UTC;
-use rrule::{Frequency, NWeekday, Weekday};
+use rrule::{Frequency, NWeekday, Unvalidated, Weekday};
 use rrule::{RRule, RRuleProperties};
 use std::str::FromStr;
 
@@ -32,7 +32,7 @@ fn serialize_deserialize_json_to_and_from_rrule_properties() {
     #[derive(orig_serde::Deserialize, orig_serde::Serialize)]
     #[serde(crate = "orig_serde")]
     struct RruleTest {
-        rrule: RRuleProperties,
+        rrule: RRuleProperties<Unvalidated>,
     }
 
     for test_obj in get_obj_cases() {
@@ -90,7 +90,7 @@ fn serialize_deserialize_json_to_and_from_rrule() {
     }
 }
 
-fn get_obj_cases() -> Vec<RRuleProperties> {
+fn get_obj_cases() -> Vec<RRuleProperties<Unvalidated>> {
     vec![
         RRuleProperties {
             freq: Frequency::Yearly,

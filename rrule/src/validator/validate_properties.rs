@@ -1,7 +1,7 @@
 use std::ops::RangeInclusive;
 
 use crate::core::DateTime;
-use crate::{Frequency, NWeekday, RRuleProperties};
+use crate::{Frequency, NWeekday, RRuleProperties, Unvalidated};
 
 use super::ValidationError;
 
@@ -35,7 +35,7 @@ pub(crate) static YEAR_RANGE: RangeInclusive<i32> = -262_000..=262_000;
 /// Validation will always be enforced and can not be disabled using feature flags.
 ///
 pub(crate) fn validate_properties_forced(
-    properties: &RRuleProperties,
+    properties: &RRuleProperties<Unvalidated>,
     dt_start: &DateTime,
 ) -> Result<(), ValidationError> {
     // Freq:

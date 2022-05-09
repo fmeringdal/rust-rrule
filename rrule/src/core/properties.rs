@@ -2,13 +2,14 @@ use super::datetime::DateTime;
 use crate::parser::parse_rule;
 use crate::parser::ParseError;
 use crate::validator::{check_limits, validate_properties};
-use crate::{RRule, RRuleError};
+use crate::{RRule, RRuleError, Unvalidated, Validated};
 use chrono::{Month, Utc, Weekday};
 use chrono_tz::UTC;
 #[cfg(feature = "serde")]
 use serde_with::{serde_as, DeserializeFromStr, SerializeDisplay};
 use std::fmt::Display;
 use std::fmt::Formatter;
+use std::marker::PhantomData;
 use std::str::FromStr;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
@@ -141,7 +142,7 @@ fn weekday_to_str(d: &Weekday) -> String {
 #[cfg_attr(feature = "serde", serde_as)]
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
-pub struct RRuleProperties {
+pub struct RRuleProperties<Stage = Validated> {
     /// The frequency of the rule.
     /// For example: yearly, weekly, hourly
     pub freq: Frequency,
@@ -198,9 +199,11 @@ pub struct RRuleProperties {
     /// Can be a value from -366 to 366.
     /// Note: Only used when `by-easter` feature flag is set. Otherwise, it is ignored.
     pub by_easter: Option<i16>,
+    #[cfg_attr(feature = "serde", serde_as(as = "ignore"))]
+    pub stage: PhantomData<Stage>,
 }
 
-impl Default for RRuleProperties {
+impl Default for RRuleProperties<Unvalidated> {
     fn default() -> Self {
         Self {
             freq: Frequency::Yearly,
@@ -219,11 +222,12 @@ impl Default for RRuleProperties {
             by_minute: Vec::new(),
             by_second: Vec::new(),
             by_easter: None,
+            stage: Default::default(),
         }
     }
 }
 
-impl RRuleProperties {
+impl RRuleProperties<Unvalidated> {
     pub fn new(freq: Frequency) -> Self {
         Self {
             freq,
@@ -359,14 +363,32 @@ impl RRuleProperties {
         check_limits::check_limits(&properties, &dt_start)?;
 
         Ok(RRule {
-            properties,
+            properties: RRuleProperties {
+                freq: properties.freq,
+                interval: properties.interval,
+                count: properties.count,
+                until: properties.until,
+                week_start: properties.week_start,
+                by_set_pos: properties.by_set_pos,
+                by_month: properties.by_month,
+                by_month_day: properties.by_month_day,
+                by_n_month_day: properties.by_n_month_day,
+                by_year_day: properties.by_year_day,
+                by_week_no: properties.by_week_no,
+                by_weekday: properties.by_weekday,
+                by_hour: properties.by_hour,
+                by_minute: properties.by_minute,
+                by_second: properties.by_second,
+                by_easter: properties.by_easter,
+                stage: Default::default(),
+            },
             tz: dt_start.timezone(),
             dt_start,
         })
     }
 }
 
-impl FromStr for RRuleProperties {
+impl FromStr for RRuleProperties<Unvalidated> {
     type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -374,7 +396,7 @@ impl FromStr for RRuleProperties {
     }
 }
 
-impl Display for RRuleProperties {
+impl<S> Display for RRuleProperties<S> {
     /// Generates a string based on the [iCalendar RRULE spec](https://datatracker.ietf.org/doc/html/rfc5545#section-3.8.5.3).
     /// It doesn't prepend "RRULE:" to the string.
     /// This function doesn't validate the existing object and may generate an invalid string like 'FREQ=YEARLY;INTERVAL=-1'

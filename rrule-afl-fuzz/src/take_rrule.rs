@@ -73,6 +73,7 @@ pub fn take_rrule_from_data(mut data: &[u8]) -> Option<RRule> {
         },
         #[cfg(not(feature = "by-easter"))]
         by_easter: None,
+        stage: Default::default()
     };
     match properties.build(take_datetime(&mut data)) {
         Ok(rrule) => Some(rrule),

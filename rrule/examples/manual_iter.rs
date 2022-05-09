@@ -3,15 +3,15 @@
 //! Manually iterate over an `RRule`.
 
 use chrono::Datelike;
-use rrule::{RRule, RRuleIter, WithError};
+use rrule::{RRule, WithError};
 
 fn main() {
     let rrule: RRule = "DTSTART;TZID=America/New_York:20200902T130000\n\
         RRULE:FREQ=Weekly"
-        .parse::<RRule>()
+        .parse()
         .expect("The RRule is not valid");
 
-    let mut iter: RRuleIter = rrule.into_iter();
+    let mut iter = rrule.into_iter();
 
     // Note that the code below is similar to `all_with_error(limit)` in its implementation.
     let limit = 200;

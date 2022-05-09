@@ -1,5 +1,5 @@
 use crate::core::DateTime;
-use crate::{validator::ValidationError, RRuleProperties};
+use crate::{validator::ValidationError, RRuleProperties, Unvalidated};
 
 /// Maximum value of `option.interval` when frequency is yearly.
 /// Limit: 10000 years
@@ -49,7 +49,7 @@ pub(crate) static FREQ_SECONDLY_INTERVAL_MAX: u16 = 50_000;
 /// See README.md for more info.
 #[cfg(not(feature = "no-validation-limits"))]
 pub(crate) fn check_limits(
-    properties: &RRuleProperties,
+    properties: &RRuleProperties<Unvalidated>,
     dt_start: &DateTime,
 ) -> Result<(), ValidationError> {
     use crate::{validator::YEAR_RANGE, Frequency};
@@ -97,6 +97,6 @@ pub(crate) fn check_limits(
 /// When `no-validation-limits` feature is set this function will always return `Ok`.
 /// See README.md for more info.
 #[cfg(feature = "no-validation-limits")]
-pub(crate) fn check_limits(_: &RRuleProperties, _: &DateTime) -> Result<(), ValidationError> {
+pub(crate) fn check_limits(_: &RRuleProperties<Unvalidated>, _: &DateTime) -> Result<(), ValidationError> {
     Ok(())
 }

@@ -1,3 +1,4 @@
+use crate::core::{Unvalidated};
 use crate::{core::DateTime, Frequency, NWeekday, RRuleError, RRuleProperties, RRuleSet};
 use chrono::{Datelike, NaiveDate, TimeZone, Timelike, Weekday};
 use chrono_tz::{Tz, UTC};
@@ -37,8 +38,8 @@ pub(crate) fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleError> {
         ..Default::default()
     };
 
-    for rrule_prop in rrule_vals.iter() {
-        let rrule = rrule_prop.clone().build(dt_start)?;
+    for rrule_prop in rrule_vals.into_iter() {
+        let rrule = rrule_prop.build(dt_start)?;
         rset.rrule(rrule);
     }
 
@@ -46,8 +47,8 @@ pub(crate) fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleError> {
         rset.rdate(rdate);
     }
 
-    for exrule_prop in exrule_vals.iter() {
-        let exrule = exrule_prop.clone().build(dt_start)?;
+    for exrule_prop in exrule_vals.into_iter() {
+        let exrule = exrule_prop.build(dt_start)?;
         rset.exrule(exrule);
     }
 
@@ -63,7 +64,7 @@ pub(crate) fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleError> {
 /// If RRule contains invalid parts then [`ParseError`] will be returned.
 /// This should never panic, but it might be in odd cases.
 /// Please report if it does panic.
-pub(crate) fn parse_rrule_string_to_properties(input: &str) -> Result<RRuleProperties, ParseError> {
+pub(crate) fn parse_rrule_string_to_properties(input: &str) -> Result<RRuleProperties<Unvalidated>, ParseError> {
     let input = preprocess_rrule_string(input);
 
     let ParsedInput { mut rrule_vals, .. } = parse_input(&input)?;
@@ -82,9 +83,9 @@ pub(crate) fn parse_rrule_string_to_properties(input: &str) -> Result<RRulePrope
 
 /// Fill in some additional fields in order to make iter work correctly.
 pub(crate) fn finalize_parsed_properties(
-    mut properties: RRuleProperties,
+    mut properties: RRuleProperties<Unvalidated>,
     dt_start: &DateTime,
-) -> Result<RRuleProperties, ParseError> {
+) -> Result<RRuleProperties<Unvalidated>, ParseError> {
     use std::cmp::Ordering;
     // TEMP: move negative months to other list
     let mut by_month_day = vec![];
@@ -325,7 +326,7 @@ fn stringval_to_intvec<T: FromStr + Ord + PartialEq + Copy, F: Fn(T) -> bool>(
     Ok(parsed_vals)
 }
 
-fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
+fn parse_rrule(line: &str) -> Result<RRuleProperties<Unvalidated>, ParseError> {
     // Store all parts independently, so we can see if things are double set or missing.
     let mut freq = None;
     let mut interval = None;
@@ -559,6 +560,7 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
         by_minute: by_minute.unwrap_or_default(),
         by_second: by_second.unwrap_or_default(),
         by_easter,
+        stage: Default::default(),
     })
 }
 
@@ -575,7 +577,7 @@ fn parse_weekdays(val: &str) -> Result<Vec<NWeekday>, ParseError> {
     Ok(wdays)
 }
 
-fn parse_rule_line(rfc_string: &str) -> Result<Option<RRuleProperties>, ParseError> {
+fn parse_rule_line(rfc_string: &str) -> Result<Option<RRuleProperties<Unvalidated>>, ParseError> {
     let rfc_string = rfc_string.trim();
     // If this part is empty return
     if rfc_string.is_empty() {
@@ -651,7 +653,7 @@ fn extract_name(line: String) -> LineName {
     }
 }
 
-pub(crate) fn parse_rule(rfc_string: &str) -> Result<RRuleProperties, ParseError> {
+pub(crate) fn parse_rule(rfc_string: &str) -> Result<RRuleProperties<Unvalidated>, ParseError> {
     let mut option = None;
     for line in rfc_string.split('\n') {
         let parsed_line = parse_rule_line(line)?;
@@ -679,9 +681,9 @@ pub(crate) fn parse_rule(rfc_string: &str) -> Result<RRuleProperties, ParseError
 
 #[derive(Debug)]
 struct ParsedInput {
-    rrule_vals: Vec<RRuleProperties>,
+    rrule_vals: Vec<RRuleProperties<Unvalidated>>,
     rdate_vals: Vec<DateTime>,
-    exrule_vals: Vec<RRuleProperties>,
+    exrule_vals: Vec<RRuleProperties<Unvalidated>>,
     exdate_vals: Vec<DateTime>,
     dt_start: DateTime,
 }

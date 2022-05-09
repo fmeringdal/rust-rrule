@@ -11,3 +11,9 @@ pub(crate) use datetime::{DateTime, Time};
 pub use properties::{Frequency, NWeekday, RRuleProperties};
 pub use rruleset::RRuleSet;
 pub(self) use utils::{collect_or_error, collect_with_error};
+
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+pub struct Validated;
+
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+pub struct Unvalidated;

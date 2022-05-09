@@ -110,6 +110,7 @@ mod parser;
 mod validator;
 
 pub use crate::core::{DateFilter, Frequency, NWeekday, RRule, RRuleProperties, RRuleSet};
+pub use crate::core::{Validated, Unvalidated};
 pub use chrono::Weekday;
 pub use error::{RRuleError, WithError};
 pub use iter::{RRuleIter, RRuleSetIter};

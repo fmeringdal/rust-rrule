@@ -1,6 +1,6 @@
 use super::{datetime::DateTime, properties::*};
 use crate::core::datetime::datetime_to_ical_format;
-use crate::{DateFilter, RRuleError, RRuleIter};
+use crate::{DateFilter, RRuleError, RRuleIter, Validated};
 use chrono_tz::Tz;
 #[cfg(feature = "serde")]
 use serde_with::{serde_as, DeserializeFromStr, SerializeDisplay};
@@ -11,9 +11,9 @@ use std::str::FromStr;
 #[cfg_attr(feature = "serde", serde_as)]
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
-pub struct RRule {
+pub struct RRule<Stage = Validated> {
     /// The properties specified by this rule.
-    pub(crate) properties: RRuleProperties,
+    pub(crate) properties: RRuleProperties<Stage>,
     /// The timezone used during the creation of the events.
     pub(crate) tz: Tz,
     /// The start datetime of the recurring event.
@@ -21,9 +21,9 @@ pub struct RRule {
     pub(crate) dt_start: DateTime,
 }
 
-impl RRule {
+impl<S> RRule<S> {
     /// Get the parameters set by the RRule.
-    pub fn get_properties(&self) -> &RRuleProperties {
+    pub fn get_properties(&self) -> &RRuleProperties<S> {
         &self.properties
     }
 }
@@ -36,14 +36,14 @@ impl FromStr for RRule {
     /// If RRule contains invalid parts then [`ParseError`] will be returned.
     /// This should never panic, but it might be in odd cases.
     /// Please report if it does panic.
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn from_str(s: &str) -> Result<RRule, Self::Err> {
         let rrule = crate::parser::parse_rrule_string_to_properties(s)?;
         let dt_start = crate::parser::parse_dtstart(s)?;
         rrule.build(dt_start)
     }
 }
 
-impl Display for RRule {
+impl<S> Display for RRule<S> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let properties = self.properties.to_string();
         let datetime = datetime_to_ical_format(&self.dt_start, self.tz);

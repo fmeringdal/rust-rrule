@@ -3,17 +3,18 @@ use crate::{parser::build_rruleset, DateFilter, RRuleError, RRuleSetIter};
 use chrono::TimeZone;
 use chrono_tz::UTC;
 use std::str::FromStr;
+use crate::core::{Validated};
 
 #[derive(Debug, Clone)]
-pub struct RRuleSet {
-    pub rrule: Vec<RRule>,
+pub struct RRuleSet<Stage = Validated> {
+    pub rrule: Vec<RRule<Stage>>,
     pub rdate: Vec<DateTime>,
-    pub exrule: Vec<RRule>,
+    pub exrule: Vec<RRule<Stage>>,
     pub exdate: Vec<DateTime>,
     pub dt_start: DateTime,
 }
 
-impl Default for RRuleSet {
+impl<S> Default for RRuleSet<S> {
     fn default() -> Self {
         Self {
             rrule: vec![],
@@ -25,12 +26,12 @@ impl Default for RRuleSet {
     }
 }
 
-impl RRuleSet {
-    pub fn rrule(&mut self, rrule: RRule) {
+impl<S> RRuleSet<S> {
+    pub fn rrule(&mut self, rrule: RRule<S>) {
         self.rrule.push(rrule);
     }
 
-    pub fn exrule(&mut self, rrule: RRule) {
+    pub fn exrule(&mut self, rrule: RRule<S>) {
         self.exrule.push(rrule);
     }
 

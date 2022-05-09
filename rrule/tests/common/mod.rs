@@ -3,7 +3,7 @@
 
 use chrono::{DateTime, TimeZone};
 use chrono_tz::{Tz, UTC};
-use rrule::{DateFilter, RRuleError, RRuleProperties, RRuleSet};
+use rrule::{DateFilter, RRuleError, RRuleProperties, RRuleSet, Unvalidated};
 use std::fmt::Debug;
 
 pub fn ymd_hms(
@@ -18,7 +18,7 @@ pub fn ymd_hms(
 }
 
 pub fn test_recurring_rrule(
-    properties: RRuleProperties,
+    properties: RRuleProperties<Unvalidated>,
     dt_start: DateTime<Tz>,
     expected_dates: &[DateTime<Tz>],
 ) {
