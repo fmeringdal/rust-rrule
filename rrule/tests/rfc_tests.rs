@@ -3,7 +3,7 @@
 
 mod common;
 
-use rrule::{DateFilter, RRule, RRuleSet};
+use rrule::{DateFilter, RRuleSet};
 
 // ------------------------------------------ Daily ---------------------------------------------
 
@@ -12,8 +12,9 @@ use rrule::{DateFilter, RRule, RRuleSet};
 fn daily_10_occurrences() {
     let dates = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=DAILY;COUNT=10"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(50)
         .unwrap();
     common::check_occurrences(
@@ -40,8 +41,9 @@ fn daily_until_november() {
     // From september-november
     let dates = "DTSTART;TZID=America/New_York:19970920T090000\n\
         RRULE:FREQ=DAILY;UNTIL=19971103T000000Z"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(60)
         .unwrap();
     common::check_occurrences(
@@ -104,8 +106,9 @@ fn daily_until_november() {
 fn every_other_day() {
     let dates = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=DAILY;INTERVAL=2"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(32)
         .unwrap();
     common::check_occurrences(
@@ -152,8 +155,9 @@ fn every_other_day() {
 fn every_10_days_5_occurrences() {
     let dates = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=DAILY;INTERVAL=10;COUNT=5"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(50)
         .unwrap();
     common::check_occurrences(
@@ -174,14 +178,16 @@ fn every_days_in_jan_for_3_years() {
     // To patterns that have same result
     let dates = "DTSTART;TZID=America/New_York:19980101T090000\n\
         RRULE:FREQ=YEARLY;UNTIL=20000131T140000Z;BYMONTH=1;BYDAY=SU,MO,TU,WE,TH,FR,SA"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(100)
         .unwrap();
     let dates_alt = "DTSTART;TZID=America/New_York:19980101T090000\n\
         RRULE:FREQ=DAILY;UNTIL=20000131T140000Z;BYMONTH=1"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(100)
         .unwrap();
     let mut expected = vec![];
@@ -201,8 +207,9 @@ fn every_days_in_jan_for_3_years() {
 fn weekly_10_occurrences() {
     let dates = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=WEEKLY;COUNT=10"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(50)
         .unwrap();
     common::check_occurrences(
@@ -229,8 +236,9 @@ fn weekly_until_november() {
     // From september-november
     let dates = "DTSTART;TZID=America/New_York:19970923T090000\n\
         RRULE:FREQ=WEEKLY;UNTIL=19971105T000000Z"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(60)
         .unwrap();
     common::check_occurrences(
@@ -256,8 +264,9 @@ fn weekly_until_november() {
 fn every_other_week() {
     let dates = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=WEEKLY;INTERVAL=2;WKST=SU"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(13)
         .unwrap();
     common::check_occurrences(
@@ -285,14 +294,16 @@ fn every_other_week() {
 fn weekly_on_tue_and_thu_for_5_weeks() {
     let dates = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=WEEKLY;UNTIL=19971007T000000Z;WKST=SU;BYDAY=TU,TH"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(50)
         .unwrap();
     let dates_alt = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=WEEKLY;COUNT=10;WKST=SU;BYDAY=TU,TH"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(50)
         .unwrap();
     let expected = vec![
@@ -317,8 +328,9 @@ fn weekly_on_tue_and_thu_for_5_weeks() {
 fn every_other_week_some_days_until_dec() {
     let dates = "DTSTART;TZID=America/New_York:19970901T090000\n\
         RRULE:FREQ=WEEKLY;INTERVAL=2;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(50)
         .unwrap();
     common::check_occurrences(
@@ -358,8 +370,9 @@ fn every_other_week_some_days_until_dec() {
 fn every_other_week_some_days_8_occurrences() {
     let dates = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=WEEKLY;INTERVAL=2;COUNT=8;WKST=SU;BYDAY=TU,TH"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(50)
         .unwrap();
     common::check_occurrences(
@@ -384,8 +397,9 @@ fn every_other_week_some_days_8_occurrences() {
 fn monthly_on_first_friday_10_occurrences() {
     let dates = "DTSTART;TZID=America/New_York:19970905T090000\n\
         RRULE:FREQ=MONTHLY;COUNT=10;BYDAY=1FR"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(50)
         .unwrap();
     common::check_occurrences(
@@ -410,8 +424,9 @@ fn monthly_on_first_friday_10_occurrences() {
 fn monthly_on_first_friday_until_dec() {
     let dates = "DTSTART;TZID=America/New_York:19970905T090000\n\
         RRULE:FREQ=MONTHLY;UNTIL=19971224T000000Z;BYDAY=1FR"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(50)
         .unwrap();
     common::check_occurrences(
@@ -430,8 +445,9 @@ fn monthly_on_first_friday_until_dec() {
 fn every_other_month_on_first_and_last_sunday_10_occurrences() {
     let dates = "DTSTART;TZID=America/New_York:19970907T090000\n\
         RRULE:FREQ=MONTHLY;INTERVAL=2;COUNT=10;BYDAY=1SU,-1SU"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(50)
         .unwrap();
     common::check_occurrences(
@@ -456,8 +472,9 @@ fn every_other_month_on_first_and_last_sunday_10_occurrences() {
 fn monthly_on_second_to_last_monday_for_6_months() {
     let dates = "DTSTART;TZID=America/New_York:19970922T090000\n\
         RRULE:FREQ=MONTHLY;COUNT=6;BYDAY=-2MO"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(50)
         .unwrap();
     common::check_occurrences(
@@ -478,8 +495,9 @@ fn monthly_on_second_to_last_monday_for_6_months() {
 fn monthly_on_third_to_last_day_forever() {
     let dates = "DTSTART;TZID=America/New_York:19970928T090000\n\
         RRULE:FREQ=MONTHLY;BYMONTHDAY=-3"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(6)
         .unwrap();
     common::check_occurrences(
@@ -500,8 +518,9 @@ fn monthly_on_third_to_last_day_forever() {
 fn monthly_on_2nd_and_15th_10_occurrences() {
     let dates = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=MONTHLY;COUNT=10;BYMONTHDAY=2,15"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(20)
         .unwrap();
     common::check_occurrences(
@@ -526,8 +545,9 @@ fn monthly_on_2nd_and_15th_10_occurrences() {
 fn monthly_on_first_and_last_day_10_occurrences() {
     let dates = "DTSTART;TZID=America/New_York:19970930T090000\n\
         RRULE:FREQ=MONTHLY;COUNT=10;BYMONTHDAY=1,-1"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(20)
         .unwrap();
     common::check_occurrences(
@@ -552,8 +572,9 @@ fn monthly_on_first_and_last_day_10_occurrences() {
 fn every_18_months_10th_to_15th_10_occurrences() {
     let dates = "DTSTART;TZID=America/New_York:19970910T090000\n\
         RRULE:FREQ=MONTHLY;INTERVAL=18;COUNT=10;BYMONTHDAY=10,11,12,13,14,15"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(20)
         .unwrap();
     common::check_occurrences(
@@ -578,8 +599,9 @@ fn every_18_months_10th_to_15th_10_occurrences() {
 fn every_tuesday_every_other_month() {
     let dates = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=MONTHLY;INTERVAL=2;BYDAY=TU"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(18)
         .unwrap();
     common::check_occurrences(
@@ -617,8 +639,9 @@ fn every_tuesday_every_other_month() {
 fn yearly_in_june_and_july_for_10_occurrences() {
     let dates = "DTSTART;TZID=America/New_York:19970610T090000\n\
         RRULE:FREQ=YEARLY;COUNT=10;BYMONTH=6,7"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(20)
         .unwrap();
     common::check_occurrences(
@@ -643,8 +666,9 @@ fn yearly_in_june_and_july_for_10_occurrences() {
 fn every_other_year_on_jan_feb_and_march_for_10_occurrences() {
     let dates = "DTSTART;TZID=America/New_York:19970310T090000\n\
         RRULE:FREQ=YEARLY;INTERVAL=2;COUNT=10;BYMONTH=1,2,3"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(20)
         .unwrap();
     common::check_occurrences(
@@ -669,8 +693,9 @@ fn every_other_year_on_jan_feb_and_march_for_10_occurrences() {
 fn every_third_year_on_1st_100th_and_200th_day_for_10_occurrences() {
     let dates = "DTSTART;TZID=America/New_York:19970101T090000\n\
         RRULE:FREQ=YEARLY;INTERVAL=3;COUNT=10;BYYEARDAY=1,100,200"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(20)
         .unwrap();
     common::check_occurrences(
@@ -695,8 +720,9 @@ fn every_third_year_on_1st_100th_and_200th_day_for_10_occurrences() {
 fn every_20th_monday_of_year_forever() {
     let dates = "DTSTART;TZID=America/New_York:19970519T090000\n\
         RRULE:FREQ=YEARLY;BYDAY=20MO"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(3)
         .unwrap();
     common::check_occurrences(
@@ -714,8 +740,9 @@ fn every_20th_monday_of_year_forever() {
 fn monday_of_week_20_forever() {
     let dates = "DTSTART;TZID=America/New_York:19970512T090000\n\
         RRULE:FREQ=YEARLY;BYWEEKNO=20;BYDAY=MO"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(3)
         .unwrap();
     common::check_occurrences(
@@ -733,8 +760,9 @@ fn monday_of_week_20_forever() {
 fn every_thursday_in_march_forever() {
     let dates = "DTSTART;TZID=America/New_York:19970313T090000\n\
         RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=TH"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(11)
         .unwrap();
     common::check_occurrences(
@@ -760,8 +788,9 @@ fn every_thursday_in_march_forever() {
 fn every_thursday_only_during_june_july_and_august_forever() {
     let dates = "DTSTART;TZID=America/New_York:19970605T090000\n\
         RRULE:FREQ=YEARLY;BYDAY=TH;BYMONTH=6,7,8"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(39)
         .unwrap();
     common::check_occurrences(
@@ -818,6 +847,7 @@ fn every_friday_the_13th_forever() {
         RRULE:FREQ=MONTHLY;BYDAY=FR;BYMONTHDAY=13"
         .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(5)
         .unwrap();
     common::check_occurrences(
@@ -837,8 +867,9 @@ fn every_friday_the_13th_forever() {
 fn first_sat_follows_first_sunday_of_month_forever() {
     let dates = "DTSTART;TZID=America/New_York:19970913T090000\n\
         RRULE:FREQ=MONTHLY;BYDAY=SA;BYMONTHDAY=7,8,9,10,11,12,13"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(10)
         .unwrap();
     common::check_occurrences(
@@ -864,8 +895,9 @@ fn first_sat_follows_first_sunday_of_month_forever() {
 fn every_4_years_us_presidential_election_day_forever() {
     let dates = "DTSTART;TZID=America/New_York:19961105T090000\n\
         RRULE:FREQ=YEARLY;INTERVAL=4;BYMONTH=11;BYDAY=TU;BYMONTHDAY=2,3,4,5,6,7,8"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(3)
         .unwrap();
     common::check_occurrences(
@@ -884,8 +916,9 @@ fn every_4_years_us_presidential_election_day_forever() {
 fn every_third_instance_of_weekday_in_month_for_3_months() {
     let dates = "DTSTART;TZID=America/New_York:19970904T090000\n\
         RRULE:FREQ=MONTHLY;COUNT=3;BYDAY=TU,WE,TH;BYSETPOS=3"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(10)
         .unwrap();
     common::check_occurrences(
@@ -903,8 +936,9 @@ fn every_third_instance_of_weekday_in_month_for_3_months() {
 fn second_to_last_weekday_of_month() {
     let dates = "DTSTART;TZID=America/New_York:19970929T090000\n\
         RRULE:FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-2"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(7)
         .unwrap();
     common::check_occurrences(
@@ -927,8 +961,9 @@ fn every_3_hours_on_specific_day() {
     // https://www.rfc-editor.org/errata/eid3883
     let dates = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=HOURLY;INTERVAL=3;UNTIL=19970902T210000Z"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(10)
         .unwrap();
     common::check_occurrences(
@@ -946,8 +981,9 @@ fn every_3_hours_on_specific_day() {
 fn every_15_min_for_6_occurrences() {
     let dates = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=MINUTELY;INTERVAL=15;COUNT=6"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(10)
         .unwrap();
     common::check_occurrences(
@@ -968,8 +1004,9 @@ fn every_15_min_for_6_occurrences() {
 fn every_hour_and_a_half_for_4_occurrences() {
     let dates = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=MINUTELY;INTERVAL=90;COUNT=4"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(10)
         .unwrap();
     common::check_occurrences(
@@ -988,14 +1025,16 @@ fn every_hour_and_a_half_for_4_occurrences() {
 fn every_20_min_at_time_every_day() {
     let dates = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=DAILY;BYHOUR=9,10,11,12,13,14,15,16;BYMINUTE=0,20,40"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(72)
         .unwrap();
     let dates_alt = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=MINUTELY;INTERVAL=20;BYHOUR=9,10,11,12,13,14,15,16"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(72)
         .unwrap();
 
@@ -1037,8 +1076,9 @@ fn every_20_min_at_time_every_day() {
 fn week_day_start_monday_generated_days() {
     let dates = "DTSTART;TZID=America/New_York:19970805T090000\n\
         RRULE:FREQ=WEEKLY;INTERVAL=2;COUNT=4;BYDAY=TU,SU;WKST=MO"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(10)
         .unwrap();
     common::check_occurrences(
@@ -1057,8 +1097,9 @@ fn week_day_start_monday_generated_days() {
 fn week_day_start_sunday_generated_days() {
     let dates = "DTSTART;TZID=America/New_York:19970805T090000\n\
         RRULE:FREQ=WEEKLY;INTERVAL=2;COUNT=4;BYDAY=TU,SU;WKST=SU"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(10)
         .unwrap();
     common::check_occurrences(
@@ -1077,8 +1118,9 @@ fn week_day_start_sunday_generated_days() {
 fn invalid_date_is_ignored() {
     let dates = "DTSTART;TZID=America/New_York:20070115T090000\n\
         RRULE:FREQ=MONTHLY;BYMONTHDAY=15,30;COUNT=5"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(10)
         .unwrap();
     common::check_occurrences(

@@ -6,26 +6,22 @@
 
 use chrono::{DateTime, Local, TimeZone};
 use chrono_tz::{Europe::Berlin, Tz, UTC};
-use rrule::{DateFilter, Frequency, RRuleProperties, RRuleSet};
+use rrule::{DateFilter, Frequency, RRule};
 
 fn main() {
     // Build properties for rrule that occurs daily at 9:00 for 4 times
-    let rrule_properties = RRuleProperties::default().count(4).freq(Frequency::Daily);
+    let rrule = RRule::default().count(4).freq(Frequency::Daily);
 
-    let rrule = rrule_properties
+    let mut rrule_set = rrule
         .build(Berlin.ymd(2020, 1, 1).and_hms(9, 0, 0))
         .expect("RRule invalid");
 
     // Exdate in the UTC at 8:00 which is 9:00 in Berlin and therefore
     // collides with the second rrule occurrence.
     let exdate = UTC.ymd(2020, 1, 2).and_hms(8, 0, 0);
-
-    // Now create the RRuleSet and add rrule and exdate
-    let mut rrule_set = RRuleSet::default();
-    rrule_set.rrule(rrule);
     rrule_set.exdate(exdate);
 
-    let recurrences = rrule_set.all(100).unwrap();
+    let recurrences = rrule_set.into_iter().all(100).unwrap();
     // RRule contained 4 recurrences but 1 was filtered away by the exdate
     assert_eq!(recurrences.len(), 3);
 

@@ -5,7 +5,7 @@ use take_rrule::take_rrule_from_data;
 
 use afl::fuzz;
 use core::str::FromStr;
-use rrule::{DateFilter, RRule, RRuleSet};
+use rrule::{DateFilter, RRuleSet, RRuleSet};
 
 #[allow(clippy::single_match)]
 fn main() {
@@ -16,7 +16,7 @@ fn main() {
         0 => fuzz!(|data: &[u8]| {
             if let Ok(s) = std::str::from_utf8(data) {
                 // Everything here is acceptable, but panic is not what we want.
-                match RRule::from_str(s) {
+                match RRuleSet::from_str(s) {
                     Ok(_rule) => {}
                     Err(_) => {}
                 }
@@ -36,7 +36,7 @@ fn main() {
         2 => fuzz!(|data: &[u8]| {
             if let Ok(s) = std::str::from_utf8(data) {
                 // Everything here is acceptable, but panic is not what we want.
-                match RRule::from_str(s) {
+                match RRuleSet::from_str(s) {
                     Ok(rule) => {
                         let _ = rule.all(50);
                     }

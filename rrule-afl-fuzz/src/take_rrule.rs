@@ -1,10 +1,10 @@
 use crate::take_data::*;
 
-use rrule::{Frequency, RRule, RRuleProperties};
+use rrule::{Frequency, RRule, RRuleSet};
 
 /// This function uses the data to construct a deterministic input for RRule.
 /// This can also be used to reconstruct the RRule from crashes in order to debug the code.
-pub fn take_rrule_from_data(mut data: &[u8]) -> Option<RRule> {
+pub fn take_rrule_from_data(mut data: &[u8]) -> Option<RRuleSet> {
     // Byte uses: (always account for max used)
     // bytes => variable
     // ----------------
@@ -33,7 +33,7 @@ pub fn take_rrule_from_data(mut data: &[u8]) -> Option<RRule> {
     // if data.len() < 166 {
     //     return None;
     // }
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: match take_byte(&mut data) % 7 {
             0 => Frequency::Yearly,
             1 => Frequency::Monthly,
@@ -73,7 +73,7 @@ pub fn take_rrule_from_data(mut data: &[u8]) -> Option<RRule> {
         },
         #[cfg(not(feature = "by-easter"))]
         by_easter: None,
-        stage: Default::default()
+        stage: Default::default(),
     };
     match properties.build(take_datetime(&mut data)) {
         Ok(rrule) => Some(rrule),

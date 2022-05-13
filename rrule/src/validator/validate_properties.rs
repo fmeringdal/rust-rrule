@@ -1,7 +1,7 @@
 use std::ops::RangeInclusive;
 
 use crate::core::DateTime;
-use crate::{Frequency, NWeekday, RRuleProperties, Unvalidated};
+use crate::{Frequency, NWeekday, RRule, Unvalidated};
 
 use super::ValidationError;
 
@@ -35,7 +35,7 @@ pub(crate) static YEAR_RANGE: RangeInclusive<i32> = -262_000..=262_000;
 /// Validation will always be enforced and can not be disabled using feature flags.
 ///
 pub(crate) fn validate_properties_forced(
-    properties: &RRuleProperties<Unvalidated>,
+    properties: &RRule<Unvalidated>,
     dt_start: &DateTime,
 ) -> Result<(), ValidationError> {
     // Freq:
@@ -321,7 +321,7 @@ mod tests {
 
     #[test]
     fn rejects_by_set_pos_without_byxxx_rule() {
-        let properties = RRuleProperties {
+        let properties = RRule {
             by_set_pos: vec![-1],
             ..Default::default()
         };
@@ -344,28 +344,28 @@ mod tests {
         let tests = [
             (
                 "BYSETPOS",
-                RRuleProperties {
+                RRule {
                     by_set_pos: vec![0],
                     ..Default::default()
                 },
             ),
             (
                 "BYSETPOS",
-                RRuleProperties {
+                RRule {
                     by_set_pos: vec![1, -2, 0],
                     ..Default::default()
                 },
             ),
             (
                 "BYMONTHDAY",
-                RRuleProperties {
+                RRule {
                     by_month_day: vec![0],
                     ..Default::default()
                 },
             ),
             (
                 "BYYEARDAY",
-                RRuleProperties {
+                RRule {
                     by_year_day: vec![0],
                     ..Default::default()
                 },
@@ -391,7 +391,7 @@ mod tests {
         let tests = [
             (
                 "BYMONTHDAY",
-                RRuleProperties {
+                RRule {
                     by_month_day: vec![34],
                     ..Default::default()
                 },
@@ -401,7 +401,7 @@ mod tests {
             ),
             (
                 "BYYEARDAY",
-                RRuleProperties {
+                RRule {
                     by_year_day: vec![17, 400],
                     ..Default::default()
                 },
@@ -432,7 +432,7 @@ mod tests {
         let tests = [
             (
                 "BYSETPOS",
-                RRuleProperties {
+                RRule {
                     freq: Frequency::Hourly,
                     by_set_pos: vec![30],
                     ..Default::default()
@@ -443,7 +443,7 @@ mod tests {
             ),
             (
                 "BYSETPOS",
-                RRuleProperties {
+                RRule {
                     freq: Frequency::Yearly,
                     by_set_pos: vec![400],
                     ..Default::default()
@@ -476,7 +476,7 @@ mod tests {
         let tests = [
             (
                 "BYMONTHDAY",
-                RRuleProperties {
+                RRule {
                     freq: Frequency::Weekly,
                     by_month_day: vec![-1],
                     ..Default::default()
@@ -484,7 +484,7 @@ mod tests {
             ),
             (
                 "BYYEARDAY",
-                RRuleProperties {
+                RRule {
                     freq: Frequency::Monthly,
                     by_year_day: vec![120],
                     ..Default::default()
@@ -492,7 +492,7 @@ mod tests {
             ),
             (
                 "BYYEARDAY",
-                RRuleProperties {
+                RRule {
                     freq: Frequency::Weekly,
                     by_year_day: vec![120],
                     ..Default::default()
@@ -500,7 +500,7 @@ mod tests {
             ),
             (
                 "BYYEARDAY",
-                RRuleProperties {
+                RRule {
                     freq: Frequency::Daily,
                     by_year_day: vec![120],
                     ..Default::default()
@@ -524,7 +524,7 @@ mod tests {
 
     #[test]
     fn rejects_start_date_after_until() {
-        let properties = RRuleProperties {
+        let properties = RRule {
             until: Some(UTC.ymd_opt(2020, 1, 1).and_hms_opt(0, 0, 0).unwrap()),
             ..Default::default()
         };

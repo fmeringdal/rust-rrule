@@ -1,15 +1,14 @@
 mod common;
 
-use chrono::TimeZone;
-use chrono_tz::UTC;
 use common::{test_recurring_rrule_set, ymd_hms};
-use rrule::{DateFilter, Frequency, NWeekday, RRuleProperties, RRuleSet, Weekday};
+use rrule::{DateFilter, Frequency, NWeekday, RRule, RRuleSet, Weekday};
 
 #[test]
 fn rrule_and_exrule() {
-    let mut set = RRuleSet::default();
+    let dt_start = ymd_hms(1997, 9, 2, 9, 0, 0);
+    let mut set = RRuleSet::new(dt_start);
 
-    let properties1 = RRuleProperties {
+    let properties1 = RRule {
         freq: Frequency::Yearly,
         count: Some(6),
         by_weekday: vec![NWeekday::Every(Weekday::Tue), NWeekday::Every(Weekday::Thu)],
@@ -18,11 +17,9 @@ fn rrule_and_exrule() {
         by_second: vec![0],
         ..Default::default()
     };
-    let rrule = properties1
-        .build(UTC.ymd(1997, 9, 2).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties1.validate(dt_start).unwrap();
     set.rrule(rrule);
-    let properties2 = RRuleProperties {
+    let properties2 = RRule {
         freq: Frequency::Yearly,
         count: Some(3),
         by_weekday: vec![NWeekday::Every(Weekday::Thu)],
@@ -31,9 +28,7 @@ fn rrule_and_exrule() {
         by_second: vec![0],
         ..Default::default()
     };
-    let exrule = properties2
-        .build(UTC.ymd(1997, 9, 2).and_hms(9, 0, 0))
-        .unwrap();
+    let exrule = properties2.validate(dt_start).unwrap();
     set.exrule(exrule);
 
     test_recurring_rrule_set(
@@ -73,7 +68,8 @@ fn setdate_and_exdate() {
 
 #[test]
 fn setdate_and_exrule() {
-    let mut set = RRuleSet::default();
+    let dt_start = ymd_hms(1997, 9, 2, 9, 0, 0);
+    let mut set = RRuleSet::new(dt_start);
 
     set.rdate(ymd_hms(1997, 9, 2, 9, 0, 0));
     set.rdate(ymd_hms(1997, 9, 4, 9, 0, 0));
@@ -82,7 +78,7 @@ fn setdate_and_exrule() {
     set.rdate(ymd_hms(1997, 9, 16, 9, 0, 0));
     set.rdate(ymd_hms(1997, 9, 18, 9, 0, 0));
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Yearly,
         count: Some(3),
         by_weekday: vec![NWeekday::Every(Weekday::Thu)],
@@ -91,9 +87,7 @@ fn setdate_and_exrule() {
         by_second: vec![0],
         ..Default::default()
     };
-    let exrrule = properties
-        .build(UTC.ymd(1997, 9, 2).and_hms(9, 0, 0))
-        .unwrap();
+    let exrrule = properties.validate(dt_start).unwrap();
     set.exrule(exrrule);
 
     test_recurring_rrule_set(
@@ -108,9 +102,10 @@ fn setdate_and_exrule() {
 
 #[test]
 fn rrule_and_exdate() {
-    let mut set = RRuleSet::default();
+    let dt_start = ymd_hms(1997, 9, 2, 9, 0, 0);
+    let mut set = RRuleSet::new(dt_start);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Yearly,
         count: Some(6),
         by_weekday: vec![NWeekday::Every(Weekday::Tue), NWeekday::Every(Weekday::Thu)],
@@ -119,9 +114,7 @@ fn rrule_and_exdate() {
         by_second: vec![0],
         ..Default::default()
     };
-    let rrule = properties
-        .build(UTC.ymd(1997, 9, 2).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.rrule(rrule);
 
     set.exdate(ymd_hms(1997, 9, 2, 9, 0, 0));
@@ -140,9 +133,10 @@ fn rrule_and_exdate() {
 
 #[test]
 fn rrule_and_exyearly_yearly_big() {
-    let mut set = RRuleSet::default();
+    let dt_start = ymd_hms(1997, 9, 2, 9, 0, 0);
+    let mut set = RRuleSet::new(dt_start);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Yearly,
         count: Some(13),
         by_month: vec![9],
@@ -152,12 +146,10 @@ fn rrule_and_exyearly_yearly_big() {
         by_month_day: vec![2],
         ..Default::default()
     };
-    let rrule = properties
-        .build(UTC.ymd(1997, 9, 2).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.rrule(rrule);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Yearly,
         count: Some(10),
         by_month: vec![9],
@@ -167,9 +159,7 @@ fn rrule_and_exyearly_yearly_big() {
         by_month_day: vec![2],
         ..Default::default()
     };
-    let rrule = properties
-        .build(UTC.ymd(1997, 9, 2).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.exrule(rrule);
 
     test_recurring_rrule_set(
@@ -184,9 +174,10 @@ fn rrule_and_exyearly_yearly_big() {
 
 #[test]
 fn before() {
-    let mut set = RRuleSet::default();
+    let dt_start = ymd_hms(1997, 9, 2, 9, 0, 0);
+    let mut set = RRuleSet::new(dt_start);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Yearly,
         by_month: vec![9],
         by_hour: vec![9],
@@ -195,12 +186,10 @@ fn before() {
         by_month_day: vec![2],
         ..Default::default()
     };
-    let rrule = properties
-        .build(UTC.ymd(1997, 9, 2).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.rrule(rrule);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Yearly,
         count: Some(10),
         by_month: vec![9],
@@ -210,13 +199,12 @@ fn before() {
         by_month_day: vec![2],
         ..Default::default()
     };
-    let rrule = properties
-        .build(UTC.ymd(1997, 9, 2).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.exrule(rrule);
 
     assert_eq!(
-        set.just_before(ymd_hms(2015, 9, 2, 9, 0, 0), false)
+        set.into_iter()
+            .just_before(ymd_hms(2015, 9, 2, 9, 0, 0), false)
             .unwrap()
             .unwrap(),
         ymd_hms(2014, 9, 2, 9, 0, 0),
@@ -225,9 +213,10 @@ fn before() {
 
 #[test]
 fn after() {
-    let mut set = RRuleSet::default();
+    let dt_start = ymd_hms(1997, 9, 2, 9, 0, 0);
+    let mut set = RRuleSet::new(dt_start);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Yearly,
         by_month: vec![9],
         by_hour: vec![9],
@@ -236,12 +225,10 @@ fn after() {
         by_month_day: vec![2],
         ..Default::default()
     };
-    let rrule = properties
-        .build(UTC.ymd(1997, 9, 2).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.rrule(rrule);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Yearly,
         count: Some(10),
         by_month: vec![9],
@@ -251,13 +238,12 @@ fn after() {
         by_month_day: vec![2],
         ..Default::default()
     };
-    let rrule = properties
-        .build(UTC.ymd(1997, 9, 2).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.exrule(rrule);
 
     assert_eq!(
-        set.just_after(ymd_hms(2000, 9, 2, 9, 0, 0), false)
+        set.into_iter()
+            .just_after(ymd_hms(2000, 9, 2, 9, 0, 0), false)
             .unwrap()
             .unwrap(),
         ymd_hms(2007, 9, 2, 9, 0, 0),
@@ -266,9 +252,10 @@ fn after() {
 
 #[test]
 fn between() {
-    let mut set = RRuleSet::default();
+    let dt_start = ymd_hms(1997, 9, 2, 9, 0, 0);
+    let mut set = RRuleSet::new(dt_start);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Yearly,
         by_month: vec![9],
         by_hour: vec![9],
@@ -277,12 +264,10 @@ fn between() {
         by_month_day: vec![2],
         ..Default::default()
     };
-    let rrule = properties
-        .build(UTC.ymd(1997, 9, 2).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.rrule(rrule);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Yearly,
         count: Some(10),
         by_month: vec![9],
@@ -292,18 +277,17 @@ fn between() {
         by_month_day: vec![2],
         ..Default::default()
     };
-    let rrule = properties
-        .build(UTC.ymd(1997, 9, 2).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.exrule(rrule);
 
     common::check_occurrences(
-        &set.all_between(
-            ymd_hms(2000, 9, 2, 9, 0, 0),
-            ymd_hms(2010, 9, 2, 9, 0, 0),
-            false,
-        )
-        .unwrap(),
+        &set.into_iter()
+            .all_between(
+                ymd_hms(2000, 9, 2, 9, 0, 0),
+                ymd_hms(2010, 9, 2, 9, 0, 0),
+                false,
+            )
+            .unwrap(),
         &[
             "2007-09-02T09:00:00-00:00",
             "2008-09-02T09:00:00-00:00",
@@ -314,9 +298,10 @@ fn between() {
 
 #[test]
 fn before_70s() {
-    let mut set = RRuleSet::default();
+    let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
+    let mut set = RRuleSet::new(dt_start);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Yearly,
         count: Some(2),
         by_month: vec![1],
@@ -326,9 +311,7 @@ fn before_70s() {
         by_month_day: vec![1],
         ..Default::default()
     };
-    let rrule = properties
-        .build(UTC.ymd(1960, 1, 1).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.rrule(rrule);
 
     test_recurring_rrule_set(
@@ -339,16 +322,15 @@ fn before_70s() {
 
 #[test]
 fn secondly_with_interval_1() {
-    let mut set = RRuleSet::default();
+    let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
+    let mut set = RRuleSet::new(dt_start);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Secondly,
         count: Some(2),
         ..Default::default()
     };
-    let rrule = properties
-        .build(UTC.ymd(1960, 1, 1).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.rrule(rrule);
 
     test_recurring_rrule_set(
@@ -359,17 +341,16 @@ fn secondly_with_interval_1() {
 
 #[test]
 fn secondly_with_interval_2() {
-    let mut set = RRuleSet::default();
+    let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
+    let mut set = RRuleSet::new(dt_start);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Secondly,
         count: Some(2),
         interval: 2,
         ..Default::default()
     };
-    let rrule = properties
-        .build(UTC.ymd(1960, 1, 1).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.rrule(rrule);
 
     test_recurring_rrule_set(
@@ -380,17 +361,16 @@ fn secondly_with_interval_2() {
 
 #[test]
 fn minutely_with_interval_1() {
-    let mut set = RRuleSet::default();
+    let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
+    let mut set = RRuleSet::new(dt_start);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Minutely,
         count: Some(2),
         by_second: vec![0],
         ..Default::default()
     };
-    let rrule = properties
-        .build(UTC.ymd(1960, 1, 1).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.rrule(rrule);
 
     test_recurring_rrule_set(
@@ -401,18 +381,17 @@ fn minutely_with_interval_1() {
 
 #[test]
 fn minutely_with_interval_2() {
-    let mut set = RRuleSet::default();
+    let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
+    let mut set = RRuleSet::new(dt_start);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Minutely,
         count: Some(2),
         by_second: vec![0],
         interval: 2,
         ..Default::default()
     };
-    let rrule = properties
-        .build(UTC.ymd(1960, 1, 1).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.rrule(rrule);
 
     test_recurring_rrule_set(
@@ -423,18 +402,17 @@ fn minutely_with_interval_2() {
 
 #[test]
 fn hourly_with_interval_1() {
-    let mut set = RRuleSet::default();
+    let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
+    let mut set = RRuleSet::new(dt_start);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Hourly,
         count: Some(2),
         by_minute: vec![0],
         by_second: vec![0],
         ..Default::default()
     };
-    let rrule = properties
-        .build(UTC.ymd(1960, 1, 1).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.rrule(rrule);
 
     test_recurring_rrule_set(
@@ -445,9 +423,10 @@ fn hourly_with_interval_1() {
 
 #[test]
 fn hourly_with_interval_2() {
-    let mut set = RRuleSet::default();
+    let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
+    let mut set = RRuleSet::new(dt_start);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Hourly,
         count: Some(2),
         by_minute: vec![0],
@@ -455,9 +434,7 @@ fn hourly_with_interval_2() {
         interval: 2,
         ..Default::default()
     };
-    let rrule = properties
-        .build(UTC.ymd(1960, 1, 1).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.rrule(rrule);
 
     test_recurring_rrule_set(
@@ -468,18 +445,17 @@ fn hourly_with_interval_2() {
 
 #[test]
 fn daily_with_interval_1() {
-    let mut set = RRuleSet::default();
+    let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
+    let mut set = RRuleSet::new(dt_start);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Daily,
         count: Some(2),
         by_minute: vec![0],
         by_second: vec![0],
         ..Default::default()
     };
-    let rrule = properties
-        .build(UTC.ymd(1960, 1, 1).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.rrule(rrule);
 
     test_recurring_rrule_set(
@@ -490,9 +466,10 @@ fn daily_with_interval_1() {
 
 #[test]
 fn daily_with_interval_2() {
-    let mut set = RRuleSet::default();
+    let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
+    let mut set = RRuleSet::new(dt_start);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Daily,
         count: Some(2),
         by_hour: vec![9],
@@ -501,9 +478,7 @@ fn daily_with_interval_2() {
         interval: 2,
         ..Default::default()
     };
-    let rrule = properties
-        .build(UTC.ymd(1960, 1, 1).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.rrule(rrule);
 
     test_recurring_rrule_set(
@@ -514,9 +489,10 @@ fn daily_with_interval_2() {
 
 #[test]
 fn weekly_with_interval_1() {
-    let mut set = RRuleSet::default();
+    let dt_start = ymd_hms(1960, 1, 4, 9, 0, 0);
+    let mut set = RRuleSet::new(dt_start);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Weekly,
         count: Some(2),
         by_hour: vec![9],
@@ -526,9 +502,7 @@ fn weekly_with_interval_1() {
         ..Default::default()
     };
     // 4th is Monday
-    let rrule = properties
-        .build(UTC.ymd(1960, 1, 4).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.rrule(rrule);
 
     test_recurring_rrule_set(
@@ -539,9 +513,10 @@ fn weekly_with_interval_1() {
 
 #[test]
 fn weekly_with_interval_2() {
-    let mut set = RRuleSet::default();
+    let dt_start = ymd_hms(1960, 1, 4, 9, 0, 0);
+    let mut set = RRuleSet::new(dt_start);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Weekly,
         count: Some(2),
         by_hour: vec![9],
@@ -552,9 +527,7 @@ fn weekly_with_interval_2() {
         ..Default::default()
     };
     // 4th is Monday
-    let rrule = properties
-        .build(UTC.ymd(1960, 1, 4).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.rrule(rrule);
 
     test_recurring_rrule_set(
@@ -565,9 +538,10 @@ fn weekly_with_interval_2() {
 
 #[test]
 fn monthly_with_interval_1() {
-    let mut set = RRuleSet::default();
+    let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
+    let mut set = RRuleSet::new(dt_start);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Monthly,
         count: Some(2),
         by_hour: vec![9],
@@ -576,9 +550,7 @@ fn monthly_with_interval_1() {
         by_month_day: vec![1],
         ..Default::default()
     };
-    let rrule = properties
-        .build(UTC.ymd(1960, 1, 1).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.rrule(rrule);
 
     test_recurring_rrule_set(
@@ -589,9 +561,10 @@ fn monthly_with_interval_1() {
 
 #[test]
 fn monthly_with_interval_2() {
-    let mut set = RRuleSet::default();
+    let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
+    let mut set = RRuleSet::new(dt_start);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Monthly,
         count: Some(2),
         by_hour: vec![9],
@@ -601,9 +574,7 @@ fn monthly_with_interval_2() {
         by_month_day: vec![1],
         ..Default::default()
     };
-    let rrule = properties
-        .build(UTC.ymd(1960, 1, 1).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.rrule(rrule);
 
     test_recurring_rrule_set(
@@ -614,9 +585,10 @@ fn monthly_with_interval_2() {
 
 #[test]
 fn yearly_with_interval_1() {
-    let mut set = RRuleSet::default();
+    let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
+    let mut set = RRuleSet::new(dt_start);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Yearly,
         count: Some(2),
         by_hour: vec![9],
@@ -625,9 +597,7 @@ fn yearly_with_interval_1() {
         by_year_day: vec![1],
         ..Default::default()
     };
-    let rrule = properties
-        .build(UTC.ymd(1960, 1, 1).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.rrule(rrule);
 
     test_recurring_rrule_set(
@@ -638,9 +608,10 @@ fn yearly_with_interval_1() {
 
 #[test]
 fn yearly_with_interval_2() {
-    let mut set = RRuleSet::default();
+    let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
+    let mut set = RRuleSet::new(dt_start);
 
-    let properties = RRuleProperties {
+    let properties = RRule {
         freq: Frequency::Yearly,
         count: Some(2),
         by_hour: vec![9],
@@ -650,9 +621,7 @@ fn yearly_with_interval_2() {
         interval: 2,
         ..Default::default()
     };
-    let rrule = properties
-        .build(UTC.ymd(1960, 1, 1).and_hms(9, 0, 0))
-        .unwrap();
+    let rrule = properties.validate(dt_start).unwrap();
     set.rrule(rrule);
 
     test_recurring_rrule_set(

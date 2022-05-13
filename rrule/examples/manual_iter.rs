@@ -3,10 +3,10 @@
 //! Manually iterate over an `RRule`.
 
 use chrono::Datelike;
-use rrule::{RRule, WithError};
+use rrule::{RRuleSet, WithError};
 
 fn main() {
-    let rrule: RRule = "DTSTART;TZID=America/New_York:20200902T130000\n\
+    let rrule: RRuleSet = "DTSTART;TZID=America/New_York:20200902T130000\n\
         RRULE:FREQ=Weekly"
         .parse()
         .expect("The RRule is not valid");

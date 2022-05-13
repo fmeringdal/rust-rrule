@@ -1,13 +1,14 @@
 mod common;
 
-use rrule::{DateFilter, RRule};
+use rrule::{DateFilter, RRuleSet};
 
 #[test]
 fn issue_34() {
     let dates = "DTSTART;TZID=America/New_York:19970929T090000
 RRULE:FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-2"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(7)
         .unwrap();
     common::check_occurrences(

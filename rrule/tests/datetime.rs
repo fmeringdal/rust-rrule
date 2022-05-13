@@ -1,14 +1,15 @@
 mod common;
 
-use rrule::{DateFilter, RRule};
+use rrule::{DateFilter, RRuleSet};
 
 /// Monthly on the 31st of the month
 #[test]
 fn monthly_on_31th() {
     let dates = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=MONTHLY;COUNT=10;BYMONTHDAY=31"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(20)
         .unwrap();
     // TODO: Is this the correct behavior?
@@ -34,8 +35,9 @@ fn monthly_on_31th() {
 fn monthly_on_31th_to_last() {
     let dates = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=MONTHLY;COUNT=10;BYMONTHDAY=-31"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
+        .into_iter()
         .all(20)
         .unwrap();
     // TODO: Is this the correct behavior?

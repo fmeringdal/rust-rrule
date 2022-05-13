@@ -1,7 +1,7 @@
 use super::DateTime;
 use crate::{RRuleError, WithError};
 
-/// Collect all dates, but once an error is found it will return the error
+/// Collects all dates, but once an error is found it will return the error
 /// and not the items that where already found.
 pub(crate) fn collect_or_error<T>(
     iterator: T,
@@ -44,7 +44,7 @@ where
                 if is_in_range(&value, start, end, inclusive) {
                     list.push(value);
                 }
-                if reached_end(&value, end, inclusive) {
+                if has_reached_the_end(&value, end, inclusive) {
                     // Date is after end date, so can stop iterating
                     break;
                 }
@@ -71,8 +71,8 @@ where
     }
 }
 
-/// Check if `date` is after `end`.
-fn reached_end(date: &DateTime, end: &Option<DateTime>, inclusive: bool) -> bool {
+/// Checks if `date` is after `end`.
+fn has_reached_the_end(date: &DateTime, end: &Option<DateTime>, inclusive: bool) -> bool {
     use std::ops::{
         Bound::{Excluded, Unbounded},
         RangeBounds,

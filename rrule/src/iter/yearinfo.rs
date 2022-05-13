@@ -2,7 +2,7 @@ use super::{
     masks::MASKS,
     utils::{get_year_len, pymod, to_ordinal},
 };
-use crate::{RRuleError, RRuleProperties};
+use crate::{RRule, RRuleError};
 use chrono::{Datelike, TimeZone, Utc};
 
 #[derive(Debug, Clone)]
@@ -62,10 +62,7 @@ fn base_year_masks(year: i32) -> BaseMasks {
     }
 }
 
-pub(crate) fn rebuild_year(
-    year: i32,
-    properties: &RRuleProperties,
-) -> Result<YearInfo, RRuleError> {
+pub(crate) fn rebuild_year(year: i32, properties: &RRule) -> Result<YearInfo, RRuleError> {
     let first_year_day = Utc.ymd(year, 1, 1).and_hms_milli(0, 0, 0, 0);
 
     let year_len = get_year_len(year) as u32;

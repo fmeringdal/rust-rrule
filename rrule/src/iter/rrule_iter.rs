@@ -2,12 +2,13 @@ use super::{
     build_pos_list, increment_counter_date, make_timeset, remove_filtered_days,
     utils::from_ordinal, IterInfo, MAX_ITER_LOOP,
 };
+use crate::iter::IntoIteratorWithCtx;
 use crate::{
     core::{DateTime, Time},
-    Frequency, RRule, RRuleError, WithError,
+    DateFilter, Frequency, RRule, RRuleError, WithError,
 };
-use chrono::{Datelike, TimeZone, Timelike};
-use chrono_tz::Tz;
+use chrono::TimeZone;
+use chrono::{Datelike, Timelike};
 use std::collections::VecDeque;
 
 #[derive(Debug, Clone)]
@@ -17,7 +18,6 @@ pub struct RRuleIter<'a> {
     ii: IterInfo<'a>,
     timeset: Vec<Time>,
     dt_start: DateTime,
-    tz: Tz,
     // Buffer of datetimes not yet yielded
     buffer: VecDeque<DateTime>,
     /// Indicate of iterator should not return more items.
@@ -31,26 +31,25 @@ pub struct RRuleIter<'a> {
 }
 
 impl<'a> RRuleIter<'a> {
-    fn new(rrule: &'a RRule) -> Result<Self, RRuleError> {
-        let ii = IterInfo::new(rrule)?;
-        let counter_date = rrule.dt_start;
+    pub fn new(rrule: &'a RRule, dt_start: &DateTime) -> Result<Self, RRuleError> {
+        let ii = IterInfo::new(rrule, dt_start)?;
 
-        let timeset = make_timeset(&ii, &counter_date, rrule)?;
-        let count = ii.get_properties().count;
+        let timeset = make_timeset(&ii, dt_start, rrule)?;
+        let count = ii.get_rrule().count;
 
         Ok(RRuleIter {
-            counter_date,
+            counter_date: *dt_start,
             ii,
             timeset,
-            dt_start: counter_date,
-            tz: rrule.tz,
+            dt_start: *dt_start,
             buffer: VecDeque::new(),
             finished: false,
             count,
             error: None,
         })
     }
-    /// Generate a list of dates that will be added to the buffer.
+
+    /// Generates a list of dates that will be added to the buffer.
     /// Returns true if finished, no more items should/can be returned.
     fn generate(&mut self) -> Result<bool, RRuleError> {
         // If there already was an error, return the error again.
@@ -68,15 +67,15 @@ impl<'a> RRuleIter<'a> {
         };
 
         // Get general info about recurrence rules
-        let properties = self.ii.get_properties().clone();
+        let rrule = self.ii.get_rrule();
 
-        if properties.interval == 0 {
+        if rrule.interval == 0 {
             return Ok(true);
         }
 
         // If `counter_date` is later than `until` date, we can stop
-        if let Some(until) = properties.until {
-            if self.counter_date > until {
+        if let Some(until) = &rrule.until {
+            if &self.counter_date > until {
                 return Ok(false);
             }
         }
@@ -84,6 +83,8 @@ impl<'a> RRuleIter<'a> {
 
         // Loop until there is at least 1 item in the buffer.
         while self.buffer.is_empty() {
+            let rrule = self.ii.get_rrule();
+
             // Prevent infinite loops
             loop_counter += 1;
             if loop_counter >= MAX_ITER_LOOP {
@@ -95,14 +96,14 @@ impl<'a> RRuleIter<'a> {
             }
 
             let (dayset, start, end) = self.ii.get_dayset(
-                &self.ii.get_properties().freq,
+                &rrule.freq,
                 self.counter_date.year(),
                 self.counter_date.month() as u8,
                 self.counter_date.day() as u8,
             )?;
 
             // If `counter_date` is later than `until` date, we can stop
-            if let Some(until) = &properties.until {
+            if let Some(until) = &rrule.until {
                 if &self.counter_date > until {
                     return Ok(false);
                 }
@@ -119,19 +120,19 @@ impl<'a> RRuleIter<'a> {
                 .map(|day| day.map(|day| day as i32))
                 .collect::<Vec<Option<i32>>>();
 
-            if !properties.by_set_pos.is_empty() {
+            if !rrule.by_set_pos.is_empty() {
                 let pos_list = build_pos_list(
-                    &properties.by_set_pos,
+                    &rrule.by_set_pos,
                     &self.timeset,
                     start,
                     end,
                     &self.ii,
                     &dayset,
-                    &self.tz,
+                    &self.dt_start.timezone(),
                 )?;
 
                 for res in pos_list {
-                    if properties.until.is_some() && res > properties.until.unwrap() {
+                    if rrule.until.is_some() && res > rrule.until.unwrap() {
                         continue; // or break ?
                     }
 
@@ -163,14 +164,17 @@ impl<'a> RRuleIter<'a> {
                     // just below we'll end up double-applying.
                     let date = from_ordinal(year_ordinal + current_day as i64);
                     // We apply the local-TZ here,
-                    let date = self.tz.ymd(date.year(), date.month(), date.day());
+                    let date = self
+                        .dt_start
+                        .timezone()
+                        .ymd(date.year(), date.month(), date.day());
                     for timeset in &self.timeset {
                         let res = date
                             .and_hms(0, 0, 0)
                             .checked_add_signed(timeset.duration_from_midnight())
                             .ok_or_else(|| RRuleError::new_iter_err("Invalid datetime."))?;
 
-                        if properties.until.is_some() && res > properties.until.unwrap() {
+                        if rrule.until.is_some() && res > rrule.until.unwrap() {
                             return Ok(true);
                         }
                         if res >= self.dt_start {
@@ -192,14 +196,14 @@ impl<'a> RRuleIter<'a> {
             }
 
             // Handle frequency and interval
-            self.counter_date = increment_counter_date(self.counter_date, &properties, filtered)?;
+            self.counter_date = increment_counter_date(self.counter_date, rrule, filtered)?;
 
-            if properties.freq == Frequency::Hourly
-                || properties.freq == Frequency::Minutely
-                || properties.freq == Frequency::Secondly
+            if rrule.freq == Frequency::Hourly
+                || rrule.freq == Frequency::Minutely
+                || rrule.freq == Frequency::Secondly
             {
                 self.timeset = self.ii.get_timeset(
-                    &properties.freq,
+                    &rrule.freq,
                     self.counter_date.hour() as u8,
                     self.counter_date.minute() as u8,
                     self.counter_date.second() as u8,
@@ -255,13 +259,14 @@ impl<'a> Iterator for RRuleIter<'a> {
     }
 }
 
-impl<'a> IntoIterator for &'a RRule {
+impl<'a> IntoIteratorWithCtx for &'a RRule {
     type Item = DateTime;
+    type Context = DateTime;
 
     type IntoIter = RRuleIter<'a>;
 
-    fn into_iter(self) -> Self::IntoIter {
-        match RRuleIter::new(self) {
+    fn into_iter_with_ctx(self, dt_start: Self::Context) -> Self::IntoIter {
+        match RRuleIter::new(self, &dt_start) {
             Ok(iter) => iter,
             Err(err) => {
                 // Print error and create iterator that will ways return the error if used.
@@ -269,11 +274,10 @@ impl<'a> IntoIterator for &'a RRule {
                 let error = Some(err);
                 // This is mainly a dummy object, as it will ways return the error when called.
                 RRuleIter {
-                    counter_date: self.dt_start,
+                    counter_date: dt_start,
                     ii: IterInfo::new_no_rebuild(self),
                     timeset: vec![],
-                    dt_start: self.dt_start,
-                    tz: self.tz,
+                    dt_start,
                     buffer: VecDeque::new(),
                     finished: false,
                     count: None,
@@ -283,3 +287,5 @@ impl<'a> IntoIterator for &'a RRule {
         }
     }
 }
+
+impl<'a> DateFilter for RRuleIter<'a> {}

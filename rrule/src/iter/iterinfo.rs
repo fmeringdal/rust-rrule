@@ -5,7 +5,8 @@ use super::{
     utils::to_ordinal,
     yearinfo::{rebuild_year, YearInfo},
 };
-use crate::{core::Time, Frequency, NWeekday, RRule, RRuleError, RRuleProperties};
+use crate::core::DateTime;
+use crate::{core::Time, Frequency, NWeekday, RRule, RRuleError};
 use chrono::{Datelike, TimeZone};
 
 #[derive(Debug, Clone)]
@@ -28,27 +29,25 @@ impl<'a> IterInfo<'a> {
         }
     }
 
-    pub fn new(rrule: &'a RRule) -> Result<Self, RRuleError> {
+    pub fn new(rrule: &'a RRule, dt_start: &DateTime) -> Result<Self, RRuleError> {
         let mut ii = Self {
             rrule,
             year_info: None,
             month_info: None,
             easter_mask: None,
         };
-        let counter_date = &ii.rrule.dt_start;
-        ii.rebuild(counter_date.year(), counter_date.month() as u8)?;
+        ii.rebuild(dt_start.year(), dt_start.month() as u8)?;
 
         Ok(ii)
     }
 
     pub fn rebuild(&mut self, year: i32, month: u8) -> Result<(), RRuleError> {
         if self.month_info.is_none() || year != self.month_info.as_ref().unwrap().last_year {
-            self.year_info = Some(rebuild_year(year, self.rrule.get_properties())?);
+            self.year_info = Some(rebuild_year(year, self.rrule)?);
         }
 
         let by_weekday_nth_only = self
             .rrule
-            .get_properties()
             .by_weekday
             .iter()
             .filter(|by_weekday| match by_weekday {
@@ -70,24 +69,17 @@ impl<'a> IterInfo<'a> {
                     year_info.year_len,
                     year_info.month_range,
                     year_info.weekday_mask,
-                    self.rrule.get_properties(),
+                    self.rrule,
                 )?);
             }
         }
 
         #[cfg(feature = "by-easter")]
-        if let Some(by_easter) = self.rrule.get_properties().by_easter {
+        if let Some(by_easter) = self.rrule.by_easter {
             self.easter_mask = Some(easter(year, by_easter)?);
         }
         Ok(())
     }
-
-    // pub fn last_year(&self) -> Option<i32> {
-    //     self.month_info.as_ref().map(|info| info.last_year)
-    // }
-    // pub fn last_month(&self) -> Option<u8> {
-    //     self.month_info.as_ref().map(|info| info.last_month)
-    // }
 
     pub fn year_len(&self) -> Option<u32> {
         self.year_info.as_ref().map(|info| info.year_len)
@@ -185,12 +177,7 @@ impl<'a> IterInfo<'a> {
             }
             set[i as usize] = i;
             i += 1;
-            if self.weekday_mask()[i as usize]
-                == self
-                    .rrule
-                    .get_properties()
-                    .week_start
-                    .num_days_from_monday() as u8
+            if self.weekday_mask()[i as usize] == self.rrule.week_start.num_days_from_monday() as u8
             {
                 break;
             }
@@ -219,7 +206,6 @@ impl<'a> IterInfo<'a> {
     pub fn hour_timeset(&self, hour: u8, _minute: u8, second: u8, millisecond: u16) -> Vec<Time> {
         let mut set = self
             .rrule
-            .get_properties()
             .by_minute
             .iter()
             .flat_map(|minute| self.min_timeset(hour, *minute, second, millisecond))
@@ -231,7 +217,6 @@ impl<'a> IterInfo<'a> {
     pub fn min_timeset(&self, hour: u8, minute: u8, _second: u8, millisecond: u16) -> Vec<Time> {
         let mut set = self
             .rrule
-            .get_properties()
             .by_second
             .iter()
             .map(|second| Time::new(hour, minute, *second, millisecond))
@@ -276,7 +261,7 @@ impl<'a> IterInfo<'a> {
         }
     }
 
-    pub fn get_properties(&'a self) -> &'a RRuleProperties {
-        self.rrule.get_properties()
+    pub fn get_rrule(&'a self) -> &'a RRule {
+        self.rrule
     }
 }
