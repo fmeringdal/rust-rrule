@@ -20,12 +20,12 @@ FUZZ_ENV_VAR="AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1 AFL_SKIP_CPUFREQ=1 AFL_MAP
 # What command should be used to open new terminal windows
 #
 # For Kde -> `konsole`
-# For genome -> `genome-terminal`
+# For genome -> `gnome-terminal`
 # For xfce4 -> `xfce4-terminal`
-# For chinnamon -> `x-terminal-emulator`
+# For cinnamon -> `x-terminal-emulator`
 # For mate -> `mate-terminal --window`
 # For unity -> `gnome-terminal --profile=Default`
-# For pathenom -> `pantheon-terminal -w ''`
+# For pantheon -> `pantheon-terminal -w ''`
 # Source: https://superuser.com/a/1672713/516502
 USE_TERMINAL_COMMAND="x-terminal-emulator -e"
 # Amount of CPU cores that you want to use to fuzz

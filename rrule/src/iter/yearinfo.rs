@@ -44,21 +44,21 @@ fn base_year_masks(year: i32) -> BaseMasks {
     let weekday = first_year_day.weekday().num_days_from_monday() as u8;
 
     if year_len == 365 {
-        return BaseMasks {
+        BaseMasks {
             month_mask: &MASKS.month_365,
             month_day_mask: &MASKS.month_day_365,
             neg_month_day_mask: &MASKS.neg_month_day_365,
             month_range: &MASKS.month_365_range,
             weekday_mask: &MASKS.weekday[weekday as usize..],
-        };
-    }
-
-    BaseMasks {
-        month_mask: &MASKS.month_366,
-        month_day_mask: &MASKS.month_day_366,
-        neg_month_day_mask: &MASKS.neg_month_day_366,
-        month_range: &MASKS.month_366_range,
-        weekday_mask: &MASKS.weekday[weekday as usize..],
+        }
+    } else {
+        BaseMasks {
+            month_mask: &MASKS.month_366,
+            month_day_mask: &MASKS.month_day_366,
+            neg_month_day_mask: &MASKS.neg_month_day_366,
+            month_range: &MASKS.month_366_range,
+            weekday_mask: &MASKS.weekday[weekday as usize..],
+        }
     }
 }
 
