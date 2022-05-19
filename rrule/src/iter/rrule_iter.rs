@@ -232,13 +232,7 @@ impl<'a> RRuleIter<'a> {
         end: DateTime,
         inclusive: bool,
     ) -> Result<Vec<DateTime>, RRuleError> {
-        collect_or_error(
-            self,
-            &Some(start),
-            &Some(end),
-            inclusive,
-            u16::MAX,
-        )
+        collect_or_error(self, &Some(start), &Some(end), inclusive, u16::MAX)
     }
 }
 
