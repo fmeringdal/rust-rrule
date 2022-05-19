@@ -2,10 +2,11 @@ use super::{
     build_pos_list, increment_counter_date, make_timeset, remove_filtered_days,
     utils::from_ordinal, IterInfo, MAX_ITER_LOOP,
 };
+use crate::core::utils::collect_or_error;
 use crate::iter::IntoIteratorWithCtx;
 use crate::{
     core::{DateTime, Time},
-    DateFilter, Frequency, RRule, RRuleError, WithError,
+    Frequency, RRule, RRuleError, WithError,
 };
 use chrono::TimeZone;
 use chrono::{Datelike, Timelike};
@@ -31,7 +32,7 @@ pub struct RRuleIter<'a> {
 }
 
 impl<'a> RRuleIter<'a> {
-    pub fn new(rrule: &'a RRule, dt_start: &DateTime) -> Result<Self, RRuleError> {
+    pub(crate) fn new(rrule: &'a RRule, dt_start: &DateTime) -> Result<Self, RRuleError> {
         let ii = IterInfo::new(rrule, dt_start)?;
 
         let timeset = make_timeset(&ii, dt_start, rrule)?;
@@ -219,6 +220,26 @@ impl<'a> RRuleIter<'a> {
         // Indicate that there might be more items on the next iteration.
         Ok(false)
     }
+
+    /// Returns all the recurrences of the rrule between after and before.
+    ///
+    /// The `inclusive` keyword defines what happens if after and/or before are
+    /// themselves recurrences. With `inclusive == true`, they will be included in the
+    /// list, if they are found in the recurrence set.
+    pub(crate) fn all_between(
+        self,
+        start: DateTime,
+        end: DateTime,
+        inclusive: bool,
+    ) -> Result<Vec<DateTime>, RRuleError> {
+        collect_or_error(
+            self,
+            &Some(start),
+            &Some(end),
+            inclusive,
+            u16::MAX,
+        )
+    }
 }
 
 impl<'a> WithError for RRuleIter<'a> {
@@ -287,5 +308,3 @@ impl<'a> IntoIteratorWithCtx for &'a RRule {
         }
     }
 }
-
-impl<'a> DateFilter for RRuleIter<'a> {}

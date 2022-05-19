@@ -2,7 +2,7 @@ mod common;
 
 use chrono::{Datelike, TimeZone};
 use common::{test_recurring_rrule, ymd_hms};
-use rrule::{DateFilter, Frequency, NWeekday, RRule, RRuleSet, Weekday};
+use rrule::{Frequency, NWeekday, RRule, RRuleSet, Weekday};
 
 #[test]
 fn yearly() {
@@ -3612,7 +3612,7 @@ fn test_timezones_weekly() {
     let rrule = rrule_properties
         .build(ymd_hms(2021, 1, 1, 9, 0, 0))
         .unwrap();
-    for o in rrule.into_iter() {
+    for o in &rrule {
         assert_eq!(o.weekday(), Sat);
     }
 
@@ -3624,7 +3624,7 @@ fn test_timezones_weekly() {
     let rrule = rrule_properties
         .build(New_York.ymd(2021, 1, 1).and_hms(9, 0, 0))
         .unwrap();
-    for o in rrule.into_iter() {
+    for o in &rrule {
         assert_eq!(o.weekday(), Sat);
     }
 
@@ -3636,7 +3636,7 @@ fn test_timezones_weekly() {
     let rrule = rrule_properties
         .build(Berlin.ymd(2021, 1, 1).and_hms(9, 0, 0))
         .unwrap();
-    for o in rrule.into_iter() {
+    for o in &rrule {
         assert_eq!(o.weekday(), Sat);
     }
 
@@ -3648,7 +3648,7 @@ fn test_timezones_weekly() {
     let rrule = rrule_properties
         .build(Los_Angeles.ymd(2021, 1, 1).and_hms(9, 0, 0))
         .unwrap();
-    for o in rrule.into_iter() {
+    for o in &rrule {
         assert_eq!(o.weekday(), Sat);
     }
 }
@@ -3662,10 +3662,7 @@ fn test_before_inclusive_hit() {
     let before = ymd_hms(2012, 2, 2, 9, 30, 0);
     let inc = true;
 
-    assert_eq!(
-        Some(before),
-        rrule.into_iter().just_before(before, inc).unwrap()
-    );
+    assert_eq!(Some(before), rrule.just_before(before, inc).unwrap());
 }
 
 #[test]
@@ -3678,10 +3675,7 @@ fn test_before_inclusive_miss() {
     let oracle = ymd_hms(2012, 2, 2, 9, 30, 0);
     let inc = true;
 
-    assert_eq!(
-        Some(oracle),
-        rrule.into_iter().just_before(before, inc).unwrap()
-    );
+    assert_eq!(Some(oracle), rrule.just_before(before, inc).unwrap());
 }
 
 #[test]
@@ -3693,10 +3687,7 @@ fn test_after_inclusive_hit() {
     let after = ymd_hms(2012, 2, 2, 9, 30, 0);
     let inc = true;
 
-    assert_eq!(
-        Some(after),
-        rrule.into_iter().just_after(after, inc).unwrap()
-    );
+    assert_eq!(Some(after), rrule.just_after(after, inc).unwrap());
 }
 
 #[test]
@@ -3709,10 +3700,7 @@ fn test_after_inclusive_miss() {
     let oracle = ymd_hms(2012, 2, 3, 9, 30, 0);
     let inc = true;
 
-    assert_eq!(
-        Some(oracle),
-        rrule.into_iter().just_after(after, inc).unwrap()
-    );
+    assert_eq!(Some(oracle), rrule.just_after(after, inc).unwrap());
 }
 
 #[test]
@@ -3726,10 +3714,7 @@ fn test_between_inclusive_both_miss() {
     let after = ymd_hms(2012, 2, 4, 9, 0, 0);
     let inc = true;
 
-    assert_eq!(
-        vec![middle],
-        rrule.into_iter().all_between(before, after, inc).unwrap()
-    );
+    assert_eq!(vec![middle], rrule.all_between(before, after, inc).unwrap());
 }
 
 #[test]
@@ -3745,7 +3730,7 @@ fn test_between_inclusive_lower_miss() {
 
     assert_eq!(
         vec![middle, after],
-        rrule.into_iter().all_between(before, after, inc).unwrap()
+        rrule.all_between(before, after, inc).unwrap()
     );
 }
 
@@ -3762,7 +3747,7 @@ fn test_between_inclusive_upper_miss() {
 
     assert_eq!(
         vec![before, middle],
-        rrule.into_iter().all_between(before, after, inc).unwrap()
+        rrule.all_between(before, after, inc).unwrap()
     );
 }
 
@@ -3779,6 +3764,6 @@ fn test_between_inclusive_both_hit() {
 
     assert_eq!(
         vec![before, middle, after],
-        rrule.into_iter().all_between(before, after, inc).unwrap()
+        rrule.all_between(before, after, inc).unwrap()
     );
 }

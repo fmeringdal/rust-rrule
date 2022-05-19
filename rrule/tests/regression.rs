@@ -1,6 +1,6 @@
 mod common;
 
-use rrule::{DateFilter, RRuleSet};
+use rrule::RRuleSet;
 
 #[test]
 fn issue_34() {
@@ -8,7 +8,6 @@ fn issue_34() {
 RRULE:FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-2"
         .parse::<RRuleSet>()
         .unwrap()
-        .into_iter()
         .all(7)
         .unwrap();
     common::check_occurrences(

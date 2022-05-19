@@ -2,7 +2,7 @@
 #![allow(unused_imports)]
 use chrono::{DateTime, TimeZone, Weekday};
 use chrono_tz::{Tz, UTC};
-use rrule::{DateFilter, Frequency, RRule, RRuleSet};
+use rrule::{Frequency, RRule, RRuleSet};
 
 /// This function can be used to test anything and can be changes as you wish.
 pub fn run_debug_function() {
@@ -16,7 +16,7 @@ fn test_from_string() {
         .parse()
         .unwrap();
     println!("RRule: {:#?}", rrule);
-    let (list, err) = rrule.into_iter().all_with_error(20);
+    let (list, err) = rrule.all_with_error(20);
     println!("Error: {:#?}", err);
     crate::print_all_datetimes(list);
 }
@@ -35,7 +35,7 @@ fn test_parsed_properties() {
         ..Default::default()
     };
     let rrule = properties.build(ymd_hms(1997, 9, 2, 9, 0, 0)).unwrap();
-    let (list, err) = rrule.into_iter().all_with_error(50);
+    let (list, err) = rrule.all_with_error(50);
     println!("Error: {:#?}", err);
     crate::print_all_datetimes(list);
 }

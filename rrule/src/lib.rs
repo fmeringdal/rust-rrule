@@ -26,7 +26,7 @@
 //! ```rust
 //! use chrono::{DateTime, TimeZone};
 //! use chrono_tz::UTC;
-//! use rrule::{DateFilter, RRuleSet};
+//! use rrule::{RRuleSet};
 //!
 //! let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
 //!
@@ -37,14 +37,14 @@
 //!         DateTime::parse_from_rfc3339("2012-02-02T09:30:00+00:00").unwrap(),
 //!         DateTime::parse_from_rfc3339("2012-02-03T09:30:00+00:00").unwrap(),
 //!     ],
-//!     rrule.into_iter().all(100).unwrap()
+//!     rrule.all(100).unwrap()
 //! );
 //! ```
 //! Find all events that are within a given range.
 //! ```rust
 //! # use chrono::{DateTime, TimeZone};
 //! # use chrono_tz::UTC;
-//! # use rrule::{DateFilter, RRuleSet};
+//! # use rrule::{RRuleSet};
 //! #
 //! let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
 //! // Between two dates
@@ -57,7 +57,7 @@
 //!         DateTime::parse_from_rfc3339("2012-02-02T09:30:00+00:00").unwrap(),
 //!         DateTime::parse_from_rfc3339("2012-02-03T09:30:00+00:00").unwrap(),
 //!     ],
-//!     rrule.into_iter().all_between(after, before, inc).unwrap()
+//!     rrule.all_between(after, before, inc).unwrap()
 //! );
 //! ```
 //!
@@ -69,12 +69,12 @@
 //!
 //! ```rust
 //! use chrono::DateTime;
-//! use rrule::{DateFilter, RRuleSet};
+//! use rrule::{RRuleSet};
 //!
 //! // Parse a RRule string
 //! let rrule: RRuleSet = "DTSTART:20120201T093000Z\n\
 //!    RRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR".parse().unwrap();
-//! assert_eq!(rrule.into_iter().all(100).unwrap().len(), 21);
+//! assert_eq!(rrule.all(100).unwrap().len(), 21);
 //!
 //! // Parse a RRuleSet string
 //! let rrule_set: RRuleSet = "DTSTART:20120201T023000Z\n\
@@ -82,7 +82,7 @@
 //!     RDATE:20120701T023000Z,20120702T023000Z\n\
 //!     EXRULE:FREQ=MONTHLY;COUNT=2\n\
 //!     EXDATE:20120601T023000Z".parse().unwrap();
-//! let all_dates = rrule_set.into_iter().all(100).unwrap();
+//! let all_dates = rrule_set.all(100).unwrap();
 //! assert_eq!(all_dates.len(), 4);
 //!
 //! assert_eq!(
@@ -107,7 +107,7 @@ mod iter;
 mod parser;
 mod validator;
 
-pub use crate::core::{DateFilter, Frequency, NWeekday, RRule, RRuleSet};
+pub use crate::core::{Frequency, NWeekday, RRule, RRuleSet};
 pub use crate::core::{Unvalidated, Validated};
 pub use chrono::Weekday;
 pub use error::{RRuleError, WithError};

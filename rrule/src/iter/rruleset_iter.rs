@@ -1,6 +1,6 @@
 use super::{rrule_iter::RRuleIter, MAX_ITER_LOOP};
 use crate::iter::IntoIteratorWithCtx;
-use crate::{core::DateTime, DateFilter, RRule, RRuleError, RRuleSet, WithError};
+use crate::{core::DateTime, RRule, RRuleError, RRuleSet, WithError};
 use chrono::TimeZone;
 use std::collections::BTreeSet;
 use std::{collections::HashMap, iter::Iterator};
@@ -251,5 +251,3 @@ impl<'a> IntoIteratorWithCtx for &'a RRuleSet {
         self.into_iter()
     }
 }
-
-impl<'a> DateFilter for RRuleSetIter<'a> {}

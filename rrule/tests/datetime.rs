@@ -1,6 +1,6 @@
 mod common;
 
-use rrule::{DateFilter, RRuleSet};
+use rrule::RRuleSet;
 
 /// Monthly on the 31st of the month
 #[test]
@@ -9,7 +9,6 @@ fn monthly_on_31th() {
         RRULE:FREQ=MONTHLY;COUNT=10;BYMONTHDAY=31"
         .parse::<RRuleSet>()
         .unwrap()
-        .into_iter()
         .all(20)
         .unwrap();
     // TODO: Is this the correct behavior?
@@ -37,7 +36,6 @@ fn monthly_on_31th_to_last() {
         RRULE:FREQ=MONTHLY;COUNT=10;BYMONTHDAY=-31"
         .parse::<RRuleSet>()
         .unwrap()
-        .into_iter()
         .all(20)
         .unwrap();
     // TODO: Is this the correct behavior?

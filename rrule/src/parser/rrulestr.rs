@@ -1,3 +1,4 @@
+use super::ParseError;
 use crate::core::Unvalidated;
 use crate::{core::DateTime, Frequency, NWeekday, RRule, RRuleError, RRuleSet};
 use chrono::{Datelike, NaiveDate, TimeZone, Timelike, Weekday};
@@ -5,8 +6,6 @@ use chrono_tz::{Tz, UTC};
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::str::FromStr;
-
-use super::ParseError;
 
 // Some regex used for parsing the rrule string.
 lazy_static! {
@@ -34,7 +33,7 @@ pub(crate) fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleError> {
 
     let mut rset = RRuleSet::new(dt_start);
 
-    for rrule_prop in rrule_vals.into_iter() {
+    for rrule_prop in rrule_vals {
         rset.rrule(rrule_prop.validate(dt_start)?);
     }
 
@@ -42,7 +41,7 @@ pub(crate) fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleError> {
         rset.rdate(rdate);
     }
 
-    for exrule_prop in exrule_vals.into_iter() {
+    for exrule_prop in exrule_vals {
         let exrule = exrule_prop.validate(dt_start)?;
         rset.exrule(exrule);
     }
@@ -787,7 +786,6 @@ fn preprocess_rrule_string(s: &str) -> String {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::DateFilter;
     use crate::RRuleSet;
 
     /// Print and compare 2 lists of dates and panic it they are not the same.
@@ -1014,7 +1012,7 @@ mod test {
                 .parse()
                 .unwrap();
 
-        let (dates, error) = rrule.into_iter().all_with_error(60);
+        let (dates, error) = rrule.all_with_error(60);
         check_occurrences(
             dates,
             vec![
@@ -1059,7 +1057,6 @@ mod test {
         RRULE:FREQ=MONTHLY;UNTIL=20210825T120000Z;INTERVAL=1;BYDAY=-1WE"
             .parse::<RRuleSet>()
             .unwrap()
-            .into_iter()
             .all(50);
         println!("Res {:?}", res);
     }
@@ -1071,7 +1068,6 @@ mod test {
         EXDATE;TZID=Europe/Paris:20201228T093000,20210125T093000,20210208T093000"
             .parse::<RRuleSet>()
             .unwrap()
-            .into_iter()
             .all(50)
             .unwrap();
         // This results in following set (minus exdate)
@@ -1114,7 +1110,6 @@ mod test {
         RRULE:FREQ=WEEKLY;UNTIL=20210508T083000Z;INTERVAL=2;BYDAY=MO;WKST=MO"
             .parse::<RRuleSet>()
             .unwrap()
-            .into_iter()
             .all(50)
             .unwrap();
         check_occurrences(
@@ -1138,7 +1133,7 @@ mod test {
             .expect("RRule could not be parsed");
 
         assert_eq!(
-            rrule.into_iter().all(50).unwrap(),
+            rrule.all(50).unwrap(),
             vec![
                 UTC.ymd(2012, 2, 1).and_hms(2, 30, 0),
                 UTC.ymd(2012, 2, 2).and_hms(2, 30, 0)
@@ -1155,7 +1150,7 @@ mod test {
                 .expect("RRule could not be parsed");
 
         assert_eq!(
-            rrule.into_iter().all(50).unwrap(),
+            rrule.all(50).unwrap(),
             vec![
                 UTC.ymd(2012, 2, 1).and_hms(2, 30, 0),
                 UTC.ymd(2012, 2, 2).and_hms(2, 30, 0)
