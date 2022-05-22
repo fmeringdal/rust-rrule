@@ -8,7 +8,7 @@ use rrule::{RRuleSet, WithError};
 /// This program expects a Recurrence Rule (RRULE) as defined by the
 /// [iCalendar (RFC-5545) specification](https://icalendar.org/RFC-Specifications/iCalendar-RFC-5545/).
 ///
-/// Some examples of a valid iCalendar string:
+/// Some `RRuleSet` examples of a valid iCalendar string:
 ///
 /// - `DTSTART:20120201T093000Z\nRRULE:FREQ=YEARLY`
 /// - `DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;BYDAY=MO,FR`

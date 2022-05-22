@@ -1,14 +1,11 @@
 #![allow(deprecated)]
 
-mod common;
-
-use common::{test_recurring_rrule_set, ymd_hms};
-use rrule::{Frequency, NWeekday, RRule, RRuleSet, Weekday};
+use crate::tests::common::{check_occurrences, test_recurring_rrule_set, ymd_hms};
+use crate::{Frequency, NWeekday, RRule, RRuleSet, Weekday};
 
 #[test]
 fn rrule_and_exrule() {
     let dt_start = ymd_hms(1997, 9, 2, 9, 0, 0);
-    let mut set = RRuleSet::new(dt_start);
 
     let rrule1 = RRule {
         freq: Frequency::Yearly,
@@ -20,7 +17,7 @@ fn rrule_and_exrule() {
         ..Default::default()
     };
     let rrule = rrule1.validate(dt_start).unwrap();
-    set.rrule(rrule);
+
     let rrule2 = RRule {
         freq: Frequency::Yearly,
         count: Some(3),
@@ -31,7 +28,8 @@ fn rrule_and_exrule() {
         ..Default::default()
     };
     let exrule = rrule2.validate(dt_start).unwrap();
-    set.exrule(exrule);
+
+    let set = RRuleSet::new(dt_start).rrule(rrule).exrule(exrule);
 
     test_recurring_rrule_set(
         set,
@@ -45,18 +43,20 @@ fn rrule_and_exrule() {
 
 #[test]
 fn setdate_and_exdate() {
-    let mut set = RRuleSet::default();
-
-    set.rdate(ymd_hms(1997, 9, 2, 9, 0, 0));
-    set.rdate(ymd_hms(1997, 9, 4, 9, 0, 0));
-    set.rdate(ymd_hms(1997, 9, 9, 9, 0, 0));
-    set.rdate(ymd_hms(1997, 9, 11, 9, 0, 0));
-    set.rdate(ymd_hms(1997, 9, 16, 9, 0, 0));
-    set.rdate(ymd_hms(1997, 9, 18, 9, 0, 0));
-
-    set.exdate(ymd_hms(1997, 9, 4, 9, 0, 0));
-    set.exdate(ymd_hms(1997, 9, 11, 9, 0, 0));
-    set.exdate(ymd_hms(1997, 9, 18, 9, 0, 0));
+    let set = RRuleSet::new(ymd_hms(1970, 1, 1, 0, 0, 0))
+        .set_rdates(vec![
+            ymd_hms(1997, 9, 2, 9, 0, 0),
+            ymd_hms(1997, 9, 4, 9, 0, 0),
+            ymd_hms(1997, 9, 9, 9, 0, 0),
+            ymd_hms(1997, 9, 11, 9, 0, 0),
+            ymd_hms(1997, 9, 16, 9, 0, 0),
+            ymd_hms(1997, 9, 18, 9, 0, 0),
+        ])
+        .set_exdates(vec![
+            ymd_hms(1997, 9, 4, 9, 0, 0),
+            ymd_hms(1997, 9, 11, 9, 0, 0),
+            ymd_hms(1997, 9, 18, 9, 0, 0),
+        ]);
 
     test_recurring_rrule_set(
         set,
@@ -71,15 +71,6 @@ fn setdate_and_exdate() {
 #[test]
 fn setdate_and_exrule() {
     let dt_start = ymd_hms(1997, 9, 2, 9, 0, 0);
-    let mut set = RRuleSet::new(dt_start);
-
-    set.rdate(ymd_hms(1997, 9, 2, 9, 0, 0));
-    set.rdate(ymd_hms(1997, 9, 4, 9, 0, 0));
-    set.rdate(ymd_hms(1997, 9, 9, 9, 0, 0));
-    set.rdate(ymd_hms(1997, 9, 11, 9, 0, 0));
-    set.rdate(ymd_hms(1997, 9, 16, 9, 0, 0));
-    set.rdate(ymd_hms(1997, 9, 18, 9, 0, 0));
-
     let rrule = RRule {
         freq: Frequency::Yearly,
         count: Some(3),
@@ -89,8 +80,18 @@ fn setdate_and_exrule() {
         by_second: vec![0],
         ..Default::default()
     };
-    let exrrule = rrule.validate(dt_start).unwrap();
-    set.exrule(exrrule);
+    let exrule = rrule.validate(dt_start).unwrap();
+
+    let set = RRuleSet::new(dt_start)
+        .set_rdates(vec![
+            ymd_hms(1997, 9, 2, 9, 0, 0),
+            ymd_hms(1997, 9, 4, 9, 0, 0),
+            ymd_hms(1997, 9, 9, 9, 0, 0),
+            ymd_hms(1997, 9, 11, 9, 0, 0),
+            ymd_hms(1997, 9, 16, 9, 0, 0),
+            ymd_hms(1997, 9, 18, 9, 0, 0),
+        ])
+        .exrule(exrule);
 
     test_recurring_rrule_set(
         set,
@@ -105,8 +106,6 @@ fn setdate_and_exrule() {
 #[test]
 fn rrule_and_exdate() {
     let dt_start = ymd_hms(1997, 9, 2, 9, 0, 0);
-    let mut set = RRuleSet::new(dt_start);
-
     let rrule = RRule {
         freq: Frequency::Yearly,
         count: Some(6),
@@ -117,11 +116,12 @@ fn rrule_and_exdate() {
         ..Default::default()
     };
     let rrule = rrule.validate(dt_start).unwrap();
-    set.rrule(rrule);
 
-    set.exdate(ymd_hms(1997, 9, 2, 9, 0, 0));
-    set.exdate(ymd_hms(1997, 9, 4, 9, 0, 0));
-    set.exdate(ymd_hms(1997, 9, 9, 9, 0, 0));
+    let set = RRuleSet::new(dt_start).rrule(rrule).set_exdates(vec![
+        ymd_hms(1997, 9, 2, 9, 0, 0),
+        ymd_hms(1997, 9, 4, 9, 0, 0),
+        ymd_hms(1997, 9, 9, 9, 0, 0),
+    ]);
 
     test_recurring_rrule_set(
         set,
@@ -136,7 +136,6 @@ fn rrule_and_exdate() {
 #[test]
 fn rrule_and_exyearly_yearly_big() {
     let dt_start = ymd_hms(1997, 9, 2, 9, 0, 0);
-    let mut set = RRuleSet::new(dt_start);
 
     let rrule = RRule {
         freq: Frequency::Yearly,
@@ -149,9 +148,8 @@ fn rrule_and_exyearly_yearly_big() {
         ..Default::default()
     };
     let rrule = rrule.validate(dt_start).unwrap();
-    set.rrule(rrule);
 
-    let rrule = RRule {
+    let exrule = RRule {
         freq: Frequency::Yearly,
         count: Some(10),
         by_month: vec![9],
@@ -161,8 +159,9 @@ fn rrule_and_exyearly_yearly_big() {
         by_month_day: vec![2],
         ..Default::default()
     };
-    let rrule = rrule.validate(dt_start).unwrap();
-    set.exrule(rrule);
+    let exrule = exrule.validate(dt_start).unwrap();
+
+    let set = RRuleSet::new(dt_start).rrule(rrule).exrule(exrule);
 
     test_recurring_rrule_set(
         set,
@@ -177,7 +176,6 @@ fn rrule_and_exyearly_yearly_big() {
 #[test]
 fn before() {
     let dt_start = ymd_hms(1997, 9, 2, 9, 0, 0);
-    let mut set = RRuleSet::new(dt_start);
 
     let rrule = RRule {
         freq: Frequency::Yearly,
@@ -189,9 +187,8 @@ fn before() {
         ..Default::default()
     };
     let rrule = rrule.validate(dt_start).unwrap();
-    set.rrule(rrule);
 
-    let rrule = RRule {
+    let exrule = RRule {
         freq: Frequency::Yearly,
         count: Some(10),
         by_month: vec![9],
@@ -201,8 +198,9 @@ fn before() {
         by_month_day: vec![2],
         ..Default::default()
     };
-    let rrule = rrule.validate(dt_start).unwrap();
-    set.exrule(rrule);
+    let exrule = exrule.validate(dt_start).unwrap();
+
+    let set = RRuleSet::new(dt_start).rrule(rrule).exrule(exrule);
 
     assert_eq!(
         set.just_before(ymd_hms(2015, 9, 2, 9, 0, 0), false)
@@ -215,7 +213,6 @@ fn before() {
 #[test]
 fn after() {
     let dt_start = ymd_hms(1997, 9, 2, 9, 0, 0);
-    let mut set = RRuleSet::new(dt_start);
 
     let rrule = RRule {
         freq: Frequency::Yearly,
@@ -227,9 +224,8 @@ fn after() {
         ..Default::default()
     };
     let rrule = rrule.validate(dt_start).unwrap();
-    set.rrule(rrule);
 
-    let rrule = RRule {
+    let exrule = RRule {
         freq: Frequency::Yearly,
         count: Some(10),
         by_month: vec![9],
@@ -239,8 +235,9 @@ fn after() {
         by_month_day: vec![2],
         ..Default::default()
     };
-    let rrule = rrule.validate(dt_start).unwrap();
-    set.exrule(rrule);
+    let exrule = exrule.validate(dt_start).unwrap();
+
+    let set = RRuleSet::new(dt_start).rrule(rrule).exrule(exrule);
 
     assert_eq!(
         set.just_after(ymd_hms(2000, 9, 2, 9, 0, 0), false)
@@ -253,7 +250,6 @@ fn after() {
 #[test]
 fn between() {
     let dt_start = ymd_hms(1997, 9, 2, 9, 0, 0);
-    let mut set = RRuleSet::new(dt_start);
 
     let rrule = RRule {
         freq: Frequency::Yearly,
@@ -265,9 +261,8 @@ fn between() {
         ..Default::default()
     };
     let rrule = rrule.validate(dt_start).unwrap();
-    set.rrule(rrule);
 
-    let rrule = RRule {
+    let exrule = RRule {
         freq: Frequency::Yearly,
         count: Some(10),
         by_month: vec![9],
@@ -277,10 +272,11 @@ fn between() {
         by_month_day: vec![2],
         ..Default::default()
     };
-    let rrule = rrule.validate(dt_start).unwrap();
-    set.exrule(rrule);
+    let exrule = exrule.validate(dt_start).unwrap();
 
-    common::check_occurrences(
+    let set = RRuleSet::new(dt_start).rrule(rrule).exrule(exrule);
+
+    check_occurrences(
         &set.all_between(
             ymd_hms(2000, 9, 2, 9, 0, 0),
             ymd_hms(2010, 9, 2, 9, 0, 0),
@@ -298,7 +294,6 @@ fn between() {
 #[test]
 fn before_70s() {
     let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
-    let mut set = RRuleSet::new(dt_start);
 
     let rrule = RRule {
         freq: Frequency::Yearly,
@@ -311,7 +306,8 @@ fn before_70s() {
         ..Default::default()
     };
     let rrule = rrule.validate(dt_start).unwrap();
-    set.rrule(rrule);
+
+    let set = RRuleSet::new(dt_start).rrule(rrule);
 
     test_recurring_rrule_set(
         set,
@@ -322,7 +318,6 @@ fn before_70s() {
 #[test]
 fn secondly_with_interval_1() {
     let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
-    let mut set = RRuleSet::new(dt_start);
 
     let rrule = RRule {
         freq: Frequency::Secondly,
@@ -330,7 +325,8 @@ fn secondly_with_interval_1() {
         ..Default::default()
     };
     let rrule = rrule.validate(dt_start).unwrap();
-    set.rrule(rrule);
+
+    let set = RRuleSet::new(dt_start).rrule(rrule);
 
     test_recurring_rrule_set(
         set,
@@ -341,7 +337,6 @@ fn secondly_with_interval_1() {
 #[test]
 fn secondly_with_interval_2() {
     let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
-    let mut set = RRuleSet::new(dt_start);
 
     let rrule = RRule {
         freq: Frequency::Secondly,
@@ -350,7 +345,8 @@ fn secondly_with_interval_2() {
         ..Default::default()
     };
     let rrule = rrule.validate(dt_start).unwrap();
-    set.rrule(rrule);
+
+    let set = RRuleSet::new(dt_start).rrule(rrule);
 
     test_recurring_rrule_set(
         set,
@@ -361,7 +357,6 @@ fn secondly_with_interval_2() {
 #[test]
 fn minutely_with_interval_1() {
     let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
-    let mut set = RRuleSet::new(dt_start);
 
     let rrule = RRule {
         freq: Frequency::Minutely,
@@ -370,7 +365,8 @@ fn minutely_with_interval_1() {
         ..Default::default()
     };
     let rrule = rrule.validate(dt_start).unwrap();
-    set.rrule(rrule);
+
+    let set = RRuleSet::new(dt_start).rrule(rrule);
 
     test_recurring_rrule_set(
         set,
@@ -381,7 +377,6 @@ fn minutely_with_interval_1() {
 #[test]
 fn minutely_with_interval_2() {
     let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
-    let mut set = RRuleSet::new(dt_start);
 
     let rrule = RRule {
         freq: Frequency::Minutely,
@@ -391,7 +386,8 @@ fn minutely_with_interval_2() {
         ..Default::default()
     };
     let rrule = rrule.validate(dt_start).unwrap();
-    set.rrule(rrule);
+
+    let set = RRuleSet::new(dt_start).rrule(rrule);
 
     test_recurring_rrule_set(
         set,
@@ -402,7 +398,6 @@ fn minutely_with_interval_2() {
 #[test]
 fn hourly_with_interval_1() {
     let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
-    let mut set = RRuleSet::new(dt_start);
 
     let rrule = RRule {
         freq: Frequency::Hourly,
@@ -412,7 +407,8 @@ fn hourly_with_interval_1() {
         ..Default::default()
     };
     let rrule = rrule.validate(dt_start).unwrap();
-    set.rrule(rrule);
+
+    let set = RRuleSet::new(dt_start).rrule(rrule);
 
     test_recurring_rrule_set(
         set,
@@ -423,7 +419,6 @@ fn hourly_with_interval_1() {
 #[test]
 fn hourly_with_interval_2() {
     let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
-    let mut set = RRuleSet::new(dt_start);
 
     let rrule = RRule {
         freq: Frequency::Hourly,
@@ -434,7 +429,8 @@ fn hourly_with_interval_2() {
         ..Default::default()
     };
     let rrule = rrule.validate(dt_start).unwrap();
-    set.rrule(rrule);
+
+    let set = RRuleSet::new(dt_start).rrule(rrule);
 
     test_recurring_rrule_set(
         set,
@@ -445,7 +441,6 @@ fn hourly_with_interval_2() {
 #[test]
 fn daily_with_interval_1() {
     let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
-    let mut set = RRuleSet::new(dt_start);
 
     let rrule = RRule {
         freq: Frequency::Daily,
@@ -455,7 +450,8 @@ fn daily_with_interval_1() {
         ..Default::default()
     };
     let rrule = rrule.validate(dt_start).unwrap();
-    set.rrule(rrule);
+
+    let set = RRuleSet::new(dt_start).rrule(rrule);
 
     test_recurring_rrule_set(
         set,
@@ -466,7 +462,6 @@ fn daily_with_interval_1() {
 #[test]
 fn daily_with_interval_2() {
     let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
-    let mut set = RRuleSet::new(dt_start);
 
     let rrule = RRule {
         freq: Frequency::Daily,
@@ -478,7 +473,8 @@ fn daily_with_interval_2() {
         ..Default::default()
     };
     let rrule = rrule.validate(dt_start).unwrap();
-    set.rrule(rrule);
+
+    let set = RRuleSet::new(dt_start).rrule(rrule);
 
     test_recurring_rrule_set(
         set,
@@ -489,7 +485,6 @@ fn daily_with_interval_2() {
 #[test]
 fn weekly_with_interval_1() {
     let dt_start = ymd_hms(1960, 1, 4, 9, 0, 0);
-    let mut set = RRuleSet::new(dt_start);
 
     let rrule = RRule {
         freq: Frequency::Weekly,
@@ -502,7 +497,8 @@ fn weekly_with_interval_1() {
     };
     // 4th is Monday
     let rrule = rrule.validate(dt_start).unwrap();
-    set.rrule(rrule);
+
+    let set = RRuleSet::new(dt_start).rrule(rrule);
 
     test_recurring_rrule_set(
         set,
@@ -513,7 +509,6 @@ fn weekly_with_interval_1() {
 #[test]
 fn weekly_with_interval_2() {
     let dt_start = ymd_hms(1960, 1, 4, 9, 0, 0);
-    let mut set = RRuleSet::new(dt_start);
 
     let rrule = RRule {
         freq: Frequency::Weekly,
@@ -527,7 +522,8 @@ fn weekly_with_interval_2() {
     };
     // 4th is Monday
     let rrule = rrule.validate(dt_start).unwrap();
-    set.rrule(rrule);
+
+    let set = RRuleSet::new(dt_start).rrule(rrule);
 
     test_recurring_rrule_set(
         set,
@@ -538,7 +534,6 @@ fn weekly_with_interval_2() {
 #[test]
 fn monthly_with_interval_1() {
     let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
-    let mut set = RRuleSet::new(dt_start);
 
     let rrule = RRule {
         freq: Frequency::Monthly,
@@ -550,7 +545,8 @@ fn monthly_with_interval_1() {
         ..Default::default()
     };
     let rrule = rrule.validate(dt_start).unwrap();
-    set.rrule(rrule);
+
+    let set = RRuleSet::new(dt_start).rrule(rrule);
 
     test_recurring_rrule_set(
         set,
@@ -561,7 +557,6 @@ fn monthly_with_interval_1() {
 #[test]
 fn monthly_with_interval_2() {
     let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
-    let mut set = RRuleSet::new(dt_start);
 
     let rrule = RRule {
         freq: Frequency::Monthly,
@@ -574,7 +569,8 @@ fn monthly_with_interval_2() {
         ..Default::default()
     };
     let rrule = rrule.validate(dt_start).unwrap();
-    set.rrule(rrule);
+
+    let set = RRuleSet::new(dt_start).rrule(rrule);
 
     test_recurring_rrule_set(
         set,
@@ -585,7 +581,6 @@ fn monthly_with_interval_2() {
 #[test]
 fn yearly_with_interval_1() {
     let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
-    let mut set = RRuleSet::new(dt_start);
 
     let rrule = RRule {
         freq: Frequency::Yearly,
@@ -597,7 +592,8 @@ fn yearly_with_interval_1() {
         ..Default::default()
     };
     let rrule = rrule.validate(dt_start).unwrap();
-    set.rrule(rrule);
+
+    let set = RRuleSet::new(dt_start).rrule(rrule);
 
     test_recurring_rrule_set(
         set,
@@ -608,7 +604,6 @@ fn yearly_with_interval_1() {
 #[test]
 fn yearly_with_interval_2() {
     let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
-    let mut set = RRuleSet::new(dt_start);
 
     let rrule = RRule {
         freq: Frequency::Yearly,
@@ -621,7 +616,8 @@ fn yearly_with_interval_2() {
         ..Default::default()
     };
     let rrule = rrule.validate(dt_start).unwrap();
-    set.rrule(rrule);
+
+    let set = RRuleSet::new(dt_start).rrule(rrule);
 
     test_recurring_rrule_set(
         set,

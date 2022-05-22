@@ -44,6 +44,9 @@ jobs:
         run: |
           cd rrule
           cargo test --all-features --all-targets
+      - name: Run cargo doc
+        run: |
+          cargo doc --no-deps --all-features --examples
 
   audit:
     needs: test

@@ -11,15 +11,15 @@
 //! `dt_start`, `exdate` and `rdate` properties. See the examples below.
 //!
 //! # Generating occurrences
-//! [`RRule`] and [`RRuleSet`] both implement [`DateFilter`] which implements methods for easy filtering:
-//! - `all`: Generate all recurrences that match the rules (with a limit to prevent infinite loops).
-//! - `all_between`: Generate all recurrences that match the rules and are between two given dates.
-//! - `just_before`: Generate the last recurrence that matches the rules and is before a given date.
-//! - `just_after`: Generate the first recurrence that matches the rules and is after a given date.
+//! You can loop over the occurrences of a `RRuleSet` by calling any of the following methods:
+//! - [`RRuleSet::all`]: Generate all recurrences that match the rules (with a limit to prevent infinite loops).
+//! - [`RRuleSet::all_between`]: Generate all recurrences that match the rules and are between two given dates.
+//! - [`RRuleSet::just_before`]: Generate the last recurrence that matches the rules and is before a given date.
+//! - [`RRuleSet::just_after`]: Generate the first recurrence that matches the rules and is after a given date.
 //! - ...
 //!
 //! If you have some additional filters or want to work with infinite recurrence rules
-//! both [`RRule`] and [`RRuleSet`] implements the `Iterator` traits which makes them very flexible.
+//! [`RRuleSet`] implements the `Iterator` trait which makes them very flexible.
 //! All the methods above uses the iterator trait in its implementation as shown below.
 //! ```rust
 //! use chrono::{DateTime, TimeZone};
@@ -97,16 +97,19 @@
 
 #![forbid(unsafe_code)]
 #![deny(clippy::all)]
-// #![warn(missing_docs)]
+#![warn(missing_docs)]
+#![deny(rustdoc::broken_intra_doc_links)]
 
 mod core;
 mod error;
 mod iter;
 mod parser;
+mod tests;
 mod validator;
 
 pub use crate::core::{Frequency, NWeekday, RRule, RRuleSet};
 pub use crate::core::{Unvalidated, Validated};
 pub use chrono::Weekday;
 pub use error::{RRuleError, WithError};
-pub use iter::{RRuleIter, RRuleSetIter};
+pub use iter::{RRuleSetIter};
+pub(crate) use iter::{RRuleIter};

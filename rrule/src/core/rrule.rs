@@ -1,13 +1,16 @@
 use super::datetime::DateTime;
 use crate::core::utils::check_str_validity;
+use crate::iter::iterinfo::IterInfo;
 use crate::parser::parse_rule;
 use crate::parser::ParseError;
-use crate::validator::{check_limits, validate_rrule};
-use crate::{RRuleError, RRuleSet, Unvalidated, Validated};
-use chrono::{Month, Utc, Weekday};
-use chrono_tz::UTC;
+use crate::validator::check_limits;
+use crate::validator::validate_rrule;
+use crate::{RRuleError, RRuleIter, RRuleSet, Unvalidated, Validated};
+use chrono::{Datelike, Month, Timelike, Weekday};
+use chrono_tz::Tz;
 #[cfg(feature = "serde")]
 use serde_with::{serde_as, DeserializeFromStr, SerializeDisplay};
+use std::collections::VecDeque;
 use std::fmt::Display;
 use std::fmt::Formatter;
 use std::marker::PhantomData;
@@ -15,13 +18,21 @@ use std::str::FromStr;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 #[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
+/// The frequency of a recurrence.
 pub enum Frequency {
+    /// The recurrence occurs once every year.
     Yearly = 0,
+    /// The recurrence occurs once every month.
     Monthly = 1,
+    /// The recurrence occurs once every week.
     Weekly = 2,
+    /// The recurrence occurs once every day.
     Daily = 3,
+    /// The recurrence occurs once every hour.
     Hourly = 4,
+    /// The recurrence occurs once every minute.
     Minutely = 5,
+    /// The recurrence occurs once every second.
     Secondly = 6,
 }
 
@@ -68,7 +79,9 @@ impl FromStr for Frequency {
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
 pub enum NWeekday {
+    /// When it is every weekday of the month or year.
     Every(Weekday),
+    /// When it is the nth weekday of the month or year.
     /// The first member's value is from -366 to -1 and 1 to 366 depending on frequency
     Nth(i16, Weekday),
 }
@@ -203,63 +216,63 @@ fn weekday_to_str(d: Weekday) -> String {
 pub struct RRule<Stage = Validated> {
     /// The frequency of the rrule.
     /// For example: yearly, weekly, hourly
-    pub freq: Frequency,
+    pub(crate) freq: Frequency,
     /// The interval between each frequency iteration.
     /// For example:
     /// - A yearly frequency with an interval of `2` creates 1 event every two years.
     /// - An hourly frequency with an interval of `2` created 1 event every two hours.
-    pub interval: u16,
+    pub(crate) interval: u16,
     /// How many occurrences will be generated.
-    pub count: Option<u32>,
+    pub(crate) count: Option<u32>,
     /// The end date after which new events will no longer be generated.
     /// If the `DateTime` is equal to an instance of the event it will be the last event.
     #[cfg_attr(feature = "serde", serde_as(as = "DisplayFromStr"))]
-    pub until: Option<DateTime>,
+    pub(crate) until: Option<DateTime>,
     /// The start day of the week.
     /// This will affect recurrences based on weekly periods.
-    pub week_start: Weekday,
+    pub(crate) week_start: Weekday,
     /// Occurrence number corresponding to the frequency period.
     /// For example:
     /// - A monthly frequency with an `by_set_pos` of `-1` meaning the last day of the month.
     /// - An hourly frequency with an `by_set_pos` of `2` meaning the 2nd hour. (TODO Check)
-    pub by_set_pos: Vec<i32>,
+    pub(crate) by_set_pos: Vec<i32>,
     /// The months to apply the recurrence to.
     /// Can be a value from 1 to 12.
-    pub by_month: Vec<u8>,
+    pub(crate) by_month: Vec<u8>,
     /// The month days to apply the recurrence to.
     /// Can be a value from -31 to -1 and 1 to 31.
-    pub by_month_day: Vec<i8>,
-    pub by_n_month_day: Vec<i8>,
+    pub(crate) by_month_day: Vec<i8>,
+    pub(crate) by_n_month_day: Vec<i8>,
     /// The year days to apply the recurrence to.
     /// Can be a value from -366 to -1 and 1 to 366.
-    pub by_year_day: Vec<i16>,
+    pub(crate) by_year_day: Vec<i16>,
     /// The week numbers to apply the recurrence to.
     /// Week numbers have the meaning described in ISO8601, that is,
     /// the first week of the year is that containing at least four days of the new year.
     /// Week day starts counting on from `week_start` value.
     /// Can be a value from -53 to -1 and 1 to 53.
-    pub by_week_no: Vec<i8>,
+    pub(crate) by_week_no: Vec<i8>,
     /// The days of the week the rules should be recurring.
     /// Should be a value of `Weekday` and optionally with a prefix of -366 to 366 depending on frequency.
     /// Corresponds with `BYDAY` field.
-    pub by_weekday: Vec<NWeekday>,
+    pub(crate) by_weekday: Vec<NWeekday>,
     /// The hours to apply the recurrence to.
     /// Can be a value from 0 to 23.
-    pub by_hour: Vec<u8>,
+    pub(crate) by_hour: Vec<u8>,
     /// The minutes to apply the recurrence to.
     /// Can be a value from 0 to 59.
-    pub by_minute: Vec<u8>,
+    pub(crate) by_minute: Vec<u8>,
     /// The seconds to apply the recurrence to.
     /// Can be a value from 0 to 59.
-    pub by_second: Vec<u8>,
+    pub(crate) by_second: Vec<u8>,
     /// Extension, not part of RFC spec.
     /// Amount of days/months from Easter Sunday itself.
     /// Can be a value from -366 to 366.
     /// Note: Only used when `by-easter` feature flag is set. Otherwise, it is ignored.
-    pub by_easter: Option<i16>,
+    pub(crate) by_easter: Option<i16>,
     /// A phantom data to have the stage (unvalidated or validated).
     #[cfg_attr(feature = "serde", serde_as(as = "ignore"))]
-    pub stage: PhantomData<Stage>,
+    pub(crate) stage: PhantomData<Stage>,
 }
 
 impl Default for RRule<Unvalidated> {
@@ -321,8 +334,8 @@ impl RRule<Unvalidated> {
     /// If given, this must be a datetime instance specifying the
     /// upper-bound limit of the recurrence.
     #[must_use]
-    pub fn until(mut self, until: chrono::DateTime<Utc>) -> Self {
-        self.until = Some(until.with_timezone(&UTC));
+    pub fn until(mut self, until: chrono::DateTime<Tz>) -> Self {
+        self.until = Some(until);
         self
     }
 
@@ -428,13 +441,80 @@ impl RRule<Unvalidated> {
         self
     }
 
+    /// Fills in some additional fields in order to make iter work correctly.
+    #[allow(clippy::cast_possible_truncation)]
+    pub(crate) fn finalize_parsed_rrule(mut self, dt_start: &DateTime) -> RRule<Unvalidated> {
+        use std::cmp::Ordering;
+        // TEMP: move negative months to other list
+        let mut by_month_day = vec![];
+        let mut by_n_month_day = self.by_n_month_day;
+        for by_month_day_item in self.by_month_day {
+            match by_month_day_item.cmp(&0) {
+                Ordering::Greater => by_month_day.push(by_month_day_item),
+                Ordering::Less => by_n_month_day.push(by_month_day_item),
+                Ordering::Equal => {}
+            }
+        }
+        self.by_month_day = by_month_day;
+        self.by_n_month_day = by_n_month_day;
+
+        // Can only be set to true if feature flag is set.
+        let by_easter_is_some = if cfg!(feature = "by-easter") {
+            self.by_easter.is_some()
+        } else {
+            false
+        };
+
+        // Add some freq specific additional properties
+        if !(!self.by_week_no.is_empty()
+            || !self.by_year_day.is_empty()
+            || !self.by_month_day.is_empty()
+            || !self.by_n_month_day.is_empty()
+            || !self.by_weekday.is_empty()
+            || by_easter_is_some)
+        {
+            match self.freq {
+                Frequency::Yearly => {
+                    if self.by_month.is_empty() {
+                        self.by_month = vec![dt_start.month() as u8];
+                    }
+                    self.by_month_day = vec![dt_start.day() as i8];
+                }
+                Frequency::Monthly => {
+                    self.by_month_day = vec![dt_start.day() as i8];
+                }
+                Frequency::Weekly => {
+                    self.by_weekday = vec![NWeekday::Every(dt_start.weekday())];
+                }
+                _ => (),
+            };
+        }
+
+        // by_hour
+        if self.by_hour.is_empty() && self.freq < Frequency::Hourly {
+            self.by_hour = vec![dt_start.hour() as u8];
+        }
+
+        // by_minute
+        if self.by_minute.is_empty() && self.freq < Frequency::Minutely {
+            self.by_minute = vec![dt_start.minute() as u8];
+        }
+
+        // by_second
+        if self.by_second.is_empty() && self.freq < Frequency::Secondly {
+            self.by_second = vec![dt_start.second() as u8];
+        }
+
+        self
+    }
+
     /// Validates the [`RRule`] with the given `dt_start`.
     ///
     /// # Errors
     ///
     /// If the properties are not valid it will return [`RRuleError`].
     pub fn validate(self, dt_start: DateTime) -> Result<RRule<Validated>, RRuleError> {
-        let rrule = crate::parser::finalize_parsed_rrule(self, &dt_start);
+        let rrule = self.finalize_parsed_rrule(&dt_start);
 
         // Validate required checks (defined by RFC 5545)
         validate_rrule::validate_rrule_forced(&rrule, &dt_start)?;
@@ -469,11 +549,32 @@ impl RRule<Unvalidated> {
     ///
     /// Returns [`RRuleError::ValidationError`] in case the rrule is invalid.
     pub fn build(self, dt_start: DateTime) -> Result<RRuleSet, RRuleError> {
-        Ok(RRuleSet {
-            rrule: vec![self.validate(dt_start)?],
-            dt_start,
-            ..Default::default()
-        })
+        let rrule_set = RRuleSet::new(dt_start).set_rrules(vec![self.validate(dt_start)?]);
+        Ok(rrule_set)
+    }
+}
+
+impl RRule {
+    pub(crate) fn iter_with_ctx(&self, dt_start: DateTime) -> RRuleIter {
+        match RRuleIter::new(self, &dt_start) {
+            Ok(iter) => iter,
+            Err(err) => {
+                // Print error and create iterator that will ways return the error if used.
+                log::error!("{:?}", err);
+                let error = Some(err);
+                // This is mainly a dummy object, as it will ways return the error when called.
+                RRuleIter {
+                    counter_date: dt_start,
+                    ii: IterInfo::new_no_rebuild(self),
+                    timeset: vec![],
+                    dt_start,
+                    buffer: VecDeque::new(),
+                    finished: false,
+                    count: None,
+                    error,
+                }
+            }
+        }
     }
 }
 
@@ -621,5 +722,98 @@ impl<S> Display for RRule<S> {
         }
 
         write!(f, "{}", res.join(";"))
+    }
+}
+
+impl<S> RRule<S> {
+    /// Get the frequency of the recurrence.
+    #[inline]
+    pub fn get_freq(&self) -> Frequency {
+        self.freq
+    }
+
+/// Get the interval of the recurrence.
+    #[inline]
+    pub fn get_interval(&self) -> u16 {
+        self.interval
+    }
+
+    /// Get the count of the recurrence.
+    #[inline]
+    pub fn get_count(&self) -> Option<u32> {
+        self.count
+    }
+
+    /// Get the until of the recurrence.
+    #[inline]
+    pub fn get_until(&self) -> Option<&DateTime> {
+        self.until.as_ref()
+    }
+
+    /// Get the by_set_pos of the recurrence.
+    #[inline]
+    pub fn get_week_start(&self) -> Weekday {
+        self.week_start
+    }
+
+    /// Get the by_month of the recurrence.
+    #[inline]
+    pub fn get_by_set_pos(&self) -> &[i32] {
+        &self.by_set_pos
+    }
+
+    /// Get the by_month of the recurrence.
+    #[inline]
+    pub fn get_by_month(&self) -> &[u8] {
+        &self.by_month
+    }
+
+    /// Get the by_month_day of the recurrence.
+    #[inline]
+    pub fn get_by_month_day(&self) -> &[i8] {
+        &self.by_month_day
+    }
+
+    /// Get the by_year_day of the recurrence.
+    #[inline]
+    pub fn get_by_year_day(&self) -> &[i16] {
+        &self.by_year_day
+    }
+
+    /// Get the by_hour of the recurrence.
+    #[inline]
+    pub fn get_by_week_no(&self) -> &[i8] {
+        &self.by_week_no
+    }
+
+    /// Get the by_hour of the recurrence.
+    #[inline]
+    pub fn get_by_weekday(&self) -> &[NWeekday] {
+        &self.by_weekday
+    }
+
+    /// Get the by_hour of the recurrence.
+    #[inline]
+    pub fn get_by_hour(&self) -> &[u8] {
+        &self.by_hour
+    }
+
+    /// Get the by_minute of the recurrence.
+    #[inline]
+    pub fn get_by_minute(&self) -> &[u8] {
+        &self.by_minute
+    }
+
+    /// Get the by_second of the recurrence.
+    #[inline]
+    pub fn get_by_second(&self) -> &[u8] {
+        &self.by_second
+    }
+
+    /// Get the by_easter of the recurrence.
+    #[cfg(feature = "by-easter")]
+    #[inline]
+    pub fn get_by_easter(&self) -> Option<&i16> {
+        self.by_easter.as_ref()
     }
 }

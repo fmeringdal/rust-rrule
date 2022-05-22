@@ -10,16 +10,14 @@ use rrule::{Frequency, RRule};
 
 fn main() {
     // Build rrule set that occurs daily at 9:00 for 4 times
-    let mut rrule_set = RRule::default()
+    let rrule_set = RRule::default()
         .count(4)
         .freq(Frequency::Daily)
         .build(Berlin.ymd(2020, 1, 1).and_hms(9, 0, 0))
-        .expect("RRule invalid");
-
-    // Exdate in the UTC at 8:00 which is 9:00 in Berlin and therefore
-    // collides with the second rrule occurrence.
-    let exdate = UTC.ymd(2020, 1, 2).and_hms(8, 0, 0);
-    rrule_set.exdate(exdate);
+        .expect("RRule invalid")
+        // Exdate in the UTC at 8:00 which is 9:00 in Berlin and therefore
+        // collides with the second rrule occurrence.
+        .exdate(UTC.ymd(2020, 1, 2).and_hms(8, 0, 0));
 
     let recurrences = rrule_set.all(100).unwrap();
     // RRule contained 4 recurrences but 1 was filtered away by the exdate

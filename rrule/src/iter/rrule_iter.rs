@@ -3,7 +3,6 @@ use super::{
     utils::from_ordinal, IterInfo, MAX_ITER_LOOP,
 };
 use crate::core::utils::collect_or_error;
-use crate::iter::IntoIteratorWithCtx;
 use crate::{
     core::{DateTime, Time},
     Frequency, RRule, RRuleError, WithError,
@@ -13,22 +12,22 @@ use chrono::{Datelike, Timelike};
 use std::collections::VecDeque;
 
 #[derive(Debug, Clone)]
-pub struct RRuleIter<'a> {
+pub(crate) struct RRuleIter<'a> {
     /// Date the iterator is currently at.
-    counter_date: DateTime,
-    ii: IterInfo<'a>,
-    timeset: Vec<Time>,
-    dt_start: DateTime,
-    // Buffer of datetimes not yet yielded
-    buffer: VecDeque<DateTime>,
+    pub(crate) counter_date: DateTime,
+    pub(crate) ii: IterInfo<'a>,
+    pub(crate) timeset: Vec<Time>,
+    pub(crate) dt_start: DateTime,
+    /// Buffer of datetimes not yet yielded
+    pub(crate) buffer: VecDeque<DateTime>,
     /// Indicate of iterator should not return more items.
     /// Once set `true` is will always return `None`.
-    finished: bool,
+    pub(crate) finished: bool,
     /// Number of events that should still be generated before the end.
     /// Counter always goes down after each iteration.
-    count: Option<u32>,
+    pub(crate) count: Option<u32>,
     /// Store the last error, so it can be handled by the user.
-    error: Option<RRuleError>,
+    pub(crate) error: Option<RRuleError>,
 }
 
 impl<'a> RRuleIter<'a> {
@@ -279,34 +278,5 @@ impl<'a> Iterator for RRuleIter<'a> {
             self.finished = true;
         }
         self.buffer.pop_front()
-    }
-}
-
-impl<'a> IntoIteratorWithCtx for &'a RRule {
-    type Item = DateTime;
-    type Context = DateTime;
-
-    type IntoIter = RRuleIter<'a>;
-
-    fn into_iter_with_ctx(self, dt_start: Self::Context) -> Self::IntoIter {
-        match RRuleIter::new(self, &dt_start) {
-            Ok(iter) => iter,
-            Err(err) => {
-                // Print error and create iterator that will ways return the error if used.
-                log::error!("{:?}", err);
-                let error = Some(err);
-                // This is mainly a dummy object, as it will ways return the error when called.
-                RRuleIter {
-                    counter_date: dt_start,
-                    ii: IterInfo::new_no_rebuild(self),
-                    timeset: vec![],
-                    dt_start,
-                    buffer: VecDeque::new(),
-                    finished: false,
-                    count: None,
-                    error,
-                }
-            }
-        }
     }
 }

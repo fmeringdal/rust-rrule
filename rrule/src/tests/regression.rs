@@ -1,6 +1,5 @@
-mod common;
-
-use rrule::RRuleSet;
+use crate::tests::common;
+use crate::RRuleSet;
 
 #[test]
 fn issue_34() {

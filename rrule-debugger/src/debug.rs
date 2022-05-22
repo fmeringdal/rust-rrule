@@ -1,4 +1,5 @@
 #![allow(dead_code, unused_imports)]
+
 use chrono::{DateTime, TimeZone, Weekday};
 use chrono_tz::{Tz, UTC};
 use rrule::{Frequency, RRule, RRuleSet};
@@ -21,19 +22,14 @@ fn test_from_string() {
 }
 
 fn test_parsed_rrule() {
-    let rrule = RRule {
-        freq: Frequency::Daily,
-        count: Some(20),
-        week_start: Weekday::Sun,
-        by_month: vec![],
-        by_hour: vec![9],
-        by_minute: vec![0],
-        by_second: vec![0],
-        by_year_day: vec![],
-        by_easter: Some(0),
-        ..Default::default()
-    };
-    let rrule = rrule.build(ymd_hms(1997, 9, 2, 9, 0, 0)).unwrap();
+    let properties = RRule::new(Frequency::Daily)
+        .count(20)
+        .week_start(Weekday::Sun)
+        .by_hour(vec![9])
+        .by_minute(vec![0])
+        .by_second(vec![0]);
+
+    let rrule = properties.build(ymd_hms(1997, 9, 2, 9, 0, 0)).unwrap();
     let (list, err) = rrule.all_with_error(50);
 
     println!("Error: {:#?}", err);

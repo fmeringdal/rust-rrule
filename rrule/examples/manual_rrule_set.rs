@@ -1,12 +1,12 @@
-//! # Manual [`RRuleSet`]
+//! # Manual [`rrule::RRuleSet`]
 //!
-//! Create an [`RRuleSet`] object manually.
+//! Create an [`rrule::RRuleSet`] object manually.
 
 use chrono::{Datelike, TimeZone};
 use chrono_tz::UTC;
 use rrule::{Frequency, NWeekday, RRule, Weekday};
 
-/// ## Construct [`RRuleSet`] from one `rrule` and `exrule`
+/// ## Construct [`rrule::RRuleSet`] from one `rrule` and `exrule`
 /// The rrule will occur weekly on Tuesday and Wednesday and the exrule
 /// will occur weekly on Wednesday, and therefore the end result will contain
 /// weekly recurrences on Wednesday only.

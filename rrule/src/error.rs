@@ -5,11 +5,15 @@ use thiserror::Error;
 use crate::{parser::ParseError, validator::ValidationError};
 
 #[derive(Error, Debug, Clone, PartialEq)]
+/// The error type for the rrule crate.
 pub enum RRuleError {
+    /// Parsing error
     #[error("RRule parsing error: {0}")]
     ParserError(#[from] ParseError),
+    /// Validation error
     #[error("RRule validation error: {0}")]
     ValidationError(#[from] ValidationError),
+    /// Iterator error
     #[error("RRule iterator error: {0}")]
     IterError(String),
 }
@@ -21,6 +25,7 @@ impl RRuleError {
     }
 }
 
+/// A trait for [`crate::RRuleSetIter`] and the private `crate::RRuleIter` to handle their errors.
 pub trait WithError {
     /// Return `true` if an error has occurred.
     fn has_err(&self) -> bool;

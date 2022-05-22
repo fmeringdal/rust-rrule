@@ -2,12 +2,12 @@
 
 mod checks;
 mod easter;
-mod iterinfo;
+pub(crate) mod iterinfo;
 mod masks;
 mod monthinfo;
 mod operation_errors;
 mod pos_list;
-mod rrule_iter;
+pub(crate) mod rrule_iter;
 mod rruleset_iter;
 mod utils;
 mod yearinfo;
@@ -21,7 +21,7 @@ use chrono::{Datelike, Duration, Timelike};
 use iterinfo::IterInfo;
 use operation_errors::{checked_add_datetime_duration, checked_add_u32, checked_mul_u32};
 use pos_list::build_pos_list;
-pub use rrule_iter::RRuleIter;
+pub(crate) use rrule_iter::RRuleIter;
 pub use rruleset_iter::RRuleSetIter;
 use utils::includes;
 
@@ -466,11 +466,4 @@ fn make_timeset(
         counter_date.second() as u8,
         counter_date.timestamp_subsec_millis() as u16,
     )
-}
-
-pub trait IntoIteratorWithCtx {
-    type Item;
-    type Context;
-    type IntoIter: Iterator<Item = Self::Item>;
-    fn into_iter_with_ctx(self, ctx: Self::Context) -> Self::IntoIter;
 }

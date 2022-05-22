@@ -9,12 +9,15 @@ This project follows the [Semantic Versioning standard](https://semver.org/).
 
 - API change: `RRule` has two stages, `Unvalidated` and `Validated`. When you initialize it, it is `Unvalidated` and by calling the `validate` method, it will change to `Validated`.
 - API change: `RRule` represents only RRULE in the iCalendar specification. And `RRuleSet` is for the whole iCalendar string.
-- API change: The iterator over `RRule` is not public anymore.
+- API change: There is no `Default` for `RRuleSet`, instead use `new(UTC.ymd(1970, 1, 1).and_hms(0, 0, 0))` method to have the same behavior.
+- API change: All fields of `RRule` and `RRuleSet` are private, instead there are a set of new methods to get and set values of fields on both structs. It's been done to have a safer API.
 
 ### Removed
 
 - API change: Removed `dt_start` and `dt_end` from `RRule`.
 - API change: Removed `RRuleProperties`, instead you can use `RRule<Unvalidated>`.
+- API change: `DateFilter` trait has been removed, since now we can only iterate over `RRuleSet`.
+- API change: The iterator over `RRule` is not public anymore.
 
 ## Version 0.7.3 (2022-05-05)
 

@@ -1,8 +1,6 @@
-mod common;
-
-use common::ymd_hms;
-use rrule::{Frequency, NWeekday, Unvalidated, Weekday};
-use rrule::{RRule, RRuleSet};
+use crate::tests::common::ymd_hms;
+use crate::{Frequency, NWeekday, Unvalidated, Weekday};
+use crate::{RRule, RRuleSet};
 use std::str::FromStr;
 
 #[test]

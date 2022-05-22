@@ -1,9 +1,9 @@
 #![cfg(test)]
 #![allow(dead_code)]
 
+use crate::{RRule, RRuleError, RRuleSet, Unvalidated};
 use chrono::{DateTime, TimeZone};
 use chrono_tz::{Tz, UTC};
-use rrule::{RRule, RRuleError, RRuleSet, Unvalidated};
 use std::fmt::Debug;
 
 pub fn ymd_hms(

@@ -1,9 +1,8 @@
 //! This file contains examples from:
 //! <https://icalendar.org/iCalendar-RFC-5545/3-8-5-3-recurrence-rule.html>
 
-mod common;
-
-use rrule::RRuleSet;
+use crate::tests::common;
+use crate::RRuleSet;
 
 // ------------------------------------------ Daily ---------------------------------------------
 

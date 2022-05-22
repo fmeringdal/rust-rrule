@@ -1,8 +1,8 @@
 #![allow(clippy::wildcard_imports, clippy::module_name_repetitions)]
 
 use crate::take_data::*;
-use std::marker::PhantomData;
-
+use chrono::Month;
+use num_traits::cast::FromPrimitive;
 use rrule::{Frequency, RRule, RRuleSet};
 
 /// This function uses the data to construct a deterministic input for [`RRuleSet`].
@@ -37,50 +37,76 @@ pub fn take_rrule_from_data(mut data: &[u8]) -> Option<RRuleSet> {
     // if data.len() < 166 {
     //     return None;
     // }
-    let rrule = RRule {
-        freq: match take_byte(&mut data) % 7 {
-            0 => Frequency::Yearly,
-            1 => Frequency::Monthly,
-            2 => Frequency::Weekly,
-            3 => Frequency::Daily,
-            4 => Frequency::Hourly,
-            5 => Frequency::Minutely,
-            _ => Frequency::Secondly,
-        },
-        interval: take_data_u16(&mut data),
-        count: match take_byte(&mut data) % 2 {
-            // use 1 + 4 bytes
-            0 => Some(take_data_u32(&mut data)),
-            _ => None,
-        },
-        until: match take_byte(&mut data) % 2 {
-            // use 1 + 20 bytes
-            0 => Some(take_datetime(&mut data)),
-            _ => None,
-        },
-        week_start: take_weekday(&mut data),
-        by_set_pos: take_vec_i32(&mut data),
-        by_month: take_vec_u8(&mut data),
-        by_month_day: take_vec_i8(&mut data),
-        by_n_month_day: take_vec_i8(&mut data),
-        by_year_day: take_vec_i16(&mut data),
-        by_week_no: take_vec_i8(&mut data),
-        by_weekday: take_vec_of_nweekday(&mut data),
-        by_hour: take_vec_u8(&mut data),
-        by_minute: take_vec_u8(&mut data),
-        by_second: take_vec_u8(&mut data),
-        #[cfg(feature = "by-easter")]
-        by_easter: match take_byte(&mut data) % 2 {
-            // use 1 + 2 bytes
-            0 => Some(take_data_i16(&mut data)),
-            _ => None,
-        },
-        #[cfg(not(feature = "by-easter"))]
-        by_easter: None,
 
-        stage: PhantomData,
+    let freq = match take_byte(&mut data) % 7 {
+        0 => Frequency::Yearly,
+        1 => Frequency::Monthly,
+        2 => Frequency::Weekly,
+        3 => Frequency::Daily,
+        4 => Frequency::Hourly,
+        5 => Frequency::Minutely,
+        _ => Frequency::Secondly,
     };
-    match rrule.build(take_datetime(&mut data)) {
+    let interval = take_data_u16(&mut data);
+    let count = match take_byte(&mut data) % 2 {
+        // use 1 + 4 bytes
+        0 => Some(take_data_u32(&mut data)),
+        _ => None,
+    };
+    let until = match take_byte(&mut data) % 2 {
+        // use 1 + 20 bytes
+        0 => Some(take_datetime(&mut data)),
+        _ => None,
+    };
+    let week_start = take_weekday(&mut data);
+    let by_set_pos = take_vec_i32(&mut data);
+    let by_month = take_vec_u8(&mut data)
+        .iter()
+        .map(|x| Month::from_u8(*x).unwrap())
+        .collect::<Vec<_>>();
+    let by_month_day = take_vec_i8(&mut data);
+    let _by_n_month_day = take_vec_i8(&mut data);
+    let by_year_day = take_vec_i16(&mut data);
+    let by_week_no = take_vec_i8(&mut data);
+    let by_weekday = take_vec_of_nweekday(&mut data);
+    let by_hour = take_vec_u8(&mut data);
+    let by_minute = take_vec_u8(&mut data);
+    let by_second = take_vec_u8(&mut data);
+    #[cfg(feature = "by-easter")]
+    let by_easter = match take_byte(&mut data) % 2 {
+        // use 1 + 2 bytes
+        0 => Some(take_data_i16(&mut data)),
+        _ => None,
+    };
+    let dt_start = take_datetime(&mut data);
+
+    let mut rrule = RRule::new(freq)
+        .interval(interval)
+        .week_start(week_start)
+        .by_set_pos(by_set_pos)
+        .by_month(&by_month)
+        .by_month_day(by_month_day)
+        .by_year_day(by_year_day)
+        .by_week_no(by_week_no)
+        .by_weekday(by_weekday)
+        .by_hour(by_hour)
+        .by_minute(by_minute)
+        .by_second(by_second);
+
+    if let Some(c) = count {
+        rrule = rrule.count(c);
+    }
+
+    if let Some(u) = until {
+        rrule = rrule.until(u);
+    }
+
+    #[cfg(feature = "by-easter")]
+    if let Some(be) = by_easter {
+        rrule = rrule.by_easter(be);
+    }
+
+    match rrule.build(dt_start) {
         Ok(rrule) => Some(rrule),
         Err(err) => {
             println!("{}", err);

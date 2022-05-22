@@ -1,11 +1,11 @@
 use super::{rrule_iter::RRuleIter, MAX_ITER_LOOP};
-use crate::iter::IntoIteratorWithCtx;
 use crate::{core::DateTime, RRule, RRuleError, RRuleSet, WithError};
 use chrono::TimeZone;
 use std::collections::BTreeSet;
 use std::{collections::HashMap, iter::Iterator};
 
 #[derive(Debug, Clone)]
+/// Iterator over all the dates in an [`RRuleSet`].
 pub struct RRuleSetIter<'a> {
     queue: HashMap<usize, DateTime>,
     rrule_iters: Vec<RRuleIter<'a>>,
@@ -31,7 +31,7 @@ impl<'a> RRuleSetIter<'a> {
 
         let mut date = dates.remove(dates.len() - 1);
         let mut loop_counter: u32 = 0;
-        while Self::is_generated_date_excluded(&Some(date), exrules, exdates, dt_start) {
+        while Self::is_date_excluded(&Some(date), exrules, exdates, dt_start) {
             if dates.is_empty() {
                 return Ok(None);
             }
@@ -58,7 +58,7 @@ impl<'a> RRuleSetIter<'a> {
     ) -> Result<Option<DateTime>, RRuleError> {
         let mut date = rrule_iter.next();
         let mut loop_counter: u32 = 0;
-        while Self::is_generated_date_excluded(&date, exrules, exdates, dt_start) {
+        while Self::is_date_excluded(&date, exrules, exdates, dt_start) {
             // Prevent infinite loops
             loop_counter += 1;
             if loop_counter >= MAX_ITER_LOOP {
@@ -75,7 +75,7 @@ impl<'a> RRuleSetIter<'a> {
         Ok(date)
     }
 
-    fn is_generated_date_excluded(
+    fn is_date_excluded(
         date: &Option<DateTime>,
         exrules: &[RRule],
         exdates: &mut BTreeSet<i64>,
@@ -90,18 +90,14 @@ impl<'a> RRuleSetIter<'a> {
                     let start = date.timezone().timestamp(ts - 1, 0);
                     let end = date.timezone().timestamp(ts + 1, 0);
                     for exrule in exrules {
-                        let ex = exrule.into_iter_with_ctx(*dt_start);
+                        let ex = exrule.iter_with_ctx(*dt_start);
                         for date in ex.all_between(start, end, true).unwrap() {
                             exdates.insert(date.timestamp());
                         }
                     }
                 }
 
-                if exdates.contains(&ts) {
-                    return true;
-                }
-
-                false
+                exdates.contains(&ts)
             }
         }
     }
@@ -226,7 +222,7 @@ impl<'a> IntoIterator for &'a RRuleSet {
             rrule_iters: self
                 .rrule
                 .iter()
-                .map(|rrule| rrule.into_iter_with_ctx(self.dt_start))
+                .map(|rrule| rrule.iter_with_ctx(self.dt_start))
                 .collect(),
             rdates: rdates_sorted,
             exrules: &self.exrule,
@@ -234,16 +230,5 @@ impl<'a> IntoIterator for &'a RRuleSet {
             error: None,
             dt_start: self.dt_start,
         }
-    }
-}
-
-impl<'a> IntoIteratorWithCtx for &'a RRuleSet {
-    type Item = DateTime;
-    type Context = DateTime;
-
-    type IntoIter = RRuleSetIter<'a>;
-
-    fn into_iter_with_ctx(self, _ctx: Self::Context) -> Self::IntoIter {
-        self.into_iter()
     }
 }

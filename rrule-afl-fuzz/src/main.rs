@@ -9,7 +9,7 @@ use rrule::RRuleSet;
 
 #[allow(clippy::single_match)]
 fn main() {
-    let fuzz_selector: u8 = 2;
+    let fuzz_selector: u8 = 1;
     // let fuzz_target
     match fuzz_selector {
         // Fuzz the RRuleSet from string

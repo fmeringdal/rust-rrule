@@ -11,13 +11,12 @@ publish = false
 afl = "*"
 chrono = "0.4.19"
 chrono-tz = "0.6.0"
+num-traits = "0.2.15"
 
 [dependencies.rrule]
 path = "../rrule"
 
 [features]
 default = []
-
 no-validation-limits = ["rrule/no-validation-limits"]
-
 by-easter = ["rrule/by-easter"]

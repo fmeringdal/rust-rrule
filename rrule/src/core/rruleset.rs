@@ -3,8 +3,6 @@ use crate::core::utils::{check_str_validity, collect_or_error, collect_with_erro
 use crate::core::DateTime;
 use crate::parser::build_rruleset;
 use crate::{RRule, RRuleError};
-use chrono::TimeZone;
-use chrono_tz::UTC;
 #[cfg(feature = "serde")]
 use serde_with::{serde_as, DeserializeFromStr, SerializeDisplay};
 use std::fmt::Display;
@@ -16,28 +14,15 @@ use std::str::FromStr;
 #[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
 pub struct RRuleSet {
     /// List of rrules.
-    pub rrule: Vec<RRule>,
+    pub(crate) rrule: Vec<RRule>,
     /// List of rdates.
-    pub rdate: Vec<DateTime>,
+    pub(crate) rdate: Vec<DateTime>,
     /// List of exules.
-    pub exrule: Vec<RRule>,
+    pub(crate) exrule: Vec<RRule>,
     /// List of exdates.
-    pub exdate: Vec<DateTime>,
+    pub(crate) exdate: Vec<DateTime>,
     /// The start datetime of the recurring event.
-    pub dt_start: DateTime,
-}
-
-impl Default for RRuleSet {
-    /// Creates an empty [`RRuleSet`], starting from 1970-01-01 00:00:00 UTC.
-    fn default() -> Self {
-        Self {
-            rrule: vec![],
-            rdate: vec![],
-            exrule: vec![],
-            exdate: vec![],
-            dt_start: UTC.ymd(1970, 1, 1).and_hms(0, 0, 0), // Unix Epoch
-        }
-    }
+    pub(crate) dt_start: DateTime,
 }
 
 impl RRuleSet {
@@ -46,31 +31,106 @@ impl RRuleSet {
     pub fn new(dt_start: DateTime) -> Self {
         Self {
             dt_start,
-            ..Default::default()
+            rrule: vec![],
+            rdate: vec![],
+            exrule: vec![],
+            exdate: vec![],
         }
     }
 
     /// Adds a new rrule to the set.
-    pub fn rrule(&mut self, rrule: RRule) {
+    #[inline]
+    pub fn rrule(mut self, rrule: RRule) -> Self {
         self.rrule.push(rrule);
+        self
     }
 
     /// Adds a new exrule to the set.
     #[deprecated(
         note = "Based on [iCalendar RFC](https://datatracker.ietf.org/doc/html/rfc5545#appendix-A.3), exrules are deprecated."
     )]
-    pub fn exrule(&mut self, rrule: RRule) {
+    #[inline]
+    pub fn exrule(mut self, rrule: RRule) -> Self {
         self.exrule.push(rrule);
+        self
     }
 
     /// Adds a new rdate to the set.
-    pub fn rdate(&mut self, rdate: DateTime) {
+    #[inline]
+    pub fn rdate(mut self, rdate: DateTime) -> Self {
         self.rdate.push(rdate);
+        self
     }
 
     /// Adds a new exdate to the set.
-    pub fn exdate(&mut self, exdate: DateTime) {
+    #[inline]
+    pub fn exdate(mut self, exdate: DateTime) -> Self {
         self.exdate.push(exdate);
+        self
+    }
+
+    /// Sets the rrules of the set.
+    #[inline]
+    pub fn set_rrules(mut self, rrules: Vec<RRule>) -> Self {
+        self.rrule = rrules;
+        self
+    }
+
+    /// Sets the exrules of the set.
+    #[deprecated(
+        note = "Based on [iCalendar RFC](https://datatracker.ietf.org/doc/html/rfc5545#appendix-A.3), exrules are deprecated."
+    )]
+    #[inline]
+    pub fn set_exrules(mut self, exrules: Vec<RRule>) -> Self {
+        self.exrule = exrules;
+        self
+    }
+
+    /// Sets the rdates of the set.
+    #[inline]
+    pub fn set_rdates(mut self, rdates: Vec<DateTime>) -> Self {
+        self.rdate = rdates;
+        self
+    }
+
+    /// Set the exdates of the set.
+    #[inline]
+    pub fn set_exdates(mut self, exdates: Vec<DateTime>) -> Self {
+        self.exdate = exdates;
+        self
+    }
+
+    /// Returns the rrules of the set.
+    #[inline]
+    pub fn get_rrule(&self) -> &Vec<RRule> {
+        &self.rrule
+    }
+
+    /// Returns the exrules of the set.
+    #[deprecated(
+        note = "Based on [iCalendar RFC](https://datatracker.ietf.org/doc/html/rfc5545#appendix-A.3), exrules are deprecated."
+    )]
+    #[inline]
+    pub fn get_exrule(&self) -> &Vec<RRule> {
+        &self.exrule
+    }
+
+    /// Returns the rdates of the set.
+    #[inline]
+    pub fn get_rdate(&self) -> &Vec<DateTime> {
+        &self.rdate
+    }
+
+    /// Returns the exdates of the set.
+    #[inline]
+    pub fn get_exdate(&self) -> &Vec<DateTime> {
+        &self.exdate
+    }
+
+    /// Returns the start datetime of the recurring event.
+    #[inline]
+    pub fn get_dt_start(&self) -> &DateTime {
+        &self.dt_start
     }
 
     /// Returns all the recurrences of the rrule.

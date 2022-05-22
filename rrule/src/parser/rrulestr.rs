@@ -1,7 +1,7 @@
 use super::ParseError;
 use crate::core::Unvalidated;
 use crate::{core::DateTime, Frequency, NWeekday, RRule, RRuleError, RRuleSet};
-use chrono::{Datelike, NaiveDate, TimeZone, Timelike, Weekday};
+use chrono::{NaiveDate, TimeZone, Weekday};
 use chrono_tz::{Tz, UTC};
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -32,96 +32,24 @@ pub(crate) fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleError> {
         dt_start,
     } = parse_input(&s)?;
 
-    let mut rset = RRuleSet::new(dt_start);
+    #[allow(deprecated)]
+    let rrule_set = RRuleSet::new(dt_start)
+        .set_rrules(
+            rrule_vals
+                .into_iter()
+                .map(|r| r.validate(dt_start))
+                .collect::<Result<Vec<_>, _>>()?,
+        )
+        .set_rdates(rdate_vals)
+        .set_exrules(
+            exrule_vals
+                .into_iter()
+                .map(|r| r.validate(dt_start))
+                .collect::<Result<Vec<_>, _>>()?,
+        )
+        .set_exdates(exdate_vals);
 
-    for rrule_prop in rrule_vals {
-        rset.rrule(rrule_prop.validate(dt_start)?);
-    }
-
-    for rdate in rdate_vals {
-        rset.rdate(rdate);
-    }
-
-    for exrule_prop in exrule_vals {
-        let exrule = exrule_prop.validate(dt_start)?;
-        #[allow(deprecated)]
-        rset.exrule(exrule);
-    }
-
-    for exdate in exdate_vals {
-        rset.exdate(exdate);
-    }
-
-    Ok(rset)
-}
-
-/// Fills in some additional fields in order to make iter work correctly.
-#[allow(clippy::cast_possible_truncation)]
-pub(crate) fn finalize_parsed_rrule(
-    mut rrule: RRule<Unvalidated>,
-    dt_start: &DateTime,
-) -> RRule<Unvalidated> {
-    use std::cmp::Ordering;
-    // TEMP: move negative months to other list
-    let mut by_month_day = vec![];
-    let mut by_n_month_day = rrule.by_n_month_day;
-    for by_month_day_item in rrule.by_month_day {
-        match by_month_day_item.cmp(&0) {
-            Ordering::Greater => by_month_day.push(by_month_day_item),
-            Ordering::Less => by_n_month_day.push(by_month_day_item),
-            Ordering::Equal => {}
-        }
-    }
-    rrule.by_month_day = by_month_day;
-    rrule.by_n_month_day = by_n_month_day;
-
-    // Can only be set to true if feature flag is set.
-    let by_easter_is_some = if cfg!(feature = "by-easter") {
-        rrule.by_easter.is_some()
-    } else {
-        false
-    };
-
-    // Add some freq specific additional properties
-    if !(!rrule.by_week_no.is_empty()
-        || !rrule.by_year_day.is_empty()
-        || !rrule.by_month_day.is_empty()
-        || !rrule.by_n_month_day.is_empty()
-        || !rrule.by_weekday.is_empty()
-        || by_easter_is_some)
-    {
-        match rrule.freq {
-            Frequency::Yearly => {
-                if rrule.by_month.is_empty() {
-                    rrule.by_month = vec![dt_start.month() as u8];
-                }
-                rrule.by_month_day = vec![dt_start.day() as i8];
-            }
-            Frequency::Monthly => {
-                rrule.by_month_day = vec![dt_start.day() as i8];
-            }
-            Frequency::Weekly => {
-                rrule.by_weekday = vec![NWeekday::Every(dt_start.weekday())];
-            }
-            _ => (),
-        };
-    }
-
-    // by_hour
-    if rrule.by_hour.is_empty() && rrule.freq < Frequency::Hourly {
-        rrule.by_hour = vec![dt_start.hour() as u8];
-    }
-
-    // by_minute
-    if rrule.by_minute.is_empty() && rrule.freq < Frequency::Minutely {
-        rrule.by_minute = vec![dt_start.minute() as u8];
-    }
-
-    // by_second
-    if rrule.by_second.is_empty() && rrule.freq < Frequency::Secondly {
-        rrule.by_second = vec![dt_start.second() as u8];
-    }
-    rrule
+    Ok(rrule_set)
 }
 
 fn parse_datestring_bit<T: FromStr>(
@@ -684,10 +612,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, ParseError> {
                     continue;
                 }
 
-                rrule_vals.push(finalize_parsed_rrule(
-                    parse_rule(&parsed_line.value)?,
-                    &dt_start,
-                ));
+                rrule_vals.push(parse_rule(&parsed_line.value)?.finalize_parsed_rrule(&dt_start));
             }
             "EXRULE" => {
                 if !parsed_line.params.is_empty() {
@@ -696,10 +621,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, ParseError> {
                 if parsed_line.value.is_empty() {
                     continue;
                 }
-                exrule_vals.push(finalize_parsed_rrule(
-                    parse_rule(&parsed_line.value)?,
-                    &dt_start,
-                ));
+                exrule_vals.push(parse_rule(&parsed_line.value)?.finalize_parsed_rrule(&dt_start));
             }
             "RDATE" => {
                 let matches = match RDATE_RE.captures(line) {

@@ -1,6 +1,5 @@
-mod common;
-
-use rrule::RRuleSet;
+use crate::tests::common;
+use crate::RRuleSet;
 
 /// Monthly on the 31st of the month
 #[test]

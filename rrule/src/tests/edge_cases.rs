@@ -1,4 +1,4 @@
-use rrule::RRuleSet;
+use crate::RRuleSet;
 
 #[test]
 fn non_ascii_string() {
