@@ -732,7 +732,7 @@ impl<S> RRule<S> {
         self.freq
     }
 
-/// Get the interval of the recurrence.
+    /// Get the interval of the recurrence.
     #[inline]
     pub fn get_interval(&self) -> u16 {
         self.interval

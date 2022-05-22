@@ -111,5 +111,5 @@ pub use crate::core::{Frequency, NWeekday, RRule, RRuleSet};
 pub use crate::core::{Unvalidated, Validated};
 pub use chrono::Weekday;
 pub use error::{RRuleError, WithError};
-pub use iter::{RRuleSetIter};
-pub(crate) use iter::{RRuleIter};
+pub(crate) use iter::RRuleIter;
+pub use iter::RRuleSetIter;
