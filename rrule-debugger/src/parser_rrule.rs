@@ -15,10 +15,10 @@ pub fn from_crash_file(id: u32, data: &[u8]) {
 
 pub fn parse_rrule_from_string(rrule: &str) {
     match RRuleSet::from_str(rrule) {
-        Ok(rule) => {
-            println!("RRule data: {:#?}", rule);
-            let (list, err) = rule.all_with_error(50);
-            crate::print_all_datetimes(list);
+        Ok(rrule) => {
+            println!("RRule data: {:#?}", rrule);
+            let (list, err) = rrule.all_with_error(50);
+            crate::print_all_datetimes(&list);
             if let Some(err) = err {
                 println!("RRule ended with error: {}", err);
             }

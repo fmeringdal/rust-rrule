@@ -1,7 +1,8 @@
 use super::datetime::DateTime;
+use crate::core::utils::check_str_validity;
 use crate::parser::parse_rule;
 use crate::parser::ParseError;
-use crate::validator::{check_limits, validate_properties};
+use crate::validator::{check_limits, validate_rrule};
 use crate::{RRuleError, RRuleSet, Unvalidated, Validated};
 use chrono::{Month, Utc, Weekday};
 use chrono_tz::UTC;
@@ -43,6 +44,8 @@ impl FromStr for Frequency {
     type Err = ParseError;
 
     fn from_str(value: &str) -> Result<Self, Self::Err> {
+        check_str_validity(value)?;
+
         let freq = match &value.to_uppercase()[..] {
             "YEARLY" => Frequency::Yearly,
             "MONTHLY" => Frequency::Monthly,
@@ -57,16 +60,36 @@ impl FromStr for Frequency {
     }
 }
 
+/// This indicates the nth occurrence of a specific day within the MONTHLY or YEARLY RRULE.
+///
+/// For example, `NWeekday::Nth(1, MO)` represents the first Monday within the month or year,
+/// whereas `NWeekday::Nth(-1, MO)` represents the last Monday of the month or year.
+/// And `NWeekday::Every(MO)`, means all Mondays of the month or year.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
 pub enum NWeekday {
     Every(Weekday),
-    /// Value from -366 to -1 and 1 to 366 depending on frequency
+    /// The first member's value is from -366 to -1 and 1 to 366 depending on frequency
     Nth(i16, Weekday),
 }
 
 impl NWeekday {
     /// Creates a new week occurrence
+    ///
+    /// # Arguments
+    ///
+    /// * `n` - The nth occurrence of the week day. Should be between -366 and 366, and not 0.
+    /// * `weekday` - The week day
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use chrono::Weekday;
+    /// use rrule::NWeekday;
+    ///
+    /// let nth_weekday = NWeekday::nth(1, Weekday::Mon);
+    /// ```
+    #[must_use]
     pub fn new(number: Option<i16>, weekday: Weekday) -> Self {
         match number {
             Some(number) => Self::Nth(number, weekday),
@@ -78,13 +101,35 @@ impl NWeekday {
 impl FromStr for NWeekday {
     type Err = ParseError;
 
+    /// Generates an [`NWeekday`] from a string
+    ///
+    /// # Examples
+    /// ```
+    /// use chrono::Weekday;
+    /// use rrule::NWeekday;
+    ///
+    /// assert_eq!("1MO".parse::<NWeekday>().unwrap(), NWeekday::Nth(1, Weekday::Mon));
+    /// assert_eq!("-1MO".parse::<NWeekday>().unwrap(), NWeekday::Nth(-1, Weekday::Mon));
+    /// assert_eq!("MO".parse::<NWeekday>().unwrap(), NWeekday::Every(Weekday::Mon));
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the string is not a valid [`NWeekday`]
+    /// ```
+    /// use rrule::NWeekday;
+    ///
+    /// assert_eq!("1".parse::<NWeekday>(), Err(rrule::ParseError::InvalidNWeekday("1".to_string())));
+    /// assert_eq!("0MO".parse::<NWeekday>(), Err(rrule::ParseError::InvalidNWeekday("0MO".to_string())));
+    /// ```
     fn from_str(value: &str) -> Result<Self, Self::Err> {
         let length = value.len();
 
-        if length < 2 {
+        if check_str_validity(value).is_err() || length < 2 {
             return Err(ParseError::InvalidWeekday(value.to_string()));
         }
 
+        // it doesn't have any issue, because we checked the string is ASCII above
         let wd = str_to_weekday(&value[(length - 2)..])?;
         let nth = value[..(length - 2)].parse::<i16>().unwrap_or_default();
 
@@ -97,13 +142,22 @@ impl FromStr for NWeekday {
 }
 
 impl Display for NWeekday {
+    /// Returns a string representation of the [`NWeekday`]
+    ///
+    /// ```
+    /// use chrono::Weekday;
+    /// use rrule::NWeekday;
+    ///
+    /// assert_eq!(format!("{}", NWeekday::Nth(1, Weekday::Mon)), "1MO");
+    /// assert_eq!(format!("{}", NWeekday::Every(Weekday::Mon)), "MO");
+    /// ```
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let weekday = match self {
-            NWeekday::Every(wd) => weekday_to_str(wd),
+            NWeekday::Every(wd) => weekday_to_str(*wd),
             NWeekday::Nth(number, wd) => {
-                let mut wd_str = weekday_to_str(wd);
+                let mut wd_str = weekday_to_str(*wd);
                 if *number != 1 {
-                    wd_str = format!("{}{}", number, wd_str)
+                    wd_str = format!("{}{}", number, wd_str);
                 };
                 wd_str
             }
@@ -127,7 +181,7 @@ fn str_to_weekday(d: &str) -> Result<Weekday, ParseError> {
     Ok(day)
 }
 
-fn weekday_to_str(d: &Weekday) -> String {
+fn weekday_to_str(d: Weekday) -> String {
     match d {
         Weekday::Mon => "MO".to_string(),
         Weekday::Tue => "TU".to_string(),
@@ -139,6 +193,10 @@ fn weekday_to_str(d: &Weekday) -> String {
     }
 }
 
+/// Represents a complete RRULE property based on the [iCalendar specification](https://datatracker.ietf.org/doc/html/rfc5545#section-3.8.5.3)
+/// It has two stages, based on the attached type:
+/// - `Unvalidated`, which is the raw string representation of the RRULE
+/// - `Validated`, which is when the RRule has been parsed and validated, based on the start date
 #[cfg_attr(feature = "serde", serde_as)]
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
@@ -199,11 +257,13 @@ pub struct RRule<Stage = Validated> {
     /// Can be a value from -366 to 366.
     /// Note: Only used when `by-easter` feature flag is set. Otherwise, it is ignored.
     pub by_easter: Option<i16>,
+    /// A phantom data to have the stage (unvalidated or validated).
     #[cfg_attr(feature = "serde", serde_as(as = "ignore"))]
     pub stage: PhantomData<Stage>,
 }
 
 impl Default for RRule<Unvalidated> {
+    /// Creates a new unvalidated `RRule` with default values and Yearly frequency.
     fn default() -> Self {
         Self {
             freq: Frequency::Yearly,
@@ -222,12 +282,14 @@ impl Default for RRule<Unvalidated> {
             by_minute: Vec::new(),
             by_second: Vec::new(),
             by_easter: None,
-            stage: Default::default(),
+            stage: PhantomData,
         }
     }
 }
 
 impl RRule<Unvalidated> {
+    /// Creates a new unvalidated `RRule` with default values and given frequency.
+    #[must_use]
     pub fn new(freq: Frequency) -> Self {
         Self {
             freq,
@@ -236,18 +298,21 @@ impl RRule<Unvalidated> {
     }
 
     /// The FREQ rule part identifies the type of recurrence rule.
+    #[must_use]
     pub fn freq(mut self, freq: Frequency) -> Self {
         self.freq = freq;
         self
     }
 
     /// The interval between each freq iteration.
+    #[must_use]
     pub fn interval(mut self, interval: u16) -> Self {
         self.interval = interval;
         self
     }
 
     /// If given, this determines how many occurrences will be generated.
+    #[must_use]
     pub fn count(mut self, count: u32) -> Self {
         self.count = Some(count);
         self
@@ -255,6 +320,7 @@ impl RRule<Unvalidated> {
 
     /// If given, this must be a datetime instance specifying the
     /// upper-bound limit of the recurrence.
+    #[must_use]
     pub fn until(mut self, until: chrono::DateTime<Utc>) -> Self {
         self.until = Some(until.with_timezone(&UTC));
         self
@@ -262,6 +328,7 @@ impl RRule<Unvalidated> {
 
     /// The week start day. This will affect recurrences based on weekly periods.
     /// The default week start is [`Weekday::Mon`].
+    #[must_use]
     pub fn week_start(mut self, week_start: Weekday) -> Self {
         self.week_start = week_start;
         self
@@ -269,9 +336,10 @@ impl RRule<Unvalidated> {
 
     /// If given, it must be either an integer, or a sequence of integers, positive or negative.
     /// Each given integer will specify an occurrence number, corresponding to the nth occurrence
-    /// of the rule inside the frequency period. For example, a by_set_pos of -1 if combined with
-    /// a MONTHLY frequency, and a by_weekday of (MO, TU, WE, TH, FR), will result in the last
+    /// of the rule inside the frequency period. For example, a `by_set_pos` of -1 if combined with
+    /// a MONTHLY frequency, and a `by_weekday` of (MO, TU, WE, TH, FR), will result in the last
     /// work day of every month.
+    #[must_use]
     pub fn by_set_pos(mut self, by_set_pos: Vec<i32>) -> Self {
         self.by_set_pos = by_set_pos;
         self
@@ -279,7 +347,9 @@ impl RRule<Unvalidated> {
 
     /// If given, it must be either an integer, or a sequence of integers, meaning
     /// the months to apply the recurrence to.
-    pub fn by_month(mut self, by_month: Vec<Month>) -> Self {
+    #[must_use]
+    #[allow(clippy::cast_possible_truncation)]
+    pub fn by_month(mut self, by_month: &[Month]) -> Self {
         self.by_month = by_month
             .iter()
             .map(|month| month.number_from_month() as u8)
@@ -289,6 +359,7 @@ impl RRule<Unvalidated> {
 
     /// If given, it must be either an integer, or a sequence of integers, meaning
     /// the month days to apply the recurrence to.
+    #[must_use]
     pub fn by_month_day(mut self, by_month_day: Vec<i8>) -> Self {
         self.by_month_day = by_month_day;
         self
@@ -296,6 +367,7 @@ impl RRule<Unvalidated> {
 
     /// If given, it must be either an integer, or a sequence of integers, meaning
     /// the year days to apply the recurrence to.
+    #[must_use]
     pub fn by_year_day(mut self, by_year_day: Vec<i16>) -> Self {
         self.by_year_day = by_year_day;
         self
@@ -305,6 +377,7 @@ impl RRule<Unvalidated> {
     /// the week numbers to apply the recurrence to. Week numbers have the meaning
     /// described in ISO8601, that is, the first week of the year is that containing
     /// at least four days of the new year.
+    #[must_use]
     pub fn by_week_no(mut self, by_week_no: Vec<i8>) -> Self {
         self.by_week_no = by_week_no;
         self
@@ -315,6 +388,7 @@ impl RRule<Unvalidated> {
     /// When given, these variables will define the weekdays where the recurrence
     /// will be applied.
     /// A nth occurrence prefix can be given.
+    #[must_use]
     pub fn by_weekday(mut self, by_weekday: Vec<NWeekday>) -> Self {
         self.by_weekday = by_weekday;
         self
@@ -322,6 +396,7 @@ impl RRule<Unvalidated> {
 
     /// If given, it must be either an integer, or a sequence of integers,
     /// meaning the hours to apply the recurrence to.
+    #[must_use]
     pub fn by_hour(mut self, by_hour: Vec<u8>) -> Self {
         self.by_hour = by_hour;
         self
@@ -329,6 +404,7 @@ impl RRule<Unvalidated> {
 
     /// If given, it must be either an integer, or a sequence of integers,
     /// meaning the minutes to apply the recurrence to.
+    #[must_use]
     pub fn by_minute(mut self, by_minute: Vec<u8>) -> Self {
         self.by_minute = by_minute;
         self
@@ -336,6 +412,7 @@ impl RRule<Unvalidated> {
 
     /// If given, it must be either an integer, or a sequence of integers,
     /// meaning the seconds to apply the recurrence to.
+    #[must_use]
     pub fn by_second(mut self, by_second: Vec<u8>) -> Self {
         self.by_second = by_second;
         self
@@ -343,47 +420,54 @@ impl RRule<Unvalidated> {
 
     /// If given, it must be either an integer, or a sequence of integers, positive or negative.
     /// Each integer will define an offset from the Easter Sunday. Passing the offset 0 to
-    /// by_easter will yield the Easter Sunday itself. This is an extension to the RFC specification.
+    /// `by_easter` will yield the Easter Sunday itself. This is an extension to the RFC specification.
     #[cfg(feature = "by-easter")]
+    #[must_use]
     pub fn by_easter(mut self, by_easter: i16) -> Self {
         self.by_easter = Some(by_easter);
         self
     }
 
-    // Just validate
+    /// Validates the [`RRule`] with the given `dt_start`.
+    ///
+    /// # Errors
+    ///
+    /// If the properties are not valid it will return [`RRuleError`].
     pub fn validate(self, dt_start: DateTime) -> Result<RRule<Validated>, RRuleError> {
-        let properties = crate::parser::finalize_parsed_properties(self, &dt_start)?;
+        let rrule = crate::parser::finalize_parsed_rrule(self, &dt_start);
 
         // Validate required checks (defined by RFC 5545)
-        validate_properties::validate_properties_forced(&properties, &dt_start)?;
+        validate_rrule::validate_rrule_forced(&rrule, &dt_start)?;
         // Validate (optional) sanity checks. (arbitrary limits)
         // Can be disabled by `no-validation-limits` feature flag, see README.md for more info.
-        check_limits::check_limits(&properties, &dt_start)?;
+        check_limits::check_limits(&rrule, &dt_start)?;
 
         Ok(RRule {
-            freq: properties.freq,
-            interval: properties.interval,
-            count: properties.count,
-            until: properties.until,
-            week_start: properties.week_start,
-            by_set_pos: properties.by_set_pos,
-            by_month: properties.by_month,
-            by_month_day: properties.by_month_day,
-            by_n_month_day: properties.by_n_month_day,
-            by_year_day: properties.by_year_day,
-            by_week_no: properties.by_week_no,
-            by_weekday: properties.by_weekday,
-            by_hour: properties.by_hour,
-            by_minute: properties.by_minute,
-            by_second: properties.by_second,
-            by_easter: properties.by_easter,
-            stage: Default::default(),
+            freq: rrule.freq,
+            interval: rrule.interval,
+            count: rrule.count,
+            until: rrule.until,
+            week_start: rrule.week_start,
+            by_set_pos: rrule.by_set_pos,
+            by_month: rrule.by_month,
+            by_month_day: rrule.by_month_day,
+            by_n_month_day: rrule.by_n_month_day,
+            by_year_day: rrule.by_year_day,
+            by_week_no: rrule.by_week_no,
+            by_weekday: rrule.by_weekday,
+            by_hour: rrule.by_hour,
+            by_minute: rrule.by_minute,
+            by_second: rrule.by_second,
+            by_easter: rrule.by_easter,
+            stage: PhantomData,
         })
     }
 
-    /// Create and validate the given properties and make sure they are valid before
-    /// creating an RRule struct.
-    /// If the properties are not valid it will return an error.
+    /// Validates the [`RRule`] with the given `dt_start` and creates an [`RRuleSet`] struct.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`RRuleError::ValidationError`] in case the rrule is invalid.
     pub fn build(self, dt_start: DateTime) -> Result<RRuleSet, RRuleError> {
         Ok(RRuleSet {
             rrule: vec![self.validate(dt_start)?],
@@ -397,6 +481,8 @@ impl FromStr for RRule<Unvalidated> {
     type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        check_str_validity(s)?;
+
         parse_rule(s)
     }
 }
@@ -404,9 +490,10 @@ impl FromStr for RRule<Unvalidated> {
 impl<S> Display for RRule<S> {
     /// Generates a string based on the [iCalendar RRULE spec](https://datatracker.ietf.org/doc/html/rfc5545#section-3.8.5.3).
     /// It doesn't prepend "RRULE:" to the string.
-    /// When you call this function on `RRule<Unvalidated>`, it can generate an invalid string, like 'FREQ=YEARLY;INTERVAL=-1'
-    /// But it supposed to always generate a valid string on `RRule<Validated>`.
-    /// So you want a valid string, it's smarter to always use `rrule.validate(ds_start)?.to_string()`.
+    /// When you call this function on [`RRule<Unvalidated>`], it can generate an invalid string, like 'FREQ=YEARLY;INTERVAL=-1'
+    /// But it supposed to always generate a valid string on [`RRule<Validated>`].
+    /// So if you want a valid string, it's smarter to always use `rrule.validate(ds_start)?.to_string()`.
+    #[allow(clippy::too_many_lines)]
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let mut res = Vec::with_capacity(15);
         res.push(format!("FREQ={}", &self.freq));
@@ -434,7 +521,7 @@ impl<S> Display for RRule<S> {
                 "BYSETPOS={}",
                 self.by_set_pos
                     .iter()
-                    .map(|v| v.to_string())
+                    .map(ToString::to_string)
                     .collect::<Vec<_>>()
                     .join(",")
             ));
@@ -445,7 +532,7 @@ impl<S> Display for RRule<S> {
                 "BYMONTH={}",
                 self.by_month
                     .iter()
-                    .map(|v| v.to_string())
+                    .map(ToString::to_string)
                     .collect::<Vec<_>>()
                     .join(",")
             ));
@@ -456,7 +543,7 @@ impl<S> Display for RRule<S> {
                 "BYMONTHDAY={}",
                 self.by_month_day
                     .iter()
-                    .map(|v| v.to_string())
+                    .map(ToString::to_string)
                     .collect::<Vec<_>>()
                     .join(",")
             ));
@@ -467,7 +554,7 @@ impl<S> Display for RRule<S> {
                 "BYWEEKNO={}",
                 self.by_week_no
                     .iter()
-                    .map(|v| v.to_string())
+                    .map(ToString::to_string)
                     .collect::<Vec<_>>()
                     .join(",")
             ));
@@ -478,7 +565,7 @@ impl<S> Display for RRule<S> {
                 "BYHOUR={}",
                 self.by_hour
                     .iter()
-                    .map(|v| v.to_string())
+                    .map(ToString::to_string)
                     .collect::<Vec<_>>()
                     .join(",")
             ));
@@ -489,7 +576,7 @@ impl<S> Display for RRule<S> {
                 "BYMINUTE={}",
                 self.by_minute
                     .iter()
-                    .map(|v| v.to_string())
+                    .map(ToString::to_string)
                     .collect::<Vec<_>>()
                     .join(",")
             ));
@@ -500,7 +587,7 @@ impl<S> Display for RRule<S> {
                 "BYSECOND={}",
                 self.by_second
                     .iter()
-                    .map(|v| v.to_string())
+                    .map(ToString::to_string)
                     .collect::<Vec<_>>()
                     .join(",")
             ));
@@ -511,7 +598,7 @@ impl<S> Display for RRule<S> {
                 "BYYEARDAY={}",
                 self.by_year_day
                     .iter()
-                    .map(|v| v.to_string())
+                    .map(ToString::to_string)
                     .collect::<Vec<_>>()
                     .join(",")
             ));
@@ -522,7 +609,7 @@ impl<S> Display for RRule<S> {
                 "BYDAY={}",
                 self.by_weekday
                     .iter()
-                    .map(|v| v.to_string())
+                    .map(ToString::to_string)
                     .collect::<Vec<_>>()
                     .join(",")
             ));

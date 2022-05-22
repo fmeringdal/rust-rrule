@@ -1,5 +1,10 @@
 use super::DateTime;
+use crate::parser::ParseError;
 use crate::{RRuleError, WithError};
+use std::ops::{
+    Bound::{Excluded, Unbounded},
+    RangeBounds,
+};
 
 /// Collects all dates, but once an error is found it will return the error
 /// and not the items that where already found.
@@ -58,7 +63,7 @@ where
         }
     }
     // Make sure that the user always know when there are more dates.
-    if list.len() >= u16::MAX as usize {
+    if list.len() > u16::MAX as usize {
         (
             list,
             Some(RRuleError::new_iter_err(format!(
@@ -73,10 +78,6 @@ where
 
 /// Checks if `date` is after `end`.
 fn has_reached_the_end(date: &DateTime, end: &Option<DateTime>, inclusive: bool) -> bool {
-    use std::ops::{
-        Bound::{Excluded, Unbounded},
-        RangeBounds,
-    };
     if inclusive {
         match end {
             Some(end) => !(..=end).contains(&date),
@@ -97,10 +98,6 @@ pub(super) fn is_in_range(
     end: &Option<DateTime>,
     inclusive: bool,
 ) -> bool {
-    use std::ops::{
-        Bound::{Excluded, Unbounded},
-        RangeBounds,
-    };
     // Should it include or not include the start and/or end date?
     if inclusive {
         match (start, end) {
@@ -116,6 +113,19 @@ pub(super) fn is_in_range(
             (None, Some(end)) => (Unbounded, Excluded(end)).contains(date),
             (None, None) => true,
         }
+    }
+}
+
+/// Helper function to validate the input string.
+pub(crate) fn check_str_validity(s: &str) -> Result<(), ParseError> {
+    if !s.chars().all(|c| {
+        char::is_ascii_alphanumeric(&c)
+            || char::is_ascii_punctuation(&c)
+            || char::is_ascii_whitespace(&c)
+    }) {
+        Err(ParseError::InvalidInputString)
+    } else {
+        Ok(())
     }
 }
 

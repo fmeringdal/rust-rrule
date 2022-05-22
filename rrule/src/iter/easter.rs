@@ -1,3 +1,8 @@
+#![allow(
+    clippy::cast_possible_truncation,
+    clippy::cast_precision_loss,
+    clippy::cast_sign_loss
+)]
 #![cfg(feature = "by-easter")]
 
 use crate::RRuleError;
@@ -22,7 +27,7 @@ pub(crate) fn easter(y: i32, offset: i16) -> Result<Vec<isize>, RRuleError> {
     let day = ((h + l - 7 * m + 114) % 31) + 1;
 
     let year = y as i32;
-    let day = (day + offset as i32) as u32;
+    let day = (day + i32::from(offset)) as u32;
     let date = match Utc.ymd_opt(year, month, day) {
         LocalResult::None => Err(RRuleError::new_iter_err(format!(
             "Invalid date in UTC timezone: `{}/{}/{}`",

@@ -1,3 +1,5 @@
+#![allow(clippy::module_name_repetitions)]
+
 use thiserror::Error;
 
 #[derive(Error, Debug, Clone, PartialEq)]
@@ -28,4 +30,6 @@ pub enum ParseError {
     // TODO: remove this variant and use specific errors
     #[error("{0}")]
     Generic(String),
+    #[error("Input string contains some invalid characters.")]
+    InvalidInputString,
 }

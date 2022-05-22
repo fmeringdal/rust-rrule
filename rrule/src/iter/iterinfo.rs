@@ -36,6 +36,7 @@ impl<'a> IterInfo<'a> {
             month_info: None,
             easter_mask: None,
         };
+        #[allow(clippy::cast_possible_truncation)]
         ii.rebuild(dt_start.year(), dt_start.month() as u8)?;
 
         Ok(ii)
@@ -43,7 +44,7 @@ impl<'a> IterInfo<'a> {
 
     pub fn rebuild(&mut self, year: i32, month: u8) -> Result<(), RRuleError> {
         if self.month_info.is_none() || year != self.month_info.as_ref().unwrap().last_year {
-            self.year_info = Some(rebuild_year(year, self.rrule)?);
+            self.year_info = Some(rebuild_year(year, self.rrule));
         }
 
         let by_weekday_nth_only = self
@@ -141,66 +142,61 @@ impl<'a> IterInfo<'a> {
         let year_len = self
             .year_len()
             .ok_or_else(|| RRuleError::new_iter_err("`year_len()` returned `None`"))?;
-        let v = (0..year_len as u64).collect();
-        Ok((v, 0, year_len as u64))
+        let v = (0..u64::from(year_len)).collect();
+        Ok((v, 0, u64::from(year_len)))
     }
 
-    pub fn month_dayset(&self, month: u8) -> Result<(Vec<u64>, u64, u64), RRuleError> {
+    pub fn month_dayset(&self, month: u8) -> (Vec<u64>, u64, u64) {
         let month_range = self.month_range();
         let start = month_range[month as usize - 1];
-        let end = month_range[month as usize] as u64;
-        let set = (0..self.year_len().unwrap_or_default() as u64)
+        let end = u64::from(month_range[month as usize]);
+        let set = (0..u64::from(self.year_len().unwrap_or_default()))
             .map(|i| if i < end { i } else { 0 })
             .collect();
-        Ok((set, start as u64, end as u64))
+        (set, u64::from(start), end as u64)
     }
 
-    pub fn weekday_set(
-        &self,
-        year: i32,
-        month: u8,
-        day: u8,
-    ) -> Result<(Vec<u64>, u64, u64), RRuleError> {
+    pub fn weekday_set(&self, year: i32, month: u8, day: u8) -> (Vec<u64>, u64, u64) {
         let set_len = self.year_len().unwrap() + 7;
         let mut set = vec![0; set_len as usize];
 
+        #[allow(clippy::cast_sign_loss)]
         let mut i: u64 = (to_ordinal(
             &chrono::Utc
-                .ymd(year as i32, month as u32, day as u32)
+                .ymd(year, u32::from(month), u32::from(day))
                 .and_hms(0, 0, 0),
         ) - self.year_ordinal().unwrap()) as u64; // TODO can panic when number was negative
 
         let start = i;
+        #[allow(clippy::cast_possible_truncation)]
         for _ in 0..7 {
-            if i >= set_len as u64 {
+            if i >= u64::from(set_len) {
                 break;
             }
             set[i as usize] = i;
             i += 1;
+            #[allow(clippy::cast_possible_truncation)]
             if self.weekday_mask()[i as usize] == self.rrule.week_start.num_days_from_monday() as u8
             {
                 break;
             }
         }
-        Ok((set, start, i))
+        (set, start, i)
     }
 
-    pub fn day_dayset(
-        &self,
-        year: i32,
-        month: u8,
-        day: u8,
-    ) -> Result<(Vec<u64>, u64, u64), RRuleError> {
+    #[allow(clippy::cast_possible_truncation)]
+    pub fn day_dayset(&self, year: i32, month: u8, day: u8) -> (Vec<u64>, u64, u64) {
         let mut set = vec![0; self.year_len().unwrap() as usize];
 
+        #[allow(clippy::cast_sign_loss)]
         let i = (to_ordinal(
             &chrono::Utc
-                .ymd(year as i32, month as u32, day as u32)
+                .ymd(year, u32::from(month), u32::from(day))
                 .and_hms(0, 0, 0),
         ) - self.year_ordinal().unwrap()) as u64;
 
         set[i as usize] = i;
-        Ok((set, i, i + 1))
+        (set, i, i + 1)
     }
 
     pub fn hour_timeset(&self, hour: u8, _minute: u8, second: u8, millisecond: u16) -> Vec<Time> {
@@ -225,29 +221,29 @@ impl<'a> IterInfo<'a> {
         set
     }
 
+    #[allow(clippy::unused_self)]
     pub fn sec_timeset(&self, hour: u8, minute: u8, second: u8, millisecond: u16) -> Vec<Time> {
         vec![Time::new(hour, minute, second, millisecond)]
     }
 
     pub fn get_dayset(
         &self,
-        freq: &Frequency,
+        freq: Frequency,
         year: i32,
         month: u8,
         day: u8,
     ) -> Result<(Vec<u64>, u64, u64), RRuleError> {
         match freq {
             Frequency::Yearly => self.year_dayset(),
-            Frequency::Monthly => self.month_dayset(month),
-            Frequency::Weekly => self.weekday_set(year, month, day),
-            Frequency::Daily => self.day_dayset(year, month, day),
-            _ => self.day_dayset(year, month, day),
+            Frequency::Monthly => Ok(self.month_dayset(month)),
+            Frequency::Weekly => Ok(self.weekday_set(year, month, day)),
+            _ => Ok(self.day_dayset(year, month, day)),
         }
     }
 
     pub fn get_timeset(
         &self,
-        freq: &Frequency,
+        freq: Frequency,
         hour: u8,
         minute: u8,
         second: u8,

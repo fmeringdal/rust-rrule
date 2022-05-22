@@ -1,3 +1,5 @@
+#![allow(clippy::cast_possible_truncation, clippy::doc_markdown)]
+
 mod debug;
 mod iter_rrule;
 mod parser_rrule;
@@ -61,7 +63,7 @@ fn main() {
     initialize_logger(&opts);
 
     let data_files: Vec<Vec<u8>> = if let Some(id) = opts.id {
-        vec![read_crash_file(id as u32).unwrap_or_default()]
+        vec![read_crash_file(u32::from(id)).unwrap_or_default()]
     } else if opts.all {
         read_all_crash_file()
     } else {
@@ -120,12 +122,9 @@ fn read_all_crash_file() -> Vec<Vec<u8>> {
     list
 }
 
-pub fn print_all_datetimes(list: Vec<DateTime<Tz>>) {
+pub fn print_all_datetimes(list: &[DateTime<Tz>]) {
     let formatter = |dt: &DateTime<Tz>| -> String { format!("    \"{}\",\n", dt.to_rfc3339()) };
-    println!(
-        "[\n{}]",
-        list.iter().map(formatter).collect::<Vec<_>>().join(""),
-    );
+    println!("[\n{}]", list.iter().map(formatter).collect::<String>(),);
 }
 
 /// Setup logger. This will select where to print the log message and how many.

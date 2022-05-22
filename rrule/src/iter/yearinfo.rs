@@ -2,7 +2,7 @@ use super::{
     masks::MASKS,
     utils::{get_year_len, pymod, to_ordinal},
 };
-use crate::{RRule, RRuleError};
+use crate::RRule;
 use chrono::{Datelike, TimeZone, Utc};
 
 #[derive(Debug, Clone)]
@@ -39,8 +39,9 @@ pub(crate) struct BaseMasks {
 }
 
 fn base_year_masks(year: i32) -> BaseMasks {
-    let first_year_day = Utc.ymd(year, 1, 1).and_hms_milli(0, 0, 0, 0);
+    let first_year_day = Utc.ymd(year, 1, 1).and_hms(0, 0, 0);
     let year_len = get_year_len(year);
+    #[allow(clippy::cast_possible_truncation)]
     let weekday = first_year_day.weekday().num_days_from_monday() as u8;
 
     if year_len == 365 {
@@ -62,11 +63,19 @@ fn base_year_masks(year: i32) -> BaseMasks {
     }
 }
 
-pub(crate) fn rebuild_year(year: i32, properties: &RRule) -> Result<YearInfo, RRuleError> {
-    let first_year_day = Utc.ymd(year, 1, 1).and_hms_milli(0, 0, 0, 0);
+// TODO: too many lines of code.
+#[warn(clippy::too_many_lines)]
+#[allow(
+    clippy::cast_possible_truncation,
+    clippy::cast_possible_wrap,
+    clippy::cast_precision_loss,
+    clippy::cast_sign_loss
+)]
+pub(crate) fn rebuild_year(year: i32, rrule: &RRule) -> YearInfo {
+    let first_year_day = Utc.ymd(year, 1, 1).and_hms(0, 0, 0);
 
-    let year_len = get_year_len(year) as u32;
-    let next_year_len = get_year_len(year + 1) as u32;
+    let year_len = u32::from(get_year_len(year));
+    let next_year_len = u32::from(get_year_len(year + 1));
     let year_ordinal = to_ordinal(&first_year_day) as i64;
     let year_weekday = first_year_day.weekday().num_days_from_monday() as u8;
 
@@ -85,20 +94,20 @@ pub(crate) fn rebuild_year(year: i32, properties: &RRule) -> Result<YearInfo, RR
         weekday_mask: base_masks.weekday_mask,
     };
 
-    if properties.by_week_no.is_empty() {
-        return Ok(result);
+    if rrule.by_week_no.is_empty() {
+        return result;
     }
 
     let mut week_no_mask = vec![0; year_len as usize + 7];
 
-    let option_week_start = properties.week_start.num_days_from_monday() as u8;
+    let option_week_start = rrule.week_start.num_days_from_monday() as u8;
     let mut no1_week_start = pymod((7 - year_weekday + option_week_start) as isize, 7);
     let first_week_start = no1_week_start;
     let year_len_ext = if no1_week_start >= 4 {
         no1_week_start = 0;
         // Number of days in the year, plus the days we got
         // from last year.
-        result.year_len as isize + pymod(year_weekday as isize - properties.week_start as isize, 7)
+        result.year_len as isize + pymod(year_weekday as isize - rrule.week_start as isize, 7)
     } else {
         // Number of days in the year, minus the days we
         // left in last year.
@@ -110,7 +119,7 @@ pub(crate) fn rebuild_year(year: i32, properties: &RRule) -> Result<YearInfo, RR
     //const num_weeks = Math.floor(div + mod / 4)
     let num_weeks = div + (year_mod / 4);
 
-    for &(mut n) in &properties.by_week_no {
+    for &(mut n) in &rrule.by_week_no {
         if n < 0 {
             n += (num_weeks + 1) as i8;
         }
@@ -130,14 +139,13 @@ pub(crate) fn rebuild_year(year: i32, properties: &RRule) -> Result<YearInfo, RR
         for _ in 0..7 {
             week_no_mask[i as usize] = 1;
             i += 1;
-            if result.weekday_mask[i as usize] == properties.week_start.num_days_from_monday() as u8
-            {
+            if result.weekday_mask[i as usize] == rrule.week_start.num_days_from_monday() as u8 {
                 break;
             }
         }
     }
 
-    if properties.by_week_no.iter().any(|&week_no| week_no == 1) {
+    if rrule.by_week_no.iter().any(|&week_no| week_no == 1) {
         // Check week number 1 of next year as well
         // orig-TODO : Check -num_weeks for next year.
         let mut i = no1_week_start + num_weeks * 7;
@@ -150,8 +158,7 @@ pub(crate) fn rebuild_year(year: i32, properties: &RRule) -> Result<YearInfo, RR
             for _ in 0..7 {
                 week_no_mask[i as usize] = 1;
                 i += 1;
-                if result.weekday_mask[i as usize]
-                    == properties.week_start.num_days_from_monday() as u8
+                if result.weekday_mask[i as usize] == rrule.week_start.num_days_from_monday() as u8
                 {
                     break;
                 }
@@ -166,28 +173,28 @@ pub(crate) fn rebuild_year(year: i32, properties: &RRule) -> Result<YearInfo, RR
         // got days from last year, so there are no
         // days from last year's last week number in
         // this year.
-        let lnum_weeks = if !properties.by_week_no.iter().any(|&week_no| week_no == -1) {
-            let lyear_weekday = Utc.ymd(year - 1, 1, 1).weekday().num_days_from_monday() as isize;
+        let l_num_weeks = if rrule.by_week_no.iter().any(|&week_no| week_no == -1) {
+            -1
+        } else {
+            let l_year_weekday = Utc.ymd(year - 1, 1, 1).weekday().num_days_from_monday() as isize;
 
-            let ln_no1_week_start = pymod(7 - lyear_weekday + properties.week_start as isize, 7);
+            let ln_no1_week_start = pymod(7 - l_year_weekday + rrule.week_start as isize, 7);
 
-            let lyear_len = get_year_len(year - 1) as isize;
+            let l_year_len = get_year_len(year - 1) as isize;
             let week_start = if ln_no1_week_start >= 4 {
                 //ln_no1_week_start = 0;
-                lyear_len + pymod(lyear_weekday - properties.week_start as isize, 7)
+                l_year_len + pymod(l_year_weekday - rrule.week_start as isize, 7)
             } else {
                 year_len as isize - no1_week_start
             };
 
             52 + (pymod(week_start, 7) / 4) as i8
-        } else {
-            -1
         };
 
-        if properties
+        if rrule
             .by_week_no
             .iter()
-            .any(|&week_no| week_no == lnum_weeks)
+            .any(|&week_no| week_no == l_num_weeks)
         {
             for i in 0..no1_week_start {
                 week_no_mask[i as usize] = 1;
@@ -197,5 +204,5 @@ pub(crate) fn rebuild_year(year: i32, properties: &RRule) -> Result<YearInfo, RR
 
     result.week_no_mask = Some(week_no_mask);
 
-    Ok(result)
+    result
 }

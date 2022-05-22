@@ -1,3 +1,5 @@
+#![allow(clippy::module_name_repetitions)]
+
 use thiserror::Error;
 
 use crate::{parser::ParseError, validator::ValidationError};

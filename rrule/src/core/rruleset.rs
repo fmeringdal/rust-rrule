@@ -1,8 +1,8 @@
-use super::{datetime::DateTime, rrule::*};
 use crate::core::datetime::datetime_to_ical_format;
-use crate::core::utils::*;
+use crate::core::utils::{check_str_validity, collect_or_error, collect_with_error};
+use crate::core::DateTime;
 use crate::parser::build_rruleset;
-use crate::RRuleError;
+use crate::{RRule, RRuleError};
 use chrono::TimeZone;
 use chrono_tz::UTC;
 #[cfg(feature = "serde")]
@@ -15,16 +15,20 @@ use std::str::FromStr;
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
 pub struct RRuleSet {
-    /// The properties specified by this rule.
+    /// List of rrules.
     pub rrule: Vec<RRule>,
+    /// List of rdates.
     pub rdate: Vec<DateTime>,
+    /// List of exules.
     pub exrule: Vec<RRule>,
+    /// List of exdates.
     pub exdate: Vec<DateTime>,
     /// The start datetime of the recurring event.
     pub dt_start: DateTime,
 }
 
 impl Default for RRuleSet {
+    /// Creates an empty [`RRuleSet`], starting from 1970-01-01 00:00:00 UTC.
     fn default() -> Self {
         Self {
             rrule: vec![],
@@ -37,6 +41,8 @@ impl Default for RRuleSet {
 }
 
 impl RRuleSet {
+    /// Creates an empty [`RRuleSet`], starting from `ds_start`.
+    #[must_use]
     pub fn new(dt_start: DateTime) -> Self {
         Self {
             dt_start,
@@ -44,18 +50,25 @@ impl RRuleSet {
         }
     }
 
+    /// Adds a new rrule to the set.
     pub fn rrule(&mut self, rrule: RRule) {
         self.rrule.push(rrule);
     }
 
+    /// Adds a new exrule to the set.
+    #[deprecated(
+        note = "Based on [iCalendar RFC](https://datatracker.ietf.org/doc/html/rfc5545#appendix-A.3), exrules are deprecated."
+    )]
     pub fn exrule(&mut self, rrule: RRule) {
         self.exrule.push(rrule);
     }
 
+    /// Adds a new rdate to the set.
     pub fn rdate(&mut self, rdate: DateTime) {
         self.rdate.push(rdate);
     }
 
+    /// Adds a new exdate to the set.
     pub fn exdate(&mut self, exdate: DateTime) {
         self.exdate.push(exdate);
     }
@@ -184,22 +197,28 @@ impl RRuleSet {
 impl FromStr for RRuleSet {
     type Err = RRuleError;
 
-    /// Creates an [`RRuleSet`] from a [`String`] if input is valid.
+    /// Creates an [`RRuleSet`] from a string if input is valid.
     ///
-    /// If RRule contains invalid parts then [`RRuleError`] will be returned.
+    /// # Errors
+    ///
+    /// Returns [`RRuleError`], if iCalendar string contains invalid parts
     /// This should never panic, but it might be in odd cases.
     /// Please report if it does panic.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        check_str_validity(s)?;
+
         build_rruleset(s)
     }
 }
 
 impl Display for RRuleSet {
+    /// Prints a valid set of iCalendar properties which can be used to create a new [`RRuleSet`] later.
+    /// You may use the generated string to create a new iCalendar component, like VEVENT.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let properties = self
             .rrule
             .iter()
-            .map(|r| r.to_string())
+            .map(ToString::to_string)
             .collect::<Vec<_>>()
             .join("\n");
         let datetime = datetime_to_ical_format(&self.dt_start);

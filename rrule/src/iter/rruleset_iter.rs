@@ -222,7 +222,7 @@ impl<'a> IntoIterator for &'a RRuleSet {
             .sort_by(|d1, d2| d2.partial_cmp(d1).expect("Could not order dates correctly"));
 
         RRuleSetIter {
-            queue: Default::default(),
+            queue: HashMap::new(),
             rrule_iters: self
                 .rrule
                 .iter()
@@ -230,11 +230,7 @@ impl<'a> IntoIterator for &'a RRuleSet {
                 .collect(),
             rdates: rdates_sorted,
             exrules: &self.exrule,
-            exdates: self
-                .exdate
-                .iter()
-                .map(|exdate| exdate.timestamp())
-                .collect(),
+            exdates: self.exdate.iter().map(DateTime::timestamp).collect(),
             error: None,
             dt_start: self.dt_start,
         }

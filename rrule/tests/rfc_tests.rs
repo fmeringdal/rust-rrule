@@ -30,7 +30,7 @@ fn daily_10_occurrences() {
             "1997-09-10T09:00:00-04:00",
             "1997-09-11T09:00:00-04:00",
         ],
-    )
+    );
 }
 
 /// Daily until November 03, 1997
@@ -96,7 +96,7 @@ fn daily_until_november() {
             "1997-11-01T09:00:00-05:00",
             "1997-11-02T09:00:00-05:00",
         ],
-    )
+    );
 }
 
 /// Every other day - forever
@@ -144,7 +144,7 @@ fn every_other_day() {
             "1997-11-01T09:00:00-05:00",
             "1997-11-03T09:00:00-05:00",
         ],
-    )
+    );
 }
 
 /// Every 10 days, 5 occurrences
@@ -165,7 +165,7 @@ fn every_10_days_5_occurrences() {
             "1997-10-02T09:00:00-04:00",
             "1997-10-12T09:00:00-04:00",
         ],
-    )
+    );
 }
 
 /// Every day in January, for 3 years
@@ -219,7 +219,7 @@ fn weekly_10_occurrences() {
             "1997-10-28T09:00:00-05:00",
             "1997-11-04T09:00:00-05:00",
         ],
-    )
+    );
 }
 
 /// Weekly until November 03, 1997
@@ -248,7 +248,7 @@ fn weekly_until_november() {
             // November
             "1997-11-04T09:00:00-05:00",
         ],
-    )
+    );
 }
 
 /// Every other week - forever
@@ -277,7 +277,7 @@ fn every_other_week() {
             "1998-02-03T09:00:00-05:00",
             "1998-02-17T09:00:00-05:00",
         ],
-    )
+    );
 }
 
 /// Weekly on Tuesday and Thursday for five weeks
@@ -350,7 +350,7 @@ fn every_other_week_some_days_until_dec() {
             "1997-12-12T09:00:00-05:00",
             "1997-12-22T09:00:00-05:00",
         ],
-    )
+    );
 }
 
 /// Every other week on Tuesday and Thursday, for 8 occurrences
@@ -374,7 +374,7 @@ fn every_other_week_some_days_8_occurrences() {
             "1997-10-14T09:00:00-04:00",
             "1997-10-16T09:00:00-04:00",
         ],
-    )
+    );
 }
 
 // ------------------------------------------ Monthly ---------------------------------------------
@@ -402,7 +402,7 @@ fn monthly_on_first_friday_10_occurrences() {
             "1998-05-01T09:00:00-04:00",
             "1998-06-05T09:00:00-04:00",
         ],
-    )
+    );
 }
 
 /// Monthly on the first Friday until December 24, 1997
@@ -422,7 +422,7 @@ fn monthly_on_first_friday_until_dec() {
             "1997-11-07T09:00:00-05:00",
             "1997-12-05T09:00:00-05:00",
         ],
-    )
+    );
 }
 
 /// Every other month on the first and last Sunday of the month for 10 occurrences
@@ -448,7 +448,7 @@ fn every_other_month_on_first_and_last_sunday_10_occurrences() {
             "1998-05-03T09:00:00-04:00",
             "1998-05-31T09:00:00-04:00",
         ],
-    )
+    );
 }
 
 /// Monthly on the second-to-last Monday of the month for 6 months
@@ -470,7 +470,7 @@ fn monthly_on_second_to_last_monday_for_6_months() {
             "1998-01-19T09:00:00-05:00",
             "1998-02-16T09:00:00-05:00",
         ],
-    )
+    );
 }
 
 /// Monthly on the third-to-the-last day of the month, forever
@@ -492,7 +492,7 @@ fn monthly_on_third_to_last_day_forever() {
             "1998-01-29T09:00:00-05:00",
             "1998-02-26T09:00:00-05:00",
         ],
-    )
+    );
 }
 
 /// Monthly on the 2nd and 15th of the month for 10 occurrences
@@ -518,7 +518,7 @@ fn monthly_on_2nd_and_15th_10_occurrences() {
             "1998-01-02T09:00:00-05:00",
             "1998-01-15T09:00:00-05:00",
         ],
-    )
+    );
 }
 
 /// Monthly on the first and last day of the month for 10 occurrences
@@ -544,7 +544,7 @@ fn monthly_on_first_and_last_day_10_occurrences() {
             "1998-01-31T09:00:00-05:00",
             "1998-02-01T09:00:00-05:00",
         ],
-    )
+    );
 }
 
 /// Every 18 months on the 10th through 15th of the month for 10 occurrences
@@ -570,7 +570,7 @@ fn every_18_months_10th_to_15th_10_occurrences() {
             "1999-03-12T09:00:00-05:00",
             "1999-03-13T09:00:00-05:00",
         ],
-    )
+    );
 }
 
 /// Every Tuesday, every other month
@@ -604,7 +604,7 @@ fn every_tuesday_every_other_month() {
             "1998-03-24T09:00:00-05:00",
             "1998-03-31T09:00:00-05:00",
         ],
-    )
+    );
 }
 
 // ------------------------------------------ Yearly ---------------------------------------------
@@ -635,7 +635,7 @@ fn yearly_in_june_and_july_for_10_occurrences() {
             "2001-06-10T09:00:00-04:00",
             "2001-07-10T09:00:00-04:00",
         ],
-    )
+    );
 }
 
 /// Every other year on January, February, and March for 10 occurrences
@@ -661,7 +661,7 @@ fn every_other_year_on_jan_feb_and_march_for_10_occurrences() {
             "2003-02-10T09:00:00-05:00",
             "2003-03-10T09:00:00-05:00",
         ],
-    )
+    );
 }
 
 /// Every third year on the 1st, 100th, and 200th day for 10 occurrences
@@ -687,7 +687,7 @@ fn every_third_year_on_1st_100th_and_200th_day_for_10_occurrences() {
             "2003-07-19T09:00:00-04:00",
             "2006-01-01T09:00:00-05:00",
         ],
-    )
+    );
 }
 
 /// Every 20th Monday of the year, forever
@@ -706,7 +706,7 @@ fn every_20th_monday_of_year_forever() {
             "1998-05-18T09:00:00-04:00",
             "1999-05-17T09:00:00-04:00",
         ],
-    )
+    );
 }
 
 /// Monday of week number 20 (where the default start of the week is Monday), forever
@@ -725,7 +725,7 @@ fn monday_of_week_20_forever() {
             "1998-05-11T09:00:00-04:00",
             "1999-05-17T09:00:00-04:00",
         ],
-    )
+    );
 }
 
 /// Every Thursday in March, forever
@@ -752,7 +752,7 @@ fn every_thursday_in_march_forever() {
             "1999-03-18T09:00:00-05:00",
             "1999-03-25T09:00:00-05:00",
         ],
-    )
+    );
 }
 
 /// Every Thursday, but only during June, July, and August, forever
@@ -807,7 +807,7 @@ fn every_thursday_only_during_june_july_and_august_forever() {
             "1999-08-19T09:00:00-04:00",
             "1999-08-26T09:00:00-04:00",
         ],
-    )
+    );
 }
 
 /// Every Friday the 13th, forever
@@ -829,7 +829,7 @@ fn every_friday_the_13th_forever() {
             "1999-08-13T09:00:00-04:00",
             "2000-10-13T09:00:00-04:00",
         ],
-    )
+    );
 }
 
 /// The first Saturday that follows the first Sunday of the month, forever
@@ -855,7 +855,7 @@ fn first_sat_follows_first_sunday_of_month_forever() {
             "1998-05-09T09:00:00-04:00",
             "1998-06-13T09:00:00-04:00",
         ],
-    )
+    );
 }
 
 /// Every 4 years, the first Tuesday after a Monday in November, forever
@@ -875,7 +875,7 @@ fn every_4_years_us_presidential_election_day_forever() {
             "2000-11-07T09:00:00-05:00",
             "2004-11-02T09:00:00-05:00",
         ],
-    )
+    );
 }
 
 /// The third instance into the month of one of Tuesday, Wednesday, or Thursday,
@@ -895,7 +895,7 @@ fn every_third_instance_of_weekday_in_month_for_3_months() {
             "1997-10-07T09:00:00-04:00",
             "1997-11-06T09:00:00-05:00",
         ],
-    )
+    );
 }
 
 /// The second-to-last weekday of the month
@@ -918,7 +918,7 @@ fn second_to_last_weekday_of_month() {
             "1998-02-26T09:00:00-05:00",
             "1998-03-30T09:00:00-05:00",
         ],
-    )
+    );
 }
 
 /// Every 3 hours from 9:00 AM to 5:00 PM on a specific day
@@ -938,7 +938,7 @@ fn every_3_hours_on_specific_day() {
             "1997-09-02T12:00:00-04:00",
             "1997-09-02T15:00:00-04:00", // Missing from result
         ],
-    )
+    );
 }
 
 /// Every 15 minutes for 6 occurrences
@@ -960,7 +960,7 @@ fn every_15_min_for_6_occurrences() {
             "1997-09-02T10:00:00-04:00",
             "1997-09-02T10:15:00-04:00",
         ],
-    )
+    );
 }
 
 /// Every hour and a half for 4 occurrences
@@ -980,7 +980,7 @@ fn every_hour_and_a_half_for_4_occurrences() {
             "1997-09-02T12:00:00-04:00",
             "1997-09-02T13:30:00-04:00",
         ],
-    )
+    );
 }
 
 /// Every 20 minutes from 9:00 AM to 4:40 PM every day
@@ -1049,7 +1049,7 @@ fn week_day_start_monday_generated_days() {
             "1997-08-19T09:00:00-04:00",
             "1997-08-24T09:00:00-04:00",
         ],
-    )
+    );
 }
 
 /// Changing only WKST from MO to SU, yields different results...
@@ -1069,7 +1069,7 @@ fn week_day_start_sunday_generated_days() {
             "1997-08-19T09:00:00-04:00",
             "1997-08-31T09:00:00-04:00",
         ],
-    )
+    );
 }
 
 /// An example where an invalid date (i.e., February 30) is ignored.
@@ -1090,5 +1090,5 @@ fn invalid_date_is_ignored() {
             "2007-03-15T09:00:00-04:00",
             "2007-03-30T09:00:00-04:00",
         ],
-    )
+    );
 }

@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 This project follows the [Semantic Versioning standard](https://semver.org/).
 
+## Unreleased (2022-xx-xx)
+
+### Changed
+
+- API change: `RRule` has two stages, `Unvalidated` and `Validated`. When you initialize it, it is `Unvalidated` and by calling the `validate` method, it will change to `Validated`.
+- API change: `RRule` represents only RRULE in the iCalendar specification. And `RRuleSet` is for the whole iCalendar string.
+- API change: The iterator over `RRule` is not public anymore.
+
+### Removed
+
+- API change: Removed `dt_start` and `dt_end` from `RRule`.
+- API change: Removed `RRuleProperties`, instead you can use `RRule<Unvalidated>`.
+
 ## Version 0.7.3 (2022-05-05)
 
 ### Added

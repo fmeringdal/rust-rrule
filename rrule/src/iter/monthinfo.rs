@@ -26,6 +26,7 @@ pub(crate) fn rebuild_month(
     // Build up `ranges`
     let mut ranges: Vec<(isize, isize)> = vec![];
     if rrule.freq == Frequency::Yearly {
+        #[allow(clippy::cast_possible_wrap)]
         if rrule.by_month.is_empty() {
             ranges = vec![(0, year_len as isize - 1)];
         } else {
@@ -35,15 +36,17 @@ pub(crate) fn rebuild_month(
                         "Month `0` does not exist, 1-12 expected",
                     ));
                 }
+                #[allow(clippy::cast_possible_wrap)]
                 let first = *month_range
                     .get(*month as usize - 1)
                     .ok_or_else(|| RRuleError::new_iter_err("Index out of bounds `month_range`"))?
                     as isize;
+                #[allow(clippy::cast_possible_wrap)]
                 let last = *month_range
                     .get(*month as usize)
                     .ok_or_else(|| RRuleError::new_iter_err("Index out of bounds `month_range`"))?
                     as isize;
-                ranges.push((first, last - 1))
+                ranges.push((first, last - 1));
             }
         }
     } else if rrule.freq == Frequency::Monthly {
@@ -52,10 +55,12 @@ pub(crate) fn rebuild_month(
                 "Month `0` does not exist, 1-12 expected",
             ));
         }
+        #[allow(clippy::cast_possible_wrap)]
         let first = *month_range
             .get(month as usize - 1)
             .ok_or_else(|| RRuleError::new_iter_err("Index out of bounds `month_range`"))?
             as isize;
+        #[allow(clippy::cast_possible_wrap)]
         let last = *month_range
             .get(month as usize)
             .ok_or_else(|| RRuleError::new_iter_err("Index out of bounds `month_range`"))?
@@ -77,6 +82,7 @@ pub(crate) fn rebuild_month(
             // Only check Nth occurrences here
             if let NWeekday::Nth(number, weekday) = by_weekday {
                 let mut i: isize;
+                #[allow(clippy::cast_possible_wrap, clippy::cast_sign_loss)]
                 if *number < 0 {
                     i = last + (*number as isize + 1) * 7;
                     let weekday_from_mask: isize =
@@ -98,6 +104,7 @@ pub(crate) fn rebuild_month(
                         7,
                     );
                 }
+                #[allow(clippy::cast_sign_loss)]
                 if first <= i && i <= last {
                     result.neg_weekday_mask[i as usize] = 1;
                 }

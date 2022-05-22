@@ -1,9 +1,13 @@
+#![allow(clippy::wildcard_imports, clippy::module_name_repetitions)]
+
 use crate::take_data::*;
+use std::marker::PhantomData;
 
 use rrule::{Frequency, RRule, RRuleSet};
 
-/// This function uses the data to construct a deterministic input for RRule.
-/// This can also be used to reconstruct the RRule from crashes in order to debug the code.
+/// This function uses the data to construct a deterministic input for [`RRuleSet`].
+/// This can also be used to reconstruct the [`RRuleSet`] from crashes in order to debug the code.
+#[must_use]
 pub fn take_rrule_from_data(mut data: &[u8]) -> Option<RRuleSet> {
     // Byte uses: (always account for max used)
     // bytes => variable
@@ -33,7 +37,7 @@ pub fn take_rrule_from_data(mut data: &[u8]) -> Option<RRuleSet> {
     // if data.len() < 166 {
     //     return None;
     // }
-    let properties = RRule {
+    let rrule = RRule {
         freq: match take_byte(&mut data) % 7 {
             0 => Frequency::Yearly,
             1 => Frequency::Monthly,
@@ -73,9 +77,10 @@ pub fn take_rrule_from_data(mut data: &[u8]) -> Option<RRuleSet> {
         },
         #[cfg(not(feature = "by-easter"))]
         by_easter: None,
-        stage: Default::default(),
+
+        stage: PhantomData,
     };
-    match properties.build(take_datetime(&mut data)) {
+    match rrule.build(take_datetime(&mut data)) {
         Ok(rrule) => Some(rrule),
         Err(err) => {
             println!("{}", err);

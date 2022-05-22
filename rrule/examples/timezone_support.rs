@@ -9,10 +9,10 @@ use chrono_tz::{Europe::Berlin, Tz, UTC};
 use rrule::{Frequency, RRule};
 
 fn main() {
-    // Build properties for rrule that occurs daily at 9:00 for 4 times
-    let rrule = RRule::default().count(4).freq(Frequency::Daily);
-
-    let mut rrule_set = rrule
+    // Build rrule set that occurs daily at 9:00 for 4 times
+    let mut rrule_set = RRule::default()
+        .count(4)
+        .freq(Frequency::Daily)
         .build(Berlin.ymd(2020, 1, 1).and_hms(9, 0, 0))
         .expect("RRule invalid");
 
@@ -30,11 +30,9 @@ fn main() {
     // Refer to the chrono and chrono-tz crates for more documentation on working with the DateTime type.
 
     // Example of converting to Moscow timezone
-    use chrono_tz::Europe::Moscow;
-
     let _recurrences_in_moscow_tz: Vec<DateTime<Tz>> = recurrences
         .iter()
-        .map(|d| d.with_timezone(&Moscow))
+        .map(|d| d.with_timezone(&chrono_tz::Europe::Moscow))
         .collect();
 
     // Example of converting to local timezone.

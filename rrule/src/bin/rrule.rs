@@ -3,12 +3,12 @@ use std::{fmt::Display, str::FromStr};
 use clap::Parser;
 use rrule::{RRuleSet, WithError};
 
-/// RRule parser and iterator
+/// Recurrence Rule parser and iterator
 ///
-/// This program expects a Recurrence Rule (RRule) as defined by the
-/// iCalendar (RFC-5545) specification (https://icalendar.org/iCalendar-RFC-5545/)..
+/// This program expects a Recurrence Rule (RRULE) as defined by the
+/// [iCalendar (RFC-5545) specification](https://icalendar.org/RFC-Specifications/iCalendar-RFC-5545/).
 ///
-/// Some examples of a valid RRuleSet:
+/// Some examples of a valid iCalendar string:
 ///
 /// - `DTSTART:20120201T093000Z\nRRULE:FREQ=YEARLY`
 /// - `DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;BYDAY=MO,FR`
@@ -24,7 +24,7 @@ struct Opts {
     #[clap(short, long)]
     limit: Option<u16>,
 
-    /// The RRule string you want to iterator over.
+    /// The `RRULE` string you want to iterator over.
     input: String,
 }
 

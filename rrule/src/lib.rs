@@ -1,19 +1,17 @@
-//! A performant rust implementation of recurrence rules as defined in the iCalendar RFC.
+//! A performant rust implementation of recurrence rules as defined in the [iCalendar RFC](https://datatracker.ietf.org/doc/html/rfc5545).
 //!
-//! RRule provides two types for working with recurrence rules:
-//! - `RRule`: For working with a single recurrence rule without any exception dates (exdates / exrules) and no additional dates (rdate).
-//! - `RRuleSet`: For working with a collection of rrules, exrules, rdates and exdates. Both the rrule and exrule
-//! properties are represented by the `RRule` type and the rdate and exdate properties are represented by the DateTime<Tz> type
-//! provided by the [chrono](https://crates.io/crates/chrono) and [chrono-tz](https://crates.io/crates/chrono-tz) crates.
+//! This crate provides two types for working with recurrence rules:
+//! - [`RRuleSet`]: For working with a collection of `DTSTART`, `RRULE`s, `EXRULE`s, `RDATE`s and `EXDATE`s. Both the `RRULE` and `EXRULE`
+//! properties are represented by the [`RRule`] type and the `DTSTART`, `RDATE` and `EXDATE` properties are represented by the [`chrono::DateTime<Tz>`].
+//! - [`RRule`]: Which represents a single `RRULE` definition.
 //!
-//! # Building RRule and RRuleSet
-//! Both types implements the `std::str::FromStr` trait so that they can be parsed and built from a string representation. `RRule`
-//! can additionally be constructed from the `Option` type which help build the recurrence rule. `RRuleSet`
-//! can also be built by composing multiple `RRule`s for its rrule and exrule properties and DateTime<Tz> for its
-//! exdate and rdate properties. See the examples below.
+//! # Building `RRule` and `RRuleSet`
+//! Both types implements the [`std::str::FromStr`] trait so that they can be parsed and built from a string representation.
+//! [`RRuleSet`] can also be built by composing multiple `RRule`s for its `rrule` and `exrule` properties and [`chrono::DateTime<Tz>`] for its
+//! `dt_start`, `exdate` and `rdate` properties. See the examples below.
 //!
 //! # Generating occurrences
-//! `RRule` and `RRuleSet` both implement `DateFilter` which implements methods for easy filtering:
+//! [`RRule`] and [`RRuleSet`] both implement [`DateFilter`] which implements methods for easy filtering:
 //! - `all`: Generate all recurrences that match the rules (with a limit to prevent infinite loops).
 //! - `all_between`: Generate all recurrences that match the rules and are between two given dates.
 //! - `just_before`: Generate the last recurrence that matches the rules and is before a given date.
@@ -21,7 +19,7 @@
 //! - ...
 //!
 //! If you have some additional filters or want to work with infinite recurrence rules
-//! both `RRule` and `RRuleSet` implements the `Iterator` traits which makes them very flexible.
+//! both [`RRule`] and [`RRuleSet`] implements the `Iterator` traits which makes them very flexible.
 //! All the methods above uses the iterator trait in its implementation as shown below.
 //! ```rust
 //! use chrono::{DateTime, TimeZone};

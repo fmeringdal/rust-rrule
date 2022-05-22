@@ -21,5 +21,5 @@ RRULE:FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-2"
             "1998-02-26T09:00:00-05:00",
             "1998-03-30T09:00:00-05:00",
         ],
-    )
+    );
 }

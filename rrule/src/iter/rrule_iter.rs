@@ -52,6 +52,8 @@ impl<'a> RRuleIter<'a> {
 
     /// Generates a list of dates that will be added to the buffer.
     /// Returns true if finished, no more items should/can be returned.
+    #[warn(clippy::too_many_lines)]
+    // TODO: This function is too long.
     fn generate(&mut self) -> Result<bool, RRuleError> {
         // If there already was an error, return the error again.
         if let Some(err) = self.get_err() {
@@ -96,8 +98,9 @@ impl<'a> RRuleIter<'a> {
                 )));
             }
 
+            #[allow(clippy::cast_possible_truncation)]
             let (dayset, start, end) = self.ii.get_dayset(
-                &rrule.freq,
+                rrule.freq,
                 self.counter_date.year(),
                 self.counter_date.month() as u8,
                 self.counter_date.day() as u8,
@@ -113,15 +116,60 @@ impl<'a> RRuleIter<'a> {
             // Change `Vec<u64>` to `Vec<Option<u64>>`
             let mut dayset = dayset.into_iter().map(Some).collect::<Vec<Option<u64>>>();
 
-            let filtered = remove_filtered_days(&mut dayset, start, end, &self.ii)?;
+            let filtered = remove_filtered_days(&mut dayset, start, end, &self.ii);
 
+            #[allow(clippy::cast_possible_truncation)]
             // Change `Vec<Option<u64>>` to `Vec<Option<i32>>`
             let dayset = dayset
                 .into_iter()
                 .map(|day| day.map(|day| day as i32))
                 .collect::<Vec<Option<i32>>>();
 
-            if !rrule.by_set_pos.is_empty() {
+            #[allow(clippy::cast_possible_truncation)]
+            if rrule.by_set_pos.is_empty() {
+                // Loop over `start..end`
+                for current_day in dayset.iter().take(end as usize).skip(start as usize) {
+                    if current_day.is_none() {
+                        continue;
+                    }
+
+                    let current_day = current_day.unwrap();
+                    let year_ordinal = self.ii.year_ordinal().unwrap();
+                    // Ordinal conversion uses UTC: if we apply local-TZ here, then
+                    // just below we'll end up double-applying.
+                    let date = from_ordinal(year_ordinal + i64::from(current_day));
+                    // We apply the local-TZ here,
+                    let date = self
+                        .dt_start
+                        .timezone()
+                        .ymd(date.year(), date.month(), date.day());
+                    for timeset in &self.timeset {
+                        let res = date
+                            .and_hms_opt(0, 0, 0)
+                            .ok_or_else(|| RRuleError::new_iter_err("Invalid datetime."))?
+                            .checked_add_signed(timeset.duration_from_midnight())
+                            .ok_or_else(|| RRuleError::new_iter_err("Invalid datetime."))?;
+
+                        if rrule.until.is_some() && res > rrule.until.unwrap() {
+                            return Ok(true);
+                        }
+                        if res >= self.dt_start {
+                            self.buffer.push_back(res);
+
+                            if let Some(count) = self.count {
+                                if count > 0 {
+                                    self.count = Some(count - 1);
+                                    // self.ii.get_rrule().count = Some(count - 1);
+                                }
+                                // This means that the real count is 0, because of the decrement above
+                                if count == 1 {
+                                    return Ok(true);
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
                 let pos_list = build_pos_list(
                     &rrule.by_set_pos,
                     &self.timeset,
@@ -129,7 +177,7 @@ impl<'a> RRuleIter<'a> {
                     end,
                     &self.ii,
                     &dayset,
-                    &self.dt_start.timezone(),
+                    self.dt_start.timezone(),
                 )?;
 
                 for res in pos_list {
@@ -143,53 +191,11 @@ impl<'a> RRuleIter<'a> {
                         if let Some(count) = self.count {
                             if count > 0 {
                                 self.count = Some(count - 1);
-                                // self.ii.properties.count = Some(count - 1);
+                                // self.ii.get_rrule().count = Some(count - 1);
                             }
                             // This means that the real count is 0, because of the decrement above
                             if count == 1 {
                                 return Ok(true);
-                            }
-                        }
-                    }
-                }
-            } else {
-                // Loop over `start..end`
-                for current_day in dayset.iter().take(end as usize).skip(start as usize) {
-                    if current_day.is_none() {
-                        continue;
-                    }
-
-                    let current_day = current_day.unwrap();
-                    let year_ordinal = self.ii.year_ordinal().unwrap();
-                    // Ordinal conversion uses UTC: if we apply local-TZ here, then
-                    // just below we'll end up double-applying.
-                    let date = from_ordinal(year_ordinal + current_day as i64);
-                    // We apply the local-TZ here,
-                    let date = self
-                        .dt_start
-                        .timezone()
-                        .ymd(date.year(), date.month(), date.day());
-                    for timeset in &self.timeset {
-                        let res = date
-                            .and_hms(0, 0, 0)
-                            .checked_add_signed(timeset.duration_from_midnight())
-                            .ok_or_else(|| RRuleError::new_iter_err("Invalid datetime."))?;
-
-                        if rrule.until.is_some() && res > rrule.until.unwrap() {
-                            return Ok(true);
-                        }
-                        if res >= self.dt_start {
-                            self.buffer.push_back(res);
-
-                            if let Some(count) = self.count {
-                                if count > 0 {
-                                    self.count = Some(count - 1);
-                                    // self.ii.properties.count = Some(count - 1);
-                                }
-                                // This means that the real count is 0, because of the decrement above
-                                if count == 1 {
-                                    return Ok(true);
-                                }
                             }
                         }
                     }
@@ -199,12 +205,13 @@ impl<'a> RRuleIter<'a> {
             // Handle frequency and interval
             self.counter_date = increment_counter_date(self.counter_date, rrule, filtered)?;
 
+            #[allow(clippy::cast_possible_truncation)]
             if rrule.freq == Frequency::Hourly
                 || rrule.freq == Frequency::Minutely
                 || rrule.freq == Frequency::Secondly
             {
                 self.timeset = self.ii.get_timeset(
-                    &rrule.freq,
+                    rrule.freq,
                     self.counter_date.hour() as u8,
                     self.counter_date.minute() as u8,
                     self.counter_date.second() as u8,
@@ -213,6 +220,7 @@ impl<'a> RRuleIter<'a> {
             }
 
             let year = self.counter_date.year();
+            #[allow(clippy::cast_possible_truncation)]
             let month = self.counter_date.month() as u8;
 
             self.ii.rebuild(year, month)?;

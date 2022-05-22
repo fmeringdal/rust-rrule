@@ -6,7 +6,7 @@ use rrule::{RRule, RRuleSet};
 use std::str::FromStr;
 
 #[test]
-fn rrule_properties_from_str() {
+fn rrule_from_str() {
     let test_str_cases = vec![
         "RRULE:UNTIL=19990404T110000Z;FREQ=WEEKLY;BYDAY=TU,WE",
         "UNTIL=20190101T230000Z;FREQ=WEEKLY;BYDAY=TU,WE",
@@ -19,7 +19,7 @@ fn rrule_properties_from_str() {
 }
 
 #[test]
-fn rrule_properties_to_and_from_str() {
+fn rrule_to_and_from_str() {
     for test_obj in get_obj_cases() {
         let test_str = test_obj.to_string();
         let res = RRule::from_str(&test_str).unwrap();
@@ -29,7 +29,7 @@ fn rrule_properties_to_and_from_str() {
 
 #[cfg(feature = "serde")]
 #[test]
-fn serialize_deserialize_json_to_and_from_rrule_properties() {
+fn serialize_deserialize_json_to_and_from_rrule() {
     #[derive(orig_serde::Deserialize, orig_serde::Serialize)]
     #[serde(crate = "orig_serde")]
     struct RruleTest {
@@ -49,7 +49,7 @@ fn serialize_deserialize_json_to_and_from_rrule_properties() {
 }
 
 #[test]
-fn rrule_to_and_from_str() {
+fn rrule_set_to_and_from_str() {
     let test_cases = [
         "DTSTART:20120201T093000Z\nRRULE:FREQ=YEARLY;COUNT=3",
         "DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;BYDAY=-2MO,FR",
@@ -67,7 +67,7 @@ fn rrule_to_and_from_str() {
 
 #[cfg(feature = "serde")]
 #[test]
-fn serialize_deserialize_json_to_and_from_rrule() {
+fn serialize_deserialize_json_to_and_from_rrule_set() {
     #[derive(orig_serde::Deserialize, orig_serde::Serialize, PartialEq, Debug)]
     #[serde(crate = "orig_serde")]
     struct RruleTest {
