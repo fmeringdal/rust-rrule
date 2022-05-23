@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `RRule` represents only RRULE in the iCalendar specification. And `RRuleSet` is for the whole iCalendar string.
 - `RRule` has two stages, `Unvalidated` and `Validated`. When you initialize it, it is `Unvalidated` and by calling the `validate` method, it will change to `Validated`.
 - All fields of `RRule` and `RRuleSet` are private, instead there are a set of new methods to get and set values of fields on both structs. It's been done to have a safer API.
+- `tz` is removed from all structs. It was a duplicated copy of the timezone inside the `dt_start`. Instead, you can control it by having a proper timezone for [`RRuleSet::dt_start`].
 
 ### Removed
 
