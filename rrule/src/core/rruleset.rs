@@ -28,6 +28,7 @@ pub struct RRuleSet {
 impl RRuleSet {
     /// Creates an empty [`RRuleSet`], starting from `ds_start`.
     #[must_use]
+    #[inline]
     pub fn new(dt_start: DateTime) -> Self {
         Self {
             dt_start,
@@ -137,6 +138,7 @@ impl RRuleSet {
     ///
     /// Limit must be set in order to prevent infinite loops.
     /// The max limit is `65535`. If you need more please use `into_iter` directly.
+    #[inline]
     pub fn all(self, limit: u16) -> Result<Vec<DateTime>, RRuleError> {
         collect_or_error(self.into_iter(), &None, &None, true, limit)
     }
@@ -148,6 +150,7 @@ impl RRuleSet {
     ///
     /// In case the iterator ended with an error, the error will be included,
     /// otherwise the second value of the return tuple will be `None`.
+    #[inline]
     pub fn all_with_error(self, limit: u16) -> (Vec<DateTime>, Option<RRuleError>) {
         collect_with_error(self.into_iter(), &None, &None, true, limit)
     }
@@ -156,6 +159,7 @@ impl RRuleSet {
     ///
     /// The `inclusive` keyword defines what happens if `before` is a recurrence.
     /// With `inclusive == true`, if `before` itself is a recurrence, it will be returned.
+    #[inline]
     pub fn just_before(
         self,
         before: DateTime,
@@ -175,6 +179,7 @@ impl RRuleSet {
     ///
     /// In case the iterator ended with an error, the error will be included,
     /// otherwise the second value of the return tuple will be `None`.
+    #[inline]
     pub fn all_before_with_error(
         self,
         before: DateTime,
@@ -188,6 +193,7 @@ impl RRuleSet {
     ///
     /// The `inclusive` keyword defines what happens if `after` is a recurrence.
     /// With `inclusive == true`, if `after` itself is a recurrence, it will be returned.
+    #[inline]
     pub fn just_after(
         self,
         after: DateTime,
@@ -207,6 +213,7 @@ impl RRuleSet {
     ///
     /// In case the iterator ended with an error, the error will be included,
     /// otherwise the second value of the return tuple will be `None`.
+    #[inline]
     pub fn all_after_with_error(
         self,
         after: DateTime,
@@ -221,6 +228,7 @@ impl RRuleSet {
     /// The `inclusive` keyword defines what happens if after and/or before are
     /// themselves recurrences. With `inclusive == true`, they will be included in the
     /// list, if they are found in the recurrence set.
+    #[inline]
     pub fn all_between(
         self,
         start: DateTime,
@@ -243,6 +251,7 @@ impl RRuleSet {
     ///
     /// In case the iterator ended with an error, the error will be included,
     /// otherwise the second value of the return tuple will be `None`.
+    #[inline]
     pub fn all_between_with_error(
         self,
         start: DateTime,

@@ -20,19 +20,19 @@ use std::str::FromStr;
 #[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
 /// The frequency of a recurrence.
 pub enum Frequency {
-    /// The recurrence occurs once every year.
+    /// The recurrence occurs on a yearly basis.
     Yearly = 0,
-    /// The recurrence occurs once every month.
+    /// The recurrence occurs on a monthly basis.
     Monthly = 1,
-    /// The recurrence occurs once every week.
+    /// The recurrence occurs on a weekly basis.
     Weekly = 2,
-    /// The recurrence occurs once every day.
+    /// The recurrence occurs on a daily basis.
     Daily = 3,
-    /// The recurrence occurs once every hour.
+    /// The recurrence occurs on an hourly basis.
     Hourly = 4,
-    /// The recurrence occurs once every minute.
+    /// The recurrence occurs on a minutely basis.
     Minutely = 5,
-    /// The recurrence occurs once every second.
+    /// The recurrence occurs on a secondly basis.
     Secondly = 6,
 }
 
