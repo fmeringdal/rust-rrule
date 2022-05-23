@@ -32,7 +32,7 @@ pub enum Frequency {
     Hourly = 4,
     /// The recurrence occurs on a minutely basis.
     Minutely = 5,
-    /// The recurrence occurs on a secondly basis.
+    /// The recurrence occurs on a second basis.
     Secondly = 6,
 }
 
@@ -71,7 +71,7 @@ impl FromStr for Frequency {
     }
 }
 
-/// This indicates the nth occurrence of a specific day within the MONTHLY or YEARLY RRULE.
+/// This indicates the nth occurrence of a specific day within a MONTHLY or YEARLY RRULE.
 ///
 /// For example, `NWeekday::Nth(1, MO)` represents the first Monday within the month or year,
 /// whereas `NWeekday::Nth(-1, MO)` represents the last Monday of the month or year.
@@ -207,7 +207,7 @@ fn weekday_to_str(d: Weekday) -> String {
 }
 
 /// Represents a complete RRULE property based on the [iCalendar specification](https://datatracker.ietf.org/doc/html/rfc5545#section-3.8.5.3)
-/// It has two stages, based on the attached type:
+/// It has two stages, based on the attached type, `Validated` or `Unvalidated`.
 /// - `Unvalidated`, which is the raw string representation of the RRULE
 /// - `Validated`, which is when the RRule has been parsed and validated, based on the start date
 #[cfg_attr(feature = "serde", serde_as)]
@@ -301,7 +301,7 @@ impl Default for RRule<Unvalidated> {
 }
 
 impl RRule<Unvalidated> {
-    /// Creates a new unvalidated `RRule` with default values and given frequency.
+    /// Creates a new unvalidated `RRule` with default values and the given frequency.
     #[must_use]
     pub fn new(freq: Frequency) -> Self {
         Self {
@@ -358,8 +358,7 @@ impl RRule<Unvalidated> {
         self
     }
 
-    /// If given, it must be either an integer, or a sequence of integers, meaning
-    /// the months to apply the recurrence to.
+    /// When given, these variables will define the months to apply the recurrence to.
     #[must_use]
     #[allow(clippy::cast_possible_truncation)]
     pub fn by_month(mut self, by_month: &[Month]) -> Self {
@@ -396,11 +395,8 @@ impl RRule<Unvalidated> {
         self
     }
 
-    /// If given, it must be either an integer (0 == MO), a sequence of integers, one
-    /// of the weekday constants (MO, TU, etc.), or a sequence of these constants.
     /// When given, these variables will define the weekdays where the recurrence
     /// will be applied.
-    /// A nth occurrence prefix can be given.
     #[must_use]
     pub fn by_weekday(mut self, by_weekday: Vec<NWeekday>) -> Self {
         self.by_weekday = by_weekday;

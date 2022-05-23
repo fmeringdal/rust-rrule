@@ -1,9 +1,7 @@
 //! A performant rust implementation of recurrence rules as defined in the [iCalendar RFC](https://datatracker.ietf.org/doc/html/rfc5545).
 //!
-//! This crate provides two types for working with recurrence rules:
-//! - [`RRuleSet`]: For working with a collection of `DTSTART`, `RRULE`s, `EXRULE`s, `RDATE`s and `EXDATE`s. Both the `RRULE` and `EXRULE`
+//! This crate provides [`RRuleSet`] for working with recurrence rules. It has a collection of `DTSTART`, `RRULE`s, `EXRULE`s, `RDATE`s and `EXDATE`s. Both the `RRULE` and `EXRULE`
 //! properties are represented by the [`RRule`] type and the `DTSTART`, `RDATE` and `EXDATE` properties are represented by the [`chrono::DateTime<Tz>`].
-//! - [`RRule`]: Which represents a single `RRULE` definition.
 //!
 //! # Building `RRule` and `RRuleSet`
 //! Both types implements the [`std::str::FromStr`] trait so that they can be parsed and built from a string representation.
@@ -11,7 +9,7 @@
 //! `dt_start`, `exdate` and `rdate` properties. See the examples below.
 //!
 //! # Generating occurrences
-//! You can loop over the occurrences of a `RRuleSet` by calling any of the following methods:
+//! You can loop over the occurrences of a [`RRuleSet`] by calling any of the following methods:
 //! - [`RRuleSet::all`]: Generate all recurrences that match the rules (with a limit to prevent infinite loops).
 //! - [`RRuleSet::all_between`]: Generate all recurrences that match the rules and are between two given dates.
 //! - [`RRuleSet::just_before`]: Generate the last recurrence that matches the rules and is before a given date.
