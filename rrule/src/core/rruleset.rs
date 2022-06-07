@@ -41,16 +41,15 @@ impl RRuleSet {
 
     /// Adds a new rrule to the set.
     #[inline]
+    #[must_use]
     pub fn rrule(mut self, rrule: RRule) -> Self {
         self.rrule.push(rrule);
         self
     }
 
     /// Adds a new exrule to the set.
-    #[deprecated(
-        note = "Based on [iCalendar RFC](https://datatracker.ietf.org/doc/html/rfc5545#appendix-A.3), exrules are deprecated."
-    )]
     #[inline]
+    #[must_use]
     pub fn exrule(mut self, rrule: RRule) -> Self {
         self.exrule.push(rrule);
         self
@@ -58,6 +57,7 @@ impl RRuleSet {
 
     /// Adds a new rdate to the set.
     #[inline]
+    #[must_use]
     pub fn rdate(mut self, rdate: DateTime) -> Self {
         self.rdate.push(rdate);
         self
@@ -65,6 +65,7 @@ impl RRuleSet {
 
     /// Adds a new exdate to the set.
     #[inline]
+    #[must_use]
     pub fn exdate(mut self, exdate: DateTime) -> Self {
         self.exdate.push(exdate);
         self
@@ -72,16 +73,15 @@ impl RRuleSet {
 
     /// Sets the rrules of the set.
     #[inline]
+    #[must_use]
     pub fn set_rrules(mut self, rrules: Vec<RRule>) -> Self {
         self.rrule = rrules;
         self
     }
 
     /// Sets the exrules of the set.
-    #[deprecated(
-        note = "Based on [iCalendar RFC](https://datatracker.ietf.org/doc/html/rfc5545#appendix-A.3), exrules are deprecated."
-    )]
     #[inline]
+    #[must_use]
     pub fn set_exrules(mut self, exrules: Vec<RRule>) -> Self {
         self.exrule = exrules;
         self
@@ -89,6 +89,7 @@ impl RRuleSet {
 
     /// Sets the rdates of the set.
     #[inline]
+    #[must_use]
     pub fn set_rdates(mut self, rdates: Vec<DateTime>) -> Self {
         self.rdate = rdates;
         self
@@ -96,6 +97,7 @@ impl RRuleSet {
 
     /// Set the exdates of the set.
     #[inline]
+    #[must_use]
     pub fn set_exdates(mut self, exdates: Vec<DateTime>) -> Self {
         self.exdate = exdates;
         self
@@ -103,33 +105,35 @@ impl RRuleSet {
 
     /// Returns the rrules of the set.
     #[inline]
+    #[must_use]
     pub fn get_rrule(&self) -> &Vec<RRule> {
         &self.rrule
     }
 
     /// Returns the exrules of the set.
-    #[deprecated(
-        note = "Based on [iCalendar RFC](https://datatracker.ietf.org/doc/html/rfc5545#appendix-A.3), exrules are deprecated."
-    )]
     #[inline]
+    #[must_use]
     pub fn get_exrule(&self) -> &Vec<RRule> {
         &self.exrule
     }
 
     /// Returns the rdates of the set.
     #[inline]
+    #[must_use]
     pub fn get_rdate(&self) -> &Vec<DateTime> {
         &self.rdate
     }
 
     /// Returns the exdates of the set.
     #[inline]
+    #[must_use]
     pub fn get_exdate(&self) -> &Vec<DateTime> {
         &self.exdate
     }
 
     /// Returns the start datetime of the recurring event.
     #[inline]
+    #[must_use]
     pub fn get_dt_start(&self) -> &DateTime {
         &self.dt_start
     }
@@ -151,6 +155,7 @@ impl RRuleSet {
     /// In case the iterator ended with an error, the error will be included,
     /// otherwise the second value of the return tuple will be `None`.
     #[inline]
+    #[must_use]
     pub fn all_with_error(self, limit: u16) -> (Vec<DateTime>, Option<RRuleError>) {
         collect_with_error(self.into_iter(), &None, &None, true, limit)
     }
@@ -168,7 +173,7 @@ impl RRuleSet {
         Ok(
             collect_or_error(self.into_iter(), &None, &Some(before), inclusive, u16::MAX)?
                 .last()
-                .cloned(),
+                .copied(),
         )
     }
 
@@ -180,6 +185,7 @@ impl RRuleSet {
     /// In case the iterator ended with an error, the error will be included,
     /// otherwise the second value of the return tuple will be `None`.
     #[inline]
+    #[must_use]
     pub fn all_before_with_error(
         self,
         before: DateTime,
@@ -202,7 +208,7 @@ impl RRuleSet {
         Ok(
             collect_or_error(self.into_iter(), &Some(after), &None, inclusive, 1)?
                 .first()
-                .cloned(),
+                .copied(),
         )
     }
 
@@ -214,6 +220,7 @@ impl RRuleSet {
     /// In case the iterator ended with an error, the error will be included,
     /// otherwise the second value of the return tuple will be `None`.
     #[inline]
+    #[must_use]
     pub fn all_after_with_error(
         self,
         after: DateTime,
@@ -252,6 +259,7 @@ impl RRuleSet {
     /// In case the iterator ended with an error, the error will be included,
     /// otherwise the second value of the return tuple will be `None`.
     #[inline]
+    #[must_use]
     pub fn all_between_with_error(
         self,
         start: DateTime,

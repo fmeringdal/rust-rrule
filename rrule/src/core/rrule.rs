@@ -724,91 +724,106 @@ impl<S> Display for RRule<S> {
 impl<S> RRule<S> {
     /// Get the frequency of the recurrence.
     #[inline]
+    #[must_use]
     pub fn get_freq(&self) -> Frequency {
         self.freq
     }
 
     /// Get the interval of the recurrence.
     #[inline]
+    #[must_use]
     pub fn get_interval(&self) -> u16 {
         self.interval
     }
 
     /// Get the count of the recurrence.
     #[inline]
+    #[must_use]
     pub fn get_count(&self) -> Option<u32> {
         self.count
     }
 
     /// Get the until of the recurrence.
     #[inline]
+    #[must_use]
     pub fn get_until(&self) -> Option<&DateTime> {
         self.until.as_ref()
     }
 
-    /// Get the by_set_pos of the recurrence.
+    /// Get the `by_set_pos` of the recurrence.
     #[inline]
+    #[must_use]
     pub fn get_week_start(&self) -> Weekday {
         self.week_start
     }
 
-    /// Get the by_month of the recurrence.
+    /// Get the `by_month` of the recurrence.
     #[inline]
+    #[must_use]
     pub fn get_by_set_pos(&self) -> &[i32] {
         &self.by_set_pos
     }
 
-    /// Get the by_month of the recurrence.
+    /// Get the `by_month` of the recurrence.
     #[inline]
+    #[must_use]
     pub fn get_by_month(&self) -> &[u8] {
         &self.by_month
     }
 
-    /// Get the by_month_day of the recurrence.
+    /// Get the `by_month_day` of the recurrence.
     #[inline]
+    #[must_use]
     pub fn get_by_month_day(&self) -> &[i8] {
         &self.by_month_day
     }
 
-    /// Get the by_year_day of the recurrence.
+    /// Get the `by_year_day` of the recurrence.
     #[inline]
+    #[must_use]
     pub fn get_by_year_day(&self) -> &[i16] {
         &self.by_year_day
     }
 
-    /// Get the by_hour of the recurrence.
+    /// Get the `by_hour` of the recurrence.
     #[inline]
+    #[must_use]
     pub fn get_by_week_no(&self) -> &[i8] {
         &self.by_week_no
     }
 
-    /// Get the by_hour of the recurrence.
+    /// Get the `by_hour` of the recurrence.
     #[inline]
+    #[must_use]
     pub fn get_by_weekday(&self) -> &[NWeekday] {
         &self.by_weekday
     }
 
-    /// Get the by_hour of the recurrence.
+    /// Get the `by_hour` of the recurrence.
     #[inline]
+    #[must_use]
     pub fn get_by_hour(&self) -> &[u8] {
         &self.by_hour
     }
 
-    /// Get the by_minute of the recurrence.
+    /// Get the `by_minute` of the recurrence.
     #[inline]
+    #[must_use]
     pub fn get_by_minute(&self) -> &[u8] {
         &self.by_minute
     }
 
-    /// Get the by_second of the recurrence.
+    /// Get the `by_second` of the recurrence.
     #[inline]
+    #[must_use]
     pub fn get_by_second(&self) -> &[u8] {
         &self.by_second
     }
 
-    /// Get the by_easter of the recurrence.
+    /// Get the `by_easter` of the recurrence.
     #[cfg(feature = "by-easter")]
     #[inline]
+    #[must_use]
     pub fn get_by_easter(&self) -> Option<&i16> {
         self.by_easter.as_ref()
     }

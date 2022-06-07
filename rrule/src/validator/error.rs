@@ -4,7 +4,7 @@ use thiserror::Error;
 
 use crate::Frequency;
 
-#[derive(Error, Debug, Clone, PartialEq)]
+#[derive(Error, Debug, Clone, PartialEq, Eq)]
 pub enum ValidationError {
     #[error("BYSETPOS should only be used in conjunction with another BYxxx rule part.")]
     BySetPosWithoutByRule,

@@ -2,7 +2,7 @@
 
 use thiserror::Error;
 
-#[derive(Error, Debug, Clone, PartialEq)]
+#[derive(Error, Debug, Clone, PartialEq, Eq)]
 pub enum ParseError {
     #[error(
         "Did not find any start date for the recurrence rule. Please specify a `DTSTART` field."

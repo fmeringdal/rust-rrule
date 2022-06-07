@@ -22,17 +22,15 @@ fn main() {
         .build(UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
         .expect("RRule invalid");
 
-    // Using exrule is deprecated, but it's still supported
     // Build exrule that occurs weekly on Wednesday
-    // let exrule = RRule::default()
-    //     .count(4)
-    //     .freq(Frequency::Weekly)
-    //     .by_weekday(vec![NWeekday::Every(Weekday::Wed)])
-    //     .validate(UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
-    //     .expect("RRule invalid");
-    // rrule_set.exrule(exrule);
+    let exrule = RRule::default()
+        .count(4)
+        .freq(Frequency::Weekly)
+        .by_weekday(vec![NWeekday::Every(Weekday::Wed)])
+        .validate(UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
+        .expect("RRule invalid");
 
-    let recurrences = rrule_set.all(100).unwrap();
+    let recurrences = rrule_set.exrule(exrule).all(100).unwrap();
 
     // Check that all the recurrences are on a Tuesday
     for occurrence in &recurrences {
