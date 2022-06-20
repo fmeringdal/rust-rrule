@@ -6,11 +6,11 @@ version = "0.7.3"
 documentation = "https://docs.rs/rrule"
 repository = "https://github.com/fmeringdal/rust-rrule"
 authors = ["Fredrik Meringdal", "Ralph Bisschops <ralph.bisschops.dev@gmail.com>"]
-edition = "2018"
+edition = "2021"
 readme = "../README.md"
 keywords = ["calendar", "rrule", "ical"]
 categories = ["date-and-time"]
-rust-version = "1.54"
+rust-version = "1.56"
 
 [dependencies]
 chrono = "0.4.19"
@@ -18,7 +18,7 @@ chrono-tz = "0.6.1"
 lazy_static = "1.4.0"
 log = "0.4.16"
 regex = "1.5.5"
-clap = { version = "3.1.15", optional = true, features = ["derive"] }
+clap = { version = "3.2.5", optional = true, features = ["derive"] }
 thiserror = "1.0.30"
 serde_with = { version = "1.14.0", optional = true }
 
