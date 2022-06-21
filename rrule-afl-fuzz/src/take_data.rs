@@ -1,3 +1,5 @@
+#![allow(clippy::module_name_repetitions)]
+
 use chrono::{DateTime, TimeZone, Utc, Weekday};
 use chrono_tz::{Tz, UTC};
 use rrule::NWeekday;
@@ -68,8 +70,9 @@ pub fn take_datetime(input: &mut &[u8]) -> DateTime<Tz> {
             let nanos: i64 = take_data_i64(input);
             Utc.timestamp_nanos(nanos).with_timezone(&UTC)
         }
-        LocalResult::Single(datetime) => datetime.with_timezone(&UTC),
-        LocalResult::Ambiguous(datetime, _) => datetime.with_timezone(&UTC),
+        LocalResult::Single(datetime) | LocalResult::Ambiguous(datetime, _) => {
+            datetime.with_timezone(&UTC)
+        }
     }
 }
 
@@ -96,7 +99,7 @@ pub fn take_byte(input: &mut &[u8]) -> u8 {
     }
     let (int_bytes, rest) = input.split_at(byte_len);
     *input = rest;
-    u8::from_be_bytes(int_bytes.try_into().unwrap())
+    u8::from_be_bytes(int_bytes.try_into().expect("Failed to convert to u8"))
 }
 
 /// Uses max 1+2+1 = 4 byte
@@ -123,7 +126,7 @@ pub fn take_data_i8(input: &mut &[u8]) -> i8 {
     }
     let (int_bytes, rest) = input.split_at(byte_len);
     *input = rest;
-    i8::from_be_bytes(int_bytes.try_into().unwrap())
+    i8::from_be_bytes(int_bytes.try_into().expect("Failed to convert to u8"))
 }
 
 /// Uses 2 byte
@@ -135,7 +138,7 @@ pub fn take_data_i16(input: &mut &[u8]) -> i16 {
     }
     let (int_bytes, rest) = input.split_at(byte_len);
     *input = rest;
-    i16::from_be_bytes(int_bytes.try_into().unwrap())
+    i16::from_be_bytes(int_bytes.try_into().expect("Failed to convert to u8"))
 }
 
 /// Uses 4 byte
@@ -147,7 +150,7 @@ pub fn take_data_i32(input: &mut &[u8]) -> i32 {
     }
     let (int_bytes, rest) = input.split_at(byte_len);
     *input = rest;
-    i32::from_be_bytes(int_bytes.try_into().unwrap())
+    i32::from_be_bytes(int_bytes.try_into().expect("Failed to convert to u8"))
 }
 
 /// Uses 8 byte
@@ -159,7 +162,7 @@ pub fn take_data_i64(input: &mut &[u8]) -> i64 {
     }
     let (int_bytes, rest) = input.split_at(byte_len);
     *input = rest;
-    i64::from_be_bytes(int_bytes.try_into().unwrap())
+    i64::from_be_bytes(int_bytes.try_into().expect("Failed to convert to u8"))
 }
 
 /// Uses 2 byte
@@ -171,7 +174,7 @@ pub fn take_data_u16(input: &mut &[u8]) -> u16 {
     }
     let (int_bytes, rest) = input.split_at(byte_len);
     *input = rest;
-    u16::from_be_bytes(int_bytes.try_into().unwrap())
+    u16::from_be_bytes(int_bytes.try_into().expect("Failed to convert to u8"))
 }
 
 /// Uses 4 byte
@@ -183,7 +186,7 @@ pub fn take_data_u32(input: &mut &[u8]) -> u32 {
     }
     let (int_bytes, rest) = input.split_at(byte_len);
     *input = rest;
-    u32::from_be_bytes(int_bytes.try_into().unwrap())
+    u32::from_be_bytes(int_bytes.try_into().expect("Failed to convert to u8"))
 }
 
 /// Uses 8 byte
@@ -195,7 +198,7 @@ pub fn take_data_u64(input: &mut &[u8]) -> u64 {
     }
     let (int_bytes, rest) = input.split_at(byte_len);
     *input = rest;
-    u64::from_be_bytes(int_bytes.try_into().unwrap())
+    u64::from_be_bytes(int_bytes.try_into().expect("Failed to convert to u8"))
 }
 
 /// Uses max 8 byte
@@ -207,7 +210,7 @@ pub fn take_data_usize(input: &mut &[u8]) -> usize {
     }
     let (int_bytes, rest) = input.split_at(byte_len);
     *input = rest;
-    usize::from_be_bytes(int_bytes.try_into().unwrap())
+    usize::from_be_bytes(int_bytes.try_into().expect("Failed to convert to u8"))
 }
 
 /// Uses max 8 byte
@@ -219,5 +222,5 @@ pub fn take_data_isize(input: &mut &[u8]) -> isize {
     }
     let (int_bytes, rest) = input.split_at(byte_len);
     *input = rest;
-    isize::from_be_bytes(int_bytes.try_into().unwrap())
+    isize::from_be_bytes(int_bytes.try_into().expect("Failed to convert to u8"))
 }

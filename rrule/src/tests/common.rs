@@ -1,9 +1,9 @@
 #![cfg(test)]
 #![allow(dead_code)]
 
+use crate::{RRule, RRuleError, RRuleSet, Unvalidated};
 use chrono::{DateTime, TimeZone};
 use chrono_tz::{Tz, UTC};
-use rrule::{DateFilter, RRuleError, RRuleProperties, RRuleSet};
 use std::fmt::Debug;
 
 pub fn ymd_hms(
@@ -18,11 +18,11 @@ pub fn ymd_hms(
 }
 
 pub fn test_recurring_rrule(
-    properties: RRuleProperties,
+    rrule: RRule<Unvalidated>,
     dt_start: DateTime<Tz>,
     expected_dates: &[DateTime<Tz>],
 ) {
-    let rrule = properties
+    let rrule_set = rrule
         .build(dt_start)
         .map_err(|e| match e {
             RRuleError::ParserError(e) => e.to_string(),
@@ -30,7 +30,7 @@ pub fn test_recurring_rrule(
             RRuleError::IterError(e) => e,
         })
         .unwrap();
-    let res = rrule.all(100).unwrap();
+    let res = rrule_set.all(100).unwrap();
 
     println!("Actual: {:?}", res);
     println!("Expected: {:?}", expected_dates);
@@ -45,6 +45,7 @@ pub fn test_recurring_rrule(
     }
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn test_recurring_rrule_set(rrule_set: RRuleSet, expected_dates: &[DateTime<Tz>]) {
     let res = rrule_set.all(100).unwrap();
 
@@ -66,11 +67,7 @@ pub fn check_occurrences<S: AsRef<str> + Debug>(occurrences: &[DateTime<Tz>], ex
     let formatter = |dt: &DateTime<Tz>| -> String { format!("    \"{}\",\n", dt.to_rfc3339()) };
     println!(
         "Given: [\n{}]\nExpected: {:#?}",
-        occurrences
-            .iter()
-            .map(formatter)
-            .collect::<Vec<_>>()
-            .join(""),
+        occurrences.iter().map(formatter).collect::<String>(),
         expected
     );
     assert_eq!(occurrences.len(), expected.len(), "List sizes don't match");

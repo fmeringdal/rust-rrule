@@ -7,6 +7,12 @@ use crate::{
 use chrono::{Datelike, TimeZone};
 use chrono_tz::Tz;
 
+#[allow(
+    clippy::cast_possible_truncation,
+    clippy::cast_precision_loss,
+    clippy::cast_possible_wrap,
+    clippy::cast_sign_loss
+)]
 pub(crate) fn build_pos_list(
     by_set_pos: &[i32],
     timeset: &[Time],
@@ -14,7 +20,7 @@ pub(crate) fn build_pos_list(
     end: u64,
     ii: &IterInfo,
     dayset: &[Option<i32>],
-    tz: &Tz,
+    tz: Tz,
 ) -> Result<Vec<DateTime>, RRuleError> {
     let mut pos_list = vec![];
     if timeset.is_empty() {
@@ -56,7 +62,7 @@ pub(crate) fn build_pos_list(
         };
 
         // Get ordinal which is UTC
-        let date = from_ordinal(ii.year_ordinal().unwrap() + i as i64);
+        let date = from_ordinal(ii.year_ordinal().unwrap() + i64::from(i));
         // Apply timezone
         let date = tz.ymd_opt(date.year(), date.month(), date.day()).unwrap();
         // Create new Date + Time combination
@@ -72,7 +78,7 @@ pub(crate) fn build_pos_list(
         }
     }
 
-    pos_list.sort_by_key(|a| a.timestamp());
+    pos_list.sort_by_key(DateTime::timestamp);
 
     Ok(pos_list)
 }

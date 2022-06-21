@@ -1,9 +1,27 @@
-# Change log
-
+# Changelog
 All notable changes to this project will be documented in this file.
-This project follows the [Semantic Versioning standard](https://semver.org/).
 
-## Version 0.7.3 (2022-05-05)
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## Unreleased (2022-xx-xx)
+
+### Changed
+
+- `RRule` represents only RRULE in the iCalendar specification. And `RRuleSet` is for the whole iCalendar string.
+- `RRule` has two stages, `Unvalidated` and `Validated`. When you initialize it, it is `Unvalidated` and by calling the `validate` method, it will change to `Validated`.
+- All fields of `RRule` and `RRuleSet` are private, instead there are a set of new methods to get and set values of fields on both structs. It's been done to have a safer API.
+- `tz` is removed from all structs. It was a duplicated copy of the timezone inside the `dt_start`. Instead, you can control it by having a proper timezone for [`RRuleSet::dt_start`].
+
+### Removed
+
+- Removed `dt_start` and `dt_end` from `RRule`.
+- There is no `Default` for `RRuleSet`, instead use `new(UTC.ymd(1970, 1, 1).and_hms(0, 0, 0))` method to have the same behavior.
+- Removed `RRuleProperties`, instead you can use `RRule<Unvalidated>`.
+- `DateFilter` trait has been removed, since now we can only iterate over `RRuleSet` and the methods are inside `RRuleSet` itself.
+- The iterator over `RRule` is not public anymore.
+
+## 0.7.3 (2022-05-05)
 
 ### Added
 
@@ -12,9 +30,9 @@ This project follows the [Semantic Versioning standard](https://semver.org/).
 
 ### Changed
 
-- API change: `dt_start` and `tz` moved from `RRuleProperties` to `RRule`
+- `dt_start` and `tz` moved from `RRuleProperties` to `RRule`
  
-## Version 0.7.2 (2022-04-16)
+## 0.7.2 (2022-04-16)
 
 ### Fixed
 
@@ -29,13 +47,13 @@ Internal refactorings:
 
 - Added `ParseError` and `ValidationError` which contains more specific errors during the parsing and validation phase respectively.
 
-## Version 0.7.1 (2022-03-07)
+## 0.7.1 (2022-03-07)
 
 ### Fixed
 
 - Fix [#48](https://github.com/fmeringdal/rust-rrule/issues/48)
 
-## Version 0.7.0 (2021-02-04)
+## 0.7.0 (2021-02-04)
 
 ### Added
 
@@ -73,7 +91,7 @@ Internal refactorings:
 
 - `RRuleSet::new()` replaced with `RRuleSet::default()`.
 - `ParsedOptions` and `Options` are now combined as `RRuleProperties`. (#22)
-- `NWeekdayIdentifier` replaced with new version of `NWeekday`.
+- `NWeekdayIdentifier` replaced with new of `NWeekday`.
 - `by_n_weekday` field removed from `ParsedOptions`, combined into `by_weekday`.
 - `concat` and `build` in `Options` are removed, no longer needed.
 - Removed `serde` dependency. (#21)
@@ -92,7 +110,7 @@ Internal refactorings:
 - Added security notice to [README.md](README.md).
 - The validation of `RRule` improved the stability of the crate a lot.
 
-## Pre version 0.6.0 (2021-07-02)
+## Pre 0.6.0 (2021-07-02)
 
 All changes before 2021-07-02 where not documented.
 This is everything before and including: fa8308944a4d2ead0a6ccfa6ee53b76b399e045f

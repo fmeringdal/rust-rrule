@@ -2,56 +2,57 @@ use super::{
     build_pos_list, increment_counter_date, make_timeset, remove_filtered_days,
     utils::from_ordinal, IterInfo, MAX_ITER_LOOP,
 };
+use crate::core::utils::collect_or_error;
 use crate::{
     core::{DateTime, Time},
     Frequency, RRule, RRuleError, WithError,
 };
-use chrono::{Datelike, TimeZone, Timelike};
-use chrono_tz::Tz;
+use chrono::TimeZone;
+use chrono::{Datelike, Timelike};
 use std::collections::VecDeque;
 
 #[derive(Debug, Clone)]
-pub struct RRuleIter<'a> {
+pub(crate) struct RRuleIter<'a> {
     /// Date the iterator is currently at.
-    counter_date: DateTime,
-    ii: IterInfo<'a>,
-    timeset: Vec<Time>,
-    dt_start: DateTime,
-    tz: Tz,
-    // Buffer of datetimes not yet yielded
-    buffer: VecDeque<DateTime>,
+    pub(crate) counter_date: DateTime,
+    pub(crate) ii: IterInfo<'a>,
+    pub(crate) timeset: Vec<Time>,
+    pub(crate) dt_start: DateTime,
+    /// Buffer of datetimes not yet yielded
+    pub(crate) buffer: VecDeque<DateTime>,
     /// Indicate of iterator should not return more items.
     /// Once set `true` is will always return `None`.
-    finished: bool,
+    pub(crate) finished: bool,
     /// Number of events that should still be generated before the end.
     /// Counter always goes down after each iteration.
-    count: Option<u32>,
+    pub(crate) count: Option<u32>,
     /// Store the last error, so it can be handled by the user.
-    error: Option<RRuleError>,
+    pub(crate) error: Option<RRuleError>,
 }
 
 impl<'a> RRuleIter<'a> {
-    fn new(rrule: &'a RRule) -> Result<Self, RRuleError> {
-        let ii = IterInfo::new(rrule)?;
-        let counter_date = rrule.dt_start;
+    pub(crate) fn new(rrule: &'a RRule, dt_start: &DateTime) -> Result<Self, RRuleError> {
+        let ii = IterInfo::new(rrule, dt_start)?;
 
-        let timeset = make_timeset(&ii, &counter_date, rrule)?;
-        let count = ii.get_properties().count;
+        let timeset = make_timeset(&ii, dt_start, rrule)?;
+        let count = ii.get_rrule().count;
 
         Ok(RRuleIter {
-            counter_date,
+            counter_date: *dt_start,
             ii,
             timeset,
-            dt_start: counter_date,
-            tz: rrule.tz,
+            dt_start: *dt_start,
             buffer: VecDeque::new(),
             finished: false,
             count,
             error: None,
         })
     }
-    /// Generate a list of dates that will be added to the buffer.
+
+    /// Generates a list of dates that will be added to the buffer.
     /// Returns true if finished, no more items should/can be returned.
+    #[warn(clippy::too_many_lines)]
+    // TODO: This function is too long.
     fn generate(&mut self) -> Result<bool, RRuleError> {
         // If there already was an error, return the error again.
         if let Some(err) = self.get_err() {
@@ -68,15 +69,15 @@ impl<'a> RRuleIter<'a> {
         };
 
         // Get general info about recurrence rules
-        let properties = self.ii.get_properties().clone();
+        let rrule = self.ii.get_rrule();
 
-        if properties.interval == 0 {
+        if rrule.interval == 0 {
             return Ok(true);
         }
 
         // If `counter_date` is later than `until` date, we can stop
-        if let Some(until) = properties.until {
-            if self.counter_date > until {
+        if let Some(until) = &rrule.until {
+            if &self.counter_date > until {
                 return Ok(false);
             }
         }
@@ -84,6 +85,8 @@ impl<'a> RRuleIter<'a> {
 
         // Loop until there is at least 1 item in the buffer.
         while self.buffer.is_empty() {
+            let rrule = self.ii.get_rrule();
+
             // Prevent infinite loops
             loop_counter += 1;
             if loop_counter >= MAX_ITER_LOOP {
@@ -94,15 +97,16 @@ impl<'a> RRuleIter<'a> {
                 )));
             }
 
+            #[allow(clippy::cast_possible_truncation)]
             let (dayset, start, end) = self.ii.get_dayset(
-                &self.ii.get_properties().freq,
+                rrule.freq,
                 self.counter_date.year(),
                 self.counter_date.month() as u8,
                 self.counter_date.day() as u8,
             )?;
 
             // If `counter_date` is later than `until` date, we can stop
-            if let Some(until) = &properties.until {
+            if let Some(until) = &rrule.until {
                 if &self.counter_date > until {
                     return Ok(false);
                 }
@@ -111,46 +115,17 @@ impl<'a> RRuleIter<'a> {
             // Change `Vec<u64>` to `Vec<Option<u64>>`
             let mut dayset = dayset.into_iter().map(Some).collect::<Vec<Option<u64>>>();
 
-            let filtered = remove_filtered_days(&mut dayset, start, end, &self.ii)?;
+            let filtered = remove_filtered_days(&mut dayset, start, end, &self.ii);
 
+            #[allow(clippy::cast_possible_truncation)]
             // Change `Vec<Option<u64>>` to `Vec<Option<i32>>`
             let dayset = dayset
                 .into_iter()
                 .map(|day| day.map(|day| day as i32))
                 .collect::<Vec<Option<i32>>>();
 
-            if !properties.by_set_pos.is_empty() {
-                let pos_list = build_pos_list(
-                    &properties.by_set_pos,
-                    &self.timeset,
-                    start,
-                    end,
-                    &self.ii,
-                    &dayset,
-                    &self.tz,
-                )?;
-
-                for res in pos_list {
-                    if properties.until.is_some() && res > properties.until.unwrap() {
-                        continue; // or break ?
-                    }
-
-                    if res >= self.dt_start {
-                        self.buffer.push_back(res);
-
-                        if let Some(count) = self.count {
-                            if count > 0 {
-                                self.count = Some(count - 1);
-                                // self.ii.properties.count = Some(count - 1);
-                            }
-                            // This means that the real count is 0, because of the decrement above
-                            if count == 1 {
-                                return Ok(true);
-                            }
-                        }
-                    }
-                }
-            } else {
+            #[allow(clippy::cast_possible_truncation)]
+            if rrule.by_set_pos.is_empty() {
                 // Loop over `start..end`
                 for current_day in dayset.iter().take(end as usize).skip(start as usize) {
                     if current_day.is_none() {
@@ -161,16 +136,20 @@ impl<'a> RRuleIter<'a> {
                     let year_ordinal = self.ii.year_ordinal().unwrap();
                     // Ordinal conversion uses UTC: if we apply local-TZ here, then
                     // just below we'll end up double-applying.
-                    let date = from_ordinal(year_ordinal + current_day as i64);
+                    let date = from_ordinal(year_ordinal + i64::from(current_day));
                     // We apply the local-TZ here,
-                    let date = self.tz.ymd(date.year(), date.month(), date.day());
+                    let date = self
+                        .dt_start
+                        .timezone()
+                        .ymd(date.year(), date.month(), date.day());
                     for timeset in &self.timeset {
                         let res = date
-                            .and_hms(0, 0, 0)
+                            .and_hms_opt(0, 0, 0)
+                            .ok_or_else(|| RRuleError::new_iter_err("Invalid datetime."))?
                             .checked_add_signed(timeset.duration_from_midnight())
                             .ok_or_else(|| RRuleError::new_iter_err("Invalid datetime."))?;
 
-                        if properties.until.is_some() && res > properties.until.unwrap() {
+                        if rrule.until.is_some() && res > rrule.until.unwrap() {
                             return Ok(true);
                         }
                         if res >= self.dt_start {
@@ -179,7 +158,7 @@ impl<'a> RRuleIter<'a> {
                             if let Some(count) = self.count {
                                 if count > 0 {
                                     self.count = Some(count - 1);
-                                    // self.ii.properties.count = Some(count - 1);
+                                    // self.ii.get_rrule().count = Some(count - 1);
                                 }
                                 // This means that the real count is 0, because of the decrement above
                                 if count == 1 {
@@ -189,17 +168,49 @@ impl<'a> RRuleIter<'a> {
                         }
                     }
                 }
+            } else {
+                let pos_list = build_pos_list(
+                    &rrule.by_set_pos,
+                    &self.timeset,
+                    start,
+                    end,
+                    &self.ii,
+                    &dayset,
+                    self.dt_start.timezone(),
+                )?;
+
+                for res in pos_list {
+                    if rrule.until.is_some() && res > rrule.until.unwrap() {
+                        continue; // or break ?
+                    }
+
+                    if res >= self.dt_start {
+                        self.buffer.push_back(res);
+
+                        if let Some(count) = self.count {
+                            if count > 0 {
+                                self.count = Some(count - 1);
+                                // self.ii.get_rrule().count = Some(count - 1);
+                            }
+                            // This means that the real count is 0, because of the decrement above
+                            if count == 1 {
+                                return Ok(true);
+                            }
+                        }
+                    }
+                }
             }
 
             // Handle frequency and interval
-            self.counter_date = increment_counter_date(self.counter_date, &properties, filtered)?;
+            self.counter_date = increment_counter_date(self.counter_date, rrule, filtered)?;
 
-            if properties.freq == Frequency::Hourly
-                || properties.freq == Frequency::Minutely
-                || properties.freq == Frequency::Secondly
+            #[allow(clippy::cast_possible_truncation)]
+            if rrule.freq == Frequency::Hourly
+                || rrule.freq == Frequency::Minutely
+                || rrule.freq == Frequency::Secondly
             {
                 self.timeset = self.ii.get_timeset(
-                    &properties.freq,
+                    rrule.freq,
                     self.counter_date.hour() as u8,
                     self.counter_date.minute() as u8,
                     self.counter_date.second() as u8,
@@ -208,12 +219,27 @@ impl<'a> RRuleIter<'a> {
             }
 
             let year = self.counter_date.year();
+            #[allow(clippy::cast_possible_truncation)]
             let month = self.counter_date.month() as u8;
 
             self.ii.rebuild(year, month)?;
         }
         // Indicate that there might be more items on the next iteration.
         Ok(false)
+    }
+
+    /// Returns all the recurrences of the rrule between after and before.
+    ///
+    /// The `inclusive` keyword defines what happens if after and/or before are
+    /// themselves recurrences. With `inclusive == true`, they will be included in the
+    /// list, if they are found in the recurrence set.
+    pub(crate) fn all_between(
+        self,
+        start: DateTime,
+        end: DateTime,
+        inclusive: bool,
+    ) -> Result<Vec<DateTime>, RRuleError> {
+        collect_or_error(self, &Some(start), &Some(end), inclusive, u16::MAX)
     }
 }
 
@@ -252,34 +278,5 @@ impl<'a> Iterator for RRuleIter<'a> {
             self.finished = true;
         }
         self.buffer.pop_front()
-    }
-}
-
-impl<'a> IntoIterator for &'a RRule {
-    type Item = DateTime;
-
-    type IntoIter = RRuleIter<'a>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        match RRuleIter::new(self) {
-            Ok(iter) => iter,
-            Err(err) => {
-                // Print error and create iterator that will ways return the error if used.
-                log::error!("{:?}", err);
-                let error = Some(err);
-                // This is mainly a dummy object, as it will ways return the error when called.
-                RRuleIter {
-                    counter_date: self.dt_start,
-                    ii: IterInfo::new_no_rebuild(self),
-                    timeset: vec![],
-                    dt_start: self.dt_start,
-                    tz: self.tz,
-                    buffer: VecDeque::new(),
-                    finished: false,
-                    count: None,
-                    error,
-                }
-            }
-        }
     }
 }

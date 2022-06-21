@@ -1,38 +1,37 @@
-use chrono::TimeZone;
-use chrono_tz::UTC;
-use rrule::{Frequency, NWeekday, Weekday};
-use rrule::{RRule, RRuleProperties};
+use crate::tests::common::ymd_hms;
+use crate::{Frequency, NWeekday, Unvalidated, Weekday};
+use crate::{RRule, RRuleSet};
 use std::str::FromStr;
 
 #[test]
-fn rrule_properties_from_str() {
+fn rrule_from_str() {
     let test_str_cases = vec![
         "RRULE:UNTIL=19990404T110000Z;FREQ=WEEKLY;BYDAY=TU,WE",
         "UNTIL=20190101T230000Z;FREQ=WEEKLY;BYDAY=TU,WE",
     ];
 
     for test_str in test_str_cases {
-        let res = RRuleProperties::from_str(test_str);
+        let res = RRule::from_str(test_str);
         assert!(res.is_ok());
     }
 }
 
 #[test]
-fn rrule_properties_to_and_from_str() {
+fn rrule_to_and_from_str() {
     for test_obj in get_obj_cases() {
         let test_str = test_obj.to_string();
-        let res = RRuleProperties::from_str(&test_str).unwrap();
+        let res = RRule::from_str(&test_str).unwrap();
         assert_eq!(res, test_obj);
     }
 }
 
 #[cfg(feature = "serde")]
 #[test]
-fn serialize_deserialize_json_to_and_from_rrule_properties() {
+fn serialize_deserialize_json_to_and_from_rrule() {
     #[derive(orig_serde::Deserialize, orig_serde::Serialize)]
     #[serde(crate = "orig_serde")]
     struct RruleTest {
-        rrule: RRuleProperties,
+        rrule: RRule<Unvalidated>,
     }
 
     for test_obj in get_obj_cases() {
@@ -48,7 +47,7 @@ fn serialize_deserialize_json_to_and_from_rrule_properties() {
 }
 
 #[test]
-fn rrule_to_and_from_str() {
+fn rrule_set_to_and_from_str() {
     let test_cases = [
         "DTSTART:20120201T093000Z\nRRULE:FREQ=YEARLY;COUNT=3",
         "DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;BYDAY=-2MO,FR",
@@ -56,9 +55,9 @@ fn rrule_to_and_from_str() {
     ];
 
     for test_str in test_cases {
-        let test_obj = RRule::from_str(test_str).unwrap();
+        let test_obj = RRuleSet::from_str(test_str).unwrap();
         let test_str = test_obj.to_string();
-        let test_obj2 = RRule::from_str(&test_str).unwrap();
+        let test_obj2 = RRuleSet::from_str(&test_str).unwrap();
 
         assert_eq!(test_obj, test_obj2);
     }
@@ -66,11 +65,11 @@ fn rrule_to_and_from_str() {
 
 #[cfg(feature = "serde")]
 #[test]
-fn serialize_deserialize_json_to_and_from_rrule() {
-    #[derive(orig_serde::Deserialize, orig_serde::Serialize, PartialEq, Debug)]
+fn serialize_deserialize_json_to_and_from_rrule_set() {
+    #[derive(orig_serde::Deserialize, orig_serde::Serialize, PartialEq, Eq, Debug)]
     #[serde(crate = "orig_serde")]
     struct RruleTest {
-        rrule: RRule,
+        rrule: RRuleSet,
     }
 
     let test_cases = [
@@ -80,7 +79,7 @@ fn serialize_deserialize_json_to_and_from_rrule() {
     ];
 
     for test_str in test_cases {
-        let rrule = RRule::from_str(test_str).unwrap();
+        let rrule = RRuleSet::from_str(test_str).unwrap();
         let src_obj = RruleTest { rrule };
 
         let test_str = serde_json::to_string(&src_obj).unwrap();
@@ -90,14 +89,14 @@ fn serialize_deserialize_json_to_and_from_rrule() {
     }
 }
 
-fn get_obj_cases() -> Vec<RRuleProperties> {
+fn get_obj_cases() -> Vec<RRule<Unvalidated>> {
     vec![
-        RRuleProperties {
+        RRule {
             freq: Frequency::Yearly,
             count: Some(3),
             ..Default::default()
         },
-        RRuleProperties {
+        RRule {
             freq: Frequency::Weekly,
             interval: 5,
             by_weekday: vec![
@@ -106,15 +105,15 @@ fn get_obj_cases() -> Vec<RRuleProperties> {
             ],
             ..Default::default()
         },
-        RRuleProperties {
+        RRule {
             freq: Frequency::Weekly,
-            until: Some(UTC.ymd(1999, 4, 4).and_hms(11, 0, 0)),
+            until: Some(ymd_hms(1999, 4, 4, 11, 0, 0)),
             by_weekday: vec![NWeekday::Every(Weekday::Tue), NWeekday::Every(Weekday::Wed)],
             ..Default::default()
         },
-        RRuleProperties {
+        RRule {
             freq: Frequency::Weekly,
-            until: Some(UTC.ymd(2019, 1, 1).and_hms(23, 0, 0)),
+            until: Some(ymd_hms(2019, 1, 1, 23, 0, 0)),
             by_weekday: vec![NWeekday::Every(Weekday::Tue), NWeekday::Every(Weekday::Wed)],
             ..Default::default()
         },

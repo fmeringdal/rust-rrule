@@ -1,11 +1,12 @@
-use crate::{core::DateTime, Frequency, NWeekday, RRuleError, RRuleProperties, RRuleSet};
-use chrono::{Datelike, NaiveDate, TimeZone, Timelike, Weekday};
+use super::ParseError;
+use crate::core::Unvalidated;
+use crate::{core::DateTime, Frequency, NWeekday, RRule, RRuleError, RRuleSet};
+use chrono::{NaiveDate, TimeZone, Weekday};
 use chrono_tz::{Tz, UTC};
 use lazy_static::lazy_static;
 use regex::Regex;
+use std::marker::PhantomData;
 use std::str::FromStr;
-
-use super::ParseError;
 
 // Some regex used for parsing the rrule string.
 lazy_static! {
@@ -20,7 +21,7 @@ lazy_static! {
     static ref DATETIME_RE: Regex = Regex::new(r"(?m)(VALUE=DATE(-TIME)?)|(TZID=)").unwrap();
 }
 
-/// Create [`RRuleSet`] from parsing the String.
+/// Creates [`RRuleSet`] from parsing the String.
 pub(crate) fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleError> {
     let s = preprocess_rrule_string(s);
     let ParsedInput {
@@ -29,123 +30,26 @@ pub(crate) fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleError> {
         exrule_vals,
         exdate_vals,
         dt_start,
-        ..
     } = parse_input(&s)?;
 
-    let mut rset = RRuleSet {
-        dt_start,
-        ..Default::default()
-    };
+    #[allow(deprecated)]
+    let rrule_set = RRuleSet::new(dt_start)
+        .set_rrules(
+            rrule_vals
+                .into_iter()
+                .map(|r| r.validate(dt_start))
+                .collect::<Result<Vec<_>, _>>()?,
+        )
+        .set_rdates(rdate_vals)
+        .set_exrules(
+            exrule_vals
+                .into_iter()
+                .map(|r| r.validate(dt_start))
+                .collect::<Result<Vec<_>, _>>()?,
+        )
+        .set_exdates(exdate_vals);
 
-    for rrule_prop in rrule_vals.iter() {
-        let rrule = rrule_prop.clone().build(dt_start)?;
-        rset.rrule(rrule);
-    }
-
-    for rdate in rdate_vals {
-        rset.rdate(rdate);
-    }
-
-    for exrule_prop in exrule_vals.iter() {
-        let exrule = exrule_prop.clone().build(dt_start)?;
-        rset.exrule(exrule);
-    }
-
-    for exdate in exdate_vals {
-        rset.exdate(exdate);
-    }
-
-    Ok(rset)
-}
-
-/// Create an [`RRule`] from [`String`] if input is valid.
-///
-/// If RRule contains invalid parts then [`ParseError`] will be returned.
-/// This should never panic, but it might be in odd cases.
-/// Please report if it does panic.
-pub(crate) fn parse_rrule_string_to_properties(input: &str) -> Result<RRuleProperties, ParseError> {
-    let input = preprocess_rrule_string(input);
-
-    let ParsedInput { mut rrule_vals, .. } = parse_input(&input)?;
-
-    match rrule_vals.len() {
-        0 => Err(ParseError::Generic("Invalid rrule string".into())),
-        1 => {
-            let rrule_properties = rrule_vals.remove(0);
-            Ok(rrule_properties)
-        }
-        _ => Err(ParseError::Generic(
-            "Too many rrules, please use `RRuleSet` instead.".into(),
-        )),
-    }
-}
-
-/// Fill in some additional fields in order to make iter work correctly.
-pub(crate) fn finalize_parsed_properties(
-    mut properties: RRuleProperties,
-    dt_start: &DateTime,
-) -> Result<RRuleProperties, ParseError> {
-    use std::cmp::Ordering;
-    // TEMP: move negative months to other list
-    let mut by_month_day = vec![];
-    let mut by_n_month_day = properties.by_n_month_day;
-    for by_month_day_item in properties.by_month_day {
-        match by_month_day_item.cmp(&0) {
-            Ordering::Greater => by_month_day.push(by_month_day_item),
-            Ordering::Less => by_n_month_day.push(by_month_day_item),
-            Ordering::Equal => {}
-        }
-    }
-    properties.by_month_day = by_month_day;
-    properties.by_n_month_day = by_n_month_day;
-
-    // Can only be set to true if feature flag is set.
-    let by_easter_is_some = if cfg!(feature = "by-easter") {
-        properties.by_easter.is_some()
-    } else {
-        false
-    };
-
-    // Add some freq specific additional properties
-    if !(!properties.by_week_no.is_empty()
-        || !properties.by_year_day.is_empty()
-        || !properties.by_month_day.is_empty()
-        || !properties.by_n_month_day.is_empty()
-        || !properties.by_weekday.is_empty()
-        || by_easter_is_some)
-    {
-        match properties.freq {
-            Frequency::Yearly => {
-                if properties.by_month.is_empty() {
-                    properties.by_month = vec![dt_start.month() as u8];
-                }
-                properties.by_month_day = vec![dt_start.day() as i8];
-            }
-            Frequency::Monthly => {
-                properties.by_month_day = vec![dt_start.day() as i8];
-            }
-            Frequency::Weekly => {
-                properties.by_weekday = vec![NWeekday::Every(dt_start.weekday())];
-            }
-            _ => (),
-        };
-    }
-
-    // by_hour
-    if properties.by_hour.is_empty() && properties.freq < Frequency::Hourly {
-        properties.by_hour = vec![dt_start.hour() as u8];
-    }
-
-    // by_minute
-    if properties.by_minute.is_empty() && properties.freq < Frequency::Minutely {
-        properties.by_minute = vec![dt_start.minute() as u8];
-    }
-
-    // by_second
-    if properties.by_second.is_empty() && properties.freq < Frequency::Secondly {
-        properties.by_second = vec![dt_start.second() as u8];
-    }
-    Ok(properties)
+    Ok(rrule_set)
 }
 
 fn parse_datestring_bit<T: FromStr>(
@@ -174,7 +78,7 @@ fn parse_timezone(tz: &str) -> Result<Tz, ParseError> {
 
 pub(crate) fn datestring_to_date(
     dt: &str,
-    tz: &Option<Tz>,
+    tz: Option<Tz>,
     field: &str,
 ) -> Result<DateTime, ParseError> {
     let bits = DATESTR_RE
@@ -293,7 +197,7 @@ pub(crate) fn parse_dtstart(s: &str) -> Result<DateTime, ParseError> {
                 field: "DTSTART".into(),
             })?;
 
-    datestring_to_date(dt_start_str, &tz, "DTSTART")
+    datestring_to_date(dt_start_str, tz, "DTSTART")
 }
 
 fn stringval_to_int<T: FromStr>(val: &str, err_msg: String) -> Result<T, ParseError> {
@@ -325,7 +229,9 @@ fn stringval_to_intvec<T: FromStr + Ord + PartialEq + Copy, F: Fn(T) -> bool>(
     Ok(parsed_vals)
 }
 
-fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
+// TODO too many lines
+#[warn(clippy::too_many_lines)]
+fn parse_rrule(line: &str) -> Result<RRule<Unvalidated>, ParseError> {
     // Store all parts independently, so we can see if things are double set or missing.
     let mut freq = None;
     let mut interval = None;
@@ -362,7 +268,7 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
             "FREQ" => {
                 let new_freq = Frequency::from_str(value)?;
                 if freq.is_none() {
-                    freq = Some(new_freq)
+                    freq = Some(new_freq);
                 } else {
                     return Err(ParseError::DuplicatedField("FREQ".into())).map_err(From::from);
                 }
@@ -370,7 +276,7 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
             "INTERVAL" => {
                 let new_interval = stringval_to_int(value, "Invalid interval".to_owned())?;
                 if interval.is_none() {
-                    interval = Some(new_interval)
+                    interval = Some(new_interval);
                 } else {
                     return Err(ParseError::DuplicatedField("INTERVAL".into())).map_err(From::from);
                 }
@@ -378,7 +284,7 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
             "COUNT" => {
                 let new_count = stringval_to_int(value, "Invalid count".to_owned())?;
                 if count.is_none() {
-                    count = Some(new_count)
+                    count = Some(new_count);
                 } else {
                     return Err(ParseError::DuplicatedField("COUNT".into())).map_err(From::from);
                 }
@@ -392,7 +298,7 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
                 //
                 // Thus This can be in local time
                 if until.is_none() {
-                    until = Some(datestring_to_date(value, &Some(UTC), "UNTIL")?)
+                    until = Some(datestring_to_date(value, Some(UTC), "UNTIL")?);
                 } else {
                     return Err(ParseError::DuplicatedField("UNTIL".into())).map_err(From::from);
                 }
@@ -410,7 +316,7 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
                             NWeekday::Every(wd) => wd,
                             NWeekday::Nth(_n, wd) => wd,
                         };
-                        week_start = Some(wd)
+                        week_start = Some(wd);
                     } else {
                         return Err(ParseError::DuplicatedField("WKST".into())).map_err(From::from);
                     }
@@ -423,7 +329,7 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
                 let new_by_set_pos =
                     stringval_to_intvec(value, |_pos| true, "Invalid by_set_pos value".to_owned())?;
                 if by_set_pos.is_none() {
-                    by_set_pos = Some(new_by_set_pos)
+                    by_set_pos = Some(new_by_set_pos);
                 } else {
                     return Err(ParseError::DuplicatedField("BYSETPOS".into())).map_err(From::from);
                 }
@@ -435,7 +341,7 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
                     "Invalid by_month value".to_owned(),
                 )?;
                 if by_month.is_none() {
-                    by_month = Some(new_by_month)
+                    by_month = Some(new_by_month);
                 } else {
                     return Err(ParseError::DuplicatedField("BYMONTH".into())).map_err(From::from);
                 }
@@ -447,7 +353,7 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
                     "Invalid by_month_day value".to_owned(),
                 )?;
                 if by_month_day.is_none() {
-                    by_month_day = Some(new_by_month_day)
+                    by_month_day = Some(new_by_month_day);
                 } else {
                     return Err(ParseError::DuplicatedField("BYMONTHDAY".into()))
                         .map_err(From::from);
@@ -460,7 +366,7 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
                     "Invalid by_year_day value".to_owned(),
                 )?;
                 if by_year_day.is_none() {
-                    by_year_day = Some(new_by_year_day)
+                    by_year_day = Some(new_by_year_day);
                 } else {
                     return Err(ParseError::DuplicatedField("BYYEARDAY".into()))
                         .map_err(From::from);
@@ -473,7 +379,7 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
                     "Invalid by_week_no value".to_owned(),
                 )?;
                 if by_week_no.is_none() {
-                    by_week_no = Some(new_by_week_no)
+                    by_week_no = Some(new_by_week_no);
                 } else {
                     return Err(ParseError::DuplicatedField("BYWEEKNO".into())).map_err(From::from);
                 }
@@ -485,7 +391,7 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
                     "Invalid by_hour value".to_owned(),
                 )?;
                 if by_hour.is_none() {
-                    by_hour = Some(new_by_hour)
+                    by_hour = Some(new_by_hour);
                 } else {
                     return Err(ParseError::DuplicatedField("BYHOUR".into())).map_err(From::from);
                 }
@@ -497,7 +403,7 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
                     "Invalid by_minute value".to_owned(),
                 )?;
                 if by_minute.is_none() {
-                    by_minute = Some(new_by_minute)
+                    by_minute = Some(new_by_minute);
                 } else {
                     return Err(ParseError::DuplicatedField("BYMINUTE".into())).map_err(From::from);
                 }
@@ -509,7 +415,7 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
                     "Invalid by_second value".to_owned(),
                 )?;
                 if by_second.is_none() {
-                    by_second = Some(new_by_second)
+                    by_second = Some(new_by_second);
                 } else {
                     return Err(ParseError::DuplicatedField("BYSECOND".into())).map_err(From::from);
                 }
@@ -518,7 +424,7 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
                 let new_by_weekday = parse_weekdays(value)?;
 
                 if by_weekday.is_none() {
-                    by_weekday = Some(new_by_weekday)
+                    by_weekday = Some(new_by_weekday);
                 } else {
                     return Err(ParseError::DuplicatedField("BYWEEKDAY /BYDAY".into()))
                         .map_err(From::from);
@@ -529,7 +435,7 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
                 let new_by_easter =
                     stringval_to_int(value, format!("Invalid by_easter val: {}", value))?;
                 if by_easter.is_none() {
-                    by_easter = Some(new_by_easter)
+                    by_easter = Some(new_by_easter);
                 } else {
                     return Err(ParseError::DuplicatedField("BYEASTER".into())).map_err(From::from);
                 }
@@ -539,7 +445,7 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
     }
 
     // Check if mandatory fields are set
-    Ok(RRuleProperties {
+    Ok(RRule {
         freq: freq.ok_or_else(|| {
             ParseError::Generic(format!("Property `FREQ` was missing in `{}`", line))
         })?,
@@ -559,6 +465,7 @@ fn parse_rrule(line: &str) -> Result<RRuleProperties, ParseError> {
         by_minute: by_minute.unwrap_or_default(),
         by_second: by_second.unwrap_or_default(),
         by_easter,
+        stage: PhantomData,
     })
 }
 
@@ -575,7 +482,7 @@ fn parse_weekdays(val: &str) -> Result<Vec<NWeekday>, ParseError> {
     Ok(wdays)
 }
 
-fn parse_rule_line(rfc_string: &str) -> Result<Option<RRuleProperties>, ParseError> {
+fn parse_rule_line(rfc_string: &str) -> Result<Option<RRule<Unvalidated>>, ParseError> {
     let rfc_string = rfc_string.trim();
     // If this part is empty return
     if rfc_string.is_empty() {
@@ -651,7 +558,7 @@ fn extract_name(line: String) -> LineName {
     }
 }
 
-pub(crate) fn parse_rule(rfc_string: &str) -> Result<RRuleProperties, ParseError> {
+pub(crate) fn parse_rule(rfc_string: &str) -> Result<RRule<Unvalidated>, ParseError> {
     let mut option = None;
     for line in rfc_string.split('\n') {
         let parsed_line = parse_rule_line(line)?;
@@ -679,9 +586,9 @@ pub(crate) fn parse_rule(rfc_string: &str) -> Result<RRuleProperties, ParseError
 
 #[derive(Debug)]
 struct ParsedInput {
-    rrule_vals: Vec<RRuleProperties>,
+    rrule_vals: Vec<RRule<Unvalidated>>,
     rdate_vals: Vec<DateTime>,
-    exrule_vals: Vec<RRuleProperties>,
+    exrule_vals: Vec<RRule<Unvalidated>>,
     exdate_vals: Vec<DateTime>,
     dt_start: DateTime,
 }
@@ -705,10 +612,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, ParseError> {
                     continue;
                 }
 
-                rrule_vals.push(finalize_parsed_properties(
-                    parse_rule(&parsed_line.value)?,
-                    &dt_start,
-                )?);
+                rrule_vals.push(parse_rule(&parsed_line.value)?.finalize_parsed_rrule(&dt_start));
             }
             "EXRULE" => {
                 if !parsed_line.params.is_empty() {
@@ -717,10 +621,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, ParseError> {
                 if parsed_line.value.is_empty() {
                     continue;
                 }
-                exrule_vals.push(finalize_parsed_properties(
-                    parse_rule(&parsed_line.value)?,
-                    &dt_start,
-                )?);
+                exrule_vals.push(parse_rule(&parsed_line.value)?.finalize_parsed_rrule(&dt_start));
             }
             "RDATE" => {
                 let matches = match RDATE_RE.captures(line) {
@@ -734,8 +635,8 @@ fn parse_input(s: &str) -> Result<ParsedInput, ParseError> {
 
                 rdate_vals.append(&mut parse_rdate(
                     &parsed_line.value,
-                    parsed_line.params,
-                    &tz,
+                    &parsed_line.params,
+                    tz,
                 )?);
             }
             "EXDATE" => {
@@ -747,10 +648,11 @@ fn parse_input(s: &str) -> Result<ParsedInput, ParseError> {
                     Some(tz_str) => Some(parse_timezone(tz_str.as_str())?),
                     None => None,
                 };
+
                 exdate_vals.append(&mut parse_rdate(
                     &parsed_line.value,
-                    parsed_line.params,
-                    &tz,
+                    &parsed_line.params,
+                    tz,
                 )?);
             }
             "DTSTART" => (),
@@ -764,16 +666,16 @@ fn parse_input(s: &str) -> Result<ParsedInput, ParseError> {
     }
 
     Ok(ParsedInput {
-        dt_start,
         rrule_vals,
         rdate_vals,
         exrule_vals,
         exdate_vals,
+        dt_start,
     })
 }
 
-fn validate_date_param(params: Vec<&str>) -> Result<(), ParseError> {
-    for param in &params {
+fn validate_date_param(params: &[&str]) -> Result<(), ParseError> {
+    for param in params {
         match DATETIME_RE.captures(param) {
             Some(caps) if caps.len() > 0 => (),
             _ => {
@@ -789,11 +691,11 @@ fn validate_date_param(params: Vec<&str>) -> Result<(), ParseError> {
 
 fn parse_rdate(
     rdateval: &str,
-    params: Vec<String>,
-    tz: &Option<Tz>,
+    params: &[String],
+    tz: Option<Tz>,
 ) -> Result<Vec<DateTime>, ParseError> {
-    let params: Vec<&str> = params.iter().map(|p| p.as_str()).collect();
-    validate_date_param(params)?;
+    let params: Vec<&str> = params.iter().map(String::as_str).collect();
+    validate_date_param(&params)?;
 
     let mut rdatevals = vec![];
     for datestr in rdateval.split(',') {
@@ -811,19 +713,14 @@ fn preprocess_rrule_string(s: &str) -> String {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::DateFilter;
-    use crate::RRule;
+    use crate::RRuleSet;
 
     /// Print and compare 2 lists of dates and panic it they are not the same.
-    fn check_occurrences(occurrences: Vec<DateTime>, expected: Vec<&str>) {
+    fn check_occurrences(occurrences: &[DateTime], expected: &[&str]) {
         let formater = |dt: &DateTime| -> String { format!("    \"{}\",\n", dt.to_rfc3339()) };
         println!(
             "Given: [\n{}]\nExpected: {:#?}",
-            occurrences
-                .iter()
-                .map(formater)
-                .collect::<Vec<_>>()
-                .join(""),
+            occurrences.iter().map(formater).collect::<String>(),
             expected
         );
         assert_eq!(occurrences.len(), expected.len(), "List sizes don't match");
@@ -858,7 +755,7 @@ mod test {
         assert!(res.is_ok());
         let res = res.unwrap();
         assert_eq!(res.rrule.len(), 1);
-        let props = res.rrule[0].get_properties();
+        let props = &res.rrule[0];
         assert_eq!(props.interval, 1);
         assert_eq!(props.count.unwrap(), 5);
         assert_eq!(props.freq, Frequency::Daily);
@@ -872,7 +769,7 @@ mod test {
         assert!(res.is_ok());
         let res = res.unwrap();
         assert_eq!(res.exrule.len(), 1);
-        let props = res.exrule[0].get_properties();
+        let props = &res.exrule[0];
         assert_eq!(props.interval, 2);
         assert_eq!(props.freq, Frequency::Weekly);
     }
@@ -894,7 +791,7 @@ mod test {
             "RRUle:test",
         ];
         for test_case in &test_cases {
-            let res = parse_rrule_string_to_properties(test_case);
+            let res = test_case.parse::<RRule<Unvalidated>>();
             assert!(res.is_err());
             let res = parse_dtstart(test_case);
             assert!(res.is_err());
@@ -978,8 +875,11 @@ mod test {
 
     #[test]
     fn parses_byday_as_nweekday_when_n_is_first() {
-        let res = parse_rrule_string_to_properties("DTSTART;VALUE=DATE:20200701\nRRULE:FREQ=MONTHLY;UNTIL=20210303T090000Z;INTERVAL=1;BYDAY=1WE").unwrap();
-        assert_eq!(res.by_weekday, vec![NWeekday::new(Some(1), Weekday::Wed)]);
+        let res = "DTSTART;VALUE=DATE:20200701\nRRULE:FREQ=MONTHLY;UNTIL=20210303T090000Z;INTERVAL=1;BYDAY=1WE".parse::<RRuleSet>().unwrap();
+        assert_eq!(
+            res.rrule[0].by_weekday,
+            vec![NWeekday::new(Some(1), Weekday::Wed)]
+        );
     }
 
     #[test]
@@ -994,14 +894,14 @@ mod test {
             let res = build_rruleset(case);
             assert!(res.is_ok());
         }
-        let cases = vec![
+        let cases = [
             "RRULE:FREQ=MONTHLY;UNTIL=20210504T154500Z;INTERVAL=1;BYDAY=1TU",
             "RRULE:FREQ=MONTHLY;UNTIL=20210504T220000Z;INTERVAL=1;BYDAY=1WE",
             "RRULE:FREQ=MONTHLY;UNTIL=20210505T080000Z;INTERVAL=1;BYDAY=-1WE",
             "RRULE:FREQ=MONTHLY;UNTIL=20210505T080000Z;INTERVAL=1;BYDAY=12SU",
             "RRULE:FREQ=MONTHLY;UNTIL=20210524T090000Z;INTERVAL=1;BYDAY=+4MO",
         ];
-        let opts = vec![
+        let opts = [
             vec![NWeekday::new(Some(1), Weekday::Tue)],
             vec![NWeekday::new(Some(1), Weekday::Wed)],
             vec![NWeekday::new(Some(-1), Weekday::Wed)],
@@ -1016,18 +916,10 @@ mod test {
     }
 
     #[test]
-    fn rejects_rrule_without_dtstart() {
-        let res = parse_rrule_string_to_properties("FREQ=DAILY;COUNT=7");
-        assert!(res.is_err());
-        let err = res.unwrap_err();
-        assert_eq!(err, ParseError::MissingStartDate);
-    }
-
-    #[test]
     fn avoids_infinite_loop() {
         let rrule = "DTSTART:20200427T090000\n\
             FREQ=WEEKLY;UNTIL=20200506T035959Z;BYDAY=FR,MO,TH,TU,WE"
-            .parse::<RRule>()
+            .parse::<RRuleSet>()
             .unwrap();
         let instances = rrule
             .into_iter()
@@ -1038,15 +930,15 @@ mod test {
 
     #[test]
     fn daytime_savings() {
-        let rrule: RRule =
+        let rrule: RRuleSet =
             "DTSTART;TZID=America/Vancouver:20210301T022210\nRRULE:FREQ=DAILY;COUNT=30"
                 .parse()
                 .unwrap();
 
         let (dates, error) = rrule.all_with_error(60);
         check_occurrences(
-            dates,
-            vec![
+            &dates,
+            &[
                 "2021-03-01T02:22:10-08:00",
                 "2021-03-02T02:22:10-08:00",
                 "2021-03-03T02:22:10-08:00",
@@ -1112,26 +1004,26 @@ mod test {
         //     2021-03-08T09:30:00CET, // same as `UNTIL` but different timezones
         // ]
         check_occurrences(
-            dates,
-            vec![
+            &dates,
+            &[
                 "2020-12-14T09:30:00+01:00",
                 "2021-01-11T09:30:00+01:00",
                 "2021-02-22T09:30:00+01:00",
                 "2021-03-08T09:30:00+01:00",
             ],
-        )
+        );
     }
 
     #[test]
     fn test_zulu() {
         let rrule_str = "DTSTART:20210405T150000Z\nRRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO";
-        let rrule: RRule = rrule_str.parse().unwrap();
-        assert_eq!(rrule.get_properties().freq, Frequency::Weekly);
+        let rrule: RRuleSet = rrule_str.parse().unwrap();
+        assert_eq!(rrule.rrule[0].freq, Frequency::Weekly);
         assert_eq!(
-            rrule.get_properties().by_weekday,
+            rrule.rrule[0].by_weekday,
             vec![NWeekday::new(None, Weekday::Mon)]
         );
-        assert_eq!(rrule.get_properties().interval, 1);
+        assert_eq!(rrule.rrule[0].interval, 1);
         assert_eq!(rrule.dt_start, UTC.ymd(2021, 4, 5).and_hms(15, 0, 0));
     }
 
@@ -1144,8 +1036,8 @@ mod test {
             .all(50)
             .unwrap();
         check_occurrences(
-            dates,
-            vec![
+            &dates,
+            &[
                 "2021-02-22T09:30:00+01:00",
                 "2021-03-08T09:30:00+01:00",
                 "2021-03-22T09:30:00+01:00",
@@ -1153,13 +1045,13 @@ mod test {
                 "2021-04-19T09:30:00+02:00",
                 "2021-05-03T09:30:00+02:00",
             ],
-        )
+        );
     }
 
     /// Check if datetime can be parsed correctly
     #[test]
     fn parse_datetime() {
-        let rrule: RRule = "DTSTART:20120201T023000Z\nFREQ=DAILY;INTERVAL=1;COUNT=2"
+        let rrule: RRuleSet = "DTSTART:20120201T023000Z\nFREQ=DAILY;INTERVAL=1;COUNT=2"
             .parse()
             .expect("RRule could not be parsed");
 
@@ -1169,13 +1061,13 @@ mod test {
                 UTC.ymd(2012, 2, 1).and_hms(2, 30, 0),
                 UTC.ymd(2012, 2, 2).and_hms(2, 30, 0)
             ]
-        )
+        );
     }
 
     /// Check if datetime with timezone can be parsed correctly
     #[test]
     fn parse_datetime_with_timezone() {
-        let rrule: RRule =
+        let rrule: RRuleSet =
             "DTSTART;TZID=America/New_York:20120201T023000Z\nRRULE:FREQ=DAILY;INTERVAL=1;COUNT=2"
                 .parse()
                 .expect("RRule could not be parsed");
@@ -1186,13 +1078,13 @@ mod test {
                 UTC.ymd(2012, 2, 1).and_hms(2, 30, 0),
                 UTC.ymd(2012, 2, 2).and_hms(2, 30, 0)
             ]
-        )
+        );
     }
 
     /// Check if datetime errors are correctly handled
     #[test]
     fn parse_datetime_errors_invalid_hour() {
-        let res = RRule::from_str("DTSTART:20120201T323000Z\nFREQ=DAILY;INTERVAL=1;COUNT=2");
+        let res = RRuleSet::from_str("DTSTART:20120201T323000Z\nFREQ=DAILY;INTERVAL=1;COUNT=2");
         assert!(res.is_err());
         let err = res.unwrap_err();
         assert_eq!(
@@ -1208,7 +1100,7 @@ mod test {
     /// Check if datetime errors are correctly handled
     #[test]
     fn parse_datetime_errors_invalid_day() {
-        let res = RRule::from_str("DTSTART:20120251T023000Z\nFREQ=DAILY;INTERVAL=1;COUNT=2");
+        let res = RRuleSet::from_str("DTSTART:20120251T023000Z\nFREQ=DAILY;INTERVAL=1;COUNT=2");
         assert!(res.is_err());
         let err = res.unwrap_err();
         assert_eq!(
@@ -1224,7 +1116,7 @@ mod test {
     /// Check if datetime errors are correctly handled
     #[test]
     fn parse_datetime_errors_invalid_timezone() {
-        let res = RRule::from_str("DTSTART:20120251T023000T\nFREQ=DAILY;INTERVAL=1;COUNT=2");
+        let res = RRuleSet::from_str("DTSTART:20120251T023000T\nFREQ=DAILY;INTERVAL=1;COUNT=2");
         assert!(res.is_err());
         let err = res.unwrap_err();
         assert_eq!(
@@ -1240,7 +1132,7 @@ mod test {
     /// Check if datetime errors are correctly handled
     #[test]
     fn parse_datetime_errors_invalid_tzid_timezone() {
-        let res = RRule::from_str(
+        let res = RRuleSet::from_str(
             "DTSTART;TZID=America/Everywhere:20120251T023000Z\nRRULE:FREQ=DAILY;INTERVAL=1;COUNT=2",
         );
         assert!(res.is_err());

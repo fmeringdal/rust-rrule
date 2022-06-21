@@ -1,13 +1,16 @@
-mod date_filter;
 mod datetime;
-mod properties;
 mod rrule;
 mod rruleset;
-mod utils;
+pub(crate) mod utils;
 
-pub use self::rrule::RRule;
-pub use date_filter::DateFilter;
+pub use self::rrule::{Frequency, NWeekday, RRule};
+pub use self::rruleset::RRuleSet;
 pub(crate) use datetime::{DateTime, Time};
-pub use properties::{Frequency, NWeekday, RRuleProperties};
-pub use rruleset::RRuleSet;
-pub(self) use utils::{collect_or_error, collect_with_error};
+
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+/// An empty struct to keep the validated stage
+pub struct Validated;
+
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+/// An empty struct to keep the unvalidated (or not-yet-validated) stage
+pub struct Unvalidated;

@@ -1,5 +1,5 @@
 use crate::core::DateTime;
-use crate::{validator::ValidationError, RRuleProperties};
+use crate::{validator::ValidationError, RRule, Unvalidated};
 
 /// Maximum value of `option.interval` when frequency is yearly.
 /// Limit: 10000 years
@@ -38,7 +38,7 @@ pub(crate) static FREQ_MINUTELY_INTERVAL_MAX: u16 = 10_000;
 pub(crate) static FREQ_SECONDLY_INTERVAL_MAX: u16 = 50_000;
 
 /// Check (arbitrary) validator limits.
-/// It checks all values in the [`RRuleProperties`] and makes sure that they are in
+/// It checks all values in the [`RRule`] and makes sure that they are in
 /// a reasonable range. If the function returns `Ok`, no errors where found.
 ///
 /// This will prevent the creation of iterators that will always fail.
@@ -49,7 +49,7 @@ pub(crate) static FREQ_SECONDLY_INTERVAL_MAX: u16 = 50_000;
 /// See README.md for more info.
 #[cfg(not(feature = "no-validation-limits"))]
 pub(crate) fn check_limits(
-    properties: &RRuleProperties,
+    rrule: &RRule<Unvalidated>,
     dt_start: &DateTime,
 ) -> Result<(), ValidationError> {
     use crate::{validator::YEAR_RANGE, Frequency};
@@ -58,7 +58,7 @@ pub(crate) fn check_limits(
     // Interval:
     // - Value should not be to big
     //   `Chrono` is limited to +/- 262,000 years from the common epoch.
-    let limit = match &properties.freq {
+    let limit = match &rrule.freq {
         Frequency::Yearly => FREQ_YEARLY_INTERVAL_MAX, // 10000 years
         Frequency::Monthly => FREQ_MONTHLY_INTERVAL_MAX, // About 83 years
         Frequency::Weekly => FREQ_WEEKLY_INTERVAL_MAX, // About 19 years
@@ -67,8 +67,8 @@ pub(crate) fn check_limits(
         Frequency::Minutely => FREQ_MINUTELY_INTERVAL_MAX, // About 7 days
         Frequency::Secondly => FREQ_SECONDLY_INTERVAL_MAX, // About 13 hours
     };
-    if properties.interval > limit {
-        return Err(ValidationError::TooBigInterval(properties.interval));
+    if rrule.interval > limit {
+        return Err(ValidationError::TooBigInterval(rrule.interval));
     }
 
     // Count:
@@ -87,7 +87,7 @@ pub(crate) fn check_limits(
 }
 
 /// Check validator limits.
-/// It checks all values in the [`RRuleProperties`] and makes sure that they are in
+/// It checks all values in the [`RRule`] and makes sure that they are in
 /// a reasonable range. If the function returns `Ok`, no errors where found.
 ///
 /// This will prevent the creation of iterators that will always fail.
@@ -97,6 +97,7 @@ pub(crate) fn check_limits(
 /// When `no-validation-limits` feature is set this function will always return `Ok`.
 /// See README.md for more info.
 #[cfg(feature = "no-validation-limits")]
-pub(crate) fn check_limits(_: &RRuleProperties, _: &DateTime) -> Result<(), ValidationError> {
+#[allow(clippy::unnecessary_wraps)]
+pub(crate) fn check_limits(_: &RRule<Unvalidated>, _: &DateTime) -> Result<(), ValidationError> {
     Ok(())
 }

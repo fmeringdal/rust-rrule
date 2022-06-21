@@ -8,15 +8,15 @@ pub struct Logger;
 
 impl log::Log for Logger {
     fn enabled(&self, metadata: &Metadata) -> bool {
-        let enable = if !cfg!(debug_assertions) {
+        let enable = if cfg!(debug_assertions) {
+            // Don't apply additional filters in debug build
+            true
+        } else {
             // Only in release mode
             // Do the filters below unless it is a Warning, Error (or Debug)
             metadata.level() == Level::Warn
                 || metadata.level() == Level::Error
                 || metadata.level() == Level::Debug
-        } else {
-            // Don't apply additional filters in debug build
-            true
         };
 
         // All messages need to be Trace or lower

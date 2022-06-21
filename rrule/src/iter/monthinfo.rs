@@ -1,5 +1,5 @@
 use super::utils::pymod;
-use crate::{Frequency, NWeekday, RRuleError, RRuleProperties};
+use crate::{Frequency, NWeekday, RRule, RRuleError};
 
 #[derive(Debug, Clone)]
 pub(crate) struct MonthInfo {
@@ -15,7 +15,7 @@ pub(crate) fn rebuild_month(
     year_len: u32,
     month_range: &[u16],
     weekday_mask: &[u8],
-    properties: &RRuleProperties,
+    rrule: &RRule,
 ) -> Result<MonthInfo, RRuleError> {
     let mut result = MonthInfo {
         last_year: year,
@@ -25,37 +25,42 @@ pub(crate) fn rebuild_month(
 
     // Build up `ranges`
     let mut ranges: Vec<(isize, isize)> = vec![];
-    if properties.freq == Frequency::Yearly {
-        if properties.by_month.is_empty() {
+    if rrule.freq == Frequency::Yearly {
+        #[allow(clippy::cast_possible_wrap)]
+        if rrule.by_month.is_empty() {
             ranges = vec![(0, year_len as isize - 1)];
         } else {
-            for month in &properties.by_month {
+            for month in &rrule.by_month {
                 if month == &0 {
                     return Err(RRuleError::new_iter_err(
                         "Month `0` does not exist, 1-12 expected",
                     ));
                 }
+                #[allow(clippy::cast_possible_wrap)]
                 let first = *month_range
                     .get(*month as usize - 1)
                     .ok_or_else(|| RRuleError::new_iter_err("Index out of bounds `month_range`"))?
                     as isize;
+                #[allow(clippy::cast_possible_wrap)]
                 let last = *month_range
                     .get(*month as usize)
                     .ok_or_else(|| RRuleError::new_iter_err("Index out of bounds `month_range`"))?
                     as isize;
-                ranges.push((first, last - 1))
+                ranges.push((first, last - 1));
             }
         }
-    } else if properties.freq == Frequency::Monthly {
+    } else if rrule.freq == Frequency::Monthly {
         if month == 0 {
             return Err(RRuleError::new_iter_err(
                 "Month `0` does not exist, 1-12 expected",
             ));
         }
+        #[allow(clippy::cast_possible_wrap)]
         let first = *month_range
             .get(month as usize - 1)
             .ok_or_else(|| RRuleError::new_iter_err("Index out of bounds `month_range`"))?
             as isize;
+        #[allow(clippy::cast_possible_wrap)]
         let last = *month_range
             .get(month as usize)
             .ok_or_else(|| RRuleError::new_iter_err("Index out of bounds `month_range`"))?
@@ -73,10 +78,11 @@ pub(crate) fn rebuild_month(
 
     // Loop over `ranges`
     for (first, last) in ranges {
-        for by_weekday in &properties.by_weekday {
+        for by_weekday in &rrule.by_weekday {
             // Only check Nth occurrences here
             if let NWeekday::Nth(number, weekday) = by_weekday {
                 let mut i: isize;
+                #[allow(clippy::cast_possible_wrap, clippy::cast_sign_loss)]
                 if *number < 0 {
                     i = last + (*number as isize + 1) * 7;
                     let weekday_from_mask: isize =
@@ -98,6 +104,7 @@ pub(crate) fn rebuild_month(
                         7,
                     );
                 }
+                #[allow(clippy::cast_sign_loss)]
                 if first <= i && i <= last {
                     result.neg_weekday_mask[i as usize] = 1;
                 }

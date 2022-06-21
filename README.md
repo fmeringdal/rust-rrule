@@ -18,7 +18,7 @@ The crate allows for a "BYEASTER" filter. But this is opt-in with the feature fl
 
 ### RRuleSet
 
-`RRuleSet` allows for a combination or `RRule`s and some other properties.
+`RRuleSet` allows for a combination for `RRule`s and some other properties.
 
 - List of [RRules](https://icalendar.org/iCalendar-RFC-5545/3-8-5-3-recurrence-rule.html):
   Allows multiple RRules to be combined. (Union, `A ∪ B`)
@@ -29,7 +29,7 @@ The crate allows for a "BYEASTER" filter. But this is opt-in with the feature fl
 - List of [ExDate](https://icalendar.org/iCalendar-RFC-5545/3-8-5-1-exception-date-times.html):
   A list of datetime combinations to always exclude. (Complement `A \ B` or `A - B`)
 
-Note: "EXRULE" was originally part of [RFC 2445](https://datatracker.ietf.org/doc/html/rfc2445),
+Note: "EXRULE" was originally part of [RFC 2445](https://datatracker.ietf.org/doc/html/rfc2445#section-4.8.5.2),
 [RFC 5545][ical_spec] supersedes this specification.
 But "EXRULE" works exactly the same als "RRULE" excepts it excludes dates.
 
@@ -133,7 +133,7 @@ Limitations:
 | Description | Arbitrary Limit | Crate Limit |
 |----------------------------------|-----------------------|-----------------------------|
 | Year range | -10_000..=10_000 | -262_000..=262_000 (Chrono) |
-| Max interval with freq Yearly | 10_000 ( 10000 years) | 65_535 (u16::MAX) |
+| Max interval with freq Yearly | 10_000 (10000 years) | 65_535 (u16::MAX) |
 | Max interval with freq Monthly | 1_000 (~83 years) | 65_535 (u16::MAX) |
 | Max interval with freq Weekly | 1_000 (~19 years) | 65_535 (u16::MAX) |
 | Max interval with freq Daily | 10_000 (~27 years) | 65_535 (u16::MAX) |

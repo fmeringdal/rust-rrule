@@ -1,13 +1,12 @@
-mod common;
-
-use rrule::{DateFilter, RRule};
+use crate::tests::common;
+use crate::RRuleSet;
 
 /// Monthly on the 31st of the month
 #[test]
 fn monthly_on_31th() {
     let dates = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=MONTHLY;COUNT=10;BYMONTHDAY=31"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
         .all(20)
         .unwrap();
@@ -26,7 +25,7 @@ fn monthly_on_31th() {
             "1998-12-31T09:00:00-05:00",
             "1999-01-31T09:00:00-05:00",
         ],
-    )
+    );
 }
 
 /// Monthly on the 31th-to-last of the month
@@ -34,7 +33,7 @@ fn monthly_on_31th() {
 fn monthly_on_31th_to_last() {
     let dates = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=MONTHLY;COUNT=10;BYMONTHDAY=-31"
-        .parse::<RRule>()
+        .parse::<RRuleSet>()
         .unwrap()
         .all(20)
         .unwrap();
@@ -53,5 +52,5 @@ fn monthly_on_31th_to_last() {
             "1998-12-01T09:00:00-05:00",
             "1999-01-01T09:00:00-05:00",
         ],
-    )
+    );
 }

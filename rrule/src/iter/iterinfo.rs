@@ -5,7 +5,8 @@ use super::{
     utils::to_ordinal,
     yearinfo::{rebuild_year, YearInfo},
 };
-use crate::{core::Time, Frequency, NWeekday, RRule, RRuleError, RRuleProperties};
+use crate::core::DateTime;
+use crate::{core::Time, Frequency, NWeekday, RRule, RRuleError};
 use chrono::{Datelike, TimeZone};
 
 #[derive(Debug, Clone)]
@@ -28,27 +29,26 @@ impl<'a> IterInfo<'a> {
         }
     }
 
-    pub fn new(rrule: &'a RRule) -> Result<Self, RRuleError> {
+    pub fn new(rrule: &'a RRule, dt_start: &DateTime) -> Result<Self, RRuleError> {
         let mut ii = Self {
             rrule,
             year_info: None,
             month_info: None,
             easter_mask: None,
         };
-        let counter_date = &ii.rrule.dt_start;
-        ii.rebuild(counter_date.year(), counter_date.month() as u8)?;
+        #[allow(clippy::cast_possible_truncation)]
+        ii.rebuild(dt_start.year(), dt_start.month() as u8)?;
 
         Ok(ii)
     }
 
     pub fn rebuild(&mut self, year: i32, month: u8) -> Result<(), RRuleError> {
         if self.month_info.is_none() || year != self.month_info.as_ref().unwrap().last_year {
-            self.year_info = Some(rebuild_year(year, self.rrule.get_properties())?);
+            self.year_info = Some(rebuild_year(year, self.rrule));
         }
 
         let by_weekday_nth_only = self
             .rrule
-            .get_properties()
             .by_weekday
             .iter()
             .filter(|by_weekday| match by_weekday {
@@ -70,24 +70,17 @@ impl<'a> IterInfo<'a> {
                     year_info.year_len,
                     year_info.month_range,
                     year_info.weekday_mask,
-                    self.rrule.get_properties(),
+                    self.rrule,
                 )?);
             }
         }
 
         #[cfg(feature = "by-easter")]
-        if let Some(by_easter) = self.rrule.get_properties().by_easter {
+        if let Some(by_easter) = self.rrule.by_easter {
             self.easter_mask = Some(easter(year, by_easter)?);
         }
         Ok(())
     }
-
-    // pub fn last_year(&self) -> Option<i32> {
-    //     self.month_info.as_ref().map(|info| info.last_year)
-    // }
-    // pub fn last_month(&self) -> Option<u8> {
-    //     self.month_info.as_ref().map(|info| info.last_month)
-    // }
 
     pub fn year_len(&self) -> Option<u32> {
         self.year_info.as_ref().map(|info| info.year_len)
@@ -149,77 +142,66 @@ impl<'a> IterInfo<'a> {
         let year_len = self
             .year_len()
             .ok_or_else(|| RRuleError::new_iter_err("`year_len()` returned `None`"))?;
-        let v = (0..year_len as u64).collect();
-        Ok((v, 0, year_len as u64))
+        let v = (0..u64::from(year_len)).collect();
+        Ok((v, 0, u64::from(year_len)))
     }
 
-    pub fn month_dayset(&self, month: u8) -> Result<(Vec<u64>, u64, u64), RRuleError> {
+    pub fn month_dayset(&self, month: u8) -> (Vec<u64>, u64, u64) {
         let month_range = self.month_range();
         let start = month_range[month as usize - 1];
-        let end = month_range[month as usize] as u64;
-        let set = (0..self.year_len().unwrap_or_default() as u64)
+        let end = u64::from(month_range[month as usize]);
+        let set = (0..u64::from(self.year_len().unwrap_or_default()))
             .map(|i| if i < end { i } else { 0 })
             .collect();
-        Ok((set, start as u64, end as u64))
+        (set, u64::from(start), end as u64)
     }
 
-    pub fn weekday_set(
-        &self,
-        year: i32,
-        month: u8,
-        day: u8,
-    ) -> Result<(Vec<u64>, u64, u64), RRuleError> {
+    pub fn weekday_set(&self, year: i32, month: u8, day: u8) -> (Vec<u64>, u64, u64) {
         let set_len = self.year_len().unwrap() + 7;
         let mut set = vec![0; set_len as usize];
 
+        #[allow(clippy::cast_sign_loss)]
         let mut i: u64 = (to_ordinal(
             &chrono::Utc
-                .ymd(year as i32, month as u32, day as u32)
+                .ymd(year, u32::from(month), u32::from(day))
                 .and_hms(0, 0, 0),
         ) - self.year_ordinal().unwrap()) as u64; // TODO can panic when number was negative
 
         let start = i;
+        #[allow(clippy::cast_possible_truncation)]
         for _ in 0..7 {
-            if i >= set_len as u64 {
+            if i >= u64::from(set_len) {
                 break;
             }
             set[i as usize] = i;
             i += 1;
-            if self.weekday_mask()[i as usize]
-                == self
-                    .rrule
-                    .get_properties()
-                    .week_start
-                    .num_days_from_monday() as u8
+            #[allow(clippy::cast_possible_truncation)]
+            if self.weekday_mask()[i as usize] == self.rrule.week_start.num_days_from_monday() as u8
             {
                 break;
             }
         }
-        Ok((set, start, i))
+        (set, start, i)
     }
 
-    pub fn day_dayset(
-        &self,
-        year: i32,
-        month: u8,
-        day: u8,
-    ) -> Result<(Vec<u64>, u64, u64), RRuleError> {
+    #[allow(clippy::cast_possible_truncation)]
+    pub fn day_dayset(&self, year: i32, month: u8, day: u8) -> (Vec<u64>, u64, u64) {
         let mut set = vec![0; self.year_len().unwrap() as usize];
 
+        #[allow(clippy::cast_sign_loss)]
         let i = (to_ordinal(
             &chrono::Utc
-                .ymd(year as i32, month as u32, day as u32)
+                .ymd(year, u32::from(month), u32::from(day))
                 .and_hms(0, 0, 0),
         ) - self.year_ordinal().unwrap()) as u64;
 
         set[i as usize] = i;
-        Ok((set, i, i + 1))
+        (set, i, i + 1)
     }
 
     pub fn hour_timeset(&self, hour: u8, _minute: u8, second: u8, millisecond: u16) -> Vec<Time> {
         let mut set = self
             .rrule
-            .get_properties()
             .by_minute
             .iter()
             .flat_map(|minute| self.min_timeset(hour, *minute, second, millisecond))
@@ -231,7 +213,6 @@ impl<'a> IterInfo<'a> {
     pub fn min_timeset(&self, hour: u8, minute: u8, _second: u8, millisecond: u16) -> Vec<Time> {
         let mut set = self
             .rrule
-            .get_properties()
             .by_second
             .iter()
             .map(|second| Time::new(hour, minute, *second, millisecond))
@@ -240,29 +221,29 @@ impl<'a> IterInfo<'a> {
         set
     }
 
+    #[allow(clippy::unused_self)]
     pub fn sec_timeset(&self, hour: u8, minute: u8, second: u8, millisecond: u16) -> Vec<Time> {
         vec![Time::new(hour, minute, second, millisecond)]
     }
 
     pub fn get_dayset(
         &self,
-        freq: &Frequency,
+        freq: Frequency,
         year: i32,
         month: u8,
         day: u8,
     ) -> Result<(Vec<u64>, u64, u64), RRuleError> {
         match freq {
             Frequency::Yearly => self.year_dayset(),
-            Frequency::Monthly => self.month_dayset(month),
-            Frequency::Weekly => self.weekday_set(year, month, day),
-            Frequency::Daily => self.day_dayset(year, month, day),
-            _ => self.day_dayset(year, month, day),
+            Frequency::Monthly => Ok(self.month_dayset(month)),
+            Frequency::Weekly => Ok(self.weekday_set(year, month, day)),
+            _ => Ok(self.day_dayset(year, month, day)),
         }
     }
 
     pub fn get_timeset(
         &self,
-        freq: &Frequency,
+        freq: Frequency,
         hour: u8,
         minute: u8,
         second: u8,
@@ -276,7 +257,7 @@ impl<'a> IterInfo<'a> {
         }
     }
 
-    pub fn get_properties(&'a self) -> &'a RRuleProperties {
-        self.rrule.get_properties()
+    pub fn get_rrule(&'a self) -> &'a RRule {
+        self.rrule
     }
 }
