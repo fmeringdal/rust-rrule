@@ -38,10 +38,10 @@ If you notice that the implementation differs from the specifications above, ple
 ## Library Usage
 
 ```rust
-use rrule::RRule;
+use rrule::RRuleSet;
 
 // RRule that starts 2012.02.01 and occurs daily for 3 days.
-let rrule: RRule = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
+let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
 
 // Set hard limit in case of infinitely recurring rules.
 let limit = 100;
