@@ -260,7 +260,7 @@ impl<'a> IterInfo<'a> {
     }
 
     #[inline]
-    pub fn get_rrule(&'a self) -> &'a RRule {
+    pub fn get_rrule(&self) -> &RRule {
         self.rrule
     }
 }

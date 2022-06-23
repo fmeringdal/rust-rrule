@@ -1,15 +1,8 @@
 use crate::core::DateTime;
 use chrono::{TimeZone, Utc};
 use chrono_tz::UTC;
-use lazy_static::lazy_static;
-use std::collections::HashMap;
-use std::sync::Mutex;
 
 const DAY_SECS: i64 = 24 * 60 * 60;
-
-lazy_static! {
-    static ref LEAP_YEAR_CACHE: Mutex<HashMap<i32, bool>> = Mutex::new(HashMap::new());
-}
 
 /// Converts number of days since unix epoch back to `DataTime`
 #[inline]
@@ -30,10 +23,7 @@ pub(crate) fn to_ordinal(date: &chrono::DateTime<Utc>) -> i64 {
 pub(crate) fn is_leap_year(year: i32) -> bool {
     // Every 4 years, and every 100 years
     // but not if dividable by 400.
-    let mut cache = LEAP_YEAR_CACHE.lock().unwrap();
-    *cache
-        .entry(year)
-        .or_insert(year % 4 == 0 && year % 100 != 0 || year % 400 == 0)
+    year % 4 == 0 && year % 100 != 0 || year % 400 == 0
 }
 
 /// Returns amount of days in year,
