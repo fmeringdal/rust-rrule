@@ -110,9 +110,8 @@ pub(crate) fn rebuild_year(year: i32, rrule: &RRule) -> YearInfo {
         year_len as isize - no1_week_start
     };
 
-    let div = (year_len_ext as f32 / 7.) as isize;
+    let div = (year_len_ext as f32 / 7.).floor() as isize;
     let year_mod = pymod(year_len_ext, 7);
-    //const num_weeks = Math.floor(div + mod / 4)
     let num_weeks = div + (year_mod / 4);
 
     for &(mut n) in &rrule.by_week_no {
