@@ -82,7 +82,6 @@ impl<'a> RRuleIter<'a> {
             }
         }
         let mut loop_counter: u32 = 0;
-
         // Loop until there is at least 1 item in the buffer.
         while self.buffer.is_empty() {
             let rrule = self.ii.get_rrule();
@@ -113,16 +112,12 @@ impl<'a> RRuleIter<'a> {
             }
 
             // Change `Vec<u64>` to `Vec<Option<u64>>`
-            let mut dayset = dayset.into_iter().map(Some).collect::<Vec<Option<u64>>>();
+            let mut dayset = dayset
+                .into_iter()
+                .map(|x| Some(x as i32))
+                .collect::<Vec<_>>();
 
             let filtered = remove_filtered_days(&mut dayset, start, end, &self.ii);
-
-            #[allow(clippy::cast_possible_truncation)]
-            // Change `Vec<Option<u64>>` to `Vec<Option<i32>>`
-            let dayset = dayset
-                .into_iter()
-                .map(|day| day.map(|day| day as i32))
-                .collect::<Vec<Option<i32>>>();
 
             #[allow(clippy::cast_possible_truncation)]
             if rrule.by_set_pos.is_empty() {
@@ -132,11 +127,11 @@ impl<'a> RRuleIter<'a> {
                         continue;
                     }
 
-                    let current_day = current_day.unwrap();
+                    let current_day = i64::from(current_day.unwrap());
                     let year_ordinal = self.ii.year_ordinal().unwrap();
                     // Ordinal conversion uses UTC: if we apply local-TZ here, then
                     // just below we'll end up double-applying.
-                    let date = from_ordinal(year_ordinal + i64::from(current_day));
+                    let date = from_ordinal(year_ordinal + current_day);
                     // We apply the local-TZ here,
                     let date = self
                         .dt_start

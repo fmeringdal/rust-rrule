@@ -82,7 +82,7 @@ impl<'a> IterInfo<'a> {
         Ok(())
     }
 
-    pub fn year_len(&self) -> Option<u32> {
+    pub fn year_len(&self) -> Option<u16> {
         self.year_info.as_ref().map(|info| info.year_len)
     }
 
@@ -126,7 +126,7 @@ impl<'a> IterInfo<'a> {
         self.month_info.as_ref().map(|info| &info.neg_weekday_mask)
     }
 
-    pub fn next_year_len(&self) -> Option<u32> {
+    pub fn next_year_len(&self) -> Option<u16> {
         self.year_info.as_ref().map(|info| info.next_year_len)
     }
 
@@ -139,23 +139,25 @@ impl<'a> IterInfo<'a> {
     }
 
     pub fn year_dayset(&self) -> Result<(Vec<u64>, u64, u64), RRuleError> {
-        let year_len = self
-            .year_len()
-            .ok_or_else(|| RRuleError::new_iter_err("`year_len()` returned `None`"))?;
-        let v = (0..u64::from(year_len)).collect();
-        Ok((v, 0, u64::from(year_len)))
+        let year_len = u64::from(
+            self.year_len()
+                .ok_or_else(|| RRuleError::new_iter_err("`year_len()` returned `None`"))?,
+        );
+        let v = (0..year_len).collect();
+        Ok((v, 0, year_len))
     }
 
     pub fn month_dayset(&self, month: u8) -> (Vec<u64>, u64, u64) {
         let month_range = self.month_range();
-        let start = month_range[month as usize - 1];
+        let start = u64::from(month_range[month as usize - 1]);
         let end = u64::from(month_range[month as usize]);
         let set = (0..u64::from(self.year_len().unwrap_or_default()))
             .map(|i| if i < end { i } else { 0 })
             .collect();
-        (set, u64::from(start), end as u64)
+        (set, start, end)
     }
 
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
     pub fn weekday_set(&self, year: i32, month: u8, day: u8) -> (Vec<u64>, u64, u64) {
         let set_len = self.year_len().unwrap() + 7;
         let mut set = vec![0; set_len as usize];
@@ -184,7 +186,7 @@ impl<'a> IterInfo<'a> {
         (set, start, i)
     }
 
-    #[allow(clippy::cast_possible_truncation)]
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
     pub fn day_dayset(&self, year: i32, month: u8, day: u8) -> (Vec<u64>, u64, u64) {
         let mut set = vec![0; self.year_len().unwrap() as usize];
 
@@ -257,6 +259,7 @@ impl<'a> IterInfo<'a> {
         }
     }
 
+    #[inline]
     pub fn get_rrule(&'a self) -> &'a RRule {
         self.rrule
     }

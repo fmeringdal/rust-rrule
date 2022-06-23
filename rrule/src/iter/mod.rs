@@ -317,7 +317,7 @@ fn increment_counter_date(
 
 // TODO break this up into parts because this is unmaintainable.
 #[allow(clippy::cast_possible_wrap)]
-fn is_filtered(ii: &IterInfo, current_day: u64, rrule: &RRule) -> bool {
+fn is_filtered(ii: &IterInfo, current_day: i32, rrule: &RRule) -> bool {
     let by_month: bool = !rrule.by_month.is_empty()
         && !rrule
             .by_month
@@ -363,13 +363,13 @@ fn is_filtered(ii: &IterInfo, current_day: u64, rrule: &RRule) -> bool {
         );
 
     let by_year_day: bool = !rrule.by_year_day.is_empty()
-        && ((current_day < u64::from(ii.year_len().unwrap())
+        && ((current_day < ii.year_len().unwrap() as i32
             && !includes(&rrule.by_year_day, &(current_day as i16 + 1))
             && !includes(
                 &rrule.by_year_day,
                 &(current_day as i16 - ii.year_len().unwrap() as i16),
             ))
-            || (current_day >= u64::from(ii.year_len().unwrap())
+            || (current_day >= ii.year_len().unwrap() as i32
                 && !includes(
                     &rrule.by_year_day,
                     &(current_day as i16 + 1 - ii.year_len().unwrap() as i16),
@@ -389,7 +389,7 @@ fn is_filtered(ii: &IterInfo, current_day: u64, rrule: &RRule) -> bool {
         || by_year_day
 }
 
-fn remove_filtered_days(day_set: &mut [Option<u64>], start: u64, end: u64, ii: &IterInfo) -> bool {
+fn remove_filtered_days(day_set: &mut [Option<i32>], start: u64, end: u64, ii: &IterInfo) -> bool {
     let mut filtered = false;
 
     // Loop over `start..end`

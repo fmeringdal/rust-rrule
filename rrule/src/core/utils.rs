@@ -8,6 +8,7 @@ use std::ops::{
 
 /// Collects all dates, but once an error is found it will return the error
 /// and not the items that where already found.
+#[inline]
 pub(crate) fn collect_or_error<T>(
     iterator: T,
     start: &Option<DateTime>,
@@ -78,6 +79,7 @@ where
 }
 
 /// Checks if `date` is after `end`.
+#[inline]
 fn has_reached_the_end(date: &DateTime, end: &Option<DateTime>, inclusive: bool) -> bool {
     if inclusive {
         match end {
@@ -93,6 +95,7 @@ fn has_reached_the_end(date: &DateTime, end: &Option<DateTime>, inclusive: bool)
 }
 
 /// Helper function to determine if a date is within a given range.
+#[inline]
 pub(super) fn is_in_range(
     date: &DateTime,
     start: &Option<DateTime>,
