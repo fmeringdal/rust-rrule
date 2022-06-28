@@ -79,8 +79,8 @@ mod tests {
             ("3,2,1,4", Ok(vec![1, 2, 3, 4])),
             ("3,2,1,4,3,4,4,3,1", Ok(vec![1, 2, 3, 4])),
             (
-                &format!("14,15,16,{INVALID_VALUE},18"),
-                Err(format!("{INVALID_VALUE}")),
+                &format!("14,15,16,{},18", INVALID_VALUE),
+                Err(format!("{}", INVALID_VALUE)),
             ),
         ];
         for (input, expected_output) in tests {

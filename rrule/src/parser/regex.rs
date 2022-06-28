@@ -398,13 +398,16 @@ mod tests {
                 let variant = $variant;
                 let tests = [
                     (
-                        format!("{variant};TZID=America/Everywhere:19970714T083000"),
+                        format!("{};TZID=America/Everywhere:19970714T083000", variant),
                         Some("America/Everywhere".to_string()),
                     ),
-                    (format!("{variant}:19970714T123000Z"), None),
-                    (format!("{variant};VALUE=DATE:19970101,19970120"), None),
+                    (format!("{}:19970714T123000Z", variant), None),
+                    (format!("{};VALUE=DATE:19970101,19970120", variant), None),
                     (
-                        format!("{variant};TZID=America/Everywhere:VALUE=DATE:19970101,19970120"),
+                        format!(
+                            "{};TZID=America/Everywhere:VALUE=DATE:19970101,19970120",
+                            variant
+                        ),
                         Some("America/Everywhere".to_string()),
                     ),
                 ];
