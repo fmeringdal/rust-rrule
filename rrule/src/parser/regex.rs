@@ -152,7 +152,7 @@ lazy_static! {
     static ref EXDATE_RE: Regex = Regex::new(r"(?m)EXDATE(?:;TZID=([^:=]+))?").unwrap();
 }
 
-/// Get the timezone in the `EXDATE:...` line. Returns `Err` if invalid `RDATE` line.
+/// Get the timezone in the `EXDATE:...` line. Returns `Err` if invalid `EXDATE` line.
 pub(crate) fn get_exdate_timezone(val: &str) -> Result<Option<String>, ()> {
     let captures = EXDATE_RE.captures(val).ok_or(())?;
     Ok(captures.get(1).map(|tz| tz.as_str().into()))
