@@ -1,3 +1,4 @@
+use super::regex_parsers::{self, get_rrule_attributes, ParsedDateString, ParsedStartDatetime};
 use super::ParseError;
 use crate::core::Unvalidated;
 use crate::{core::DateTime, Frequency, NWeekday, RRule, RRuleError, RRuleSet};
@@ -7,19 +8,6 @@ use lazy_static::lazy_static;
 use regex::Regex;
 use std::marker::PhantomData;
 use std::str::FromStr;
-
-// Some regex used for parsing the rrule string.
-lazy_static! {
-    static ref DATESTR_RE: Regex =
-        Regex::new(r"(?m)^(\d{4})(\d{2})(\d{2})(T(\d{2})(\d{2})(\d{2})(Z?))?$").unwrap();
-    static ref DTSTART_RE: Regex =
-        Regex::new(r"(?m)DTSTART(?:;TZID=([^:=]+?))?(?::|=)([^;\s]+)").unwrap();
-    static ref RRULE_RE: Regex = Regex::new(r"(?m)^(?:RRULE|EXRULE):").unwrap();
-    static ref PARSE_RULE_LINE_RE: Regex = Regex::new(r"(?m)^([A-Z]+?)[:;]").unwrap();
-    static ref RDATE_RE: Regex = Regex::new(r"(?m)RDATE(?:;TZID=([^:=]+))?").unwrap();
-    static ref EXDATE_RE: Regex = Regex::new(r"(?m)EXDATE(?:;TZID=([^:=]+))?").unwrap();
-    static ref DATETIME_RE: Regex = Regex::new(r"(?m)(VALUE=DATE(-TIME)?)|(TZID=)").unwrap();
-}
 
 /// Creates [`RRuleSet`] from parsing the String.
 pub(crate) fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleError> {
@@ -81,22 +69,17 @@ pub(crate) fn datestring_to_date(
     tz: Option<Tz>,
     field: &str,
 ) -> Result<DateTime, ParseError> {
-    let bits = DATESTR_RE
-        .captures(dt)
-        .ok_or_else(|| ParseError::InvalidDateTime {
-            value: dt.into(),
-            field: field.into(),
-        })?;
-    if bits.len() < 3 {
-        return Err(ParseError::InvalidDateTime {
-            value: dt.into(),
-            field: field.into(),
-        });
-    }
+    let ParsedDateString {
+        year,
+        month,
+        day,
+        time,
+        flags,
+    } = regex_parsers::parse_datestring(dt).map_err(|_| ParseError::InvalidDateTime {
+        value: dt.into(),
+        field: field.into(),
+    })?;
 
-    let year = parse_datestring_bit(&bits, 1, dt)?;
-    let month = parse_datestring_bit(&bits, 2, dt)?;
-    let day = parse_datestring_bit(&bits, 3, dt)?;
     // Combine parts to create data time.
     let date =
         NaiveDate::from_ymd_opt(year, month, day).ok_or_else(|| ParseError::InvalidDateTime {
@@ -107,9 +90,11 @@ pub(crate) fn datestring_to_date(
     // Spec defines this is a date-time OR date
     // So the time can will be set to 0:0:0 if only a date is given.
     // https://icalendar.org/iCalendar-RFC-5545/3-8-2-4-date-time-start.html
-    let hour = parse_datestring_bit(&bits, 5, dt).unwrap_or_default();
-    let min = parse_datestring_bit(&bits, 6, dt).unwrap_or_default();
-    let sec = parse_datestring_bit(&bits, 7, dt).unwrap_or_default();
+    let (hour, min, sec) = if let Some(time) = time {
+        (time.hour, time.min, time.sec)
+    } else {
+        (0, 0, 0)
+    };
     let datetime = date
         .and_hms_opt(hour, min, sec)
         .ok_or_else(|| ParseError::InvalidDateTime {
@@ -119,11 +104,7 @@ pub(crate) fn datestring_to_date(
 
     // Apply timezone appended to the datetime before converting to UTC.
     // For more info https://icalendar.org/iCalendar-RFC-5545/3-3-5-date-time.html
-    let zulu_timezone_set = match bits.get(8) {
-        Some(part) => part.as_str() == "Z",
-        None => false,
-    };
-    let datetime: chrono::DateTime<chrono::Utc> = if zulu_timezone_set {
+    let datetime: chrono::DateTime<chrono::Utc> = if flags.zulu_timezone_set {
         // If a `Z` is present, UTC should be used.
         chrono::DateTime::<_>::from_utc(datetime, chrono::Utc)
     } else {
@@ -182,22 +163,15 @@ pub(crate) fn datestring_to_date(
 }
 
 pub(crate) fn parse_dtstart(s: &str) -> Result<DateTime, ParseError> {
-    let caps = DTSTART_RE.captures(s).ok_or(ParseError::MissingStartDate)?;
+    let ParsedStartDatetime { timezone, datetime } = regex_parsers::parse_start_datetime(s)
+        .map_err(|_| ParseError::InvalidDateTime {
+            value: s.into(),
+            field: "DTSTART".into(),
+        })?;
 
-    let tz: Option<Tz> = match caps.get(1) {
-        Some(tz) => Some(parse_timezone(tz.as_str())?),
-        None => None,
-    };
+    let tz = timezone.map(|tz| parse_timezone(&tz)).transpose()?;
 
-    let dt_start_str =
-        caps.get(2)
-            .map(|dt| dt.as_str())
-            .ok_or_else(|| ParseError::InvalidDateTime {
-                value: s.into(),
-                field: "DTSTART".into(),
-            })?;
-
-    datestring_to_date(dt_start_str, tz, "DTSTART")
+    datestring_to_date(&datetime, tz, "DTSTART")
 }
 
 fn stringval_to_int<T: FromStr>(val: &str, err_msg: String) -> Result<T, ParseError> {
@@ -252,10 +226,11 @@ fn parse_rrule(line: &str) -> Result<RRule<Unvalidated>, ParseError> {
     #[allow(unused_mut)]
     let mut by_easter = None;
 
-    let attrs = RRULE_RE.replace(line, "");
-    let attrs = attrs.split(';');
+    let attributes = get_rrule_attributes(line).expect(
+        "the line should be an rrule as that should have been verified before reaching this point",
+    );
 
-    for attr in attrs {
+    for attr in attributes {
         let l: Vec<&str> = attr.split('=').collect();
 
         let key = l[0];
@@ -491,29 +466,20 @@ fn parse_rule_line(rfc_string: &str) -> Result<Option<RRule<Unvalidated>>, Parse
 
     let rfc_string_upper = rfc_string.to_uppercase();
     // Get header, `RRULE:` or `EXRULE;` part.
-    let header = PARSE_RULE_LINE_RE.captures(&rfc_string_upper);
+    let header = regex_parsers::get_line_header(&rfc_string_upper);
 
-    if let Some(header) = header {
-        let key = match header.get(1) {
-            Some(k) => k.as_str(),
-            None => {
-                return Err(ParseError::Generic(format!(
-                    "Invalid rule line prefix: {}",
-                    rfc_string
-                )))
-            }
-        };
-
-        match key {
+    match header {
+        Some(header) => match &header[..] {
             "EXRULE" | "RRULE" => Ok(Some(parse_rrule(rfc_string)?)),
             _ => Err(ParseError::Generic(format!(
                 "Unsupported RFC prop {} in {}",
-                key, &rfc_string
+                header, &rfc_string
             ))),
+        },
+        None => {
+            // If no header is set, we can parse it as `RRULE`
+            Ok(Some(parse_rrule(rfc_string)?))
         }
-    } else {
-        // If no header is set, we can parse it as `RRULE`
-        Ok(Some(parse_rrule(rfc_string)?))
     }
 }
 
@@ -624,36 +590,18 @@ fn parse_input(s: &str) -> Result<ParsedInput, ParseError> {
                 exrule_vals.push(parse_rule(&parsed_line.value)?.finalize_parsed_rrule(&dt_start));
             }
             "RDATE" => {
-                let matches = match RDATE_RE.captures(line) {
-                    Some(m) => m,
-                    None => return Err(ParseError::Generic("Invalid RDATE specified".into())),
-                };
-                let tz: Option<Tz> = match matches.get(1) {
-                    Some(tz_str) => Some(parse_timezone(tz_str.as_str())?),
-                    None => None,
-                };
+                let timezone = regex_parsers::get_rdate_timezone(line)
+                    .map_err(|_| ParseError::Generic("Invalid RDATE specified".into()))?;
+                let tz = timezone.map(|tz| parse_timezone(&tz)).transpose()?;
 
-                rdate_vals.append(&mut parse_rdate(
-                    &parsed_line.value,
-                    &parsed_line.params,
-                    tz,
-                )?);
+                rdate_vals.append(&mut parse_rdate(&parsed_line.value, tz)?);
             }
             "EXDATE" => {
-                let matches = match EXDATE_RE.captures(line) {
-                    Some(m) => m,
-                    None => return Err(ParseError::Generic("Invalid EXDATE specified".into())),
-                };
-                let tz: Option<Tz> = match matches.get(1) {
-                    Some(tz_str) => Some(parse_timezone(tz_str.as_str())?),
-                    None => None,
-                };
+                let timezone = regex_parsers::get_exdate_timezone(line)
+                    .map_err(|_| ParseError::Generic("Invalid EXDATE specified".into()))?;
+                let tz = timezone.map(|tz| parse_timezone(&tz)).transpose()?;
 
-                exdate_vals.append(&mut parse_rdate(
-                    &parsed_line.value,
-                    &parsed_line.params,
-                    tz,
-                )?);
+                exdate_vals.append(&mut parse_rdate(&parsed_line.value, tz)?);
             }
             "DTSTART" => (),
             _ => {
@@ -674,29 +622,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, ParseError> {
     })
 }
 
-fn validate_date_param(params: &[&str]) -> Result<(), ParseError> {
-    for param in params {
-        match DATETIME_RE.captures(param) {
-            Some(caps) if caps.len() > 0 => (),
-            _ => {
-                return Err(ParseError::Generic(format!(
-                    "Unsupported RDATE/EXDATE parm: {}",
-                    param
-                )))
-            }
-        }
-    }
-    Ok(())
-}
-
-fn parse_rdate(
-    rdateval: &str,
-    params: &[String],
-    tz: Option<Tz>,
-) -> Result<Vec<DateTime>, ParseError> {
-    let params: Vec<&str> = params.iter().map(String::as_str).collect();
-    validate_date_param(&params)?;
-
+fn parse_rdate(rdateval: &str, tz: Option<Tz>) -> Result<Vec<DateTime>, ParseError> {
     let mut rdatevals = vec![];
     for datestr in rdateval.split(',') {
         rdatevals.push(datestring_to_date(datestr, tz, "RDATE")?);
