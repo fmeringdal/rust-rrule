@@ -371,7 +371,7 @@ fn parse_rule_line(rfc_string: &str) -> Result<Option<RRule<Unvalidated>>, Parse
     match header {
         Some(header) => match &header[..] {
             "EXRULE" | "RRULE" => Ok(Some(parse_rrule(rfc_string)?)),
-            _ => Err(ParseError::UnsupportedRFCProperty(header.into())),
+            _ => Err(ParseError::UnsupportedRFCProperty(header)),
         },
         None => {
             // If no header is set, we can parse it as `RRULE`

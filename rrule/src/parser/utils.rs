@@ -34,9 +34,9 @@ pub(crate) fn parse_str_to_vec<T: FromStr + Ord + PartialEq + Copy, F: Fn(T) -> 
 /// Helper function to validate the input string.
 pub(crate) fn check_str_validity(s: &str) -> Result<(), ParseError> {
     if let Some(unsupported_car) = s.chars().find(|c| {
-        let valid = char::is_ascii_alphanumeric(&c)
-            || char::is_ascii_punctuation(&c)
-            || char::is_ascii_whitespace(&c);
+        let valid = char::is_ascii_alphanumeric(c)
+            || char::is_ascii_punctuation(c)
+            || char::is_ascii_whitespace(c);
         // Want to find an invalid char
         !valid
     }) {
