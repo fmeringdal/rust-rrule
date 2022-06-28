@@ -121,9 +121,7 @@ lazy_static! {
 /// Retrieve the attributes from an `RRULE:...` or `EXRULE:...` line.
 pub(crate) fn get_rrule_attributes(val: &str) -> Option<Vec<String>> {
     // Sanity check to verify that we get passed the correct line
-    if RRULE_RE.captures(val).is_none() {
-        return None;
-    }
+    RRULE_RE.captures(val)?;
 
     let attributes = RRULE_RE.replace(val, "");
     let attributes = attributes.split(';').map(From::from).collect();
@@ -162,7 +160,7 @@ pub(crate) fn get_exdate_timezone(val: &str) -> Result<Option<String>, ()> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::regex_parsers::{
+    use crate::parser::regex::{
         get_exdate_timezone, get_line_header, get_rdate_timezone, get_rrule_attributes,
         parse_start_datetime,
     };

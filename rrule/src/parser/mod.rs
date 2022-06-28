@@ -1,6 +1,5 @@
-mod datetime;
 mod error;
-mod regex_parsers;
+mod regex;
 mod rrulestr;
 
 pub(crate) use error::ParseError;
