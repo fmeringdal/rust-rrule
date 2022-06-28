@@ -1,4 +1,5 @@
 use super::regex::{self, get_rrule_attributes, ParsedDateString, ParsedStartDatetime};
+use super::utils::{check_str_validity, parse_str_to_vec, str_to_weekday};
 use super::ParseError;
 use crate::core::Unvalidated;
 use crate::{core::DateTime, Frequency, NWeekday, RRule, RRuleError, RRuleSet};
@@ -9,6 +10,8 @@ use std::str::FromStr;
 
 /// Creates [`RRuleSet`] from parsing the String.
 pub(crate) fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleError> {
+    check_str_validity(s)?;
+
     let s = preprocess_rrule_string(s);
     let ParsedInput {
         rrule_vals,
@@ -152,35 +155,6 @@ pub(crate) fn parse_dtstart(s: &str) -> Result<DateTime, ParseError> {
     datestring_to_date(&datetime, tz, "DTSTART")
 }
 
-fn stringval_to_int<T: FromStr>(val: &str, err_msg: String) -> Result<T, ParseError> {
-    if let Ok(val) = val.parse() {
-        Ok(val)
-    } else {
-        Err(ParseError::Generic(err_msg))
-    }
-}
-
-fn stringval_to_intvec<T: FromStr + Ord + PartialEq + Copy, F: Fn(T) -> bool>(
-    val: &str,
-    accept: F,
-    err_msg: String,
-) -> Result<Vec<T>, ParseError> {
-    let mut parsed_vals = vec![];
-    for val in val.split(',') {
-        let val = stringval_to_int(val, err_msg.clone())?;
-        if accept(val) {
-            parsed_vals.push(val);
-        } else {
-            return Err(ParseError::Generic(err_msg));
-        }
-    }
-
-    parsed_vals.sort();
-    parsed_vals.dedup();
-
-    Ok(parsed_vals)
-}
-
 // TODO too many lines
 #[warn(clippy::too_many_lines)]
 fn parse_rrule(line: &str) -> Result<RRule<Unvalidated>, ParseError> {
@@ -220,25 +194,24 @@ fn parse_rrule(line: &str) -> Result<RRule<Unvalidated>, ParseError> {
         match key.to_uppercase().as_str() {
             "FREQ" => {
                 let new_freq = Frequency::from_str(value)?;
-                if freq.is_none() {
-                    freq = Some(new_freq);
-                } else {
+                if freq.replace(new_freq).is_some() {
                     return Err(ParseError::DuplicatedField("FREQ".into())).map_err(From::from);
                 }
             }
             "INTERVAL" => {
-                let new_interval = stringval_to_int(value, "Invalid interval".to_owned())?;
-                if interval.is_none() {
-                    interval = Some(new_interval);
-                } else {
+                let new_interval = value
+                    .parse()
+                    .map_err(|_| ParseError::InvalidInterval(value.into()))?;
+                if interval.replace(new_interval).is_some() {
                     return Err(ParseError::DuplicatedField("INTERVAL".into())).map_err(From::from);
                 }
             }
             "COUNT" => {
-                let new_count = stringval_to_int(value, "Invalid count".to_owned())?;
-                if count.is_none() {
-                    count = Some(new_count);
-                } else {
+                let new_count = value
+                    .parse()
+                    .map_err(|_| ParseError::InvalidCount(value.into()))?;
+
+                if count.replace(new_count).is_some() {
                     return Err(ParseError::DuplicatedField("COUNT".into())).map_err(From::from);
                 }
             }
@@ -250,158 +223,107 @@ fn parse_rrule(line: &str) -> Result<RRule<Unvalidated>, ParseError> {
                 // > then the UNTIL rule part MUST also be specified as a date with local time.
                 //
                 // Thus This can be in local time
-                if until.is_none() {
-                    until = Some(datestring_to_date(value, Some(UTC), "UNTIL")?);
-                } else {
+                let new_until = datestring_to_date(value, Some(UTC), "UNTIL")?;
+                if until.replace(new_until).is_some() {
                     return Err(ParseError::DuplicatedField("UNTIL".into())).map_err(From::from);
                 }
             }
-            "DTSTART" | "TZID" => {
-                // for backward compatibility
-                // let dtstart_opts = parse_dtstart(line)?;
-                // tz = Some(dtstart_opts.timezone());
-                // dt_start = Some(dtstart_opts);
-            }
-            "WKST" => match value.parse::<NWeekday>() {
+            "WKST" => match str_to_weekday(value) {
                 Ok(new_weekday) => {
-                    if week_start.is_none() {
-                        let wd = match new_weekday {
-                            NWeekday::Every(wd) => wd,
-                            NWeekday::Nth(_n, wd) => wd,
-                        };
-                        week_start = Some(wd);
-                    } else {
+                    if week_start.replace(new_weekday).is_some() {
                         return Err(ParseError::DuplicatedField("WKST".into())).map_err(From::from);
                     }
                 }
-                Err(e) => {
-                    return Err(e);
+                Err(_) => {
+                    return Err(ParseError::InvalidWeekdayStart(value.into()));
                 }
             },
             "BYSETPOS" => {
-                let new_by_set_pos =
-                    stringval_to_intvec(value, |_pos| true, "Invalid by_set_pos value".to_owned())?;
-                if by_set_pos.is_none() {
-                    by_set_pos = Some(new_by_set_pos);
-                } else {
+                let new_by_set_pos = parse_str_to_vec(value, |_pos| true)
+                    .map_err(|_| ParseError::InvalidBySetPos(value.into()))?;
+                if by_set_pos.replace(new_by_set_pos).is_some() {
                     return Err(ParseError::DuplicatedField("BYSETPOS".into())).map_err(From::from);
                 }
             }
             "BYMONTH" => {
-                let new_by_month = stringval_to_intvec(
-                    value,
-                    |month| (1..=12).contains(&month),
-                    "Invalid by_month value".to_owned(),
-                )?;
-                if by_month.is_none() {
-                    by_month = Some(new_by_month);
-                } else {
+                let new_by_month = parse_str_to_vec(value, |month| (1..=12).contains(&month))
+                    .map_err(|_| ParseError::InvalidByMonth(value.into()))?;
+                if by_month.replace(new_by_month).is_some() {
                     return Err(ParseError::DuplicatedField("BYMONTH".into())).map_err(From::from);
                 }
             }
             "BYMONTHDAY" => {
-                let new_by_month_day = stringval_to_intvec(
-                    value,
-                    |monthday| (-31..=31).contains(&monthday),
-                    "Invalid by_month_day value".to_owned(),
-                )?;
-                if by_month_day.is_none() {
-                    by_month_day = Some(new_by_month_day);
-                } else {
+                let new_by_month_day =
+                    parse_str_to_vec(value, |monthday| (-31..=31).contains(&monthday))
+                        .map_err(|_| ParseError::InvalidByMonthDay(value.into()))?;
+                if by_month_day.replace(new_by_month_day).is_some() {
                     return Err(ParseError::DuplicatedField("BYMONTHDAY".into()))
                         .map_err(From::from);
                 }
             }
             "BYYEARDAY" => {
-                let new_by_year_day = stringval_to_intvec(
-                    value,
-                    |yearday| (-366..=366).contains(&yearday),
-                    "Invalid by_year_day value".to_owned(),
-                )?;
-                if by_year_day.is_none() {
-                    by_year_day = Some(new_by_year_day);
-                } else {
+                let new_by_year_day =
+                    parse_str_to_vec(value, |yearday| (-366..=366).contains(&yearday))
+                        .map_err(|_| ParseError::InvalidByYearDay(value.into()))?;
+                if by_year_day.replace(new_by_year_day).is_some() {
                     return Err(ParseError::DuplicatedField("BYYEARDAY".into()))
                         .map_err(From::from);
                 }
             }
             "BYWEEKNO" => {
-                let new_by_week_no = stringval_to_intvec(
-                    value,
-                    |weekno| (-53..=53).contains(&weekno),
-                    "Invalid by_week_no value".to_owned(),
-                )?;
-                if by_week_no.is_none() {
-                    by_week_no = Some(new_by_week_no);
-                } else {
+                let new_by_week_no = parse_str_to_vec(value, |weekno| (-53..=53).contains(&weekno))
+                    .map_err(|_| ParseError::InvalidByWeekNo(value.into()))?;
+                if by_week_no.replace(new_by_week_no).is_some() {
                     return Err(ParseError::DuplicatedField("BYWEEKNO".into())).map_err(From::from);
                 }
             }
             "BYHOUR" => {
-                let new_by_hour = stringval_to_intvec(
-                    value,
-                    |hour| hour < 24,
-                    "Invalid by_hour value".to_owned(),
-                )?;
-                if by_hour.is_none() {
-                    by_hour = Some(new_by_hour);
-                } else {
+                let new_by_hour = parse_str_to_vec(value, |hour| hour < 24)
+                    .map_err(|_| ParseError::InvalidByHour(value.into()))?;
+                if by_hour.replace(new_by_hour).is_some() {
                     return Err(ParseError::DuplicatedField("BYHOUR".into())).map_err(From::from);
                 }
             }
             "BYMINUTE" => {
-                let new_by_minute = stringval_to_intvec(
-                    value,
-                    |minute| minute < 60,
-                    "Invalid by_minute value".to_owned(),
-                )?;
-                if by_minute.is_none() {
-                    by_minute = Some(new_by_minute);
-                } else {
+                let new_by_minute = parse_str_to_vec(value, |minute| minute < 60)
+                    .map_err(|_| ParseError::InvalidByMinute(value.into()))?;
+                if by_minute.replace(new_by_minute).is_some() {
                     return Err(ParseError::DuplicatedField("BYMINUTE".into())).map_err(From::from);
                 }
             }
             "BYSECOND" => {
-                let new_by_second = stringval_to_intvec(
-                    value,
-                    |sec| sec < 60,
-                    "Invalid by_second value".to_owned(),
-                )?;
-                if by_second.is_none() {
-                    by_second = Some(new_by_second);
-                } else {
+                let new_by_second = parse_str_to_vec(value, |sec| sec < 60)
+                    .map_err(|_| ParseError::InvalidBySecond(value.into()))?;
+                if by_second.replace(new_by_second).is_some() {
                     return Err(ParseError::DuplicatedField("BYSECOND".into())).map_err(From::from);
                 }
             }
             "BYWEEKDAY" | "BYDAY" => {
                 let new_by_weekday = parse_weekdays(value)?;
 
-                if by_weekday.is_none() {
-                    by_weekday = Some(new_by_weekday);
-                } else {
-                    return Err(ParseError::DuplicatedField("BYWEEKDAY /BYDAY".into()))
+                if by_weekday.replace(new_by_weekday).is_some() {
+                    return Err(ParseError::DuplicatedField("BYWEEKDAY / BYDAY".into()))
                         .map_err(From::from);
                 }
             }
             #[cfg(feature = "by-easter")]
             "BYEASTER" => {
-                let new_by_easter =
-                    stringval_to_int(value, format!("Invalid by_easter val: {}", value))?;
-                if by_easter.is_none() {
-                    by_easter = Some(new_by_easter);
-                } else {
+                let new_by_easter = value
+                    .parse()
+                    .map_err(|_| ParseError::InvalidByEaster(value.into()))?;
+                if by_easter.replace(new_by_easter).is_some() {
                     return Err(ParseError::DuplicatedField("BYEASTER".into())).map_err(From::from);
                 }
             }
-            _ => return Err(ParseError::Generic(format!("Invalid property: {}", key))),
+            // for backward compatibility
+            "DTSTART" | "TZID" => {}
+            _ => return Err(ParseError::UnexpectedField(key.into())),
         };
     }
 
     // Check if mandatory fields are set
     Ok(RRule {
-        freq: freq.ok_or_else(|| {
-            ParseError::Generic(format!("Property `FREQ` was missing in `{}`", line))
-        })?,
+        freq: freq.ok_or_else(|| ParseError::MissingProperty("FREQ".into()))?,
         // `1` is default value according to spec.
         interval: interval.unwrap_or(1),
         count,
@@ -449,10 +371,7 @@ fn parse_rule_line(rfc_string: &str) -> Result<Option<RRule<Unvalidated>>, Parse
     match header {
         Some(header) => match &header[..] {
             "EXRULE" | "RRULE" => Ok(Some(parse_rrule(rfc_string)?)),
-            _ => Err(ParseError::Generic(format!(
-                "Unsupported RFC prop {} in {}",
-                header, &rfc_string
-            ))),
+            _ => Err(ParseError::UnsupportedRFCProperty(header.into())),
         },
         None => {
             // If no header is set, we can parse it as `RRULE`
@@ -503,6 +422,8 @@ fn extract_name(line: String) -> LineName {
 }
 
 pub(crate) fn parse_rule(rfc_string: &str) -> Result<RRule<Unvalidated>, ParseError> {
+    check_str_validity(rfc_string)?;
+
     let mut option = None;
     for line in rfc_string.split('\n') {
         let parsed_line = parse_rule_line(line)?;
@@ -510,10 +431,7 @@ pub(crate) fn parse_rule(rfc_string: &str) -> Result<RRule<Unvalidated>, ParseEr
             if option.is_none() {
                 option = Some(parsed_line);
             } else {
-                return Err(ParseError::Generic(format!(
-                    "Found too many RRule lines in `{}`.",
-                    rfc_string
-                )));
+                return Err(ParseError::TooManyRulesInLine(rfc_string.into()));
             }
         }
     }
@@ -521,10 +439,7 @@ pub(crate) fn parse_rule(rfc_string: &str) -> Result<RRule<Unvalidated>, ParseEr
     if let Some(option) = option {
         Ok(option)
     } else {
-        Err(ParseError::Generic(format!(
-            "String is not a valid RRule: `{}`.",
-            rfc_string
-        )))
+        Err(ParseError::InvalidRule(rfc_string.into()))
     }
 }
 
@@ -547,47 +462,57 @@ fn parse_input(s: &str) -> Result<ParsedInput, ParseError> {
     let lines = s.split('\n');
     for line in lines {
         let parsed_line = break_down_line(line);
-        match parsed_line.name.to_uppercase().as_str() {
-            "RRULE" => {
+        let key = &parsed_line.name;
+        match &key[..] {
+            "RRULE" | "EXRULE" => {
                 if !parsed_line.params.is_empty() {
-                    return Err(ParseError::Generic("Unsupported RRULE value".into()));
+                    return Err(ParseError::UnsupportedValueInRuleLine(
+                        parsed_line.params.join(";"),
+                        line.to_string(),
+                    ));
                 }
                 if parsed_line.value.is_empty() {
                     continue;
                 }
 
-                rrule_vals.push(parse_rule(&parsed_line.value)?.finalize_parsed_rrule(&dt_start));
-            }
-            "EXRULE" => {
-                if !parsed_line.params.is_empty() {
-                    return Err(ParseError::Generic("Unsupported EXRULE value".into()));
-                }
-                if parsed_line.value.is_empty() {
-                    continue;
-                }
-                exrule_vals.push(parse_rule(&parsed_line.value)?.finalize_parsed_rrule(&dt_start));
-            }
-            "RDATE" => {
-                let timezone = regex::get_rdate_timezone(line)
-                    .map_err(|_| ParseError::Generic("Invalid RDATE specified".into()))?;
-                let tz = timezone.map(|tz| parse_timezone(&tz)).transpose()?;
+                let properties = parse_rule(&parsed_line.value)?.finalize_parsed_rrule(&dt_start);
 
-                rdate_vals.append(&mut parse_rdate(&parsed_line.value, tz)?);
+                match &key[..] {
+                    "RRULE" => {
+                        rrule_vals.push(properties);
+                    }
+                    "EXRULE" => {
+                        exrule_vals.push(properties);
+                    }
+                    _ => unreachable!(),
+                }
             }
-            "EXDATE" => {
-                let timezone = regex::get_exdate_timezone(line)
-                    .map_err(|_| ParseError::Generic("Invalid EXDATE specified".into()))?;
-                let tz = timezone.map(|tz| parse_timezone(&tz)).transpose()?;
+            "RDATE" | "EXDATE" => {
+                let timezone = match &key[..] {
+                    "RDATE" => regex::get_rdate_timezone(line),
+                    "EXDATE" => regex::get_exdate_timezone(line),
+                    _ => unreachable!(),
+                };
+                let timezone = timezone.map_err(|_| ParseError::InvalidDateTime {
+                    field: key.to_string(),
+                    value: line.to_string(),
+                })?;
+                let tz = timezone.map(|tz: String| parse_timezone(&tz)).transpose()?;
 
-                exdate_vals.append(&mut parse_rdate(&parsed_line.value, tz)?);
+                let mut dates = parse_rdate(&parsed_line.value, tz)?;
+
+                match &key[..] {
+                    "RDATE" => {
+                        rdate_vals.append(&mut dates);
+                    }
+                    "EXDATE" => {
+                        exdate_vals.append(&mut dates);
+                    }
+                    _ => unreachable!(),
+                }
             }
             "DTSTART" => (),
-            _ => {
-                return Err(ParseError::Generic(format!(
-                    "Unsupported property: {}",
-                    parsed_line.name
-                )))
-            }
+            _ => return Err(ParseError::UnsupportedProperty(parsed_line.name)),
         }
     }
 
@@ -737,37 +662,26 @@ mod test {
 
     #[test]
     fn invalid_byhour() {
-        let res = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5;BYHOUR=24");
+        let res = parse_input("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5;BYHOUR=24");
         assert!(res.is_err());
-        assert_eq!(
-            res.unwrap_err(),
-            ParseError::Generic("Invalid by_hour value".into()).into()
-        );
+        assert_eq!(res.unwrap_err(), ParseError::InvalidByHour("24".into()));
 
-        let res =
-            build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5;BYHOUR=5,6,25");
+        let res = parse_input("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5;BYHOUR=5,6,25");
         assert!(res.is_err());
-        assert_eq!(
-            res.unwrap_err(),
-            ParseError::Generic("Invalid by_hour value".into()).into()
-        );
+        assert_eq!(res.unwrap_err(), ParseError::InvalidByHour("5,6,25".into()));
     }
 
     #[test]
     fn invalid_byminute() {
-        let res = build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5;BYMINUTE=60");
+        let res = parse_input("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5;BYMINUTE=60");
         assert!(res.is_err());
-        assert_eq!(
-            res.unwrap_err(),
-            ParseError::Generic("Invalid by_minute value".into()).into()
-        );
+        assert_eq!(res.unwrap_err(), ParseError::InvalidByMinute("60".into()));
 
-        let res =
-            build_rruleset("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5;BYMINUTE=4,5,64");
+        let res = parse_input("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5;BYMINUTE=4,5,64");
         assert!(res.is_err());
         assert_eq!(
             res.unwrap_err(),
-            ParseError::Generic("Invalid by_minute value".into()).into()
+            ParseError::InvalidByMinute("4,5,64".into())
         );
     }
 

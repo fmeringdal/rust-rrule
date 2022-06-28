@@ -120,9 +120,6 @@ lazy_static! {
 
 /// Retrieve the attributes from an `RRULE:...` or `EXRULE:...` line.
 pub(crate) fn get_rrule_attributes(val: &str) -> Option<Vec<String>> {
-    // Sanity check to verify that we get passed the correct line
-    RRULE_RE.captures(val)?;
-
     let attributes = RRULE_RE.replace(val, "");
     let attributes = attributes.split(';').map(From::from).collect();
     Some(attributes)
@@ -327,6 +324,17 @@ mod tests {
                 ],
             ),
             (
+                "FREQ=YEARLY;INTERVAL=2;BYMONTH=1;BYDAY=SU;BYHOUR=8,9;BYMINUTE=30",
+                vec![
+                    "FREQ=YEARLY",
+                    "INTERVAL=2",
+                    "BYMONTH=1",
+                    "BYDAY=SU",
+                    "BYHOUR=8,9",
+                    "BYMINUTE=30",
+                ],
+            ),
+            (
                 "EXRULE:FREQ=YEARLY;INTERVAL=2;BYMONTH=1;BYDAY=SU;BYHOUR=8,9;BYMINUTE=30",
                 vec![
                     "FREQ=YEARLY",
@@ -342,20 +350,6 @@ mod tests {
             let output = get_rrule_attributes(input);
             let expected_output = expected_output.iter().map(|val| val.to_string()).collect();
             assert_eq!(output, Some(expected_output));
-        }
-    }
-
-    #[test]
-    fn does_not_parse_attributes_from_invalid_rrule_line() {
-        let tests = [
-            GARBAGE_INPUTS.to_vec(),
-            vec!["FREQ=YEARLY;INTERVAL=2;BYMONTH=1;BYDAY=SU;BYHOUR=8,9;BYMINUTE=30"],
-            vec!["DTSTART;TZID=America/Everywhere:20120251T023000Z\nFREQ=DAILY;INTERVAL=1;"],
-        ]
-        .concat();
-        for input in tests {
-            let res = get_rrule_attributes(input);
-            assert!(res.is_none());
         }
     }
 

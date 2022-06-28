@@ -1,5 +1,6 @@
+use crate::parser::ParseError;
 use crate::tests::common;
-use crate::RRuleSet;
+use crate::{RRuleError, RRuleSet};
 
 #[test]
 fn issue_34() {
@@ -25,7 +26,6 @@ RRULE:FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-2"
 
 #[test]
 fn non_ascii_string() {
-    let result = "Input string contains some invalid characters";
     let strs = [
         "DTSTART;19970902T090000Z\nRRULE:FREQ=DAILY;COeeeEDDUNT=10",
         "DTSTART;19970902T090000Z\nRRULE:FREQ=DAILY;CÖUNT=10",
@@ -33,8 +33,15 @@ fn non_ascii_string() {
     ];
 
     for s in strs {
-        let error = s.parse::<RRuleSet>();
-        assert!(error.unwrap_err().to_string().contains(result));
+        let res = s.parse::<RRuleSet>();
+        assert!(res.is_err());
+        let err = res.unwrap_err();
+        eprintln!("Error is {:?}", err);
+        let is_unsupported_char_error = matches!(
+            err,
+            RRuleError::ParserError(ParseError::UnsupportedCharacter(_))
+        );
+        assert!(is_unsupported_char_error);
     }
 }
 

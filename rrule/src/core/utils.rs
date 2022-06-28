@@ -1,5 +1,4 @@
 use super::DateTime;
-use crate::parser::ParseError;
 use crate::{RRuleError, WithError};
 use std::ops::{
     Bound::{Excluded, Unbounded},
@@ -114,19 +113,6 @@ pub(super) fn is_in_range(
             (None, Some(end)) => (Unbounded, Excluded(end)).contains(date),
             (None, None) => true,
         }
-    }
-}
-
-/// Helper function to validate the input string.
-pub(crate) fn check_str_validity(s: &str) -> Result<(), ParseError> {
-    if !s.chars().all(|c| {
-        char::is_ascii_alphanumeric(&c)
-            || char::is_ascii_punctuation(&c)
-            || char::is_ascii_whitespace(&c)
-    }) {
-        Err(ParseError::InvalidInputString)
-    } else {
-        Ok(())
     }
 }
 

@@ -1,7 +1,7 @@
 use super::datetime::DateTime;
-use crate::core::utils::check_str_validity;
 use crate::iter::iterinfo::IterInfo;
 use crate::parser::parse_rule;
+use crate::parser::str_to_weekday;
 use crate::parser::ParseError;
 use crate::validator::check_limits;
 use crate::validator::validate_rrule;
@@ -55,8 +55,6 @@ impl FromStr for Frequency {
     type Err = ParseError;
 
     fn from_str(value: &str) -> Result<Self, Self::Err> {
-        check_str_validity(value)?;
-
         let freq = match &value.to_uppercase()[..] {
             "YEARLY" => Frequency::Yearly,
             "MONTHLY" => Frequency::Monthly,
@@ -100,7 +98,7 @@ impl NWeekday {
     /// use chrono::Weekday;
     /// use rrule::NWeekday;
     ///
-    /// let nth_weekday = NWeekday::nth(1, Weekday::Mon);
+    /// let nth_weekday = NWeekday::new(Some(1), Weekday::Mon);
     /// ```
     #[must_use]
     pub fn new(number: Option<i16>, weekday: Weekday) -> Self {
@@ -114,36 +112,17 @@ impl NWeekday {
 impl FromStr for NWeekday {
     type Err = ParseError;
 
-    /// Generates an [`NWeekday`] from a string
-    ///
-    /// # Examples
-    /// ```
-    /// use chrono::Weekday;
-    /// use rrule::NWeekday;
-    ///
-    /// assert_eq!("1MO".parse::<NWeekday>().unwrap(), NWeekday::Nth(1, Weekday::Mon));
-    /// assert_eq!("-1MO".parse::<NWeekday>().unwrap(), NWeekday::Nth(-1, Weekday::Mon));
-    /// assert_eq!("MO".parse::<NWeekday>().unwrap(), NWeekday::Every(Weekday::Mon));
-    /// ```
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the string is not a valid [`NWeekday`]
-    /// ```
-    /// use rrule::NWeekday;
-    ///
-    /// assert_eq!("1".parse::<NWeekday>(), Err(rrule::ParseError::InvalidNWeekday("1".to_string())));
-    /// assert_eq!("0MO".parse::<NWeekday>(), Err(rrule::ParseError::InvalidNWeekday("0MO".to_string())));
-    /// ```
+    /// Generates an [`NWeekday`] from a string.
     fn from_str(value: &str) -> Result<Self, Self::Err> {
         let length = value.len();
 
-        if check_str_validity(value).is_err() || length < 2 {
-            return Err(ParseError::InvalidWeekday(value.to_string()));
+        if length < 2 {
+            return Err(ParseError::InvalidWeekday(value.into()));
         }
 
         // it doesn't have any issue, because we checked the string is ASCII above
-        let wd = str_to_weekday(&value[(length - 2)..])?;
+        let wd = str_to_weekday(&value[(length - 2)..])
+            .map_err(|_| ParseError::InvalidWeekday(value.into()))?;
         let nth = value[..(length - 2)].parse::<i16>().unwrap_or_default();
 
         if nth == 0 {
@@ -161,8 +140,9 @@ impl Display for NWeekday {
     /// use chrono::Weekday;
     /// use rrule::NWeekday;
     ///
-    /// assert_eq!(format!("{}", NWeekday::Nth(1, Weekday::Mon)), "1MO");
     /// assert_eq!(format!("{}", NWeekday::Every(Weekday::Mon)), "MO");
+    /// assert_eq!(format!("{}", NWeekday::Nth(1, Weekday::Mon)), "MO");
+    /// assert_eq!(format!("{}", NWeekday::Nth(2, Weekday::Mon)), "2MO");
     /// ```
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let weekday = match self {
@@ -178,20 +158,6 @@ impl Display for NWeekday {
 
         write!(f, "{}", weekday)
     }
-}
-
-fn str_to_weekday(d: &str) -> Result<Weekday, ParseError> {
-    let day = match &d.to_uppercase()[..] {
-        "MO" => Weekday::Mon,
-        "TU" => Weekday::Tue,
-        "WE" => Weekday::Wed,
-        "TH" => Weekday::Thu,
-        "FR" => Weekday::Fri,
-        "SA" => Weekday::Sat,
-        "SU" => Weekday::Sun,
-        _ => return Err(ParseError::InvalidWeekday(d.to_string())),
-    };
-    Ok(day)
 }
 
 fn weekday_to_str(d: Weekday) -> String {
@@ -578,8 +544,6 @@ impl FromStr for RRule<Unvalidated> {
     type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        check_str_validity(s)?;
-
         parse_rule(s)
     }
 }

@@ -1,5 +1,5 @@
 use crate::core::datetime::datetime_to_ical_format;
-use crate::core::utils::{check_str_validity, collect_or_error, collect_with_error};
+use crate::core::utils::{collect_or_error, collect_with_error};
 use crate::core::DateTime;
 use crate::parser::build_rruleset;
 use crate::{RRule, RRuleError};
@@ -282,8 +282,6 @@ impl FromStr for RRuleSet {
     /// This should never panic, but it might be in odd cases.
     /// Please report if it does panic.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        check_str_validity(s)?;
-
         build_rruleset(s)
     }
 }
