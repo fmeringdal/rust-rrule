@@ -53,6 +53,8 @@ pub(crate) fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleError> {
 
 // TODO too many lines
 #[warn(clippy::too_many_lines)]
+/// Takes a recurrence line (i.e. `RRULE` or `EXRULE` line) and parses it
+/// into an [`RRule`].
 fn parse_rrule(line: &str) -> Result<RRule<Unvalidated>, ParseError> {
     // Store all parts independently, so we can see if things are double set or missing.
     let mut freq = None;
@@ -240,6 +242,8 @@ fn parse_rrule(line: &str) -> Result<RRule<Unvalidated>, ParseError> {
     })
 }
 
+/// Parses a rule line (i.e. either RRULE or EXRULE lines) and returns an
+/// [`RRule`] if the parsing was successful.
 fn parse_rule_line(rfc_string: &str) -> Result<Option<RRule<Unvalidated>>, ParseError> {
     let rfc_string = rfc_string.trim();
     // If this part is empty return
@@ -263,6 +267,8 @@ fn parse_rule_line(rfc_string: &str) -> Result<Option<RRule<Unvalidated>>, Parse
     }
 }
 
+/// Parses a rule line (i.e. either RRULE or EXRULE lines) and returns the
+/// [`RRule`] if the parsing was successful.
 pub(crate) fn parse_rule(rfc_string: &str) -> Result<RRule<Unvalidated>, ParseError> {
     check_str_validity(rfc_string)?;
 
