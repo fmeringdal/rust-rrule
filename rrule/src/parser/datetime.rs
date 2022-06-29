@@ -17,22 +17,6 @@ pub(crate) fn parse_timezone(tz: &str) -> Result<Tz, ParseError> {
 /// Convert a datetime string and a timezone to a `chrono::DateTime<Tz>`.
 /// If the string specifies a zulu timezone with `Z`, then the timezone
 /// argument will be ignored.
-///
-/// # Usage
-///
-/// ```
-/// use rrule_parser::datetime::datestring_to_date;
-/// use chrono_tz::{UTC, US};
-/// use chrono::prelude::*;
-///
-/// // Zulu timezone
-/// let dt = datestring_to_date("19970902T090000Z", &None, "DTSTART").unwrap();
-/// assert_eq!(dt, UTC.ymd(1997, 9, 2).and_hms(9, 0, 0));
-///
-/// // Timezone via argument
-/// let dt = datestring_to_date("19970902T090000", &Some(US::Pacific), "DTSTART").unwrap();
-/// assert_eq!(dt, US::Pacific.ymd(1997, 9, 2).and_hms(9, 0, 0));
-/// ```
 pub(crate) fn datestring_to_date(
     dt: &str,
     tz: Option<Tz>,
