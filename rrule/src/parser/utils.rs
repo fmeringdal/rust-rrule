@@ -1,8 +1,6 @@
 //! Utility functions for parsing rrule input.
 use std::str::FromStr;
 
-use chrono::Weekday;
-
 use super::ParseError;
 
 /// Attempts to convert a comma separated `&str` to a `Vec<T>` of unique and sorted values.
@@ -46,20 +44,6 @@ pub(crate) fn check_str_validity(s: &str) -> Result<(), ParseError> {
     } else {
         Ok(())
     }
-}
-
-pub(crate) fn str_to_weekday(d: &str) -> Result<Weekday, ParseError> {
-    let day = match &d.to_uppercase()[..] {
-        "MO" => Weekday::Mon,
-        "TU" => Weekday::Tue,
-        "WE" => Weekday::Wed,
-        "TH" => Weekday::Thu,
-        "FR" => Weekday::Fri,
-        "SA" => Weekday::Sat,
-        "SU" => Weekday::Sun,
-        _ => return Err(ParseError::InvalidWeekday(d.to_string())),
-    };
-    Ok(day)
 }
 
 #[cfg(test)]

@@ -1,9 +1,10 @@
-use super::regex::{self, get_rrule_attributes, ParsedDateString, ParsedStartDatetime};
-use super::utils::{check_str_validity, parse_str_to_vec, str_to_weekday};
-use super::ParseError;
+use super::datetime::{datestring_to_date, parse_dtstart, parse_timezone, parse_weekdays};
+use super::regex::{self, get_rrule_attributes};
+use super::utils::{check_str_validity, parse_str_to_vec};
+use super::{str_to_weekday, ParseError};
 use crate::core::Unvalidated;
-use crate::{core::DateTime, Frequency, NWeekday, RRule, RRuleError, RRuleSet};
-use chrono::{NaiveDate, TimeZone, Weekday};
+use crate::{core::DateTime, Frequency, RRule, RRuleError, RRuleSet};
+use chrono::Weekday;
 use chrono_tz::{Tz, UTC};
 use std::marker::PhantomData;
 use std::str::FromStr;
@@ -39,120 +40,6 @@ pub(crate) fn build_rruleset(s: &str) -> Result<RRuleSet, RRuleError> {
         .set_exdates(exdate_vals);
 
     Ok(rrule_set)
-}
-
-fn parse_timezone(tz: &str) -> Result<Tz, ParseError> {
-    Tz::from_str(tz).map_err(|_err| ParseError::InvalidTimezone(tz.into()))
-}
-
-pub(crate) fn datestring_to_date(
-    dt: &str,
-    tz: Option<Tz>,
-    field: &str,
-) -> Result<DateTime, ParseError> {
-    let ParsedDateString {
-        year,
-        month,
-        day,
-        time,
-        flags,
-    } = regex::parse_datestring(dt).map_err(|_| ParseError::InvalidDateTime {
-        value: dt.into(),
-        field: field.into(),
-    })?;
-
-    // Combine parts to create data time.
-    let date =
-        NaiveDate::from_ymd_opt(year, month, day).ok_or_else(|| ParseError::InvalidDateTime {
-            value: dt.into(),
-            field: field.into(),
-        })?;
-
-    // Spec defines this is a date-time OR date
-    // So the time can will be set to 0:0:0 if only a date is given.
-    // https://icalendar.org/iCalendar-RFC-5545/3-8-2-4-date-time-start.html
-    let (hour, min, sec) = if let Some(time) = time {
-        (time.hour, time.min, time.sec)
-    } else {
-        (0, 0, 0)
-    };
-    let datetime = date
-        .and_hms_opt(hour, min, sec)
-        .ok_or_else(|| ParseError::InvalidDateTime {
-            value: dt.into(),
-            field: field.into(),
-        })?;
-
-    // Apply timezone appended to the datetime before converting to UTC.
-    // For more info https://icalendar.org/iCalendar-RFC-5545/3-3-5-date-time.html
-    let datetime: chrono::DateTime<chrono::Utc> = if flags.zulu_timezone_set {
-        // If a `Z` is present, UTC should be used.
-        chrono::DateTime::<_>::from_utc(datetime, chrono::Utc)
-    } else {
-        // If no `Z` is present, local time should be used.
-        use chrono::offset::LocalResult;
-        // Get datetime in local time or machine local time.
-        // So this also takes into account daylight or standard time (summer/winter).
-        match tz {
-            Some(tz) => {
-                // Use the timezone specified in the `tz`
-                match tz.from_local_datetime(&datetime) {
-                    LocalResult::None => Err(ParseError::InvalidDateTimeInLocalTimezone {
-                        value: dt.into(),
-                        field: field.into(),
-                    }),
-                    LocalResult::Single(date) => Ok(date),
-                    LocalResult::Ambiguous(date1, date2) => {
-                        Err(ParseError::DateTimeInLocalTimezoneIsAmbiguous {
-                            value: dt.into(),
-                            field: field.into(),
-                            date1: date1.to_rfc3339(),
-                            date2: date2.to_rfc3339(),
-                        })
-                    }
-                }?
-                .with_timezone(&chrono::Utc)
-            }
-            None => {
-                // Use current system timezone
-                // TODO Add option to always use UTC when this is executed on a server.
-                let local = chrono::Local;
-                match local.from_local_datetime(&datetime) {
-                    LocalResult::None => Err(ParseError::InvalidDateTimeInLocalTimezone {
-                        value: dt.into(),
-                        field: field.into(),
-                    }),
-                    LocalResult::Single(date) => Ok(date),
-                    LocalResult::Ambiguous(date1, date2) => {
-                        Err(ParseError::DateTimeInLocalTimezoneIsAmbiguous {
-                            value: dt.into(),
-                            field: field.into(),
-                            date1: date1.to_rfc3339(),
-                            date2: date2.to_rfc3339(),
-                        })
-                    }
-                }?
-                .with_timezone(&chrono::Utc)
-            }
-        }
-    };
-
-    // Apply timezone from `TZID=` part (if any), else set datetime as UTC
-    let datetime_with_timezone = datetime.with_timezone(&tz.unwrap_or(UTC));
-
-    Ok(datetime_with_timezone)
-}
-
-pub(crate) fn parse_dtstart(s: &str) -> Result<DateTime, ParseError> {
-    let ParsedStartDatetime { timezone, datetime } =
-        regex::parse_start_datetime(s).map_err(|_| ParseError::InvalidDateTime {
-            value: s.into(),
-            field: "DTSTART".into(),
-        })?;
-
-    let tz = timezone.map(|tz| parse_timezone(&tz)).transpose()?;
-
-    datestring_to_date(&datetime, tz, "DTSTART")
 }
 
 // TODO too many lines
@@ -344,19 +231,6 @@ fn parse_rrule(line: &str) -> Result<RRule<Unvalidated>, ParseError> {
     })
 }
 
-/// Parse the "BYWEEKDAY" and "BYDAY" values
-/// Example: `SU,MO,TU,WE,TH,FR` or `4MO` or `-1WE`
-/// > For example, within a MONTHLY rule, +1MO (or simply 1MO) represents the first Monday
-/// > within the month, whereas -1MO represents the last Monday of the month.
-fn parse_weekdays(val: &str) -> Result<Vec<NWeekday>, ParseError> {
-    let mut wdays = vec![];
-    // Separate all days
-    for day in val.split(',') {
-        wdays.push(day.parse::<NWeekday>()?);
-    }
-    Ok(wdays)
-}
-
 fn parse_rule_line(rfc_string: &str) -> Result<Option<RRule<Unvalidated>>, ParseError> {
     let rfc_string = rfc_string.trim();
     // If this part is empty return
@@ -541,8 +415,10 @@ fn preprocess_rrule_string(s: &str) -> String {
 
 #[cfg(test)]
 mod test {
+    use chrono::TimeZone;
+
     use super::*;
-    use crate::RRuleSet;
+    use crate::{NWeekday, RRuleSet};
 
     /// Print and compare 2 lists of dates and panic it they are not the same.
     fn check_occurrences(occurrences: &[DateTime], expected: &[&str]) {
