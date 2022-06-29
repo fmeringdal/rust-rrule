@@ -1,5 +1,3 @@
-#![allow(clippy::module_name_repetitions)]
-
 use thiserror::Error;
 
 // TODO: clarify difference between field and property

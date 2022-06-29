@@ -1,3 +1,4 @@
+//! Module for parsing text inputs to `RRule` and `RRuleSet` types.
 mod datetime;
 mod error;
 mod regex;
