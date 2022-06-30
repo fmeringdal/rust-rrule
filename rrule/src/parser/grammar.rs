@@ -6,7 +6,10 @@ use super::{
 };
 
 #[derive(Debug)]
-pub(crate) struct Grammar(Vec<ContentLine>);
+pub(crate) struct Grammar {
+    start_datetime: StartDateContentLine,
+    content_lines: Vec<ContentLine>,
+}
 
 #[derive(Debug)]
 pub(crate) enum ContentLine {
@@ -14,19 +17,18 @@ pub(crate) enum ContentLine {
     ExRule(RRuleContentLine),
     ExDate(DateContentLine),
     RDate(DateContentLine),
-    DtStart(StartDateContentLine),
 }
 
 #[derive(Debug)]
 pub(crate) struct DateContentLine {
     parameters: HashMap<DateParameter, String>,
-    value: Vec<String>,
+    dates: Vec<String>,
 }
 
 #[derive(Debug)]
 pub(crate) struct StartDateContentLine {
     parameters: HashMap<DateParameter, String>,
-    value: String,
+    date: String,
 }
 
 #[derive(Debug)]
@@ -99,20 +101,31 @@ impl FromStr for Grammar {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut content_lines = vec![];
+
+        let mut start_datetime = None;
+
         for content_line in s.lines() {
-            let parts = get_content_line_parts(content_line).unwrap();
+            let content_line = content_line.to_uppercase();
+
+            let parts = get_content_line_parts(&content_line).unwrap();
             let property_name = parts.property_name.clone();
             let line = match &property_name[..] {
                 "RRULE" => ContentLine::RRule(RRuleContentLine::try_from(parts)?),
                 "EXRULE" => ContentLine::ExRule(RRuleContentLine::try_from(parts)?),
                 "RDATE" => ContentLine::RDate(DateContentLine::try_from(parts)?),
                 "EXDATE" => ContentLine::ExDate(DateContentLine::try_from(parts)?),
-                "DTSTART" => ContentLine::DtStart(StartDateContentLine::try_from(parts)?),
-                _ => return Err(ParseError::InvalidCount("0".into())),
+                "DTSTART" => {
+                    start_datetime = Some(StartDateContentLine::try_from(parts)?);
+                    continue;
+                }
+                _ => todo!(),
             };
             content_lines.push(line);
         }
-        Ok(Self(content_lines))
+        Ok(Self {
+            start_datetime: start_datetime.unwrap(),
+            content_lines,
+        })
     }
 }
 
@@ -150,7 +163,7 @@ impl TryFrom<ContentLineCaptures> for DateContentLine {
 
         Ok(Self {
             parameters,
-            value: value.properties.split(",").map(From::from).collect(),
+            dates: value.properties.split(",").map(From::from).collect(),
         })
     }
 }
@@ -171,7 +184,7 @@ impl TryFrom<ContentLineCaptures> for StartDateContentLine {
 
         Ok(Self {
             parameters,
-            value: value.properties,
+            date: value.properties,
         })
     }
 }
@@ -186,6 +199,8 @@ mod tests {
             "DTSTART;TZID=America/New_York:19970902T090000
 RRULE:FREQ=DAILY;COUNT=10",
         );
-        eprintln!("{:?}", grammar);
+        eprintln!("{:#?}", grammar);
+        let grammar = Grammar::from_str("DTSTART:20120201T093000Z\nRRULE:FREQ=YEARLY;UNTIL=20000131T140000Z;BYMONTH=1;BYDAY=SU,MO,TU,WE,TH,FR,SA\nRDATE;TZID=America/New_York:19970714T083000,19980714T083000");
+        eprintln!("{:#?}", grammar);
     }
 }

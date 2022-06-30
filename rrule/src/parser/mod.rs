@@ -1,4 +1,7 @@
 //! Module for parsing text inputs to `RRule` and `RRuleSet` types.
+//!
+//! # Implementation
+//! Text input -> Grammar (AST) -> RRuleSet
 mod datetime;
 mod error;
 mod grammar;
