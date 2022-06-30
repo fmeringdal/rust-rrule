@@ -155,6 +155,30 @@ pub(crate) fn get_exdate_timezone(val: &str) -> Result<Option<String>, ()> {
     Ok(captures.get(1).map(|tz| tz.as_str().into()))
 }
 
+lazy_static! {
+    static ref CONTENT_LINE_PARTS_RE: Regex = Regex::new(
+        r"(?m)(?P<property_name>RRULE|DTSTART|EXRULE|RDATE|EXDATE)(;(?P<parameters>.+))?:(?P<properties>.+)"
+    )
+    .unwrap();
+}
+
+pub(crate) struct ContentLineCaptures {
+    pub property_name: String,
+    pub parameters: Option<String>,
+    pub properties: String,
+}
+
+/// Get the parts of a content line.
+pub(crate) fn get_content_line_parts(val: &str) -> Result<ContentLineCaptures, ()> {
+    let captures = CONTENT_LINE_PARTS_RE.captures(val).ok_or(())?;
+
+    Ok(ContentLineCaptures {
+        property_name: captures.name("property_name").ok_or(())?.as_str().into(),
+        parameters: captures.name("parameters").map(|p| p.as_str().into()),
+        properties: captures.name("properties").ok_or(())?.as_str().into(),
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use crate::parser::regex::{

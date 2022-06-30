@@ -29,7 +29,7 @@ pub enum ParseError {
     InvalidInterval(String),
     #[error("`{0}` is not a valid COUNT value.")]
     InvalidCount(String),
-    #[error("`{0}` is not a valid BYHOUR value. Expected a comma separated list of values in range 0..=23, e.g. `-1,3,4`")]
+    #[error("`{0}` is not a valid BYHOUR value. Expected a comma separated list of values in range 0..=23, e.g. `1,3,4`")]
     InvalidByHour(String),
     #[error("`{0}` is not a valid BYWEEKNO value. Expected a comma separated list of values in range -53..=53, e.g. `-1,30,53`")]
     InvalidByWeekNo(String),

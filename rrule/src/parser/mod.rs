@@ -1,6 +1,7 @@
 //! Module for parsing text inputs to `RRule` and `RRuleSet` types.
 mod datetime;
 mod error;
+mod grammar;
 mod regex;
 mod utils;
 
@@ -273,7 +274,7 @@ pub(crate) fn parse_rule(rfc_string: &str) -> Result<RRule<Unvalidated>, ParseEr
     check_str_validity(rfc_string)?;
 
     let mut option = None;
-    for line in rfc_string.split('\n') {
+    for line in rfc_string.split_whitespace() {
         let parsed_line = parse_rule_line(line)?;
         if let Some(parsed_line) = parsed_line {
             if option.is_none() {
@@ -307,7 +308,7 @@ fn parse_input(s: &str) -> Result<ParsedInput, ParseError> {
     let mut exdate_vals = vec![];
     let dt_start = parse_dtstart(s)?;
 
-    let lines = s.split('\n');
+    let lines = s.split_whitespace();
     for line in lines {
         let parsed_line = break_down_line(line);
         let key = &parsed_line.name;
