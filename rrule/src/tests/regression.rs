@@ -1,6 +1,5 @@
-use crate::parser::ParseError;
 use crate::tests::common;
-use crate::{RRuleError, RRuleSet};
+use crate::RRuleSet;
 
 #[test]
 fn issue_34() {
