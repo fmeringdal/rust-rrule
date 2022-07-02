@@ -10,7 +10,7 @@ pub(crate) struct ContentLineCaptures {
 }
 
 /// Get the property name, property parameters and values of a content line.
-pub(crate) fn get_content_line_parts(val: &str) -> Result<ContentLineCaptures, ParseError> {
+pub(super) fn get_content_line_parts(val: &str) -> Result<ContentLineCaptures, ParseError> {
     // Default property name to RRULE.
     let property_name = get_property_name(val)?.unwrap_or(PropertyName::RRule);
     match property_name {

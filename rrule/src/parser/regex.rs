@@ -97,11 +97,6 @@ pub(crate) fn parse_datestring(val: &str) -> Result<ParsedDateString, ()> {
 }
 
 lazy_static! {
-    static ref DTSTART_RE: Regex =
-        Regex::new(r"(?m)DTSTART(?:;TZID=([^:=]+?))?(?::|=)([^;\s]+)").unwrap();
-}
-
-lazy_static! {
     static ref PARSE_PROPERTY_NAME_RE: Regex = Regex::new(r"(?m)^([A-Z]+?)[:;]").unwrap();
 }
 
