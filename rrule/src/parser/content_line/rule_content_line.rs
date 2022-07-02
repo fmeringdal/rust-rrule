@@ -4,6 +4,7 @@ use chrono::Weekday;
 use chrono_tz::UTC;
 
 use crate::{
+    core::DateTime,
     parser::{
         content_line::parameters::parse_parameters,
         datetime::{datestring_to_date, parse_weekdays},
@@ -16,6 +17,7 @@ use crate::{
 
 use super::{
     content_line_parts::{get_content_line_parts, ContentLineCaptures},
+    start_date_content_line::StartDateContentLine,
     PropertyName,
 };
 
@@ -66,10 +68,12 @@ impl FromStr for RRuleProperty {
     }
 }
 
-impl TryFrom<ContentLineCaptures> for RRule<Unvalidated> {
+impl TryFrom<(ContentLineCaptures, &StartDateContentLine)> for RRule<Unvalidated> {
     type Error = ParseError;
 
-    fn try_from(value: ContentLineCaptures) -> Result<Self, Self::Error> {
+    fn try_from(
+        (value, dtstart): (ContentLineCaptures, &StartDateContentLine),
+    ) -> Result<Self, Self::Error> {
         if let Some(parameters) = value.parameters {
             if !parameters.is_empty() {
                 return Err(ParseError::PropertyParametersNotSupported(
@@ -80,28 +84,16 @@ impl TryFrom<ContentLineCaptures> for RRule<Unvalidated> {
 
         let properties: HashMap<RRuleProperty, String> = parse_parameters(&value.properties)?;
 
-        props_to_rrule(properties)
-    }
-}
-
-impl FromStr for RRule<Unvalidated> {
-    type Err = ParseError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parts = get_content_line_parts(&s)?;
-        match parts.property_name {
-            PropertyName::RRule | PropertyName::ExRule => RRule::try_from(parts),
-            _ => Err(ParseError::UnexpectedPropertyName(
-                parts.property_name.to_string(),
-                "RRULE,EXRULE".into(),
-            )),
-        }
+        props_to_rrule(properties, dtstart)
     }
 }
 
 /// Takes a map of [`RRuleProperty`] and returns an [`RRule`].
 #[allow(clippy::too_many_lines)]
-fn props_to_rrule(props: HashMap<RRuleProperty, String>) -> Result<RRule<Unvalidated>, ParseError> {
+fn props_to_rrule(
+    props: HashMap<RRuleProperty, String>,
+    dtstart: &StartDateContentLine,
+) -> Result<RRule<Unvalidated>, ParseError> {
     let freq = props
         .get(&RRuleProperty::Freq)
         .map(|freq| Frequency::from_str(freq))
@@ -127,14 +119,18 @@ fn props_to_rrule(props: HashMap<RRuleProperty, String>) -> Result<RRule<Unvalid
     let until = props
         .get(&RRuleProperty::Until)
         .map(|until| {
-            // Until is always in UTC
-            // TODO: Comment above is not true because of:
-            // > [...]
+            // Make sure until is not using zulu which would override timezone we set
+            let mut until = until.clone();
+            if until.to_uppercase().ends_with("Z") {
+                until.remove(until.len() - 1);
+            }
+
             // > Furthermore, if the "DTSTART" property is specified as a date with local time,
             // > then the UNTIL rule part MUST also be specified as a date with local time.
             //
-            // Thus This can be in local time
-            datestring_to_date(until, Some(UTC), "UNTIL")
+            // Otherwise until will be in UTC
+            let timezone = if dtstart.is_local_tz { None } else { Some(UTC) };
+            datestring_to_date(&until, timezone, "UNTIL")
         })
         .transpose()?;
     let week_start = props
@@ -250,7 +246,10 @@ fn props_to_rrule(props: HashMap<RRuleProperty, String>) -> Result<RRule<Unvalid
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::content_line::PropertyName;
+    use chrono::{DateTime, NaiveDate, NaiveDateTime, TimeZone, Utc};
+    use chrono_tz::Tz;
+
+    use crate::{parser::content_line::PropertyName, RRuleSet};
 
     use super::*;
 
@@ -295,8 +294,13 @@ mod tests {
             ),
         ];
 
+        let start_date = StartDateContentLine {
+            datetime: UTC.ymd(2000, 1, 1).and_hms(0, 0, 0),
+            is_local_tz: false,
+        };
+
         for (input, expected_output) in tests {
-            let output = RRule::try_from(input);
+            let output = RRule::try_from((input, &start_date));
             assert_eq!(output, Ok(expected_output));
         }
     }
@@ -311,9 +315,13 @@ mod tests {
             },
             ParseError::PropertyParametersNotSupported("TZID=Europe/London".into()),
         )];
+        let start_date = StartDateContentLine {
+            datetime: UTC.ymd(2000, 1, 1).and_hms(0, 0, 0),
+            is_local_tz: false,
+        };
 
         for (input, expected_output) in tests {
-            let output = RRule::try_from(input);
+            let output = RRule::try_from((input, &start_date));
             assert_eq!(output, Err(expected_output));
         }
     }
@@ -322,7 +330,11 @@ mod tests {
     fn rejects_invalid_freq() {
         let mut props = HashMap::new();
         props.insert(RRuleProperty::Freq, "DAIL".into());
-        let res = props_to_rrule(props);
+        let start_date = StartDateContentLine {
+            datetime: UTC.ymd(2000, 1, 1).and_hms(0, 0, 0),
+            is_local_tz: false,
+        };
+        let res = props_to_rrule(props, &start_date);
         assert_eq!(
             res.unwrap_err(),
             ParseError::InvalidFrequency("DAIL".into()).into()
@@ -334,11 +346,15 @@ mod tests {
         let mut props = HashMap::new();
         props.insert(RRuleProperty::Freq, "DAILY".into());
         props.insert(RRuleProperty::ByHour, "24".into());
-        let res = props_to_rrule(props.clone());
+        let start_date = StartDateContentLine {
+            datetime: UTC.ymd(2000, 1, 1).and_hms(0, 0, 0),
+            is_local_tz: false,
+        };
+        let res = props_to_rrule(props.clone(), &start_date);
         assert_eq!(res.unwrap_err(), ParseError::InvalidByHour("24".into()));
 
         props.insert(RRuleProperty::ByHour, "5,6,25".into());
-        let res = props_to_rrule(props);
+        let res = props_to_rrule(props, &start_date);
         assert_eq!(res.unwrap_err(), ParseError::InvalidByHour("5,6,25".into()));
     }
 
@@ -347,14 +363,81 @@ mod tests {
         let mut props = HashMap::new();
         props.insert(RRuleProperty::Freq, "DAILY".into());
         props.insert(RRuleProperty::ByMinute, "60".into());
-        let res = props_to_rrule(props.clone());
+        let start_date = StartDateContentLine {
+            datetime: UTC.ymd(2000, 1, 1).and_hms(0, 0, 0),
+            is_local_tz: false,
+        };
+        let res = props_to_rrule(props.clone(), &start_date);
         assert_eq!(res.unwrap_err(), ParseError::InvalidByMinute("60".into()));
 
         props.insert(RRuleProperty::ByMinute, "4,5,64".into());
-        let res = props_to_rrule(props);
+        let res = props_to_rrule(props, &start_date);
         assert_eq!(
             res.unwrap_err(),
             ParseError::InvalidByMinute("4,5,64".into())
         );
+    }
+
+    #[test]
+    fn until_is_local_time_when_start_date_is_local() {
+        let mut props = HashMap::new();
+        props.insert(RRuleProperty::Freq, "DAILY".into());
+        let until_str = "19970902T120000";
+        let until_local = NaiveDate::from_ymd(1997, 9, 2).and_hms(12, 0, 0);
+        let until_local = chrono::Local
+            .from_local_datetime(&until_local)
+            .unwrap()
+            .with_timezone(&chrono_tz::UTC);
+        props.insert(RRuleProperty::Until, until_str.into());
+
+        let start_date = get_content_line_parts("DTSTART:19970902T090000").unwrap();
+        let start_date = StartDateContentLine::try_from(start_date).unwrap();
+
+        let rrule = props_to_rrule(props.clone(), &start_date).unwrap();
+        assert_eq!(rrule.until, Some(until_local));
+    }
+
+    #[test]
+    fn until_zulu_is_ignored_when_start_date_is_local() {
+        let mut props = HashMap::new();
+        props.insert(RRuleProperty::Freq, "DAILY".into());
+        // Zulu set
+        let until_str = "19970902T120000Z";
+        let until_local = NaiveDate::from_ymd(1997, 9, 2).and_hms(12, 0, 0);
+        let until_local = chrono::Local
+            .from_local_datetime(&until_local)
+            .unwrap()
+            .with_timezone(&chrono_tz::UTC);
+        props.insert(RRuleProperty::Until, until_str.into());
+
+        let start_date = get_content_line_parts("DTSTART:19970902T090000").unwrap();
+        let start_date = StartDateContentLine::try_from(start_date).unwrap();
+
+        let rrule = props_to_rrule(props.clone(), &start_date).unwrap();
+        assert_eq!(rrule.until, Some(until_local));
+    }
+
+    #[test]
+    fn until_is_utc_when_start_date_has_timezone() {
+        let mut props = HashMap::new();
+        props.insert(RRuleProperty::Freq, "DAILY".into());
+        let until_str = "20000902T120000";
+        let until_local: DateTime<Tz> = UTC.ymd(2000, 9, 2).and_hms(12, 0, 0);
+        props.insert(RRuleProperty::Until, until_str.into());
+
+        let start_dates = [
+            "DTSTART:19970902T090000Z",
+            "DTSTART;TZID=UTC:19970902T090000",
+            "DTSTART;TZID=UTC:19970902T090000Z",
+            "DTSTART;TZID=Europe/London:19970902T090000",
+        ];
+
+        for start_date in start_dates {
+            let start_date = get_content_line_parts(start_date).unwrap();
+            let start_date = StartDateContentLine::try_from(start_date).unwrap();
+
+            let rrule = props_to_rrule(props.clone(), &start_date).unwrap();
+            assert_eq!(rrule.until, Some(until_local));
+        }
     }
 }

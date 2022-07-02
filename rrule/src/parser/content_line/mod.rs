@@ -12,6 +12,7 @@ use crate::RRule;
 use crate::Unvalidated;
 
 pub(crate) use content_line_parts::get_content_line_parts;
+pub(crate) use start_date_content_line::StartDateContentLine;
 
 use super::ParseError;
 

@@ -65,6 +65,4 @@ pub enum ParseError {
         "`{0}` is not a valid property name, expected one of: `RRULE,EXRULE,DTSTART,RDATE,EXDATE`."
     )]
     UnrecognizedPropertyName(String),
-    #[error("Unexpected property name `{0}`, expected one of: `{1}`.")]
-    UnexpectedPropertyName(String, String),
 }

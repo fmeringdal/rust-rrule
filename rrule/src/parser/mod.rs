@@ -12,9 +12,9 @@ pub(crate) use content_line::ContentLine;
 pub(crate) use datetime::str_to_weekday;
 pub use error::ParseError;
 
-use crate::core::DateTime;
+use crate::{core::DateTime, RRule};
 
-use self::content_line::{get_content_line_parts, PropertyName};
+use self::content_line::{get_content_line_parts, PropertyName, StartDateContentLine};
 
 #[derive(Debug, PartialEq)]
 pub(crate) struct Grammar {
@@ -28,19 +28,36 @@ impl FromStr for Grammar {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut content_lines = vec![];
 
-        let mut start_datetime = None;
+        let parsed_lines = s
+            .lines()
+            .into_iter()
+            .map(|content_line| get_content_line_parts(content_line))
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let start_datetime = parsed_lines
+            .iter()
+            .find_map(|parts| match parts.property_name {
+                PropertyName::DtStart => Some(parts),
+                _ => None,
+            })
+            .map(|parts| StartDateContentLine::try_from(parts.clone()))
+            .ok_or(ParseError::MissingStartDate)??;
 
         for content_line in s.lines() {
             let parts = get_content_line_parts(&content_line)?;
             let line = match parts.property_name {
-                PropertyName::RRule => ContentLine::RRule(TryFrom::try_from(parts)?),
-                PropertyName::ExRule => ContentLine::ExRule(TryFrom::try_from(parts)?),
+                PropertyName::RRule => {
+                    let rrule = RRule::try_from((parts, &start_datetime))?;
+                    ContentLine::RRule(rrule)
+                }
+                PropertyName::ExRule => {
+                    let rrule = RRule::try_from((parts, &start_datetime))?;
+                    ContentLine::ExRule(rrule)
+                }
                 PropertyName::RDate => ContentLine::RDate(TryFrom::try_from(parts)?),
                 PropertyName::ExDate => ContentLine::ExDate(TryFrom::try_from(parts)?),
                 PropertyName::DtStart => {
-                    if start_datetime.replace(TryFrom::try_from(parts)?).is_some() {
-                        return Err(ParseError::DuplicateStartDates);
-                    }
+                    // Nothing to do
                     continue;
                 }
             };
@@ -57,7 +74,7 @@ impl FromStr for Grammar {
         }
 
         Ok(Self {
-            start_datetime: start_datetime.ok_or(ParseError::MissingStartDate)?,
+            start_datetime: start_datetime.datetime,
             content_lines,
         })
     }
