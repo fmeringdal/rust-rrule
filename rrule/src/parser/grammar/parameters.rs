@@ -9,6 +9,9 @@ pub(super) fn parse_parametes<K: FromStr<Err = ParseError> + Hash + Eq>(
 ) -> Result<HashMap<K, String>, ParseError> {
     let mut parameters = HashMap::new();
     for raw_parameter in raw_parameters.split(";") {
+        if raw_parameter.is_empty() {
+            continue;
+        }
         let (raw_parameter, value) = raw_parameter
             .split_once("=")
             .ok_or_else(|| ParseError::InvalidParameterFormat(raw_parameter.into()))?;
@@ -28,7 +31,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parses_property_parameters() {
+    fn parses_valid_property_parameters() {
         let tests = [
             (
                 "VALUE=DATE",
@@ -86,6 +89,19 @@ mod tests {
         for (input, expected_output) in tests {
             let output: Result<HashMap<DateParameter, String>, _> = parse_parametes(input);
             assert_eq!(output, Err(expected_output));
+        }
+    }
+
+    #[test]
+    fn does_not_attempt_to_parse_empty_parameters() {
+        let tests = [
+            ("", [].into_iter().collect::<HashMap<_, _>>()),
+            (";", [].into_iter().collect::<HashMap<_, _>>()),
+        ];
+
+        for (input, expected_output) in tests {
+            let output: Result<HashMap<DateParameter, String>, _> = parse_parametes(input);
+            assert_eq!(output, Ok(expected_output));
         }
     }
 }

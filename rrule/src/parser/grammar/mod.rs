@@ -76,9 +76,6 @@ impl FromStr for Grammar {
         let mut start_datetime = None;
 
         for content_line in s.lines() {
-            // let content_line = content_line.to_uppercase();
-
-            // TODO: better error
             let parts = get_content_line_parts(&content_line)?;
             let line = match parts.property_name {
                 PropertyName::RRule => ContentLine::RRule(RRuleContentLine::try_from(parts)?),
