@@ -4,7 +4,6 @@ use chrono::Weekday;
 use chrono_tz::UTC;
 
 use crate::{
-    core::DateTime,
     parser::{
         content_line::parameters::parse_parameters,
         datetime::{datestring_to_date, parse_weekdays},
@@ -16,9 +15,7 @@ use crate::{
 };
 
 use super::{
-    content_line_parts::{get_content_line_parts, ContentLineCaptures},
-    start_date_content_line::StartDateContentLine,
-    PropertyName,
+    content_line_parts::ContentLineCaptures, start_date_content_line::StartDateContentLine,
 };
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
@@ -76,9 +73,7 @@ impl TryFrom<(ContentLineCaptures, &StartDateContentLine)> for RRule<Unvalidated
     ) -> Result<Self, Self::Error> {
         if let Some(parameters) = value.parameters {
             if !parameters.is_empty() {
-                return Err(ParseError::PropertyParametersNotSupported(
-                    parameters.into(),
-                ));
+                return Err(ParseError::PropertyParametersNotSupported(parameters));
             }
         }
 
@@ -121,7 +116,7 @@ fn props_to_rrule(
         .map(|until| {
             // Make sure until is not using zulu which would override timezone we set
             let mut until = until.clone();
-            if until.to_uppercase().ends_with("Z") {
+            if until.to_uppercase().ends_with('Z') {
                 until.remove(until.len() - 1);
             }
 
@@ -246,10 +241,10 @@ fn props_to_rrule(
 
 #[cfg(test)]
 mod tests {
-    use chrono::{DateTime, NaiveDate, NaiveDateTime, TimeZone, Utc};
+    use chrono::{DateTime, NaiveDate, TimeZone};
     use chrono_tz::Tz;
 
-    use crate::{parser::content_line::PropertyName, RRuleSet};
+    use crate::parser::content_line::{get_content_line_parts, PropertyName};
 
     use super::*;
 
@@ -337,7 +332,7 @@ mod tests {
         let res = props_to_rrule(props, &start_date);
         assert_eq!(
             res.unwrap_err(),
-            ParseError::InvalidFrequency("DAIL".into()).into()
+            ParseError::InvalidFrequency("DAIL".into())
         );
     }
 

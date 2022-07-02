@@ -53,8 +53,6 @@ pub enum ParseError {
     UnrecognizedParameter(String),
     #[error("Found duplicate property for `{0}`, properties and parameters needs to be unique.")]
     DuplicateProperty(String),
-    #[error("Found duplicate start dates. There needs to be a unique start date which the iteration can start from.")]
-    DuplicateStartDates,
     #[error("Missing start date. There needs to be a unique start date which the iteration can start from.")]
     MissingStartDate,
     #[error("Missing recurrence rule. There needs to be at least one `RRULE` or `RDATE` to generate occurrences.")]

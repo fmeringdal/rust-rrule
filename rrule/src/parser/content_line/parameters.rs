@@ -8,12 +8,12 @@ pub(super) fn parse_parameters<K: FromStr<Err = ParseError> + Hash + Eq>(
     raw_parameters: &str,
 ) -> Result<HashMap<K, String>, ParseError> {
     let mut parameters = HashMap::new();
-    for raw_parameter in raw_parameters.split(";") {
+    for raw_parameter in raw_parameters.split(';') {
         if raw_parameter.is_empty() {
             continue;
         }
         let (raw_parameter, value) = raw_parameter
-            .split_once("=")
+            .split_once('=')
             .ok_or_else(|| ParseError::InvalidParameterFormat(raw_parameter.into()))?;
         let parameter = K::from_str(raw_parameter)?;
 

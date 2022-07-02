@@ -33,7 +33,7 @@ impl TryFrom<ContentLineCaptures> for StartDateContentLine {
             .map(|tz| parse_timezone(tz))
             .transpose()?;
 
-        let is_local_tz = timezone.is_none() && !value.properties.to_uppercase().ends_with("Z");
+        let is_local_tz = timezone.is_none() && !value.properties.to_uppercase().ends_with('Z');
 
         let datetime = datestring_to_date(&value.properties, timezone, "DTSTART")?;
 

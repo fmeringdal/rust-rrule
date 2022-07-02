@@ -46,7 +46,7 @@ impl TryFrom<ContentLineCaptures> for Vec<DateTime> {
         let property = format!("{}", value.property_name);
 
         let mut dates = vec![];
-        for val in value.properties.split(",") {
+        for val in value.properties.split(',') {
             if val.is_empty() {
                 continue;
             }

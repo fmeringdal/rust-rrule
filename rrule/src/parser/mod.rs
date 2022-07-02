@@ -31,7 +31,7 @@ impl FromStr for Grammar {
         let parsed_lines = s
             .lines()
             .into_iter()
-            .map(|content_line| get_content_line_parts(content_line))
+            .map(get_content_line_parts)
             .collect::<Result<Vec<_>, _>>()?;
 
         let start_datetime = parsed_lines
@@ -43,8 +43,7 @@ impl FromStr for Grammar {
             .map(|parts| StartDateContentLine::try_from(parts.clone()))
             .ok_or(ParseError::MissingStartDate)??;
 
-        for content_line in s.lines() {
-            let parts = get_content_line_parts(&content_line)?;
+        for parts in parsed_lines {
             let line = match parts.property_name {
                 PropertyName::RRule => {
                     let rrule = RRule::try_from((parts, &start_datetime))?;
@@ -65,11 +64,10 @@ impl FromStr for Grammar {
         }
 
         // Need to be at least one `RDATE` or `RRULE`
-        if !content_lines.iter().any(|line| match line {
-            ContentLine::RRule(_) => true,
-            ContentLine::RDate(_) => true,
-            _ => false,
-        }) {
+        if !content_lines
+            .iter()
+            .any(|line| matches!(line, ContentLine::RRule(_) | ContentLine::RDate(_)))
+        {
             return Err(ParseError::MissingRecurrenceRules);
         }
 

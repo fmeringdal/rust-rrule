@@ -14,9 +14,9 @@ pub(crate) fn get_content_line_parts(val: &str) -> Result<ContentLineCaptures, P
     // Default property name to RRULE.
     let property_name = get_property_name(val)?.unwrap_or(PropertyName::RRule);
     match property_name {
-        // If the line did not contain a property name (i.e. no ":"), then the
+        // If the line did not contain a property name (i.e. no ':'), then the
         // entire line are interpreted as properties
-        PropertyName::RRule if !val.contains(":") => Ok(ContentLineCaptures {
+        PropertyName::RRule if !val.contains(':') => Ok(ContentLineCaptures {
             property_name: PropertyName::RRule,
             parameters: None,
             properties: val.into(),
@@ -24,7 +24,7 @@ pub(crate) fn get_content_line_parts(val: &str) -> Result<ContentLineCaptures, P
         property_name => {
             let mut parameters = None;
             if val.starts_with(&format!("{property_name};")) {
-                let only_colon_idx = val.find(":");
+                let only_colon_idx = val.find(':');
                 if let Some(only_colon_idx) = only_colon_idx {
                     parameters =
                         Some(val[format!("{property_name};").len()..only_colon_idx].to_string());
@@ -35,7 +35,7 @@ pub(crate) fn get_content_line_parts(val: &str) -> Result<ContentLineCaptures, P
                 property_name,
                 parameters,
                 properties: val
-                    .split_once(":")
+                    .split_once(':')
                     .map(|(_name, val)| val)
                     .unwrap_or_default()
                     .into(),

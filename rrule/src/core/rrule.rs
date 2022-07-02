@@ -8,7 +8,7 @@ use crate::{RRuleError, RRuleIter, RRuleSet, Unvalidated, Validated};
 use chrono::{Datelike, Month, Timelike, Weekday};
 use chrono_tz::Tz;
 #[cfg(feature = "serde")]
-use serde_with::{serde_as, DeserializeFromStr, SerializeDisplay};
+use serde_with::{DeserializeFromStr, SerializeDisplay};
 use std::collections::VecDeque;
 use std::fmt::Display;
 use std::fmt::Formatter;
@@ -175,9 +175,7 @@ fn weekday_to_str(d: Weekday) -> String {
 /// It has two stages, based on the attached type, `Validated` or `Unvalidated`.
 /// - `Unvalidated`, which is the raw string representation of the RRULE
 /// - `Validated`, which is when the RRule has been parsed and validated, based on the start date
-#[cfg_attr(feature = "serde", serde_as)]
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
 pub struct RRule<Stage = Validated> {
     /// The frequency of the rrule.
     /// For example: yearly, weekly, hourly
@@ -191,7 +189,6 @@ pub struct RRule<Stage = Validated> {
     pub(crate) count: Option<u32>,
     /// The end date after which new events will no longer be generated.
     /// If the `DateTime` is equal to an instance of the event it will be the last event.
-    #[cfg_attr(feature = "serde", serde_as(as = "DisplayFromStr"))]
     pub(crate) until: Option<DateTime>,
     /// The start day of the week.
     /// This will affect recurrences based on weekly periods.
@@ -236,7 +233,6 @@ pub struct RRule<Stage = Validated> {
     /// Note: Only used when `by-easter` feature flag is set. Otherwise, it is ignored.
     pub(crate) by_easter: Option<i16>,
     /// A phantom data to have the stage (unvalidated or validated).
-    #[cfg_attr(feature = "serde", serde_as(as = "ignore"))]
     pub(crate) stage: PhantomData<Stage>,
 }
 
