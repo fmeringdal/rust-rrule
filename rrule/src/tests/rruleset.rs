@@ -43,20 +43,25 @@ fn rrule_and_exrule() {
 
 #[test]
 fn setdate_and_exdate() {
-    let set = RRuleSet::new(ymd_hms(1970, 1, 1, 0, 0, 0))
-        .set_rdates(vec![
-            ymd_hms(1997, 9, 2, 9, 0, 0),
-            ymd_hms(1997, 9, 4, 9, 0, 0),
-            ymd_hms(1997, 9, 9, 9, 0, 0),
-            ymd_hms(1997, 9, 11, 9, 0, 0),
-            ymd_hms(1997, 9, 16, 9, 0, 0),
-            ymd_hms(1997, 9, 18, 9, 0, 0),
-        ])
-        .set_exdates(vec![
-            ymd_hms(1997, 9, 4, 9, 0, 0),
-            ymd_hms(1997, 9, 11, 9, 0, 0),
-            ymd_hms(1997, 9, 18, 9, 0, 0),
-        ]);
+    let mut set = RRuleSet::new(ymd_hms(1970, 1, 1, 0, 0, 0));
+    for rdate in [
+        ymd_hms(1997, 9, 2, 9, 0, 0),
+        ymd_hms(1997, 9, 4, 9, 0, 0),
+        ymd_hms(1997, 9, 9, 9, 0, 0),
+        ymd_hms(1997, 9, 11, 9, 0, 0),
+        ymd_hms(1997, 9, 16, 9, 0, 0),
+        ymd_hms(1997, 9, 18, 9, 0, 0),
+    ] {
+        set = set.add_rdate(rdate);
+    }
+
+    for exdate in [
+        ymd_hms(1997, 9, 4, 9, 0, 0),
+        ymd_hms(1997, 9, 11, 9, 0, 0),
+        ymd_hms(1997, 9, 18, 9, 0, 0),
+    ] {
+        set = set.add_exdate(exdate);
+    }
 
     test_recurring_rrule_set(
         set,
@@ -82,16 +87,20 @@ fn setdate_and_exrule() {
     };
     let exrule = rrule.validate(dt_start).unwrap();
 
-    let set = RRuleSet::new(dt_start)
-        .set_rdates(vec![
-            ymd_hms(1997, 9, 2, 9, 0, 0),
-            ymd_hms(1997, 9, 4, 9, 0, 0),
-            ymd_hms(1997, 9, 9, 9, 0, 0),
-            ymd_hms(1997, 9, 11, 9, 0, 0),
-            ymd_hms(1997, 9, 16, 9, 0, 0),
-            ymd_hms(1997, 9, 18, 9, 0, 0),
-        ])
-        .exrule(exrule);
+    let mut set = RRuleSet::new(dt_start);
+
+    for rdate in [
+        ymd_hms(1997, 9, 2, 9, 0, 0),
+        ymd_hms(1997, 9, 4, 9, 0, 0),
+        ymd_hms(1997, 9, 9, 9, 0, 0),
+        ymd_hms(1997, 9, 11, 9, 0, 0),
+        ymd_hms(1997, 9, 16, 9, 0, 0),
+        ymd_hms(1997, 9, 18, 9, 0, 0),
+    ] {
+        set = set.add_rdate(rdate);
+    }
+
+    let set = set.add_exrule(exrule);
 
     test_recurring_rrule_set(
         set,
@@ -117,11 +126,15 @@ fn rrule_and_exdate() {
     };
     let rrule = rrule.validate(dt_start).unwrap();
 
-    let set = RRuleSet::new(dt_start).rrule(rrule).set_exdates(vec![
+    let mut set = RRuleSet::new(dt_start).rrule(rrule);
+
+    for exdate in [
         ymd_hms(1997, 9, 2, 9, 0, 0),
         ymd_hms(1997, 9, 4, 9, 0, 0),
         ymd_hms(1997, 9, 9, 9, 0, 0),
-    ]);
+    ] {
+        set = set.add_exdate(exdate);
+    }
 
     test_recurring_rrule_set(
         set,

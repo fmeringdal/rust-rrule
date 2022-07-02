@@ -4,7 +4,7 @@ use crate::parser::ParseError;
 
 /// Parses a string of semi colon seperated key value pairs into a HashMap with
 /// predefined keys. It will return an error if duplicate keys are found.
-pub(super) fn parse_parametes<K: FromStr<Err = ParseError> + Hash + Eq>(
+pub(super) fn parse_parameters<K: FromStr<Err = ParseError> + Hash + Eq>(
     raw_parameters: &str,
 ) -> Result<HashMap<K, String>, ParseError> {
     let mut parameters = HashMap::new();
@@ -26,7 +26,7 @@ pub(super) fn parse_parametes<K: FromStr<Err = ParseError> + Hash + Eq>(
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::grammar::DateParameter;
+    use super::super::date_content_line::DateParameter;
 
     use super::*;
 
@@ -48,7 +48,7 @@ mod tests {
         ];
 
         for (input, expected_output) in tests {
-            let output = parse_parametes(input);
+            let output = parse_parameters(input);
             assert_eq!(output, Ok(expected_output));
         }
     }
@@ -61,7 +61,7 @@ mod tests {
         )];
 
         for (input, expected_output) in tests {
-            let output: Result<HashMap<DateParameter, String>, _> = parse_parametes(input);
+            let output: Result<HashMap<DateParameter, String>, _> = parse_parameters(input);
             assert_eq!(output, Err(expected_output));
         }
     }
@@ -74,7 +74,7 @@ mod tests {
         )];
 
         for (input, expected_output) in tests {
-            let output: Result<HashMap<DateParameter, String>, _> = parse_parametes(input);
+            let output: Result<HashMap<DateParameter, String>, _> = parse_parameters(input);
             assert_eq!(output, Err(expected_output));
         }
     }
@@ -87,7 +87,7 @@ mod tests {
         )];
 
         for (input, expected_output) in tests {
-            let output: Result<HashMap<DateParameter, String>, _> = parse_parametes(input);
+            let output: Result<HashMap<DateParameter, String>, _> = parse_parameters(input);
             assert_eq!(output, Err(expected_output));
         }
     }
@@ -100,7 +100,7 @@ mod tests {
         ];
 
         for (input, expected_output) in tests {
-            let output: Result<HashMap<DateParameter, String>, _> = parse_parametes(input);
+            let output: Result<HashMap<DateParameter, String>, _> = parse_parameters(input);
             assert_eq!(output, Ok(expected_output));
         }
     }

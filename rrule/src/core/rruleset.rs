@@ -1,7 +1,7 @@
 use crate::core::datetime::datetime_to_ical_format;
 use crate::core::utils::{collect_or_error, collect_with_error};
 use crate::core::DateTime;
-use crate::parser::{parse, ParsedInput};
+use crate::parser::{ContentLine, Grammar};
 use crate::{RRule, RRuleError};
 #[cfg(feature = "serde")]
 use serde_with::{serde_as, DeserializeFromStr, SerializeDisplay};
@@ -71,35 +71,35 @@ impl RRuleSet {
         self
     }
 
-    /// Sets the rrules of the set.
+    /// Add an [`RRule`] to the rrules set.
     #[inline]
     #[must_use]
-    pub fn set_rrules(mut self, rrules: Vec<RRule>) -> Self {
-        self.rrule = rrules;
+    pub fn add_rrule(mut self, rrule: RRule) -> Self {
+        self.rrule.push(rrule);
         self
     }
 
-    /// Sets the exrules of the set.
+    /// Add an [`RRule`] to the exrules set.
     #[inline]
     #[must_use]
-    pub fn set_exrules(mut self, exrules: Vec<RRule>) -> Self {
-        self.exrule = exrules;
+    pub fn add_exrule(mut self, exrule: RRule) -> Self {
+        self.exrule.push(exrule);
         self
     }
 
-    /// Sets the rdates of the set.
+    /// Add a [`DateTime`] to the rdate set.
     #[inline]
     #[must_use]
-    pub fn set_rdates(mut self, rdates: Vec<DateTime>) -> Self {
-        self.rdate = rdates;
+    pub fn add_rdate(mut self, rdate: DateTime) -> Self {
+        self.rdate.push(rdate);
         self
     }
 
-    /// Set the exdates of the set.
+    /// Add a [`DateTime`] to the exdate set.
     #[inline]
     #[must_use]
-    pub fn set_exdates(mut self, exdates: Vec<DateTime>) -> Self {
-        self.exdate = exdates;
+    pub fn add_exdate(mut self, exdate: DateTime) -> Self {
+        self.exdate.push(exdate);
         self
     }
 
@@ -282,29 +282,35 @@ impl FromStr for RRuleSet {
     /// This should never panic, but it might be in odd cases.
     /// Please report if it does panic.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let ParsedInput {
-            rrule_vals,
-            rdate_vals,
-            exrule_vals,
-            exdate_vals,
-            dt_start,
-        } = parse(&s)?;
+        let Grammar {
+            start_datetime,
+            content_lines,
+        } = Grammar::from_str(s)?;
 
-        let rrule_set = RRuleSet::new(dt_start)
-            .set_rrules(
-                rrule_vals
-                    .into_iter()
-                    .map(|r| r.validate(dt_start))
-                    .collect::<Result<Vec<_>, _>>()?,
-            )
-            .set_rdates(rdate_vals)
-            .set_exrules(
-                exrule_vals
-                    .into_iter()
-                    .map(|r| r.validate(dt_start))
-                    .collect::<Result<Vec<_>, _>>()?,
-            )
-            .set_exdates(exdate_vals);
+        let mut rrule_set = RRuleSet::new(start_datetime);
+
+        for content_line in content_lines.into_iter() {
+            match content_line {
+                ContentLine::RRule(rrule) => {
+                    let rrule = rrule.validate(start_datetime)?;
+                    rrule_set = rrule_set.add_rrule(rrule);
+                }
+                ContentLine::ExRule(rrule) => {
+                    let rrule = rrule.validate(start_datetime)?;
+                    rrule_set = rrule_set.add_exrule(rrule)
+                }
+                ContentLine::ExDate(exdates) => {
+                    for exdate in exdates {
+                        rrule_set = rrule_set.add_exdate(exdate);
+                    }
+                }
+                ContentLine::RDate(rdates) => {
+                    for rdate in rdates {
+                        rrule_set = rrule_set.add_rdate(rdate);
+                    }
+                }
+            }
+        }
 
         Ok(rrule_set)
     }

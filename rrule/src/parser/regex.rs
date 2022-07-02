@@ -4,7 +4,7 @@ use std::str::FromStr;
 use lazy_static::lazy_static;
 use regex::Regex;
 
-use super::{grammar::PropertyName, ParseError};
+use super::{content_line::PropertyName, ParseError};
 
 lazy_static! {
     static ref DATESTR_RE: Regex =
@@ -111,7 +111,7 @@ pub(crate) fn get_property_name(val: &str) -> Result<Option<PropertyName>, Parse
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::{grammar::PropertyName, regex::get_property_name, ParseError};
+    use crate::parser::{content_line::PropertyName, regex::get_property_name, ParseError};
 
     use super::{parse_datestring, ParsedDateString, ParsedDateStringFlags, ParsedDateStringTime};
 

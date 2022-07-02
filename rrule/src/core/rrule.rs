@@ -1,7 +1,5 @@
 use super::datetime::DateTime;
 use crate::iter::iterinfo::IterInfo;
-use crate::parser::grammar::RRuleContentLine;
-use crate::parser::parse_rrule;
 use crate::parser::str_to_weekday;
 use crate::parser::ParseError;
 use crate::validator::check_limits;
@@ -512,7 +510,8 @@ impl RRule<Unvalidated> {
     ///
     /// Returns [`RRuleError::ValidationError`] in case the rrule is invalid.
     pub fn build(self, dt_start: DateTime) -> Result<RRuleSet, RRuleError> {
-        let rrule_set = RRuleSet::new(dt_start).set_rrules(vec![self.validate(dt_start)?]);
+        let rrule = self.validate(dt_start)?;
+        let rrule_set = RRuleSet::new(dt_start).add_rrule(rrule);
         Ok(rrule_set)
     }
 }
@@ -538,15 +537,6 @@ impl RRule {
                 }
             }
         }
-    }
-}
-
-impl FromStr for RRule<Unvalidated> {
-    type Err = ParseError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let rrule = RRuleContentLine::from_str(s)?;
-        parse_rrule(&rrule)
     }
 }
 
