@@ -2,7 +2,7 @@ use crate::parser::{regex::get_property_name, ParseError};
 
 use super::PropertyName;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub(crate) struct ContentLineCaptures {
     pub property_name: PropertyName,
     pub parameters: Option<String>,

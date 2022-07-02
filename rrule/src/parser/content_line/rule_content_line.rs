@@ -19,7 +19,7 @@ use super::{
     PropertyName,
 };
 
-#[derive(Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
 pub enum RRuleProperty {
     Freq,
     Until,
@@ -316,5 +316,45 @@ mod tests {
             let output = RRule::try_from(input);
             assert_eq!(output, Err(expected_output));
         }
+    }
+
+    #[test]
+    fn rejects_invalid_freq() {
+        let mut props = HashMap::new();
+        props.insert(RRuleProperty::Freq, "DAIL".into());
+        let res = props_to_rrule(props);
+        assert_eq!(
+            res.unwrap_err(),
+            ParseError::InvalidFrequency("DAIL".into()).into()
+        );
+    }
+
+    #[test]
+    fn rejects_invalid_byhour() {
+        let mut props = HashMap::new();
+        props.insert(RRuleProperty::Freq, "DAILY".into());
+        props.insert(RRuleProperty::ByHour, "24".into());
+        let res = props_to_rrule(props.clone());
+        assert_eq!(res.unwrap_err(), ParseError::InvalidByHour("24".into()));
+
+        props.insert(RRuleProperty::ByHour, "5,6,25".into());
+        let res = props_to_rrule(props);
+        assert_eq!(res.unwrap_err(), ParseError::InvalidByHour("5,6,25".into()));
+    }
+
+    #[test]
+    fn rejects_invalid_byminute() {
+        let mut props = HashMap::new();
+        props.insert(RRuleProperty::Freq, "DAILY".into());
+        props.insert(RRuleProperty::ByMinute, "60".into());
+        let res = props_to_rrule(props.clone());
+        assert_eq!(res.unwrap_err(), ParseError::InvalidByMinute("60".into()));
+
+        props.insert(RRuleProperty::ByMinute, "4,5,64".into());
+        let res = props_to_rrule(props);
+        assert_eq!(
+            res.unwrap_err(),
+            ParseError::InvalidByMinute("4,5,64".into())
+        );
     }
 }

@@ -68,4 +68,52 @@ mod tests {
             assert_eq!(output, Ok(expected_output));
         }
     }
+
+    #[test]
+    fn rejecets_invalid_dtstart() {
+        let tests = [
+            ContentLineCaptures {
+                property_name: PropertyName::DtStart,
+                parameters: None,
+                properties: "20120201120000Z".into(),
+            },
+            ContentLineCaptures {
+                property_name: PropertyName::DtStart,
+                parameters: None,
+                properties: "2012".into(),
+            },
+            ContentLineCaptures {
+                property_name: PropertyName::DtStart,
+                parameters: None,
+                properties: "".into(),
+            },
+        ];
+
+        for input in tests {
+            let output = DateTime::try_from(input.clone());
+            assert_eq!(
+                output,
+                Err(ParseError::InvalidDateTime {
+                    value: input.properties,
+                    property: "DTSTART".into()
+                })
+            );
+        }
+    }
+
+    #[test]
+    fn reject_invalid_timezone_in_start_date() {
+        let content = ContentLineCaptures {
+            property_name: PropertyName::DtStart,
+            parameters: Some("TZID=America/Everywhere".into()),
+            properties: "20120251T023000Z".into(),
+        };
+        let res = DateTime::try_from(content);
+        assert!(res.is_err());
+        let err = res.unwrap_err();
+        assert_eq!(
+            err,
+            ParseError::InvalidTimezone("America/Everywhere".into()).into()
+        );
+    }
 }

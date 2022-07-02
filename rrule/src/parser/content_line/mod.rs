@@ -15,7 +15,7 @@ pub(crate) use content_line_parts::get_content_line_parts;
 
 use super::ParseError;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub(crate) enum ContentLine {
     RRule(RRule<Unvalidated>),
     ExRule(RRule<Unvalidated>),
@@ -23,7 +23,7 @@ pub(crate) enum ContentLine {
     RDate(Vec<DateTime>),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub(crate) enum PropertyName {
     RRule,
     ExRule,
