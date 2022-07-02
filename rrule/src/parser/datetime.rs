@@ -20,7 +20,7 @@ pub(crate) fn parse_timezone(tz: &str) -> Result<Tz, ParseError> {
 pub(crate) fn datestring_to_date(
     dt: &str,
     tz: Option<Tz>,
-    field: &str,
+    property: &str,
 ) -> Result<DateTime, ParseError> {
     let ParsedDateString {
         year,
@@ -30,14 +30,14 @@ pub(crate) fn datestring_to_date(
         flags,
     } = regex::parse_datestring(dt).map_err(|_| ParseError::InvalidDateTime {
         value: dt.into(),
-        field: field.into(),
+        property: property.into(),
     })?;
 
     // Combine parts to create data time.
     let date =
         NaiveDate::from_ymd_opt(year, month, day).ok_or_else(|| ParseError::InvalidDateTime {
             value: dt.into(),
-            field: field.into(),
+            property: property.into(),
         })?;
 
     // Spec defines this is a date-time OR date
@@ -52,7 +52,7 @@ pub(crate) fn datestring_to_date(
         .and_hms_opt(hour, min, sec)
         .ok_or_else(|| ParseError::InvalidDateTime {
             value: dt.into(),
-            field: field.into(),
+            property: property.into(),
         })?;
 
     // Apply timezone appended to the datetime before converting to UTC.
@@ -71,13 +71,13 @@ pub(crate) fn datestring_to_date(
                 match tz.from_local_datetime(&datetime) {
                     LocalResult::None => Err(ParseError::InvalidDateTimeInLocalTimezone {
                         value: dt.into(),
-                        field: field.into(),
+                        property: property.into(),
                     }),
                     LocalResult::Single(date) => Ok(date),
                     LocalResult::Ambiguous(date1, date2) => {
                         Err(ParseError::DateTimeInLocalTimezoneIsAmbiguous {
                             value: dt.into(),
-                            field: field.into(),
+                            property: property.into(),
                             date1: date1.to_rfc3339(),
                             date2: date2.to_rfc3339(),
                         })
@@ -92,13 +92,13 @@ pub(crate) fn datestring_to_date(
                 match local.from_local_datetime(&datetime) {
                     LocalResult::None => Err(ParseError::InvalidDateTimeInLocalTimezone {
                         value: dt.into(),
-                        field: field.into(),
+                        property: property.into(),
                     }),
                     LocalResult::Single(date) => Ok(date),
                     LocalResult::Ambiguous(date1, date2) => {
                         Err(ParseError::DateTimeInLocalTimezoneIsAmbiguous {
                             value: dt.into(),
-                            field: field.into(),
+                            property: property.into(),
                             date1: date1.to_rfc3339(),
                             date2: date2.to_rfc3339(),
                         })

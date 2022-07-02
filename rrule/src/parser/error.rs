@@ -1,20 +1,17 @@
 use thiserror::Error;
 
-// TODO: clarify difference between field and property
-// TODO: remove unused variants
-
 #[derive(Error, Debug, Clone, PartialEq)]
 pub enum ParseError {
     #[error("`{0}` is not a valid timezone.")]
     InvalidTimezone(String),
-    #[error("`{value}` is not a valid datetime format for `{field}`.")]
-    InvalidDateTime { value: String, field: String },
-    #[error("{field}:{value} is not a valid datetime in local timezone.")]
-    InvalidDateTimeInLocalTimezone { value: String, field: String },
-    #[error("{field}:{value} is not a valid datetime in local timezone. This value is ambiguous and can be `{date1}` or `{date2}`")]
+    #[error("`{value}` is not a valid datetime format for `{property}`.")]
+    InvalidDateTime { value: String, property: String },
+    #[error("{property}:{value} is not a valid datetime in local timezone.")]
+    InvalidDateTimeInLocalTimezone { value: String, property: String },
+    #[error("{property}:{value} is not a valid datetime in local timezone. This value is ambiguous and can be `{date1}` or `{date2}`")]
     DateTimeInLocalTimezoneIsAmbiguous {
         value: String,
-        field: String,
+        property: String,
         date1: String,
         date2: String,
     },
@@ -46,24 +43,8 @@ pub enum ParseError {
     InvalidBySecond(String),
     #[error("`{0}` is not a valid BYSETPOS value. Expected a comma separated list of integers, e.g. `-3,1`")]
     InvalidBySetPos(String),
-    #[error("The field `{0}` was found twice.")]
-    DuplicatedField(String),
     #[error("The property `{0}` was not found and it is required.")]
     MissingProperty(String),
-    #[error("Unsupported RFC property `{0}`, valid rules are `RRULE` and `EXRULE`.")]
-    UnsupportedRFCProperty(String),
-    #[error("Unsupported property `{0}`, valid properties are `RRULE`, `EXRULE`, `RDATE`, `EXDATE` and `DTSTART`.")]
-    UnsupportedProperty(String),
-    #[error("Unexpected field: `{0}`.")]
-    UnexpectedField(String),
-    #[error("Unsupported value `{0}` in line `{1}`.")]
-    UnsupportedValueInRuleLine(String, String),
-    #[error("`{0}` is not a valid rrule.")]
-    InvalidRule(String),
-    #[error("`{0}` contains two or more rrules, expected only one.")]
-    TooManyRulesInLine(String),
-    #[error("`{0}` is not a supported character.")]
-    UnsupportedCharacter(String),
     #[error(
         "`{0}` is a malformed property parameter. Parameter should be specified as `key=value`"
     )]

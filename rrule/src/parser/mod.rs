@@ -353,7 +353,7 @@ mod test {
             res.unwrap_err(),
             ParseError::InvalidDateTime {
                 value: "20120201120000Z".into(),
-                field: "DTSTART".into()
+                property: "DTSTART".into()
             }
             .into()
         );
@@ -618,7 +618,7 @@ mod test {
             err,
             ParseError::InvalidDateTime {
                 value: "20120201T323000Z".into(),
-                field: "DTSTART".into()
+                property: "DTSTART".into()
             }
             .into()
         );
@@ -634,7 +634,7 @@ mod test {
             err,
             ParseError::InvalidDateTime {
                 value: "20120251T023000Z".into(),
-                field: "DTSTART".into()
+                property: "DTSTART".into()
             }
             .into()
         );
@@ -650,7 +650,7 @@ mod test {
             err,
             ParseError::InvalidDateTime {
                 value: "20120251T023000T".into(),
-                field: "DTSTART".into()
+                property: "DTSTART".into()
             }
             .into()
         );

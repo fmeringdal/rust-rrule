@@ -32,7 +32,7 @@ mod tests {
     use super::parse_str_to_vec;
 
     #[test]
-    fn test_parse_str_to_vec() {
+    fn parses_str_to_vec() {
         const INVALID_VALUE: usize = 17;
         let accept_fn = |val: usize| val != 17;
         let tests = [
