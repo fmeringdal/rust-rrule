@@ -1,7 +1,7 @@
 use crate::core::datetime::datetime_to_ical_format;
 use crate::core::utils::{collect_or_error, collect_with_error};
 use crate::core::DateTime;
-use crate::parser::build_rruleset;
+use crate::parser::{parse, ParsedInput};
 use crate::{RRule, RRuleError};
 #[cfg(feature = "serde")]
 use serde_with::{serde_as, DeserializeFromStr, SerializeDisplay};
@@ -282,7 +282,31 @@ impl FromStr for RRuleSet {
     /// This should never panic, but it might be in odd cases.
     /// Please report if it does panic.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        build_rruleset(s)
+        let ParsedInput {
+            rrule_vals,
+            rdate_vals,
+            exrule_vals,
+            exdate_vals,
+            dt_start,
+        } = parse(&s)?;
+
+        let rrule_set = RRuleSet::new(dt_start)
+            .set_rrules(
+                rrule_vals
+                    .into_iter()
+                    .map(|r| r.validate(dt_start))
+                    .collect::<Result<Vec<_>, _>>()?,
+            )
+            .set_rdates(rdate_vals)
+            .set_exrules(
+                exrule_vals
+                    .into_iter()
+                    .map(|r| r.validate(dt_start))
+                    .collect::<Result<Vec<_>, _>>()?,
+            )
+            .set_exdates(exdate_vals);
+
+        Ok(rrule_set)
     }
 }
 

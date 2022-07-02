@@ -1,6 +1,7 @@
 use thiserror::Error;
 
 // TODO: clarify difference between field and property
+// TODO: remove unused variants
 
 #[derive(Error, Debug, Clone, PartialEq)]
 pub enum ParseError {
@@ -63,4 +64,18 @@ pub enum ParseError {
     TooManyRulesInLine(String),
     #[error("`{0}` is not a supported character.")]
     UnsupportedCharacter(String),
+    #[error(
+        "`{0}` is a malformed property parameter. Parameter should be specified as `key=value`"
+    )]
+    InvalidParameterFormat(String),
+    #[error("`{0}` is not a valid property parameter.")]
+    UnrecognizedParameter(String),
+    #[error("Found duplicate property for `{0}`, properties and parameters needs to be unique.")]
+    DuplicateProperty(String),
+    #[error("Property parameters are not supported for RRULE / EXRULE, found parametes: `{0}`.")]
+    PropertyParametersNotSupported(String),
+    #[error(
+        "`{0}` is not a valid property name, expected one of: `RRULE,EXRULE,DTSTART,RDATE,EXDATE`."
+    )]
+    UnrecognizedPropertyName(String),
 }

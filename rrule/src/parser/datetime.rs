@@ -4,14 +4,14 @@ use chrono::{NaiveDate, TimeZone, Weekday};
 use chrono_tz::{Tz, UTC};
 
 use super::{
-    regex::{self, ParsedDateString, ParsedStartDatetime},
+    regex::{self, ParsedDateString},
     ParseError,
 };
 use crate::{core::DateTime, NWeekday};
 
 /// Attempts to convert a `str` to a `chrono_tz::Tz`.
 pub(crate) fn parse_timezone(tz: &str) -> Result<Tz, ParseError> {
-    Tz::from_str(tz).map_err(|_err| ParseError::InvalidTimezone(tz.into()))
+    Tz::from_str(tz).map_err(|_| ParseError::InvalidTimezone(tz.into()))
 }
 
 /// Convert a datetime string and a timezone to a `chrono::DateTime<Tz>`.
@@ -115,19 +115,6 @@ pub(crate) fn datestring_to_date(
     Ok(datetime_with_timezone)
 }
 
-/// Attempts to parse the DTSTART value from a `&str`.
-pub(crate) fn parse_dtstart(s: &str) -> Result<DateTime, ParseError> {
-    let ParsedStartDatetime { timezone, datetime } =
-        regex::parse_start_datetime(s).map_err(|_| ParseError::InvalidDateTime {
-            value: s.into(),
-            field: "DTSTART".into(),
-        })?;
-
-    let tz = timezone.map(|tz| parse_timezone(&tz)).transpose()?;
-
-    datestring_to_date(&datetime, tz, "DTSTART")
-}
-
 /// Attempts to convert a `str` to a `Weekday`.
 pub(crate) fn str_to_weekday(d: &str) -> Result<Weekday, ParseError> {
     let day = match &d.to_uppercase()[..] {
@@ -191,40 +178,6 @@ mod tests {
     #[test]
     fn rejects_invalid_nweekdays() {
         let tests = ["", "    ", "fjoasfjapsjop", "MONDAY", "MONDAY, TUESDAY"];
-
-        for input in tests {
-            let res = parse_weekdays(input);
-            assert!(res.is_err());
-        }
-    }
-
-    #[test]
-    fn parses_valid_dtstart_lines() {
-        let tests = [
-            (
-                "DTSTART;TZID=America/New_York:19970902T090000\nRRULE:FREQ=DAILY;",
-                New_York.ymd(1997, 9, 2).and_hms(9, 0, 0),
-            ),
-            (
-                "DTSTART:19970902T090000Z;",
-                UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
-            ),
-        ];
-
-        for (input, expected_output) in tests {
-            let output = parse_dtstart(input);
-            assert_eq!(output, Ok(expected_output));
-        }
-    }
-
-    #[test]
-    fn rejects_invalid_dtstart_lines() {
-        let tests = [
-            "",
-            "TZID=America/New_York:19970902T090000",
-            "19970902T090000Z",
-            "DTSTAR;TZID=America/New_York:19970902T09",
-        ];
 
         for input in tests {
             let res = parse_weekdays(input);
