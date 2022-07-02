@@ -36,10 +36,7 @@ impl FromStr for Grammar {
 
         let start_datetime = parsed_lines
             .iter()
-            .find_map(|parts| match parts.property_name {
-                PropertyName::DtStart => Some(parts),
-                _ => None,
-            })
+            .find(|parts| matches!(parts.property_name, PropertyName::DtStart))
             .map(|parts| StartDateContentLine::try_from(parts.clone()))
             .ok_or(ParseError::MissingStartDate)??;
 
