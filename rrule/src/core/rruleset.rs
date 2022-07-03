@@ -71,35 +71,35 @@ impl RRuleSet {
         self
     }
 
-    /// Add an [`RRule`] to the rrules set.
+    /// Sets the rrules of the set.
     #[inline]
     #[must_use]
-    pub fn add_rrule(mut self, rrule: RRule) -> Self {
-        self.rrule.push(rrule);
+    pub fn set_rrules(mut self, rrules: Vec<RRule>) -> Self {
+        self.rrule = rrules;
         self
     }
 
-    /// Add an [`RRule`] to the exrules set.
+    /// Sets the exrules of the set.
     #[inline]
     #[must_use]
-    pub fn add_exrule(mut self, exrule: RRule) -> Self {
-        self.exrule.push(exrule);
+    pub fn set_exrules(mut self, exrules: Vec<RRule>) -> Self {
+        self.exrule = exrules;
         self
     }
 
-    /// Add a [`DateTime`] to the rdate set.
+    /// Sets the rdates of the set.
     #[inline]
     #[must_use]
-    pub fn add_rdate(mut self, rdate: DateTime) -> Self {
-        self.rdate.push(rdate);
+    pub fn set_rdates(mut self, rdates: Vec<DateTime>) -> Self {
+        self.rdate = rdates;
         self
     }
 
-    /// Add a [`DateTime`] to the exdate set.
+    /// Set the exdates of the set.
     #[inline]
     #[must_use]
-    pub fn add_exdate(mut self, exdate: DateTime) -> Self {
-        self.exdate.push(exdate);
+    pub fn set_exdates(mut self, exdates: Vec<DateTime>) -> Self {
+        self.exdate = exdates;
         self
     }
 
@@ -287,32 +287,31 @@ impl FromStr for RRuleSet {
             content_lines,
         } = Grammar::from_str(s)?;
 
-        let mut rrule_set = RRuleSet::new(start_datetime);
-
-        for content_line in content_lines.into_iter() {
-            match content_line {
+        content_lines.into_iter().try_fold(
+            RRuleSet::new(start_datetime),
+            |mut rrule_set, content_line| match content_line {
                 ContentLine::RRule(rrule) => {
                     let rrule = rrule.validate(start_datetime)?;
-                    rrule_set = rrule_set.add_rrule(rrule);
+                    Ok::<RRuleSet, RRuleError>(rrule_set.rrule(rrule))
                 }
                 ContentLine::ExRule(rrule) => {
                     let rrule = rrule.validate(start_datetime)?;
-                    rrule_set = rrule_set.add_exrule(rrule)
+                    Ok(rrule_set.exrule(rrule))
                 }
                 ContentLine::ExDate(exdates) => {
                     for exdate in exdates {
-                        rrule_set = rrule_set.add_exdate(exdate);
+                        rrule_set = rrule_set.exdate(exdate);
                     }
+                    Ok(rrule_set)
                 }
                 ContentLine::RDate(rdates) => {
                     for rdate in rdates {
-                        rrule_set = rrule_set.add_rdate(rdate);
+                        rrule_set = rrule_set.rdate(rdate);
                     }
+                    Ok(rrule_set)
                 }
-            }
-        }
-
-        Ok(rrule_set)
+            },
+        )
     }
 }
 

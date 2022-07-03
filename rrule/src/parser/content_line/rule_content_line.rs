@@ -393,7 +393,7 @@ mod tests {
     }
 
     #[test]
-    fn until_zulu_is_ignored_when_start_date_is_local() {
+    fn until_with_zulu_is_ignored_when_start_date_is_local() {
         let mut props = HashMap::new();
         props.insert(RRuleProperty::Freq, "DAILY".into());
         // Zulu set

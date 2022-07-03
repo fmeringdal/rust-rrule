@@ -507,7 +507,7 @@ impl RRule<Unvalidated> {
     /// Returns [`RRuleError::ValidationError`] in case the rrule is invalid.
     pub fn build(self, dt_start: DateTime) -> Result<RRuleSet, RRuleError> {
         let rrule = self.validate(dt_start)?;
-        let rrule_set = RRuleSet::new(dt_start).add_rrule(rrule);
+        let rrule_set = RRuleSet::new(dt_start).rrule(rrule);
         Ok(rrule_set)
     }
 }

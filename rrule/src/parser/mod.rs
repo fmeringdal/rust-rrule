@@ -1,5 +1,5 @@
 //! Module for parsing text inputs to a [`Grammar`] which can be used
-//! to construct an [`RRuleSet`].
+//! to construct an [`crate::RRuleSet`].
 mod content_line;
 mod datetime;
 mod error;
