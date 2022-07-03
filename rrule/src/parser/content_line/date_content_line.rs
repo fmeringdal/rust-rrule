@@ -46,7 +46,7 @@ impl TryFrom<ContentLineCaptures> for Vec<DateTime> {
         let property = format!("{}", value.property_name);
 
         let mut dates = vec![];
-        for val in value.properties.split(',') {
+        for val in value.value.split(',') {
             if val.is_empty() {
                 continue;
             }
@@ -74,7 +74,7 @@ mod tests {
                 ContentLineCaptures {
                     property_name: PropertyName::RDate,
                     parameters: None,
-                    properties: "19970714T123000Z".into(),
+                    value: "19970714T123000Z".into(),
                 },
                 vec![UTC.ymd(1997, 7, 14).and_hms(12, 30, 0)],
             ),
@@ -82,7 +82,7 @@ mod tests {
                 ContentLineCaptures {
                     property_name: PropertyName::RDate,
                     parameters: Some("VALUE=DATE;TZID=UTC".into()),
-                    properties: "19970101,19970120,19970217,19970421".into(),
+                    value: "19970101,19970120,19970217,19970421".into(),
                 },
                 vec![
                     UTC.ymd(1997, 1, 1).and_hms(0, 0, 0),

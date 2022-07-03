@@ -4,6 +4,7 @@ use chrono::Weekday;
 use chrono_tz::UTC;
 
 use crate::{
+    core::DateTime,
     parser::{
         content_line::parameters::parse_parameters,
         datetime::{datestring_to_date, parse_weekdays},
@@ -77,7 +78,7 @@ impl TryFrom<(ContentLineCaptures, &StartDateContentLine)> for RRule<Unvalidated
             }
         }
 
-        let properties: HashMap<RRuleProperty, String> = parse_parameters(&value.properties)?;
+        let properties: HashMap<RRuleProperty, String> = parse_parameters(&value.value)?;
 
         props_to_rrule(properties, dtstart)
     }
@@ -86,7 +87,7 @@ impl TryFrom<(ContentLineCaptures, &StartDateContentLine)> for RRule<Unvalidated
 /// Takes a map of [`RRuleProperty`] and returns an [`RRule`].
 #[allow(clippy::too_many_lines)]
 fn props_to_rrule(
-    props: HashMap<RRuleProperty, String>,
+    mut props: HashMap<RRuleProperty, String>,
     dtstart: &StartDateContentLine,
 ) -> Result<RRule<Unvalidated>, ParseError> {
     let freq = props
@@ -112,21 +113,8 @@ fn props_to_rrule(
         })
         .transpose()?;
     let until = props
-        .get(&RRuleProperty::Until)
-        .map(|until| {
-            // Make sure until is not using zulu which would override timezone we set
-            let mut until = until.clone();
-            if until.to_uppercase().ends_with('Z') {
-                until.remove(until.len() - 1);
-            }
-
-            // > Furthermore, if the "DTSTART" property is specified as a date with local time,
-            // > then the UNTIL rule part MUST also be specified as a date with local time.
-            //
-            // Otherwise until will be in UTC
-            let timezone = if dtstart.is_local_tz { None } else { Some(UTC) };
-            datestring_to_date(&until, timezone, "UNTIL")
-        })
+        .remove(&RRuleProperty::Until)
+        .map(|until| parse_until(until, dtstart))
         .transpose()?;
     let week_start = props
         .get(&RRuleProperty::Wkst)
@@ -239,6 +227,29 @@ fn props_to_rrule(
     })
 }
 
+// TODO: this implementation is not strictly according to the RFC
+// From the RFC:
+// 1. The value of the UNTIL rule part MUST have the same
+// value type as the "DTSTART" property.
+// 2. Furthermore, if the
+// "DTSTART" property is specified as a date with local time, then
+// the UNTIL rule part MUST also be specified as a date with local
+// time.
+// 3. If the "DTSTART" property is specified as a date with UTC
+// time or a date with local time and time zone reference, then the
+// UNTIL rule part MUST be specified as a date with UTC time.
+// 4. If specified as a DATE-TIME value, then it MUST be specified in a UTC
+// time format.
+fn parse_until(mut until: String, dtstart: &StartDateContentLine) -> Result<DateTime, ParseError> {
+    // Make sure until is not using zulu which would override timezone we set
+    if until.to_uppercase().ends_with('Z') {
+        until.remove(until.len() - 1);
+    }
+
+    let timezone = if dtstart.is_local_tz { None } else { Some(UTC) };
+    datestring_to_date(&until, timezone, "UNTIL")
+}
+
 #[cfg(test)]
 mod tests {
     use chrono::{DateTime, NaiveDate, TimeZone};
@@ -255,7 +266,7 @@ mod tests {
                 ContentLineCaptures {
                     property_name: PropertyName::RRule,
                     parameters: None,
-                    properties: "FREQ=DAILY".into(),
+                    value: "FREQ=DAILY".into(),
                 },
                 RRule {
                     freq: Frequency::Daily,
@@ -266,7 +277,7 @@ mod tests {
                 ContentLineCaptures {
                     property_name: PropertyName::RRule,
                     parameters: None,
-                    properties: "BYHOUR=4;FREQ=DAILY".into(),
+                    value: "BYHOUR=4;FREQ=DAILY".into(),
                 },
                 RRule {
                     by_hour: vec![4],
@@ -279,7 +290,7 @@ mod tests {
                     property_name: PropertyName::RRule,
                     parameters: None,
                     // Testing case insensitivity
-                    properties: "byhour=4;freQ=DAILY".into(),
+                    value: "byhour=4;freQ=DAILY".into(),
                 },
                 RRule {
                     by_hour: vec![4],
@@ -306,7 +317,7 @@ mod tests {
             ContentLineCaptures {
                 property_name: PropertyName::RRule,
                 parameters: Some("TZID=Europe/London".into()),
-                properties: "BYHOUR=4".into(),
+                value: "BYHOUR=4".into(),
             },
             ParseError::PropertyParametersNotSupported("TZID=Europe/London".into()),
         )];
@@ -386,7 +397,7 @@ mod tests {
         props.insert(RRuleProperty::Until, until_str.into());
 
         let start_date = get_content_line_parts("DTSTART:19970902T090000").unwrap();
-        let start_date = StartDateContentLine::try_from(start_date).unwrap();
+        let start_date = StartDateContentLine::try_from(&start_date).unwrap();
 
         let rrule = props_to_rrule(props.clone(), &start_date).unwrap();
         assert_eq!(rrule.until, Some(until_local));
@@ -406,7 +417,7 @@ mod tests {
         props.insert(RRuleProperty::Until, until_str.into());
 
         let start_date = get_content_line_parts("DTSTART:19970902T090000").unwrap();
-        let start_date = StartDateContentLine::try_from(start_date).unwrap();
+        let start_date = StartDateContentLine::try_from(&start_date).unwrap();
 
         let rrule = props_to_rrule(props.clone(), &start_date).unwrap();
         assert_eq!(rrule.until, Some(until_local));
@@ -429,7 +440,7 @@ mod tests {
 
         for start_date in start_dates {
             let start_date = get_content_line_parts(start_date).unwrap();
-            let start_date = StartDateContentLine::try_from(start_date).unwrap();
+            let start_date = StartDateContentLine::try_from(&start_date).unwrap();
 
             let rrule = props_to_rrule(props.clone(), &start_date).unwrap();
             assert_eq!(rrule.until, Some(until_local));

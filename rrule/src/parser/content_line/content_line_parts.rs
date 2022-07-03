@@ -6,10 +6,10 @@ use super::PropertyName;
 pub(crate) struct ContentLineCaptures {
     pub property_name: PropertyName,
     pub parameters: Option<String>,
-    pub properties: String,
+    pub value: String,
 }
 
-/// Get the property name, property parameters and values of a content line.
+/// Get the property name, parameters and values of a content line.
 pub(crate) fn get_content_line_parts(val: &str) -> Result<ContentLineCaptures, ParseError> {
     // Default property name to RRULE.
     let property_name = get_property_name(val)?.unwrap_or(PropertyName::RRule);
@@ -19,7 +19,7 @@ pub(crate) fn get_content_line_parts(val: &str) -> Result<ContentLineCaptures, P
         PropertyName::RRule if !val.contains(':') => Ok(ContentLineCaptures {
             property_name: PropertyName::RRule,
             parameters: None,
-            properties: val.into(),
+            value: val.into(),
         }),
         property_name => {
             let mut parameters = None;
@@ -34,7 +34,7 @@ pub(crate) fn get_content_line_parts(val: &str) -> Result<ContentLineCaptures, P
             Ok(ContentLineCaptures {
                 property_name,
                 parameters,
-                properties: val
+                value: val
                     .split_once(':')
                     .map(|(_name, val)| val)
                     .unwrap_or_default()
@@ -56,7 +56,7 @@ mod tests {
                 ContentLineCaptures {
                     property_name: PropertyName::DtStart,
                     parameters: Some("TZID=America/Everywhere".into()),
-                    properties: "20120251T023000Z".into(),
+                    value: "20120251T023000Z".into(),
                 },
             ),
             (
@@ -64,7 +64,7 @@ mod tests {
                 ContentLineCaptures {
                     property_name: PropertyName::DtStart,
                     parameters: None,
-                    properties: "20120251T023000Z".into(),
+                    value: "20120251T023000Z".into(),
                 },
             ),
             (
@@ -72,7 +72,7 @@ mod tests {
                 ContentLineCaptures {
                     property_name: PropertyName::DtStart,
                     parameters: Some("TZID=America/Everywhere".into()),
-                    properties: "20120251T023000Z".into(),
+                    value: "20120251T023000Z".into(),
                 },
             ),
             (
@@ -80,7 +80,7 @@ mod tests {
                 ContentLineCaptures {
                     property_name: PropertyName::RDate,
                     parameters: None,
-                    properties: "19970714T123000Z".into(),
+                    value: "19970714T123000Z".into(),
                 },
             ),
             (
@@ -88,7 +88,7 @@ mod tests {
                 ContentLineCaptures {
                     property_name: PropertyName::RDate,
                     parameters: Some("VALUE=DATE".into()),
-                    properties: "19970101,19970120,19970217,19970421".into(),
+                    value: "19970101,19970120,19970217,19970421".into(),
                 },
             ),
             (
@@ -96,7 +96,7 @@ mod tests {
                 ContentLineCaptures {
                     property_name: PropertyName::RRule,
                     parameters: None,
-                    properties: "FREQ=DAILY;COUNT=10".into(),
+                    value: "FREQ=DAILY;COUNT=10".into(),
                 },
             ),
             (
@@ -105,7 +105,7 @@ mod tests {
                     // Defaults to RRULE
                     property_name: PropertyName::RRule,
                     parameters: None,
-                    properties: "FREQ=DAILY;COUNT=10".into(),
+                    value: "FREQ=DAILY;COUNT=10".into(),
                 },
             ),
         ];

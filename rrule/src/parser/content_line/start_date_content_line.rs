@@ -18,13 +18,14 @@ pub(crate) struct StartDateContentLine {
     pub is_local_tz: bool,
 }
 
-impl TryFrom<ContentLineCaptures> for StartDateContentLine {
+impl TryFrom<&ContentLineCaptures> for StartDateContentLine {
     type Error = ParseError;
 
-    fn try_from(value: ContentLineCaptures) -> Result<Self, Self::Error> {
+    fn try_from(value: &ContentLineCaptures) -> Result<Self, Self::Error> {
         let parameters: HashMap<DateParameter, String> = value
             .parameters
-            .map(|p| parse_parameters(&p))
+            .as_ref()
+            .map(|p| parse_parameters(p))
             .transpose()?
             .unwrap_or_default();
 
@@ -33,9 +34,9 @@ impl TryFrom<ContentLineCaptures> for StartDateContentLine {
             .map(|tz| parse_timezone(tz))
             .transpose()?;
 
-        let is_local_tz = timezone.is_none() && !value.properties.to_uppercase().ends_with('Z');
+        let is_local_tz = timezone.is_none() && !value.value.to_uppercase().ends_with('Z');
 
-        let datetime = datestring_to_date(&value.properties, timezone, "DTSTART")?;
+        let datetime = datestring_to_date(&value.value, timezone, "DTSTART")?;
 
         Ok(StartDateContentLine {
             datetime,
@@ -60,7 +61,7 @@ mod tests {
                 ContentLineCaptures {
                     property_name: PropertyName::DtStart,
                     parameters: None,
-                    properties: "19970714T123000Z".into(),
+                    value: "19970714T123000Z".into(),
                 },
                 StartDateContentLine {
                     datetime: UTC.ymd(1997, 7, 14).and_hms(12, 30, 0),
@@ -71,7 +72,7 @@ mod tests {
                 ContentLineCaptures {
                     property_name: PropertyName::DtStart,
                     parameters: Some("VALUE=DATE;TZID=UTC".into()),
-                    properties: "19970101".into(),
+                    value: "19970101".into(),
                 },
                 StartDateContentLine {
                     datetime: UTC.ymd(1997, 1, 1).and_hms(0, 0, 0),
@@ -81,7 +82,7 @@ mod tests {
         ];
 
         for (input, expected_output) in tests {
-            let output = TryFrom::try_from(input);
+            let output = TryFrom::try_from(&input);
             assert_eq!(output, Ok(expected_output));
         }
     }
@@ -92,26 +93,26 @@ mod tests {
             ContentLineCaptures {
                 property_name: PropertyName::DtStart,
                 parameters: None,
-                properties: "20120201120000Z".into(),
+                value: "20120201120000Z".into(),
             },
             ContentLineCaptures {
                 property_name: PropertyName::DtStart,
                 parameters: None,
-                properties: "2012".into(),
+                value: "2012".into(),
             },
             ContentLineCaptures {
                 property_name: PropertyName::DtStart,
                 parameters: None,
-                properties: "".into(),
+                value: "".into(),
             },
         ];
 
         for input in tests {
-            let output = StartDateContentLine::try_from(input.clone());
+            let output = StartDateContentLine::try_from(&input);
             assert_eq!(
                 output,
                 Err(ParseError::InvalidDateTime {
-                    value: input.properties,
+                    value: input.value,
                     property: "DTSTART".into()
                 })
             );
@@ -123,9 +124,9 @@ mod tests {
         let content = ContentLineCaptures {
             property_name: PropertyName::DtStart,
             parameters: Some("TZID=America/Everywhere".into()),
-            properties: "20120251T023000Z".into(),
+            value: "20120251T023000Z".into(),
         };
-        let res = StartDateContentLine::try_from(content);
+        let res = StartDateContentLine::try_from(&content);
         assert!(res.is_err());
         let err = res.unwrap_err();
         assert_eq!(

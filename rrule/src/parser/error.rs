@@ -55,8 +55,8 @@ pub enum ParseError {
     DuplicateProperty(String),
     #[error("Missing start date. There needs to be a unique start date which the iteration can start from.")]
     MissingStartDate,
-    #[error("Missing recurrence rule. There needs to be at least one `RRULE` or `RDATE` to generate occurrences.")]
-    MissingRecurrenceRules,
+    #[error("Missing date generation property. There needs to be at least one `RRULE` or `RDATE` to generate occurrences.")]
+    MissingDateGenerationRules,
     #[error("Property parameters are not supported for RRULE / EXRULE, found parametes: `{0}`.")]
     PropertyParametersNotSupported(String),
     #[error(

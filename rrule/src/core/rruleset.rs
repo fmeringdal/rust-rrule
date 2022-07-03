@@ -283,19 +283,19 @@ impl FromStr for RRuleSet {
     /// Please report if it does panic.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let Grammar {
-            start_datetime,
+            start,
             content_lines,
         } = Grammar::from_str(s)?;
 
         content_lines.into_iter().try_fold(
-            RRuleSet::new(start_datetime),
+            RRuleSet::new(start.datetime),
             |mut rrule_set, content_line| match content_line {
                 ContentLine::RRule(rrule) => {
-                    let rrule = rrule.validate(start_datetime)?;
+                    let rrule = rrule.validate(start.datetime)?;
                     Ok::<RRuleSet, RRuleError>(rrule_set.rrule(rrule))
                 }
                 ContentLine::ExRule(rrule) => {
-                    let rrule = rrule.validate(start_datetime)?;
+                    let rrule = rrule.validate(start.datetime)?;
                     Ok(rrule_set.exrule(rrule))
                 }
                 ContentLine::ExDate(exdates) => {
