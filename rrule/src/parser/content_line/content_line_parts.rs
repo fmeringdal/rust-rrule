@@ -23,11 +23,11 @@ pub(crate) fn get_content_line_parts(val: &str) -> Result<ContentLineCaptures, P
         }),
         property_name => {
             let mut parameters = None;
-            if val.starts_with(&format!("{property_name};")) {
+            if val.starts_with(&format!("{};", property_name)) {
                 let only_colon_idx = val.find(':');
                 if let Some(only_colon_idx) = only_colon_idx {
                     parameters =
-                        Some(val[format!("{property_name};").len()..only_colon_idx].to_string());
+                        Some(val[property_name.to_string().len() + 1..only_colon_idx].to_string());
                 }
             }
 
