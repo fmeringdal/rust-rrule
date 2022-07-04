@@ -80,7 +80,7 @@ impl<'a> TryFrom<(ContentLineCaptures<'a>, &StartDateContentLine)> for RRule<Unv
             }
         }
 
-        let properties: HashMap<RRuleProperty, String> = parse_parameters(&value.value)?;
+        let properties: HashMap<RRuleProperty, String> = parse_parameters(value.value)?;
 
         props_to_rrule(properties, dtstart)
     }
@@ -268,7 +268,7 @@ mod tests {
                 ContentLineCaptures {
                     property_name: PropertyName::RRule,
                     parameters: None,
-                    value: "FREQ=DAILY".into(),
+                    value: "FREQ=DAILY",
                 },
                 RRule {
                     freq: Frequency::Daily,
@@ -279,7 +279,7 @@ mod tests {
                 ContentLineCaptures {
                     property_name: PropertyName::RRule,
                     parameters: None,
-                    value: "BYHOUR=4;FREQ=DAILY".into(),
+                    value: "BYHOUR=4;FREQ=DAILY",
                 },
                 RRule {
                     by_hour: vec![4],
@@ -292,7 +292,7 @@ mod tests {
                     property_name: PropertyName::RRule,
                     parameters: None,
                     // Testing case insensitivity
-                    value: "byhour=4;freQ=DAILY".into(),
+                    value: "byhour=4;freQ=DAILY",
                 },
                 RRule {
                     by_hour: vec![4],
@@ -318,8 +318,8 @@ mod tests {
         let tests = [(
             ContentLineCaptures {
                 property_name: PropertyName::RRule,
-                parameters: Some("TZID=Europe/London".into()),
-                value: "BYHOUR=4".into(),
+                parameters: Some("TZID=Europe/London"),
+                value: "BYHOUR=4",
             },
             ParseError::PropertyParametersNotSupported("TZID=Europe/London".into()),
         )];

@@ -19,7 +19,7 @@ pub(crate) fn get_content_line_parts(val: &str) -> Result<ContentLineCaptures<'_
         PropertyName::RRule if !val.contains(':') => Ok(ContentLineCaptures {
             property_name: PropertyName::RRule,
             parameters: None,
-            value: val.into(),
+            value: val,
         }),
         property_name => {
             let mut parameters = None;
@@ -53,8 +53,8 @@ mod tests {
                 "DTSTART;TZID=America/Everywhere:20120251T023000Z",
                 ContentLineCaptures {
                     property_name: PropertyName::DtStart,
-                    parameters: Some("TZID=America/Everywhere".into()),
-                    value: "20120251T023000Z".into(),
+                    parameters: Some("TZID=America/Everywhere"),
+                    value: "20120251T023000Z",
                 },
             ),
             (
@@ -62,15 +62,15 @@ mod tests {
                 ContentLineCaptures {
                     property_name: PropertyName::DtStart,
                     parameters: None,
-                    value: "20120251T023000Z".into(),
+                    value: "20120251T023000Z",
                 },
             ),
             (
                 "DTSTART;TZID=America/Everywhere:20120251T023000Z",
                 ContentLineCaptures {
                     property_name: PropertyName::DtStart,
-                    parameters: Some("TZID=America/Everywhere".into()),
-                    value: "20120251T023000Z".into(),
+                    parameters: Some("TZID=America/Everywhere"),
+                    value: "20120251T023000Z",
                 },
             ),
             (
@@ -78,15 +78,15 @@ mod tests {
                 ContentLineCaptures {
                     property_name: PropertyName::RDate,
                     parameters: None,
-                    value: "19970714T123000Z".into(),
+                    value: "19970714T123000Z",
                 },
             ),
             (
                 "RDATE;VALUE=DATE:19970101,19970120,19970217,19970421",
                 ContentLineCaptures {
                     property_name: PropertyName::RDate,
-                    parameters: Some("VALUE=DATE".into()),
-                    value: "19970101,19970120,19970217,19970421".into(),
+                    parameters: Some("VALUE=DATE"),
+                    value: "19970101,19970120,19970217,19970421",
                 },
             ),
             (
@@ -94,7 +94,7 @@ mod tests {
                 ContentLineCaptures {
                     property_name: PropertyName::RRule,
                     parameters: None,
-                    value: "FREQ=DAILY;COUNT=10".into(),
+                    value: "FREQ=DAILY;COUNT=10",
                 },
             ),
             (
@@ -103,7 +103,7 @@ mod tests {
                     // Defaults to RRULE
                     property_name: PropertyName::RRule,
                     parameters: None,
-                    value: "FREQ=DAILY;COUNT=10".into(),
+                    value: "FREQ=DAILY;COUNT=10",
                 },
             ),
         ];

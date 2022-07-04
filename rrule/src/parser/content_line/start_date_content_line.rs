@@ -36,7 +36,7 @@ impl<'a> TryFrom<&ContentLineCaptures<'a>> for StartDateContentLine {
 
         let is_local_tz = timezone.is_none() && !value.value.to_uppercase().ends_with('Z');
 
-        let datetime = datestring_to_date(&value.value, timezone, "DTSTART")?;
+        let datetime = datestring_to_date(value.value, timezone, "DTSTART")?;
 
         Ok(StartDateContentLine {
             datetime,
@@ -61,7 +61,7 @@ mod tests {
                 ContentLineCaptures {
                     property_name: PropertyName::DtStart,
                     parameters: None,
-                    value: "19970714T123000Z".into(),
+                    value: "19970714T123000Z",
                 },
                 StartDateContentLine {
                     datetime: UTC.ymd(1997, 7, 14).and_hms(12, 30, 0),
@@ -71,8 +71,8 @@ mod tests {
             (
                 ContentLineCaptures {
                     property_name: PropertyName::DtStart,
-                    parameters: Some("VALUE=DATE;TZID=UTC".into()),
-                    value: "19970101".into(),
+                    parameters: Some("VALUE=DATE;TZID=UTC"),
+                    value: "19970101",
                 },
                 StartDateContentLine {
                     datetime: UTC.ymd(1997, 1, 1).and_hms(0, 0, 0),
@@ -93,17 +93,17 @@ mod tests {
             ContentLineCaptures {
                 property_name: PropertyName::DtStart,
                 parameters: None,
-                value: "20120201120000Z".into(),
+                value: "20120201120000Z",
             },
             ContentLineCaptures {
                 property_name: PropertyName::DtStart,
                 parameters: None,
-                value: "2012".into(),
+                value: "2012",
             },
             ContentLineCaptures {
                 property_name: PropertyName::DtStart,
                 parameters: None,
-                value: "".into(),
+                value: "",
             },
         ];
 
@@ -123,8 +123,8 @@ mod tests {
     fn reject_invalid_timezone_in_start_date() {
         let content = ContentLineCaptures {
             property_name: PropertyName::DtStart,
-            parameters: Some("TZID=America/Everywhere".into()),
-            value: "20120251T023000Z".into(),
+            parameters: Some("TZID=America/Everywhere"),
+            value: "20120251T023000Z",
         };
         let res = StartDateContentLine::try_from(&content);
         assert!(res.is_err());

@@ -35,7 +35,7 @@ impl<'a> TryFrom<ContentLineCaptures<'a>> for Vec<DateTime> {
     fn try_from(value: ContentLineCaptures) -> Result<Self, Self::Error> {
         let parameters: HashMap<DateParameter, String> = value
             .parameters
-            .map(|p| parse_parameters(&p))
+            .map(parse_parameters)
             .transpose()?
             .unwrap_or_default();
 
@@ -74,15 +74,15 @@ mod tests {
                 ContentLineCaptures {
                     property_name: PropertyName::RDate,
                     parameters: None,
-                    value: "19970714T123000Z".into(),
+                    value: "19970714T123000Z",
                 },
                 vec![UTC.ymd(1997, 7, 14).and_hms(12, 30, 0)],
             ),
             (
                 ContentLineCaptures {
                     property_name: PropertyName::RDate,
-                    parameters: Some("VALUE=DATE;TZID=UTC".into()),
-                    value: "19970101,19970120,19970217,19970421".into(),
+                    parameters: Some("VALUE=DATE;TZID=UTC"),
+                    value: "19970101,19970120,19970217,19970421",
                 },
                 vec![
                     UTC.ymd(1997, 1, 1).and_hms(0, 0, 0),
