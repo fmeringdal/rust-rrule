@@ -6,6 +6,8 @@ pub enum ParseError {
     InvalidTimezone(String),
     #[error("`{value}` is not a valid datetime format for `{property}`.")]
     InvalidDateTime { value: String, property: String },
+    #[error("`{0}` is not a valid datetime format.")]
+    InvalidDateTimeFormat(String),
     #[error("{property}:{value} is not a valid datetime in local timezone.")]
     InvalidDateTimeInLocalTimezone { value: String, property: String },
     #[error("{property}:{value} is not a valid datetime in local timezone. This value is ambiguous and can be `{date1}` or `{date2}`")]

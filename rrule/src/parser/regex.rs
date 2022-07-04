@@ -2,7 +2,7 @@
 use std::str::FromStr;
 
 use lazy_static::lazy_static;
-use regex::Regex;
+use regex::{Captures, Regex};
 
 use super::{content_line::PropertyName, ParseError};
 
@@ -32,50 +32,35 @@ pub(crate) struct ParsedDateStringTime {
     pub sec: u32,
 }
 
+fn get_datetime_captures<T: FromStr>(
+    captures: &Captures,
+    idx: usize,
+    val: &str,
+) -> Result<T, ParseError> {
+    captures
+        .get(idx)
+        .ok_or_else(|| ParseError::InvalidDateTimeFormat(val.into()))?
+        .as_str()
+        .parse()
+        .map_err(|_| ParseError::InvalidDateTimeFormat(val.into()))
+}
+
 /// Parses a date string with format `YYYYMMDD(THHMMSSZ)` where the part in paranthesis
 /// is optional. It returns [`ParsedDateString`].
-pub(crate) fn parse_datestring(val: &str) -> Result<ParsedDateString, ()> {
-    let captures = DATESTR_RE.captures(val).ok_or(())?;
+pub(crate) fn parse_datestring(val: &str) -> Result<ParsedDateString, ParseError> {
+    let captures = DATESTR_RE
+        .captures(val)
+        .ok_or_else(|| ParseError::InvalidDateTimeFormat(val.into()))?;
 
-    let year = captures
-        .get(1)
-        .ok_or(())?
-        .as_str()
-        .parse()
-        .map_err(|_| ())?;
-    let month = captures
-        .get(2)
-        .ok_or(())?
-        .as_str()
-        .parse()
-        .map_err(|_| ())?;
-    let day = captures
-        .get(3)
-        .ok_or(())?
-        .as_str()
-        .parse()
-        .map_err(|_| ())?;
+    let year = get_datetime_captures(&captures, 1, val)?;
+    let month = get_datetime_captures(&captures, 2, val)?;
+    let day = get_datetime_captures(&captures, 3, val)?;
 
     // Check if time part is captured
     let time = if captures.get(4).is_some() {
-        let hour = captures
-            .get(5)
-            .ok_or(())?
-            .as_str()
-            .parse()
-            .map_err(|_| ())?;
-        let min = captures
-            .get(6)
-            .ok_or(())?
-            .as_str()
-            .parse()
-            .map_err(|_| ())?;
-        let sec = captures
-            .get(7)
-            .ok_or(())?
-            .as_str()
-            .parse()
-            .map_err(|_| ())?;
+        let hour = get_datetime_captures(&captures, 5, val)?;
+        let min = get_datetime_captures(&captures, 6, val)?;
+        let sec = get_datetime_captures(&captures, 7, val)?;
         Some(ParsedDateStringTime { hour, min, sec })
     } else {
         None
