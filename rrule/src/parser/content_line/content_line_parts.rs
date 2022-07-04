@@ -3,19 +3,19 @@ use crate::parser::{regex::get_property_name, ParseError};
 use super::PropertyName;
 
 #[derive(Debug, PartialEq, Clone)]
-pub(crate) struct ContentLineCaptures {
+pub(crate) struct ContentLineCaptures<'a> {
     pub property_name: PropertyName,
-    pub parameters: Option<String>,
-    pub value: String,
+    pub parameters: Option<&'a str>,
+    pub value: &'a str,
 }
 
 /// Get the property name, parameters and values of a content line.
-pub(crate) fn get_content_line_parts(val: &str) -> Result<ContentLineCaptures, ParseError> {
+pub(crate) fn get_content_line_parts(val: &str) -> Result<ContentLineCaptures<'_>, ParseError> {
     // Default property name to RRULE.
     let property_name = get_property_name(val)?.unwrap_or(PropertyName::RRule);
     match property_name {
         // If the line did not contain a property name (i.e. no ':'), then the
-        // entire line are interpreted as properties
+        // entire line is interpreted as the value
         PropertyName::RRule if !val.contains(':') => Ok(ContentLineCaptures {
             property_name: PropertyName::RRule,
             parameters: None,
@@ -26,8 +26,7 @@ pub(crate) fn get_content_line_parts(val: &str) -> Result<ContentLineCaptures, P
             if val.starts_with(&format!("{};", property_name)) {
                 let only_colon_idx = val.find(':');
                 if let Some(only_colon_idx) = only_colon_idx {
-                    parameters =
-                        Some(val[property_name.to_string().len() + 1..only_colon_idx].to_string());
+                    parameters = Some(&val[property_name.to_string().len() + 1..only_colon_idx]);
                 }
             }
 
@@ -37,8 +36,7 @@ pub(crate) fn get_content_line_parts(val: &str) -> Result<ContentLineCaptures, P
                 value: val
                     .split_once(':')
                     .map(|(_name, val)| val)
-                    .unwrap_or_default()
-                    .into(),
+                    .unwrap_or_default(),
             })
         }
     }

@@ -66,7 +66,7 @@ impl FromStr for RRuleProperty {
     }
 }
 
-impl TryFrom<(ContentLineCaptures, &StartDateContentLine)> for RRule<Unvalidated> {
+impl<'a> TryFrom<(ContentLineCaptures<'a>, &StartDateContentLine)> for RRule<Unvalidated> {
     type Error = ParseError;
 
     fn try_from(
@@ -74,7 +74,9 @@ impl TryFrom<(ContentLineCaptures, &StartDateContentLine)> for RRule<Unvalidated
     ) -> Result<Self, Self::Error> {
         if let Some(parameters) = value.parameters {
             if !parameters.is_empty() {
-                return Err(ParseError::PropertyParametersNotSupported(parameters));
+                return Err(ParseError::PropertyParametersNotSupported(
+                    parameters.into(),
+                ));
             }
         }
 

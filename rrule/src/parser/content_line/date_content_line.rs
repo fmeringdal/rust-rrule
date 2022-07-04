@@ -29,7 +29,7 @@ impl FromStr for DateParameter {
     }
 }
 
-impl TryFrom<ContentLineCaptures> for Vec<DateTime> {
+impl<'a> TryFrom<ContentLineCaptures<'a>> for Vec<DateTime> {
     type Error = ParseError;
 
     fn try_from(value: ContentLineCaptures) -> Result<Self, Self::Error> {

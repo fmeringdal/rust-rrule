@@ -18,7 +18,7 @@ pub(crate) struct StartDateContentLine {
     pub is_local_tz: bool,
 }
 
-impl TryFrom<&ContentLineCaptures> for StartDateContentLine {
+impl<'a> TryFrom<&ContentLineCaptures<'a>> for StartDateContentLine {
     type Error = ParseError;
 
     fn try_from(value: &ContentLineCaptures) -> Result<Self, Self::Error> {
@@ -112,7 +112,7 @@ mod tests {
             assert_eq!(
                 output,
                 Err(ParseError::InvalidDateTime {
-                    value: input.value,
+                    value: input.value.into(),
                     property: "DTSTART".into()
                 })
             );
