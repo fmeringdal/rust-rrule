@@ -2,7 +2,7 @@ use std::{collections::HashMap, hash::Hash, str::FromStr};
 
 use crate::parser::ParseError;
 
-/// Parses a string of semi colon seperated key value pairs into a HashMap with
+/// Parses a string of semicolon seperated key value pairs into a HashMap with
 /// predefined keys. It will return an error if duplicate keys are found.
 pub(super) fn parse_parameters<K: FromStr<Err = ParseError> + Hash + Eq>(
     raw_parameters: &str,
