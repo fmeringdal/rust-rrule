@@ -28,7 +28,6 @@ where
 ///
 /// In case where the iterator ended with an errors the error will be included,
 /// otherwise the second value of the return tuple will be `None`.
-#[inline]
 pub(super) fn collect_with_error<T>(
     mut iterator: T,
     start: &Option<DateTime>,

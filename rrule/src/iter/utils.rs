@@ -2,28 +2,26 @@ use crate::core::DateTime;
 use chrono::{TimeZone, Utc};
 use chrono_tz::UTC;
 
+const DAY_SECS: i64 = 24 * 60 * 60;
+
 /// Converts number of days since unix epoch back to `DataTime`
 pub(crate) fn from_ordinal(ordinal: i64) -> DateTime {
-    let timestamp = ordinal * 24 * 60 * 60;
+    let timestamp = ordinal * DAY_SECS;
     UTC.timestamp(timestamp, 0)
 }
 
 /// Returns number of days since unix epoch (rounded down)
 pub(crate) fn to_ordinal(date: &chrono::DateTime<Utc>) -> i64 {
-    // Number of seconds since Unix epoch
-    // sec / 60 = min
-    // min / 60 = hours
-    // hours / 24 = days
     // TODO can be replaced with `ordinal` or `ordinal0`
     // https://docs.rs/chrono/0.4.19/chrono/trait.Datelike.html#tymethod.ordinal
-    date.timestamp() / 60 / 60 / 24
+    date.timestamp() / DAY_SECS
 }
 
 /// Returns true if given year is a leap year
 pub(crate) fn is_leap_year(year: i32) -> bool {
     // Every 4 years, and every 100 years
     // but not if dividable by 400.
-    year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)
+    year & 3 == 0 && (year % 25 != 0 || year & 15 == 0)
 }
 
 /// Returns amount of days in year,

@@ -8,9 +8,9 @@ use chrono::{Datelike, TimeZone, Utc};
 #[derive(Debug, Clone)]
 pub(crate) struct YearInfo {
     /// Amount of days in the current year (365 or 366)
-    pub year_len: u32,
+    pub year_len: u16,
     /// Amount of days in the next year (365 or 366)
-    pub next_year_len: u32,
+    pub next_year_len: u16,
     /// Number of days since Unix epoch
     pub year_ordinal: i64,
     /// Get day of the week from first day of the year (1 jan)
@@ -38,19 +38,14 @@ pub(crate) struct BaseMasks {
     weekday_mask: &'static [u8],
 }
 
-fn base_year_masks(year: i32) -> BaseMasks {
-    let first_year_day = Utc.ymd(year, 1, 1).and_hms(0, 0, 0);
-    let year_len = get_year_len(year);
-    #[allow(clippy::cast_possible_truncation)]
-    let weekday = first_year_day.weekday().num_days_from_monday() as u8;
-
+fn base_year_masks(year_weekday: u8, year_len: u16) -> BaseMasks {
     if year_len == 365 {
         BaseMasks {
             month_mask: &MASKS.month_365,
             month_day_mask: &MASKS.month_day_365,
             neg_month_day_mask: &MASKS.neg_month_day_365,
             month_range: &MASKS.month_365_range,
-            weekday_mask: &MASKS.weekday[weekday as usize..],
+            weekday_mask: &MASKS.weekday[year_weekday as usize..],
         }
     } else {
         BaseMasks {
@@ -58,7 +53,7 @@ fn base_year_masks(year: i32) -> BaseMasks {
             month_day_mask: &MASKS.month_day_366,
             neg_month_day_mask: &MASKS.neg_month_day_366,
             month_range: &MASKS.month_366_range,
-            weekday_mask: &MASKS.weekday[weekday as usize..],
+            weekday_mask: &MASKS.weekday[year_weekday as usize..],
         }
     }
 }
@@ -74,12 +69,12 @@ fn base_year_masks(year: i32) -> BaseMasks {
 pub(crate) fn rebuild_year(year: i32, rrule: &RRule) -> YearInfo {
     let first_year_day = Utc.ymd(year, 1, 1).and_hms(0, 0, 0);
 
-    let year_len = u32::from(get_year_len(year));
-    let next_year_len = u32::from(get_year_len(year + 1));
+    let year_len = get_year_len(year);
+    let next_year_len = get_year_len(year + 1);
     let year_ordinal = to_ordinal(&first_year_day) as i64;
     let year_weekday = first_year_day.weekday().num_days_from_monday() as u8;
 
-    let base_masks = base_year_masks(year);
+    let base_masks = base_year_masks(year_weekday, year_len);
 
     let mut result = YearInfo {
         year_len,
@@ -116,7 +111,6 @@ pub(crate) fn rebuild_year(year: i32, rrule: &RRule) -> YearInfo {
 
     let div = (year_len_ext as f32 / 7.).floor() as isize;
     let year_mod = pymod(year_len_ext, 7);
-    //const num_weeks = Math.floor(div + mod / 4)
     let num_weeks = div + (year_mod / 4);
 
     for &(mut n) in &rrule.by_week_no {

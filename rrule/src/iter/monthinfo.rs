@@ -12,7 +12,7 @@ pub(crate) struct MonthInfo {
 pub(crate) fn rebuild_month(
     year: i32,
     month: u8,
-    year_len: u32,
+    year_len: u16,
     month_range: &[u16],
     weekday_mask: &[u8],
     rrule: &RRule,
