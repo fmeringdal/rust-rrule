@@ -38,7 +38,6 @@ pub(crate) struct BaseMasks {
     weekday_mask: &'static [u8],
 }
 
-#[inline]
 fn base_year_masks(year_weekday: u8, year_len: u16) -> BaseMasks {
     if year_len == 365 {
         BaseMasks {
