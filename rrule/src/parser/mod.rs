@@ -14,7 +14,7 @@ pub use error::ParseError;
 
 use crate::RRule;
 
-use self::content_line::{get_content_line_parts, PropertyName, StartDateContentLine};
+use self::content_line::{ContentLineCaptures, PropertyName, StartDateContentLine};
 
 #[derive(Debug, PartialEq)]
 pub(crate) struct Grammar {
@@ -29,7 +29,7 @@ impl FromStr for Grammar {
         let content_lines_parts = s
             .lines()
             .into_iter()
-            .map(get_content_line_parts)
+            .map(ContentLineCaptures::new)
             .collect::<Result<Vec<_>, _>>()?;
 
         let start = content_lines_parts

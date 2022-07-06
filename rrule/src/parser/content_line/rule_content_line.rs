@@ -257,7 +257,7 @@ mod tests {
     use chrono::{DateTime, NaiveDate, TimeZone};
     use chrono_tz::Tz;
 
-    use crate::parser::content_line::{get_content_line_parts, PropertyName};
+    use crate::parser::content_line::{ContentLineCaptures, PropertyName};
 
     use super::*;
 
@@ -398,7 +398,7 @@ mod tests {
             .with_timezone(&chrono_tz::UTC);
         props.insert(RRuleProperty::Until, until_str.into());
 
-        let start_date = get_content_line_parts("DTSTART:19970902T090000").unwrap();
+        let start_date = ContentLineCaptures::new("DTSTART:19970902T090000").unwrap();
         let start_date = StartDateContentLine::try_from(&start_date).unwrap();
 
         let rrule = props_to_rrule(props.clone(), &start_date).unwrap();
@@ -418,7 +418,7 @@ mod tests {
             .with_timezone(&chrono_tz::UTC);
         props.insert(RRuleProperty::Until, until_str.into());
 
-        let start_date = get_content_line_parts("DTSTART:19970902T090000").unwrap();
+        let start_date = ContentLineCaptures::new("DTSTART:19970902T090000").unwrap();
         let start_date = StartDateContentLine::try_from(&start_date).unwrap();
 
         let rrule = props_to_rrule(props.clone(), &start_date).unwrap();
@@ -441,7 +441,7 @@ mod tests {
         ];
 
         for start_date in start_dates {
-            let start_date = get_content_line_parts(start_date).unwrap();
+            let start_date = ContentLineCaptures::new(start_date).unwrap();
             let start_date = StartDateContentLine::try_from(&start_date).unwrap();
 
             let rrule = props_to_rrule(props.clone(), &start_date).unwrap();

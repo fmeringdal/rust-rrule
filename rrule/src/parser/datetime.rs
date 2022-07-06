@@ -3,10 +3,7 @@ use std::str::FromStr;
 use chrono::{NaiveDate, TimeZone, Weekday};
 use chrono_tz::{Tz, UTC};
 
-use super::{
-    regex::{self, ParsedDateString},
-    ParseError,
-};
+use super::{regex::ParsedDateString, ParseError};
 use crate::{core::DateTime, NWeekday};
 
 /// Attempts to convert a `str` to a `chrono_tz::Tz`.
@@ -28,7 +25,7 @@ pub(crate) fn datestring_to_date(
         day,
         time,
         flags,
-    } = regex::parse_datestring(dt).map_err(|_| ParseError::InvalidDateTime {
+    } = ParsedDateString::from_ical_datetime(dt).map_err(|_| ParseError::InvalidDateTime {
         value: dt.into(),
         property: property.into(),
     })?;

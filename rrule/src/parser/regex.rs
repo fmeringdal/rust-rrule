@@ -45,40 +45,42 @@ fn get_datetime_captures<T: FromStr>(
         .map_err(|_| ParseError::InvalidDateTimeFormat(val.into()))
 }
 
-/// Parses a date string with format `YYYYMMDD(THHMMSSZ)` where the part in paranthesis
-/// is optional. It returns [`ParsedDateString`].
-pub(crate) fn parse_datestring(val: &str) -> Result<ParsedDateString, ParseError> {
-    let captures = DATESTR_RE
-        .captures(val)
-        .ok_or_else(|| ParseError::InvalidDateTimeFormat(val.into()))?;
+impl ParsedDateString {
+    /// Parses a date string with format `YYYYMMDD(THHMMSSZ)` where the part in parentheses
+    /// is optional. It returns [`ParsedDateString`].
+    pub(crate) fn from_ical_datetime(val: &str) -> Result<Self, ParseError> {
+        let captures = DATESTR_RE
+            .captures(val)
+            .ok_or_else(|| ParseError::InvalidDateTimeFormat(val.into()))?;
 
-    let year = get_datetime_captures(&captures, 1, val)?;
-    let month = get_datetime_captures(&captures, 2, val)?;
-    let day = get_datetime_captures(&captures, 3, val)?;
+        let year = get_datetime_captures(&captures, 1, val)?;
+        let month = get_datetime_captures(&captures, 2, val)?;
+        let day = get_datetime_captures(&captures, 3, val)?;
 
-    // Check if time part is captured
-    let time = if captures.get(4).is_some() {
-        let hour = get_datetime_captures(&captures, 5, val)?;
-        let min = get_datetime_captures(&captures, 6, val)?;
-        let sec = get_datetime_captures(&captures, 7, val)?;
-        Some(ParsedDateStringTime { hour, min, sec })
-    } else {
-        None
-    };
+        // Check if time part is captured
+        let time = if captures.get(4).is_some() {
+            let hour = get_datetime_captures(&captures, 5, val)?;
+            let min = get_datetime_captures(&captures, 6, val)?;
+            let sec = get_datetime_captures(&captures, 7, val)?;
+            Some(ParsedDateStringTime { hour, min, sec })
+        } else {
+            None
+        };
 
-    let zulu_timezone_set = match captures.get(8) {
-        Some(part) => part.as_str() == "Z",
-        None => false,
-    };
-    let flags = ParsedDateStringFlags { zulu_timezone_set };
+        let zulu_timezone_set = match captures.get(8) {
+            Some(part) => part.as_str() == "Z",
+            None => false,
+        };
+        let flags = ParsedDateStringFlags { zulu_timezone_set };
 
-    Ok(ParsedDateString {
-        year,
-        month,
-        day,
-        time,
-        flags,
-    })
+        Ok(Self {
+            year,
+            month,
+            day,
+            time,
+            flags,
+        })
+    }
 }
 
 lazy_static! {
@@ -98,7 +100,7 @@ pub(crate) fn get_property_name(val: &str) -> Result<Option<PropertyName>, Parse
 mod tests {
     use crate::parser::{content_line::PropertyName, regex::get_property_name, ParseError};
 
-    use super::{parse_datestring, ParsedDateString, ParsedDateStringFlags, ParsedDateStringTime};
+    use super::{ParsedDateString, ParsedDateStringFlags, ParsedDateStringTime};
 
     const GARBAGE_INPUTS: [&str; 4] = ["", "  ", "fasfa!2414", "-20101017T120000Z"];
 
@@ -163,7 +165,7 @@ mod tests {
             ),
         ];
         for (input, expected_output) in tests {
-            let output = parse_datestring(input);
+            let output = ParsedDateString::from_ical_datetime(input);
             assert_eq!(output, Ok(expected_output));
         }
     }
@@ -183,7 +185,7 @@ mod tests {
         ]
         .concat();
         for input in tests {
-            let res = parse_datestring(input);
+            let res = ParsedDateString::from_ical_datetime(input);
             assert!(res.is_err());
         }
     }
