@@ -31,7 +31,7 @@ impl<'a> ContentLineCaptures<'a> {
                     }
                 }
 
-                Ok(ContentLineCaptures {
+                Ok(Self {
                     property_name,
                     parameters,
                     value: line
