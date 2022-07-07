@@ -1,50 +1,5 @@
-use crate::tests::common::ymd_hms;
-use crate::{Frequency, NWeekday, Unvalidated, Weekday};
-use crate::{RRule, RRuleSet};
+use crate::RRuleSet;
 use std::str::FromStr;
-
-#[test]
-fn rrule_from_str() {
-    let test_str_cases = vec![
-        "RRULE:UNTIL=19990404T110000Z;FREQ=WEEKLY;BYDAY=TU,WE",
-        "UNTIL=20190101T230000Z;FREQ=WEEKLY;BYDAY=TU,WE",
-    ];
-
-    for test_str in test_str_cases {
-        let res = RRule::from_str(test_str);
-        assert!(res.is_ok());
-    }
-}
-
-#[test]
-fn rrule_to_and_from_str() {
-    for test_obj in get_obj_cases() {
-        let test_str = test_obj.to_string();
-        let res = RRule::from_str(&test_str).unwrap();
-        assert_eq!(res, test_obj);
-    }
-}
-
-#[cfg(feature = "serde")]
-#[test]
-fn serialize_deserialize_json_to_and_from_rrule() {
-    #[derive(orig_serde::Deserialize, orig_serde::Serialize)]
-    #[serde(crate = "orig_serde")]
-    struct RruleTest {
-        rrule: RRule<Unvalidated>,
-    }
-
-    for test_obj in get_obj_cases() {
-        let test_str = serde_json::to_string(&RruleTest {
-            rrule: test_obj.clone(),
-        })
-        .unwrap();
-
-        let res = serde_json::from_str::<RruleTest>(&test_str).unwrap();
-
-        assert_eq!(res.rrule, test_obj);
-    }
-}
 
 #[test]
 fn rrule_set_to_and_from_str() {
@@ -87,35 +42,4 @@ fn serialize_deserialize_json_to_and_from_rrule_set() {
 
         assert_eq!(src_obj, final_obj);
     }
-}
-
-fn get_obj_cases() -> Vec<RRule<Unvalidated>> {
-    vec![
-        RRule {
-            freq: Frequency::Yearly,
-            count: Some(3),
-            ..Default::default()
-        },
-        RRule {
-            freq: Frequency::Weekly,
-            interval: 5,
-            by_weekday: vec![
-                NWeekday::Nth(-2, Weekday::Mon),
-                NWeekday::Every(Weekday::Fri),
-            ],
-            ..Default::default()
-        },
-        RRule {
-            freq: Frequency::Weekly,
-            until: Some(ymd_hms(1999, 4, 4, 11, 0, 0)),
-            by_weekday: vec![NWeekday::Every(Weekday::Tue), NWeekday::Every(Weekday::Wed)],
-            ..Default::default()
-        },
-        RRule {
-            freq: Frequency::Weekly,
-            until: Some(ymd_hms(2019, 1, 1, 23, 0, 0)),
-            by_weekday: vec![NWeekday::Every(Weekday::Tue), NWeekday::Every(Weekday::Wed)],
-            ..Default::default()
-        },
-    ]
 }

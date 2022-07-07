@@ -104,7 +104,7 @@ fn setdate_and_exrule() {
 }
 
 #[test]
-fn rrule_and_exdate() {
+fn rrule_and_exdate_1() {
     let dt_start = ymd_hms(1997, 9, 2, 9, 0, 0);
     let rrule = RRule {
         freq: Frequency::Yearly,
@@ -129,6 +129,36 @@ fn rrule_and_exdate() {
             ymd_hms(1997, 9, 11, 9, 0, 0),
             ymd_hms(1997, 9, 16, 9, 0, 0),
             ymd_hms(1997, 9, 18, 9, 0, 0),
+        ],
+    );
+}
+
+#[test]
+fn rrule_and_exdate_2() {
+    let dates = "DTSTART;TZID=Europe/Paris:20201214T093000\n\
+        RRULE:FREQ=WEEKLY;UNTIL=20210308T083000Z;INTERVAL=2;BYDAY=MO;WKST=MO\n\
+        EXDATE;TZID=Europe/Paris:20201228T093000,20210125T093000,20210208T093000"
+        .parse::<RRuleSet>()
+        .unwrap()
+        .all(50)
+        .unwrap();
+    // This results in following set (minus exdate)
+    // [
+    //     2020-12-14T09:30:00CET,
+    //     2020-12-28T09:30:00CET, // Removed because of exdate
+    //     2021-01-11T09:30:00CET,
+    //     2021-01-25T09:30:00CET, // Removed because of exdate
+    //     2021-02-08T09:30:00CET, // Removed because of exdate
+    //     2021-02-22T09:30:00CET,
+    //     2021-03-08T09:30:00CET, // same as `UNTIL` but different timezones
+    // ]
+    check_occurrences(
+        &dates,
+        &[
+            "2020-12-14T09:30:00+01:00",
+            "2021-01-11T09:30:00+01:00",
+            "2021-02-22T09:30:00+01:00",
+            "2021-03-08T09:30:00+01:00",
         ],
     );
 }

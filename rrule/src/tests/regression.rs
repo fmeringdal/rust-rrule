@@ -24,21 +24,6 @@ RRULE:FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-2"
 }
 
 #[test]
-fn non_ascii_string() {
-    let result = "Input string contains some invalid characters";
-    let strs = [
-        "DTSTART;19970902T090000Z\nRRULE:FREQ=DAILY;COeeeEDDUNT=10",
-        "DTSTART;19970902T090000Z\nRRULE:FREQ=DAILY;CÖUNT=10",
-        "DTSTART;19970902T090000Z\nRRULE:FREQ=DAILY;CO␀NT=10",
-    ];
-
-    for s in strs {
-        let error = s.parse::<RRuleSet>();
-        assert!(error.unwrap_err().to_string().contains(result));
-    }
-}
-
-#[test]
 #[ignore = "stick in an infinite loop in exrule calculation"]
 fn edge_case_1() {
     let rrule_set: RRuleSet = "DTSTART;TZID=Europe/Berlin:20210101T000000;

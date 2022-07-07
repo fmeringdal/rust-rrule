@@ -1,7 +1,6 @@
 use super::datetime::DateTime;
-use crate::core::utils::check_str_validity;
 use crate::iter::iterinfo::IterInfo;
-use crate::parser::parse_rule;
+use crate::parser::str_to_weekday;
 use crate::parser::ParseError;
 use crate::validator::check_limits;
 use crate::validator::validate_rrule;
@@ -9,7 +8,7 @@ use crate::{RRuleError, RRuleIter, RRuleSet, Unvalidated, Validated};
 use chrono::{Datelike, Month, Timelike, Weekday};
 use chrono_tz::Tz;
 #[cfg(feature = "serde")]
-use serde_with::{serde_as, DeserializeFromStr, SerializeDisplay};
+use serde_with::{DeserializeFromStr, SerializeDisplay};
 use std::collections::VecDeque;
 use std::fmt::Display;
 use std::fmt::Formatter;
@@ -55,8 +54,6 @@ impl FromStr for Frequency {
     type Err = ParseError;
 
     fn from_str(value: &str) -> Result<Self, Self::Err> {
-        check_str_validity(value)?;
-
         let freq = match &value.to_uppercase()[..] {
             "YEARLY" => Frequency::Yearly,
             "MONTHLY" => Frequency::Monthly,
@@ -100,7 +97,7 @@ impl NWeekday {
     /// use chrono::Weekday;
     /// use rrule::NWeekday;
     ///
-    /// let nth_weekday = NWeekday::nth(1, Weekday::Mon);
+    /// let nth_weekday = NWeekday::new(Some(1), Weekday::Mon);
     /// ```
     #[must_use]
     pub fn new(number: Option<i16>, weekday: Weekday) -> Self {
@@ -114,36 +111,17 @@ impl NWeekday {
 impl FromStr for NWeekday {
     type Err = ParseError;
 
-    /// Generates an [`NWeekday`] from a string
-    ///
-    /// # Examples
-    /// ```
-    /// use chrono::Weekday;
-    /// use rrule::NWeekday;
-    ///
-    /// assert_eq!("1MO".parse::<NWeekday>().unwrap(), NWeekday::Nth(1, Weekday::Mon));
-    /// assert_eq!("-1MO".parse::<NWeekday>().unwrap(), NWeekday::Nth(-1, Weekday::Mon));
-    /// assert_eq!("MO".parse::<NWeekday>().unwrap(), NWeekday::Every(Weekday::Mon));
-    /// ```
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the string is not a valid [`NWeekday`]
-    /// ```
-    /// use rrule::NWeekday;
-    ///
-    /// assert_eq!("1".parse::<NWeekday>(), Err(rrule::ParseError::InvalidNWeekday("1".to_string())));
-    /// assert_eq!("0MO".parse::<NWeekday>(), Err(rrule::ParseError::InvalidNWeekday("0MO".to_string())));
-    /// ```
+    /// Generates an [`NWeekday`] from a string.
     fn from_str(value: &str) -> Result<Self, Self::Err> {
         let length = value.len();
 
-        if check_str_validity(value).is_err() || length < 2 {
-            return Err(ParseError::InvalidWeekday(value.to_string()));
+        if length < 2 {
+            return Err(ParseError::InvalidWeekday(value.into()));
         }
 
         // it doesn't have any issue, because we checked the string is ASCII above
-        let wd = str_to_weekday(&value[(length - 2)..])?;
+        let wd = str_to_weekday(&value[(length - 2)..])
+            .map_err(|_| ParseError::InvalidWeekday(value.into()))?;
         let nth = value[..(length - 2)].parse::<i16>().unwrap_or_default();
 
         if nth == 0 {
@@ -161,8 +139,9 @@ impl Display for NWeekday {
     /// use chrono::Weekday;
     /// use rrule::NWeekday;
     ///
-    /// assert_eq!(format!("{}", NWeekday::Nth(1, Weekday::Mon)), "1MO");
     /// assert_eq!(format!("{}", NWeekday::Every(Weekday::Mon)), "MO");
+    /// assert_eq!(format!("{}", NWeekday::Nth(1, Weekday::Mon)), "MO");
+    /// assert_eq!(format!("{}", NWeekday::Nth(2, Weekday::Mon)), "2MO");
     /// ```
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let weekday = match self {
@@ -178,20 +157,6 @@ impl Display for NWeekday {
 
         write!(f, "{}", weekday)
     }
-}
-
-fn str_to_weekday(d: &str) -> Result<Weekday, ParseError> {
-    let day = match &d.to_uppercase()[..] {
-        "MO" => Weekday::Mon,
-        "TU" => Weekday::Tue,
-        "WE" => Weekday::Wed,
-        "TH" => Weekday::Thu,
-        "FR" => Weekday::Fri,
-        "SA" => Weekday::Sat,
-        "SU" => Weekday::Sun,
-        _ => return Err(ParseError::InvalidWeekday(d.to_string())),
-    };
-    Ok(day)
 }
 
 fn weekday_to_str(d: Weekday) -> String {
@@ -210,9 +175,7 @@ fn weekday_to_str(d: Weekday) -> String {
 /// It has two stages, based on the attached type, `Validated` or `Unvalidated`.
 /// - `Unvalidated`, which is the raw string representation of the RRULE
 /// - `Validated`, which is when the RRule has been parsed and validated, based on the start date
-#[cfg_attr(feature = "serde", serde_as)]
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
 pub struct RRule<Stage = Validated> {
     /// The frequency of the rrule.
     /// For example: yearly, weekly, hourly
@@ -226,7 +189,6 @@ pub struct RRule<Stage = Validated> {
     pub(crate) count: Option<u32>,
     /// The end date after which new events will no longer be generated.
     /// If the `DateTime` is equal to an instance of the event it will be the last event.
-    #[cfg_attr(feature = "serde", serde_as(as = "DisplayFromStr"))]
     pub(crate) until: Option<DateTime>,
     /// The start day of the week.
     /// This will affect recurrences based on weekly periods.
@@ -271,7 +233,6 @@ pub struct RRule<Stage = Validated> {
     /// Note: Only used when `by-easter` feature flag is set. Otherwise, it is ignored.
     pub(crate) by_easter: Option<i16>,
     /// A phantom data to have the stage (unvalidated or validated).
-    #[cfg_attr(feature = "serde", serde_as(as = "ignore"))]
     pub(crate) stage: PhantomData<Stage>,
 }
 
@@ -545,7 +506,8 @@ impl RRule<Unvalidated> {
     ///
     /// Returns [`RRuleError::ValidationError`] in case the rrule is invalid.
     pub fn build(self, dt_start: DateTime) -> Result<RRuleSet, RRuleError> {
-        let rrule_set = RRuleSet::new(dt_start).set_rrules(vec![self.validate(dt_start)?]);
+        let rrule = self.validate(dt_start)?;
+        let rrule_set = RRuleSet::new(dt_start).rrule(rrule);
         Ok(rrule_set)
     }
 }
@@ -571,16 +533,6 @@ impl RRule {
                 }
             }
         }
-    }
-}
-
-impl FromStr for RRule<Unvalidated> {
-    type Err = ParseError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        check_str_validity(s)?;
-
-        parse_rule(s)
     }
 }
 

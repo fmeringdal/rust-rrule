@@ -1,7 +1,7 @@
 use crate::core::datetime::datetime_to_ical_format;
-use crate::core::utils::{check_str_validity, collect_or_error, collect_with_error};
+use crate::core::utils::{collect_or_error, collect_with_error};
 use crate::core::DateTime;
-use crate::parser::build_rruleset;
+use crate::parser::{ContentLine, Grammar};
 use crate::{RRule, RRuleError};
 #[cfg(feature = "serde")]
 use serde_with::{serde_as, DeserializeFromStr, SerializeDisplay};
@@ -260,9 +260,36 @@ impl FromStr for RRuleSet {
     /// This should never panic, but it might be in odd cases.
     /// Please report if it does panic.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        check_str_validity(s)?;
+        let Grammar {
+            start,
+            content_lines,
+        } = Grammar::from_str(s)?;
 
-        build_rruleset(s)
+        content_lines.into_iter().try_fold(
+            RRuleSet::new(start.datetime),
+            |mut rrule_set, content_line| match content_line {
+                ContentLine::RRule(rrule) => {
+                    let rrule = rrule.validate(start.datetime)?;
+                    Ok::<RRuleSet, RRuleError>(rrule_set.rrule(rrule))
+                }
+                ContentLine::ExRule(rrule) => {
+                    let rrule = rrule.validate(start.datetime)?;
+                    Ok(rrule_set.exrule(rrule))
+                }
+                ContentLine::ExDate(exdates) => {
+                    for exdate in exdates {
+                        rrule_set = rrule_set.exdate(exdate);
+                    }
+                    Ok(rrule_set)
+                }
+                ContentLine::RDate(rdates) => {
+                    for rdate in rdates {
+                        rrule_set = rrule_set.rdate(rdate);
+                    }
+                    Ok(rrule_set)
+                }
+            },
+        )
     }
 }
 
