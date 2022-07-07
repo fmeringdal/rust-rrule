@@ -16,6 +16,7 @@ use crate::RRule;
 
 use self::content_line::{ContentLineCaptures, PropertyName, StartDateContentLine};
 
+/// Grammar represents a well formatted rrule input.
 #[derive(Debug, PartialEq)]
 pub(crate) struct Grammar {
     pub start: StartDateContentLine,

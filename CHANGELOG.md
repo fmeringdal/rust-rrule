@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Not released
+
+### Changed
+
+- The `parser` module has been rewritten from scratch to be more Rust idiomatic and use terminology more consistent with the RFC. The end result of the `parser` phase is now a `Grammar`.
+
+### Removed
+
+- `RRule` no longer implements `FromStr` or `Deserialize`. Use `RRuleSet` for these use-cases.
+
 ## 0.8.0 (2022-06-21)
 
 ### Changed
