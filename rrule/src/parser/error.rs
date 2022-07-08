@@ -59,10 +59,24 @@ pub enum ParseError {
     MissingStartDate,
     #[error("Missing date generation property. There needs to be at least one `RRULE` or `RDATE` to generate occurrences.")]
     MissingDateGenerationRules,
-    #[error("Property parameters are not supported for RRULE / EXRULE, found parametes: `{0}`.")]
+    #[error("Property parameters are not supported for RRULE / EXRULE, found parametes: `{0}`")]
     PropertyParametersNotSupported(String),
     #[error(
-        "`{0}` is not a valid property name, expected one of: `RRULE,EXRULE,DTSTART,RDATE,EXDATE`."
+        "`{0}` is not a valid property name, expected one of: `RRULE,EXRULE,DTSTART,RDATE,EXDATE`"
     )]
     UnrecognizedPropertyName(String),
+    #[error(
+        "The value of `DTSTART` and `UNTIL` needs to match. Both need to be either a `DATE` or `DATE-TIME`"
+    )]
+    DtStartUntilMismatchValue,
+    #[error(
+        "The value of `DTSTART` was specified in local timezone, but `UNTIL` was specified with a zulu time when it has to be specified in local time as well"
+    )]
+    DtStartUntilMismatchTimezone,
+    #[error("Property parameter `{parameter}` was set to have value `{parameter_value}`, but found `{found_value}` ")]
+    ParameterValueMismatch {
+        parameter: String,
+        parameter_value: String,
+        found_value: String,
+    },
 }

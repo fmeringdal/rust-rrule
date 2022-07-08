@@ -87,8 +87,9 @@ mod test {
     #[test]
     fn parses_valid_input_to_grammar() {
         let tests = [
-("DTSTART:19970902T090000Z\nRRULE:FREQ=YEARLY;COUNT=3\n", Grammar {
-    start: StartDateContentLine { datetime: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0), is_local_tz: false },
+(
+    "DTSTART:19970902T090000Z\nRRULE:FREQ=YEARLY;COUNT=3\n", Grammar {
+    start: StartDateContentLine { datetime: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0), timezone: Some(UTC), value: "DATE-TIME" },
     content_lines: vec![
         ContentLine::RRule(RRule {
             freq: Frequency::Yearly,
@@ -96,9 +97,10 @@ mod test {
             ..Default::default()
         })
     ]
-}),
+}
+),
 ("DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR", Grammar {
-    start: StartDateContentLine { datetime: UTC.ymd(2012, 2, 1).and_hms(9, 30, 0), is_local_tz: false },
+    start: StartDateContentLine { datetime: UTC.ymd(2012, 2, 1).and_hms(9, 30, 0), timezone: Some(UTC), value: "DATE-TIME" },
     content_lines: vec![
         ContentLine::RRule(RRule {
             freq: Frequency::Weekly,
@@ -110,7 +112,7 @@ mod test {
     ]
 }),
 ("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5\nEXDATE;TZID=Europe/Berlin:20120202T130000,20120203T130000", Grammar {
-    start: StartDateContentLine { datetime: UTC.ymd(2012, 2, 1).and_hms(12, 0, 0), is_local_tz: false },
+    start: StartDateContentLine { datetime: UTC.ymd(2012, 2, 1).and_hms(12, 0, 0), timezone: Some(UTC), value: "DATE-TIME" },
     content_lines: vec![
         ContentLine::RRule(RRule {
             freq: Frequency::Daily,
@@ -124,7 +126,7 @@ mod test {
     ]
 }),
 ("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5\nEXDATE;TZID=Europe/Berlin:20120202T130000,20120203T130000\nEXRULE:FREQ=WEEKLY;COUNT=10", Grammar {
-    start: StartDateContentLine { datetime: UTC.ymd(2012, 2, 1).and_hms(12, 0, 0), is_local_tz: false },
+    start: StartDateContentLine { datetime: UTC.ymd(2012, 2, 1).and_hms(12, 0, 0), timezone: Some(UTC), value: "DATE-TIME" },
     content_lines: vec![
         ContentLine::RRule(RRule {
             freq: Frequency::Daily,

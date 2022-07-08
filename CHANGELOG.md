@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `RRule` no longer implements `FromStr` or `Deserialize`. Use `RRuleSet` for these use-cases.
 
+### Fixes
+
+- The `DTSTART` and `UNTIL` values were not synced before this release. They are now synced according to the RFC.
+
 ## 0.8.0 (2022-06-21)
 
 ### Changed
