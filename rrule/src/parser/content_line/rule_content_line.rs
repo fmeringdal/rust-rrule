@@ -237,7 +237,7 @@ fn parse_until(until: &str, dtstart: &StartDateContentLine) -> Result<DateTime, 
     }
 
     let timezone = if dtstart.timezone.is_none() {
-        if until_value == "DATE-TIME" && until.to_uppercase().ends_with("Z") {
+        if until_value == "DATE-TIME" && until.to_uppercase().ends_with('Z') {
             return Err(ParseError::DtStartUntilMismatchTimezone);
         }
 
@@ -246,7 +246,7 @@ fn parse_until(until: &str, dtstart: &StartDateContentLine) -> Result<DateTime, 
         Some(UTC)
     };
 
-    datestring_to_date(&until, timezone, "UNTIL")
+    datestring_to_date(until, timezone, "UNTIL")
 }
 
 #[cfg(test)]

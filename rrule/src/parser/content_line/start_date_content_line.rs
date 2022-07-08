@@ -36,7 +36,7 @@ impl<'a> TryFrom<&ContentLineCaptures<'a>> for StartDateContentLine {
             .get(&DateParameter::Timezone)
             .map(|tz| parse_timezone(tz))
             .transpose()?;
-        if timezone.is_none() && content_line.value.to_uppercase().ends_with("Z") {
+        if timezone.is_none() && content_line.value.to_uppercase().ends_with('Z') {
             timezone = Some(UTC);
         }
 
