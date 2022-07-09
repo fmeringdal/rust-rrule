@@ -42,8 +42,7 @@ where
     // This loop should always end because `.next()` has build in limits
     // Once a limit is tripped it will break in the `None` case.
     while list.len() < limit as usize {
-        let next = iterator.next();
-        match next {
+        match iterator.next() {
             Some(value) => {
                 if is_in_range(&value, start, end, inclusive) {
                     list.push(value);

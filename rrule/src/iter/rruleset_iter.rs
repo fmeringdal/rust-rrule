@@ -1,6 +1,6 @@
 use super::{rrule_iter::RRuleIter, MAX_ITER_LOOP};
 use crate::{core::DateTime, RRule, RRuleError, RRuleSet, WithError};
-use chrono::TimeZone;
+use chrono::Duration;
 use std::collections::BTreeSet;
 use std::{collections::HashMap, iter::Iterator};
 
@@ -71,6 +71,9 @@ impl<'a> RRuleSetIter<'a> {
 
             date = rrule_iter.next();
         }
+        if let Some(err) = rrule_iter.get_err() {
+            return Err(err.clone());
+        }
 
         Ok(date)
     }
@@ -86,13 +89,28 @@ impl<'a> RRuleSetIter<'a> {
             Some(date) => {
                 let ts = date.timestamp();
 
-                if !exrules.is_empty() {
-                    let start = date.timezone().timestamp(ts - 1, 0);
-                    let end = date.timezone().timestamp(ts + 1, 0);
-                    for exrule in exrules {
-                        let ex = exrule.iter_with_ctx(*dt_start);
-                        for date in ex.all_between(start, end, true).unwrap() {
-                            exdates.insert(date.timestamp());
+                let start = match date.checked_sub_signed(Duration::seconds(1)) {
+                    Some(d) => d,
+                    _ => return false,
+                };
+                let end = match date.checked_add_signed(Duration::seconds(1)) {
+                    Some(d) => d,
+                    _ => return false,
+                };
+
+                for exrule in exrules {
+                    let ex = exrule.iter_with_ctx(*dt_start);
+                    match ex.all_between(start, end, true) {
+                        Ok(exrule_dates) => {
+                            for exdate in exrule_dates {
+                                exdates.insert(exdate.timestamp());
+                                if exdate.timestamp() == ts {
+                                    return true;
+                                }
+                            }
+                        }
+                        Err(err) => {
+                            log::error!("Failed to iterate exrule. Error: {}", err);
                         }
                     }
                 }
@@ -150,10 +168,10 @@ impl<'a> Iterator for RRuleSetIter<'a> {
             if let Some(next_rrule_date) = next_rrule_date {
                 match next_date {
                     None => next_date = Some((i, next_rrule_date)),
-                    Some(date) => {
-                        if date.1 >= next_rrule_date {
+                    Some((idx, date)) => {
+                        if date >= next_rrule_date {
                             // Add previous date to its rrule queue
-                            self.queue.insert(date.0, date.1);
+                            self.queue.insert(idx, date);
 
                             // Update next_date
                             next_date = Some((i, next_rrule_date));

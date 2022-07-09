@@ -10,10 +10,6 @@ use super::ValidationError;
 #[allow(dead_code)]
 pub(crate) static WEEKDAY_RANGE: RangeInclusive<u8> = 0..=6;
 
-/// Range of values that a day can be.
-/// Range: `1..=31`
-pub(crate) static DAY_RANGE: RangeInclusive<u8> = 1..=31;
-
 /// Range of values that a month can be.
 /// Range: `1..=12`
 pub(crate) static MONTH_RANGE: RangeInclusive<u8> = 1..=12;
@@ -27,63 +23,55 @@ pub(crate) static YEAR_RANGE: RangeInclusive<i32> = -10_000..=10_000;
 #[cfg(feature = "no-validation-limits")]
 pub(crate) static YEAR_RANGE: RangeInclusive<i32> = -262_000..=262_000;
 
+type Validator = &'static dyn Fn(&RRule<Unvalidated>, &DateTime) -> Result<(), ValidationError>;
+
+const VALIDATION_PIPELINE: [Validator; 11] = [
+    &validate_until,
+    &validate_by_set_pos,
+    &validate_by_month,
+    &validate_by_month_day,
+    &validate_by_year_day,
+    &validate_by_week_number,
+    &validate_by_weekday,
+    &validate_by_hour,
+    &validate_by_minute,
+    &validate_by_second,
+    &validate_by_easter,
+];
+
 /// Check if rules are valid as defined by the RFC and crate limitations.
 /// It checks all values in the [`RRule`] and makes sure that they are in
 /// the accepted ranges. If the function returns `Ok`, no errors where found.
 ///
 /// This check should always be done and just enforces limits set by the standard.
 /// Validation will always be enforced and can not be disabled using feature flags.
-///
-// TODO too many lines
-#[warn(clippy::too_many_lines)]
 pub(crate) fn validate_rrule_forced(
     rrule: &RRule<Unvalidated>,
     dt_start: &DateTime,
 ) -> Result<(), ValidationError> {
-    // Freq:
-    // - Enum, so always valid on its own.
+    VALIDATION_PIPELINE
+        .into_iter()
+        .try_for_each(|validator| validator(rrule, dt_start))
+}
 
-    // Interval:
-    // - Any positive number allowed.
-    //   Value is u32, so does not allow for negative numbers anyway.
-
-    // Count:
-    // - Any positive number allowed
-    //   Value is u32, so does not allow for negative numbers anyway.
-
-    // Until:
-    // - Must be same type as `dt_start`, so Date/DateTime.
-    //   Can only be checked during parsing.
-    // - Timezone should meet certain criteria depending on `dt_start`
-    //   TODO: NOT validated for now. For more info see:
-    //   https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html
-    // - Value should be later then `dt_start`.
-    //   TODO: Does this need to be checked? Will always return no events anyway.
-    //   Validated below
-    if let Some(until) = &rrule.until {
-        // Check if before `dt_start`
-        if until < dt_start {
-            return Err(ValidationError::UntilBeforeStart {
-                until: until.to_rfc3339(),
-                dt_start: dt_start.to_rfc3339(),
-            });
-        }
+// Until:
+// - Value should be later than `dt_start`.
+fn validate_until(rrule: &RRule<Unvalidated>, dt_start: &DateTime) -> Result<(), ValidationError> {
+    match rrule.until {
+        Some(until) if until < *dt_start => Err(ValidationError::UntilBeforeStart {
+            until: until.to_rfc3339(),
+            dt_start: dt_start.to_rfc3339(),
+        }),
+        _ => Ok(()),
     }
+}
 
-    // Tz:
-    // - Any timezone is allowed
-    // - TODO: Might need to match `until` and `dt_start`.
-
-    // Dt_start:
-    // - All values are allowed.
-    // - TODO: Timezone still need to be checked.
-
-    // Week_start:
-    // - Enum, so always valid on its own.
-
-    // By_set_pos:
-    // - Can be a value from -366 to -1 and 1 to 366 depending on `freq`
-    //   Validated below
+// By_set_pos:
+// - Can be a value from -366 to -1 and 1 to 366 depending on `freq`
+fn validate_by_set_pos(
+    rrule: &RRule<Unvalidated>,
+    _dt_start: &DateTime,
+) -> Result<(), ValidationError> {
     validate_not_equal_for_vec(&0, &rrule.by_set_pos, "BYSETPOS")?;
     let range = match rrule.freq {
         Frequency::Yearly | Frequency::Daily => -366..=366, // TODO is the daily range correct?
@@ -115,15 +103,24 @@ pub(crate) fn validate_rrule_forced(
     {
         return Err(ValidationError::BySetPosWithoutByRule);
     }
+    Ok(())
+}
 
-    // By_month:
-    // - Can be a value from 1 to 12.
-    //   Validated below
-    validate_range_for_vec(&MONTH_RANGE, &rrule.by_month, "BYMONTH")?;
+// By_month:
+// - Can be a value from 1 to 12.
+fn validate_by_month(
+    rrule: &RRule<Unvalidated>,
+    _dt_start: &DateTime,
+) -> Result<(), ValidationError> {
+    validate_range_for_vec(&MONTH_RANGE, &rrule.by_month, "BYMONTH")
+}
 
-    // By_month_day:
-    // - Can be a value from -31 to -1 and 1 to 31.
-    //   Validated below
+// By_month_day:
+// - Can be a value from -31 to -1 and 1 to 31.
+fn validate_by_month_day(
+    rrule: &RRule<Unvalidated>,
+    _dt_start: &DateTime,
+) -> Result<(), ValidationError> {
     validate_not_equal_for_vec(&0, &rrule.by_month_day, "BYMONTHDAY")?;
     validate_range_for_vec(&(-31..=31), &rrule.by_month_day, "BYMONTHDAY")?;
     // - MUST NOT be specified when the FREQ rule part is set to WEEKLY.
@@ -137,13 +134,15 @@ pub(crate) fn validate_rrule_forced(
             });
         }
     }
+    Ok(())
+}
 
-    // By_n_month_day:
-    // TODO? Not part of spec itself. Used in iter? Should this by empty at start?
-
-    // By_year_day:
-    // - Can be a value from -366 to -1 and 1 to 366.
-    //   Validated below
+// By_year_day:
+// - Can be a value from -366 to -1 and 1 to 366.
+fn validate_by_year_day(
+    rrule: &RRule<Unvalidated>,
+    _dt_start: &DateTime,
+) -> Result<(), ValidationError> {
     validate_not_equal_for_vec(&0, &rrule.by_year_day, "BYYEARDAY")?;
     validate_range_for_vec(&(-366..=366), &rrule.by_year_day, "BYYEARDAY")?;
     // - MUST NOT be specified when the FREQ rule part is set to DAILY, WEEKLY, or MONTHLY.
@@ -160,10 +159,14 @@ pub(crate) fn validate_rrule_forced(
             });
         }
     }
-
-    // By_week_no:
-    // - Can be a value from -53 to -1 and 1 to 53.
-    //   Validated below
+    Ok(())
+}
+// By_week_no:
+// - Can be a value from -53 to -1 and 1 to 53.
+fn validate_by_week_number(
+    rrule: &RRule<Unvalidated>,
+    _dt_start: &DateTime,
+) -> Result<(), ValidationError> {
     validate_not_equal_for_vec(&0, &rrule.by_week_no, "BYWEEKNO")?;
     validate_range_for_vec(&(-53..=53), &rrule.by_week_no, "BYWEEKNO")?;
     // - MUST NOT be used when the FREQ rule part is set to anything other than YEARLY.
@@ -177,10 +180,16 @@ pub(crate) fn validate_rrule_forced(
             });
         }
     }
+    Ok(())
+}
 
-    // By_weekday:
-    // - Check if value for `Nth` is within range.
-    //   Range depends on frequency and can only happen weekly, so `/7` from normal count.
+// By_weekday:
+// - Check if value for `Nth` is within range.
+//   Range depends on frequency and can only happen weekly, so `/7` from normal count.
+fn validate_by_weekday(
+    rrule: &RRule<Unvalidated>,
+    _dt_start: &DateTime,
+) -> Result<(), ValidationError> {
     let range = match rrule.freq {
         Frequency::Yearly | Frequency::Daily => (-366 / 7)..=(366 / 7 + 1), // TODO is the daily range correct?
         Frequency::Monthly => (-31 / 7)..=(31 / 7 + 1),
@@ -202,22 +211,40 @@ pub(crate) fn validate_rrule_forced(
             }
         }
     }
+    Ok(())
+}
 
-    // By_hour:
-    // - Can be a value from 0 to 23.
-    //   Validated below
-    validate_range_for_vec(&(0..=23), &rrule.by_hour, "BYHOUR")?;
+// By_hour:
+// - Can be a value from 0 to 23.
+fn validate_by_hour(
+    rrule: &RRule<Unvalidated>,
+    _dt_start: &DateTime,
+) -> Result<(), ValidationError> {
+    validate_range_for_vec(&(0..=23), &rrule.by_hour, "BYHOUR")
+}
 
-    // By_minute:
-    // - Can be a value from 0 to 59.
-    //   Validated below
-    validate_range_for_vec(&(0..=59), &rrule.by_minute, "BYMINUTE")?;
+// By_minute:
+// - Can be a value from 0 to 59.
+fn validate_by_minute(
+    rrule: &RRule<Unvalidated>,
+    _dt_start: &DateTime,
+) -> Result<(), ValidationError> {
+    validate_range_for_vec(&(0..=59), &rrule.by_minute, "BYMINUTE")
+}
 
-    // By_second:
-    // - Can be a value from 0 to 59.
-    //   Validated below
-    validate_range_for_vec(&(0..=59), &rrule.by_second, "BYSECOND")?;
+// By_second:
+// - Can be a value from 0 to 59.
+fn validate_by_second(
+    rrule: &RRule<Unvalidated>,
+    _dt_start: &DateTime,
+) -> Result<(), ValidationError> {
+    validate_range_for_vec(&(0..=59), &rrule.by_second, "BYSECOND")
+}
 
+fn validate_by_easter(
+    rrule: &RRule<Unvalidated>,
+    _dt_start: &DateTime,
+) -> Result<(), ValidationError> {
     #[cfg(feature = "by-easter")]
     {
         // By_easter:
@@ -259,8 +286,6 @@ pub(crate) fn validate_rrule_forced(
             );
         }
     }
-
-    // All checked, no errors found
     Ok(())
 }
 

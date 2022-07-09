@@ -1,3 +1,4 @@
+#![allow(clippy::module_name_repetitions)]
 use thiserror::Error;
 
 #[derive(Error, Debug, Clone, PartialEq)]
@@ -59,7 +60,7 @@ pub enum ParseError {
     MissingStartDate,
     #[error("Missing date generation property. There needs to be at least one `RRULE` or `RDATE` to generate occurrences.")]
     MissingDateGenerationRules,
-    #[error("Property parameters are not supported for RRULE / EXRULE, found parametes: `{0}`")]
+    #[error("Property parameters are not supported for RRULE / EXRULE, found parameters: `{0}`")]
     PropertyParametersNotSupported(String),
     #[error(
         "`{0}` is not a valid property name, expected one of: `RRULE,EXRULE,DTSTART,RDATE,EXDATE`"

@@ -10,7 +10,7 @@ edition = "2021"
 readme = "../README.md"
 keywords = ["calendar", "rrule", "ical"]
 categories = ["date-and-time"]
-rust-version = "1.56.1"
+rust-version = "1.57.0"
 
 [dependencies]
 chrono = "0.4.19"

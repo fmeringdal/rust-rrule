@@ -82,14 +82,14 @@ impl<'a> TryFrom<(ContentLineCaptures<'a>, &StartDateContentLine)> for RRule<Unv
 
         let properties: HashMap<RRuleProperty, String> = parse_parameters(value.value)?;
 
-        props_to_rrule(properties, dtstart)
+        props_to_rrule(&properties, dtstart)
     }
 }
 
 /// Takes a map of [`RRuleProperty`] and returns an [`RRule`].
 #[allow(clippy::too_many_lines)]
 fn props_to_rrule(
-    props: HashMap<RRuleProperty, String>,
+    props: &HashMap<RRuleProperty, String>,
     dtstart: &StartDateContentLine,
 ) -> Result<RRule<Unvalidated>, ParseError> {
     let freq = props
@@ -342,7 +342,7 @@ mod tests {
             timezone: None,
             value: "DATE-TIME",
         };
-        let res = props_to_rrule(props, &start_date);
+        let res = props_to_rrule(&props, &start_date);
         assert_eq!(
             res.unwrap_err(),
             ParseError::InvalidFrequency("DAIL".into())
@@ -359,11 +359,11 @@ mod tests {
             timezone: None,
             value: "DATE-TIME",
         };
-        let res = props_to_rrule(props.clone(), &start_date);
+        let res = props_to_rrule(&props, &start_date);
         assert_eq!(res.unwrap_err(), ParseError::InvalidByHour("24".into()));
 
         props.insert(RRuleProperty::ByHour, "5,6,25".into());
-        let res = props_to_rrule(props, &start_date);
+        let res = props_to_rrule(&props, &start_date);
         assert_eq!(res.unwrap_err(), ParseError::InvalidByHour("5,6,25".into()));
     }
 
@@ -377,11 +377,11 @@ mod tests {
             timezone: None,
             value: "DATE-TIME",
         };
-        let res = props_to_rrule(props.clone(), &start_date);
+        let res = props_to_rrule(&props, &start_date);
         assert_eq!(res.unwrap_err(), ParseError::InvalidByMinute("60".into()));
 
         props.insert(RRuleProperty::ByMinute, "4,5,64".into());
-        let res = props_to_rrule(props, &start_date);
+        let res = props_to_rrule(&props, &start_date);
         assert_eq!(
             res.unwrap_err(),
             ParseError::InvalidByMinute("4,5,64".into())
@@ -403,7 +403,7 @@ mod tests {
         let start_date = ContentLineCaptures::new("DTSTART:19970902").unwrap();
         let start_date = StartDateContentLine::try_from(&start_date).unwrap();
 
-        let rrule = props_to_rrule(props.clone(), &start_date).unwrap();
+        let rrule = props_to_rrule(&props, &start_date).unwrap();
         assert_eq!(rrule.until, Some(until_local));
     }
 
@@ -422,7 +422,7 @@ mod tests {
         let start_date = ContentLineCaptures::new("DTSTART:19970902T090000").unwrap();
         let start_date = StartDateContentLine::try_from(&start_date).unwrap();
 
-        let rrule = props_to_rrule(props.clone(), &start_date).unwrap();
+        let rrule = props_to_rrule(&props, &start_date).unwrap();
         assert_eq!(rrule.until, Some(until_local));
     }
 
@@ -443,7 +443,7 @@ mod tests {
             let start_date = ContentLineCaptures::new(start_date).unwrap();
             let start_date = StartDateContentLine::try_from(&start_date).unwrap();
 
-            let rrule = props_to_rrule(props.clone(), &start_date).unwrap();
+            let rrule = props_to_rrule(&props, &start_date).unwrap();
             assert_eq!(rrule.until, Some(until_local));
         }
     }
@@ -467,7 +467,7 @@ mod tests {
             let start_date = ContentLineCaptures::new(start_date).unwrap();
             let start_date = StartDateContentLine::try_from(&start_date).unwrap();
 
-            let rrule = props_to_rrule(props.clone(), &start_date).unwrap();
+            let rrule = props_to_rrule(&props, &start_date).unwrap();
             assert_eq!(rrule.until, Some(until_local));
         }
     }
@@ -482,7 +482,7 @@ mod tests {
         let start_date = ContentLineCaptures::new("DTSTART:19970902T090000").unwrap();
         let start_date = StartDateContentLine::try_from(&start_date).unwrap();
 
-        let res = props_to_rrule(props.clone(), &start_date);
+        let res = props_to_rrule(&props, &start_date);
         assert_eq!(res, Err(ParseError::DtStartUntilMismatchTimezone));
     }
 
@@ -496,7 +496,7 @@ mod tests {
         let start_date = ContentLineCaptures::new("DTSTART:19970902").unwrap();
         let start_date = StartDateContentLine::try_from(&start_date).unwrap();
 
-        let res = props_to_rrule(props.clone(), &start_date);
+        let res = props_to_rrule(&props, &start_date);
         assert_eq!(res, Err(ParseError::DtStartUntilMismatchValue));
     }
 }

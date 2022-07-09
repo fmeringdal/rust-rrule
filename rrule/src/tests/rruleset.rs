@@ -1,5 +1,3 @@
-#![allow(deprecated)]
-
 use crate::tests::common::{check_occurrences, test_recurring_rrule_set, ymd_hms};
 use crate::{Frequency, NWeekday, RRule, RRuleSet, Weekday};
 
