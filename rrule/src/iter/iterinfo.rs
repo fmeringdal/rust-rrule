@@ -1,265 +1,261 @@
 #[cfg(feature = "by-easter")]
 use super::easter::easter;
-use super::{
-    monthinfo::{rebuild_month, MonthInfo},
-    utils::to_ordinal,
-    yearinfo::{rebuild_year, YearInfo},
-};
-use crate::core::DateTime;
-use crate::{core::Time, Frequency, NWeekday, RRule, RRuleError};
-use chrono::{Datelike, TimeZone};
+use super::{monthinfo::MonthInfo, yearinfo::YearInfo};
+use crate::core::{get_month, DateTime};
+use crate::{Frequency, NWeekday, RRule};
+use chrono::{Datelike, NaiveTime, TimeZone};
 
 #[derive(Debug, Clone)]
 pub(crate) struct IterInfo<'a> {
-    year_info: Option<YearInfo>,
+    year_info: YearInfo,
     month_info: Option<MonthInfo>,
-    easter_mask: Option<Vec<isize>>,
+    easter_mask: Option<Vec<i32>>,
     rrule: &'a RRule,
 }
 
 impl<'a> IterInfo<'a> {
-    /// Only used to create a dummy instance of this because
-    /// `into_iter` does not return an error.
-    pub(crate) fn new_no_rebuild(rrule: &'a RRule) -> Self {
-        Self {
-            rrule,
-            year_info: None,
-            month_info: None,
-            easter_mask: None,
-        }
-    }
+    pub fn new(rrule: &'a RRule, dt_start: &DateTime) -> Self {
+        let year = dt_start.year();
+        let month = get_month(dt_start);
 
-    pub fn new(rrule: &'a RRule, dt_start: &DateTime) -> Result<Self, RRuleError> {
+        let year_info = YearInfo::new(year, rrule);
         let mut ii = Self {
             rrule,
-            year_info: None,
+            year_info,
             month_info: None,
             easter_mask: None,
         };
-        #[allow(clippy::cast_possible_truncation)]
-        ii.rebuild(dt_start.year(), dt_start.month() as u8)?;
+        ii.rebuild_inner(year, month, true);
 
-        Ok(ii)
+        ii
     }
 
-    pub fn rebuild(&mut self, year: i32, month: u8) -> Result<(), RRuleError> {
-        if self.month_info.is_none() || year != self.month_info.as_ref().unwrap().last_year {
-            self.year_info = Some(rebuild_year(year, self.rrule));
+    fn rebuild_inner(&mut self, year: i32, month: u8, skip_year_info: bool) {
+        if !skip_year_info
+            && !matches!(&self.month_info, Some(month_info) if month_info.last_year == year)
+        {
+            self.year_info = YearInfo::new(year, self.rrule);
         }
 
-        let by_weekday_nth_only = self
+        let contains_nth_by_weekday = self
             .rrule
             .by_weekday
             .iter()
-            .filter(|by_weekday| match by_weekday {
-                NWeekday::Every(_) => false,
-                NWeekday::Nth(_, _) => true,
-            })
-            .count();
+            .any(|by_weekday| matches!(by_weekday, NWeekday::Nth(_, _)));
 
-        if by_weekday_nth_only != 0
-            && ((self.month_info.is_none()
-                || month != self.month_info.as_ref().unwrap().last_month)
-                || (self.month_info.is_none()
-                    || year != self.month_info.as_ref().unwrap().last_year))
+        if contains_nth_by_weekday
+            && !(matches!(&self.month_info, Some(month_info) if month_info.last_month == month && month_info.last_year == year))
         {
-            if let Some(year_info) = &self.year_info {
-                self.month_info = Some(rebuild_month(
-                    year,
-                    month,
-                    year_info.year_len,
-                    year_info.month_range,
-                    year_info.weekday_mask,
-                    self.rrule,
-                )?);
-            }
+            let new_month_info = MonthInfo::new(&self.year_info, month, self.rrule);
+            self.month_info = Some(new_month_info);
         }
 
         #[cfg(feature = "by-easter")]
-        if let Some(by_easter) = self.rrule.by_easter {
-            self.easter_mask = Some(easter(year, by_easter)?);
+        {
+            self.easter_mask = self
+                .rrule
+                .by_easter
+                .map(|by_easter| vec![easter(year, by_easter)]);
         }
-        Ok(())
     }
 
-    pub fn year_len(&self) -> Option<u16> {
-        self.year_info.as_ref().map(|info| info.year_len)
+    pub fn rebuild(&mut self, counter_date: &DateTime) {
+        let year = counter_date.year();
+        let month = get_month(counter_date);
+        self.rebuild_inner(year, month, false);
     }
 
-    pub fn year_ordinal(&self) -> Option<i64> {
-        self.year_info.as_ref().map(|info| info.year_ordinal as i64)
+    pub fn year_len(&self) -> u16 {
+        self.year_info.year_len
+    }
+
+    pub fn year_ordinal(&self) -> i64 {
+        self.year_info.year_ordinal
     }
 
     pub fn month_range(&self) -> &[u16] {
-        self.year_info
-            .as_ref()
-            .map(|info| &info.month_range)
-            .unwrap()
+        self.year_info.month_range
     }
 
-    pub fn easter_mask(&self) -> Option<&Vec<isize>> {
+    pub fn easter_mask(&self) -> Option<&Vec<i32>> {
         self.easter_mask.as_ref()
     }
 
-    pub fn weekday_mask(&self) -> &[u8] {
-        self.year_info
-            .as_ref()
-            .map(|info| &info.weekday_mask)
-            .unwrap()
+    pub fn weekday_mask(&self) -> &[u32] {
+        self.year_info.weekday_mask
     }
 
     pub fn month_mask(&self) -> &[u8] {
-        self.year_info
-            .as_ref()
-            .map(|info| &info.month_mask)
-            .unwrap()
+        self.year_info.month_mask
     }
 
     pub fn week_no_mask(&self) -> Option<&Vec<u8>> {
-        match &self.year_info {
-            Some(info) => info.week_no_mask.as_ref(),
-            None => None,
-        }
+        self.year_info.week_no_mask.as_ref()
     }
 
-    pub fn neg_weekday_mask(&self) -> Option<&Vec<i8>> {
+    pub fn neg_weekday_mask(&self) -> Option<&Vec<u8>> {
         self.month_info.as_ref().map(|info| &info.neg_weekday_mask)
     }
 
-    pub fn next_year_len(&self) -> Option<u16> {
-        self.year_info.as_ref().map(|info| info.next_year_len)
+    pub fn next_year_len(&self) -> u16 {
+        self.year_info.next_year_len
     }
 
     pub fn month_day_mask(&self) -> &[i8] {
-        self.year_info.as_ref().unwrap().month_day_mask
+        self.year_info.month_day_mask
     }
 
     pub fn neg_month_day_mask(&self) -> &[i8] {
-        self.year_info.as_ref().unwrap().neg_month_day_mask
+        self.year_info.neg_month_day_mask
     }
 
-    pub fn year_dayset(&self) -> Result<(Vec<u64>, u64, u64), RRuleError> {
-        let year_len = u64::from(
-            self.year_len()
-                .ok_or_else(|| RRuleError::new_iter_err("`year_len()` returned `None`"))?,
-        );
-        let v = (0..year_len).collect();
-        Ok((v, 0, year_len))
+    pub fn year_dayset(&self) -> Vec<usize> {
+        let year_len = usize::from(self.year_len());
+        (0..year_len).collect()
     }
 
-    pub fn month_dayset(&self, month: u8) -> (Vec<u64>, u64, u64) {
+    pub fn month_dayset(&self, month: u32) -> Vec<usize> {
         let month_range = self.month_range();
-        let start = u64::from(month_range[month as usize - 1]);
-        let end = u64::from(month_range[month as usize]);
-        let set = (0..u64::from(self.year_len().unwrap_or_default()))
-            .map(|i| if i < end { i } else { 0 })
-            .collect();
-        (set, start, end)
+        let month = usize::try_from(month).expect("target arch should have at least 32 bits");
+        let start = usize::from(month_range[month - 1]);
+        let end = usize::from(month_range[month]);
+        (start..end).collect()
     }
 
-    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-    pub fn weekday_set(&self, year: i32, month: u8, day: u8) -> (Vec<u64>, u64, u64) {
-        let set_len = self.year_len().unwrap() + 7;
-        let mut set = vec![0; set_len as usize];
+    pub fn weekday_set(&self, year: i32, month: u32, day: u32) -> Vec<usize> {
+        let set_len = usize::from(self.year_len() + 7);
 
-        #[allow(clippy::cast_sign_loss)]
-        let mut i: u64 = (to_ordinal(
-            &chrono::Utc
-                .ymd(year, u32::from(month), u32::from(day))
-                .and_hms(0, 0, 0),
-        ) - self.year_ordinal().unwrap()) as u64; // TODO can panic when number was negative
+        let mut date_ordinal = usize::try_from(chrono::Utc.ymd(year, month, day).ordinal0())
+            .expect("target arch should have at least 32 bits");
 
-        let start = i;
-        #[allow(clippy::cast_possible_truncation)]
+        let mut set = vec![];
+
+        let week_start_num_days_from_monday = self.rrule.week_start.num_days_from_monday();
+
         for _ in 0..7 {
-            if i >= u64::from(set_len) {
+            if date_ordinal >= set_len {
                 break;
             }
-            set[i as usize] = i;
-            i += 1;
-            #[allow(clippy::cast_possible_truncation)]
-            if self.weekday_mask()[i as usize] == self.rrule.week_start.num_days_from_monday() as u8
-            {
+            set.push(date_ordinal);
+            date_ordinal += 1;
+            if self.weekday_mask()[date_ordinal] == week_start_num_days_from_monday {
                 break;
             }
         }
-        (set, start, i)
+
+        set
     }
 
-    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-    pub fn day_dayset(&self, year: i32, month: u8, day: u8) -> (Vec<u64>, u64, u64) {
-        let mut set = vec![0; self.year_len().unwrap() as usize];
+    pub fn day_dayset(year: i32, month: u32, day: u32) -> Vec<usize> {
+        let date_ordinal = chrono::Utc.ymd(year, month, day).ordinal0();
 
-        #[allow(clippy::cast_sign_loss)]
-        let i = (to_ordinal(
-            &chrono::Utc
-                .ymd(year, u32::from(month), u32::from(day))
-                .and_hms(0, 0, 0),
-        ) - self.year_ordinal().unwrap()) as u64;
-
-        set[i as usize] = i;
-        (set, i, i + 1)
+        vec![usize::try_from(date_ordinal).expect("target arch should have at least 32 bits")]
     }
 
-    pub fn hour_timeset(&self, hour: u8, _minute: u8, second: u8, millisecond: u16) -> Vec<Time> {
-        let mut set = self
-            .rrule
+    pub fn hour_timeset(&self, hour: u8) -> Vec<NaiveTime> {
+        self.rrule
             .by_minute
             .iter()
-            .flat_map(|minute| self.min_timeset(hour, *minute, second, millisecond))
-            .collect::<Vec<Time>>();
-        set.sort_by_key(|a| a.time());
-        set
+            .flat_map(|minute| self.min_timeset(hour, *minute))
+            .collect()
     }
 
-    pub fn min_timeset(&self, hour: u8, minute: u8, _second: u8, millisecond: u16) -> Vec<Time> {
-        let mut set = self
-            .rrule
+    pub fn min_timeset(&self, hour: u8, minute: u8) -> Vec<NaiveTime> {
+        self.rrule
             .by_second
             .iter()
-            .map(|second| Time::new(hour, minute, *second, millisecond))
-            .collect::<Vec<Time>>();
-        set.sort_by_key(|a| a.time());
-        set
+            .map(|second| {
+                NaiveTime::from_hms(u32::from(hour), u32::from(minute), u32::from(*second))
+            })
+            .collect()
     }
 
-    #[allow(clippy::unused_self)]
-    pub fn sec_timeset(&self, hour: u8, minute: u8, second: u8, millisecond: u16) -> Vec<Time> {
-        vec![Time::new(hour, minute, second, millisecond)]
+    pub fn sec_timeset(hour: u8, minute: u8, second: u8) -> Vec<NaiveTime> {
+        vec![NaiveTime::from_hms(
+            u32::from(hour),
+            u32::from(minute),
+            u32::from(second),
+        )]
     }
 
-    pub fn get_dayset(
-        &self,
-        freq: Frequency,
-        year: i32,
-        month: u8,
-        day: u8,
-    ) -> Result<(Vec<u64>, u64, u64), RRuleError> {
-        match freq {
+    pub fn get_dayset(&self, freq: Frequency, year: i32, month: u32, day: u32) -> Vec<usize> {
+        let mut dayset = match freq {
             Frequency::Yearly => self.year_dayset(),
-            Frequency::Monthly => Ok(self.month_dayset(month)),
-            Frequency::Weekly => Ok(self.weekday_set(year, month, day)),
-            _ => Ok(self.day_dayset(year, month, day)),
+            Frequency::Monthly => self.month_dayset(month),
+            Frequency::Weekly => self.weekday_set(year, month, day),
+            _ => Self::day_dayset(year, month, day),
+        };
+
+        // Filter out days according to the RRule filters.
+        dayset.retain(|day| !super::filters::is_filtered(self, *day));
+
+        dayset
+    }
+
+    /// Gets a timeset without checking if the hour, minute and second are valid according
+    /// to the `RRule`.
+    ///
+    /// This is usually called after calling the `increment_counter_date` where we know
+    /// that we get a valid `DateTime` back and there is no need to do any duplicate
+    /// validation.
+    pub fn get_timeset_unchecked(&self, hour: u8, minute: u8, second: u8) -> Vec<NaiveTime> {
+        match self.rrule.freq {
+            Frequency::Hourly => self.hour_timeset(hour),
+            Frequency::Minutely => self.min_timeset(hour, minute),
+            Frequency::Secondly => Self::sec_timeset(hour, minute, second),
+            _ => unreachable!("This method is never called with an invalid frequency and is not publically exposed")
         }
     }
 
-    pub fn get_timeset(
-        &self,
-        freq: Frequency,
-        hour: u8,
-        minute: u8,
-        second: u8,
-        millisecond: u16,
-    ) -> Result<Vec<Time>, RRuleError> {
-        match freq {
-            Frequency::Hourly => Ok(self.hour_timeset(hour, minute, second, millisecond)),
-            Frequency::Minutely => Ok(self.min_timeset(hour, minute, second, millisecond)),
-            Frequency::Secondly => Ok(self.sec_timeset(hour, minute, second, millisecond)),
-            _ => Err(RRuleError::new_iter_err("Invalid freq")),
+    /// Gets a timeset.  
+    ///
+    /// An empty set is returned if the hour, minute and second are not valid
+    /// according to the `RRule`.
+    pub fn get_timeset(&self, hour: u8, minute: u8, second: u8) -> Vec<NaiveTime> {
+        match self.rrule.freq {
+            Frequency::Hourly | Frequency::Minutely | Frequency::Secondly => {
+                let incorrect_hour = self.rrule.freq >= Frequency::Hourly
+                    && !self.rrule.by_hour.is_empty()
+                    && !self.rrule.by_hour.contains(&hour);
+                let incorrect_minute = self.rrule.freq >= Frequency::Minutely
+                    && !self.rrule.by_minute.is_empty()
+                    && !self.rrule.by_minute.contains(&minute);
+                let incorrect_second = self.rrule.freq >= Frequency::Secondly
+                    && !self.rrule.by_second.is_empty()
+                    && !self.rrule.by_second.contains(&second);
+                let date_is_not_a_candidate =
+                    incorrect_hour || incorrect_minute || incorrect_second;
+
+                // If date is not a potential candidate, then we return an empty timeset.
+                if date_is_not_a_candidate {
+                    return vec![];
+                }
+
+                self.get_timeset_unchecked(hour, minute, second)
+            }
+            _ => {
+                let mut timeset = Vec::with_capacity(
+                    self.rrule.by_hour.len()
+                        * self.rrule.by_minute.len()
+                        * self.rrule.by_second.len(),
+                );
+                for hour in &self.rrule.by_hour {
+                    for minute in &self.rrule.by_minute {
+                        for second in &self.rrule.by_second {
+                            timeset.push(NaiveTime::from_hms(
+                                u32::from(*hour),
+                                u32::from(*minute),
+                                u32::from(*second),
+                            ));
+                        }
+                    }
+                }
+                timeset
+            }
         }
     }
 
-    pub fn get_rrule(&self) -> &RRule {
+    pub fn rrule(&self) -> &RRule {
         self.rrule
     }
 }

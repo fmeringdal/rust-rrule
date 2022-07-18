@@ -15,11 +15,9 @@ jobs:
           cd rrule 
           cargo fmt -- --check
       - name: Linting
-        # TODO: Ideally we would like to do deny warnings as well in the future when the code quality has improved
-        # cargo clippy -- -D warnings
         run: |
           cd rrule
-          cargo clippy
+          cargo clippy -- -D warnings
       - name: Cargo Doc
         run: |
           cargo doc --no-deps --all-features --examples
@@ -35,7 +33,7 @@ jobs:
         - { name: macOS, os: macos-latest, triple: x86_64-apple-darwin }
         - { name: Windows, os: windows-2022, triple: x86_64-pc-windows-msvc }
         version:
-        - 1.56.1 # MSRV
+        - 1.57.0 # MSRV
         - stable
     steps:
       - uses: actions/checkout@v2

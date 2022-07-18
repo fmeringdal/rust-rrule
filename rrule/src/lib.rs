@@ -4,9 +4,28 @@
 //! properties are represented by the [`RRule`] type and the `DTSTART`, `RDATE` and `EXDATE` properties are represented by the [`chrono::DateTime<Tz>`].
 //!
 //! # Building `RRule` and `RRuleSet`
-//! Both types implements the [`std::str::FromStr`] trait so that they can be parsed and built from a string representation.
-//! [`RRuleSet`] can also be built by composing multiple `RRule`s for its `rrule` and `exrule` properties and [`chrono::DateTime<Tz>`] for its
+//! [`RRuleSet`] implements the [`std::str::FromStr`] trait so that it can be parsed and built from a string representation.
+//! [`RRuleSet`] can also be built by composing multiple [`RRule`]s for its `rrule` and `exrule` properties and [`chrono::DateTime<Tz>`] for its
 //! `dt_start`, `exdate` and `rdate` properties. See the examples below.
+//!
+//! ```rust
+//! use chrono::{DateTime, TimeZone};
+//! use chrono_tz::UTC;
+//! use rrule::{RRuleSet, RRule};
+//!
+//! // Parse a RRuleSet string
+//! let rrule_set: RRuleSet = "DTSTART:20120201T023000Z\n\
+//!     RRULE:FREQ=MONTHLY;COUNT=5\n\
+//!     RDATE:20120701T023000Z,20120702T023000Z\n\
+//!     EXRULE:FREQ=MONTHLY;COUNT=2\n\
+//!     EXDATE:20120601T023000Z".parse().unwrap();
+//!
+//! assert_eq!(*rrule_set.get_dt_start(), UTC.ymd(2012, 2, 1).and_hms(2, 30, 0));
+//! assert_eq!(rrule_set.get_rrule().len(), 1);
+//! assert_eq!(rrule_set.get_exrule().len(), 1);
+//! assert_eq!(rrule_set.get_rdate().len(), 2);
+//! assert_eq!(rrule_set.get_exdate().len(), 1);
+//! ```
 //!
 //! # Generating occurrences
 //! You can loop over the occurrences of a [`RRuleSet`] by calling any of the following methods:
@@ -22,7 +41,7 @@
 //! ```rust
 //! use chrono::{DateTime, TimeZone};
 //! use chrono_tz::UTC;
-//! use rrule::{RRuleSet};
+//! use rrule::RRuleSet;
 //!
 //! let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
 //!
@@ -40,57 +59,24 @@
 //! ```rust
 //! # use chrono::{DateTime, TimeZone};
 //! # use chrono_tz::UTC;
-//! # use rrule::{RRuleSet};
+//! # use rrule::RRuleSet;
 //! #
 //! let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
 //! // Between two dates
 //! let after = UTC.ymd(2012, 2, 1).and_hms(10, 0, 0);
 //! let before = UTC.ymd(2012, 4, 1).and_hms(9, 0, 0);
-//! let inc = true; // Whether dates equal to after or before should be added;
+//! let inclusive = true; // Whether dates equal to after or before should be included in the result
 //!
 //! assert_eq!(
 //!     vec![
 //!         DateTime::parse_from_rfc3339("2012-02-02T09:30:00+00:00").unwrap(),
 //!         DateTime::parse_from_rfc3339("2012-02-03T09:30:00+00:00").unwrap(),
 //!     ],
-//!     rrule.all_between(after, before, inc).unwrap()
+//!     rrule.all_between(after, before, inclusive).unwrap()
 //! );
 //! ```
 //!
 //! Note: All the generated recurrence will be in the same time zone as the `dt_start` property.
-//!
-//! # Example
-//!
-//! Quick start by parsing strings
-//!
-//! ```rust
-//! use chrono::DateTime;
-//! use rrule::{RRuleSet};
-//!
-//! // Parse a RRule string
-//! let rrule: RRuleSet = "DTSTART:20120201T093000Z\n\
-//!    RRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR".parse().unwrap();
-//! assert_eq!(rrule.all(100).unwrap().len(), 21);
-//!
-//! // Parse a RRuleSet string
-//! let rrule_set: RRuleSet = "DTSTART:20120201T023000Z\n\
-//!     RRULE:FREQ=MONTHLY;COUNT=5\n\
-//!     RDATE:20120701T023000Z,20120702T023000Z\n\
-//!     EXRULE:FREQ=MONTHLY;COUNT=2\n\
-//!     EXDATE:20120601T023000Z".parse().unwrap();
-//! let all_dates = rrule_set.all(100).unwrap();
-//! assert_eq!(all_dates.len(), 4);
-//!
-//! assert_eq!(
-//!     vec![
-//!         DateTime::parse_from_rfc3339("2012-04-01T02:30:00+00:00").unwrap(),
-//!         DateTime::parse_from_rfc3339("2012-05-01T02:30:00+00:00").unwrap(),
-//!         DateTime::parse_from_rfc3339("2012-07-01T02:30:00+00:00").unwrap(),
-//!         DateTime::parse_from_rfc3339("2012-07-02T02:30:00+00:00").unwrap(),
-//!     ],
-//!     all_dates
-//! );
-//! ```
 //!
 
 #![forbid(unsafe_code)]

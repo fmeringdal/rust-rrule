@@ -1,45 +1,32 @@
-use chrono::{Duration, NaiveTime};
+use chrono::{Datelike, Duration, NaiveTime, Timelike};
 use chrono_tz::Tz;
 
 pub(crate) type DateTime = chrono::DateTime<Tz>;
 
-#[derive(Debug, Clone, Copy)]
-pub(crate) struct Time {
-    pub hour: u8,
-    pub minute: u8,
-    pub second: u8,
-    pub millisecond: u16,
+pub(crate) fn duration_from_midnight(time: NaiveTime) -> Duration {
+    Duration::hours(i64::from(time.hour()))
+        + Duration::minutes(i64::from(time.minute()))
+        + Duration::seconds(i64::from(time.second()))
 }
 
-impl Time {
-    pub fn new(hour: u8, minute: u8, second: u8, millisecond: u16) -> Self {
-        Self {
-            hour,
-            minute,
-            second,
-            millisecond,
-        }
-    }
+pub(crate) fn get_month(dt: &DateTime) -> u8 {
+    u8::try_from(dt.month()).expect("month is between 1-12 which is covered by u8")
+}
 
-    pub fn time(self) -> u64 {
-        (u64::from(self.hour) * 60 * 60 + u64::from(self.minute) * 60 + u64::from(self.second))
-            * 1000
-            + u64::from(self.millisecond)
-    }
+pub(crate) fn get_day(dt: &DateTime) -> i8 {
+    i8::try_from(dt.day()).expect("day is between 1-31 which is covered by i8")
+}
 
-    pub fn to_naive_time(self) -> NaiveTime {
-        NaiveTime::from_hms(
-            u32::from(self.hour),
-            u32::from(self.minute),
-            u32::from(self.second),
-        )
-    }
+pub(crate) fn get_hour(dt: &DateTime) -> u8 {
+    u8::try_from(dt.hour()).expect("hour is between 0-23 which is covered by u8")
+}
 
-    pub fn duration_from_midnight(self) -> Duration {
-        Duration::hours(i64::from(self.hour))
-            + Duration::minutes(i64::from(self.minute))
-            + Duration::seconds(i64::from(self.second))
-    }
+pub(crate) fn get_minute(dt: &DateTime) -> u8 {
+    u8::try_from(dt.minute()).expect("minute is between 0-59 which is covered by u8")
+}
+
+pub(crate) fn get_second(dt: &DateTime) -> u8 {
+    u8::try_from(dt.second()).expect("second is between 0-59 which is covered by u8")
 }
 
 /// Generates an iCalendar date-time string format with the prefix symbols.

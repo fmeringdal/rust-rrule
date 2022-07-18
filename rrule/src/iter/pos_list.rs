@@ -1,25 +1,13 @@
 use super::utils::{from_ordinal, pymod};
-use crate::{
-    core::{DateTime, Time},
-    iter::iterinfo::IterInfo,
-    RRuleError,
-};
-use chrono::{Datelike, TimeZone};
+use crate::{core::DateTime, iter::iterinfo::IterInfo, RRuleError};
+use chrono::{Datelike, LocalResult, NaiveTime, TimeZone};
 use chrono_tz::Tz;
 
-#[allow(
-    clippy::cast_possible_truncation,
-    clippy::cast_precision_loss,
-    clippy::cast_possible_wrap,
-    clippy::cast_sign_loss
-)]
 pub(crate) fn build_pos_list(
     by_set_pos: &[i32],
-    timeset: &[Time],
-    start: u64,
-    end: u64,
+    dayset: &[usize],
+    timeset: &[NaiveTime],
     ii: &IterInfo,
-    dayset: &[Option<i32>],
     tz: Tz,
 ) -> Result<Vec<DateTime>, RRuleError> {
     let mut pos_list = vec![];
@@ -28,52 +16,62 @@ pub(crate) fn build_pos_list(
         return Err(RRuleError::new_iter_err("`timeset` can not be empty"));
     }
 
+    let timeset_len = u32::try_from(timeset.len())
+        .map_err(|_| RRuleError::new_iter_err("timeset length is too large"))?;
+    let timeset_len_float = f64::try_from(timeset_len)
+        .map_err(|_| RRuleError::new_iter_err("timeset length is too large"))?;
+    let timeset_len_int = i32::try_from(timeset.len())
+        .map_err(|_| RRuleError::new_iter_err("timeset length is too large"))?;
     for pos in by_set_pos {
         let day_pos;
         let time_pos;
         if *pos < 0 {
-            day_pos = (*pos as f32 / timeset.len() as f32).floor() as isize;
-            time_pos = pymod(*pos as isize, timeset.len() as isize);
+            day_pos = (f64::from(*pos) / timeset_len_float).floor() as isize;
+            time_pos = usize::try_from(pymod(*pos, timeset_len_int))
+                .expect("modulus is a positive number and within range of usize");
         } else {
-            day_pos = ((*pos - 1) as f32 / timeset.len() as f32) as isize;
-            time_pos = pymod(*pos as isize - 1, timeset.len() as isize);
+            day_pos = ((f64::from(*pos) - 1.) / timeset_len_float) as isize;
+            time_pos = usize::try_from(pymod(pos - 1, timeset_len_int))
+                .expect("modulus is a positive number and within range of usize");
         }
 
-        let mut tmp = vec![];
-        for k in start..end {
-            let val = dayset
-                .get(k as usize)
-                .ok_or_else(|| RRuleError::new_iter_err("Index out of bounds `dayset`"))?;
-            match val {
-                Some(v) => tmp.push(v),
-                None => (),
-            }
-        }
-
-        let i = if day_pos < 0 {
-            let index = tmp.len() as isize + day_pos;
-            **tmp
-                .get(index as usize)
-                .ok_or_else(|| RRuleError::new_iter_err("Index out of bounds `tmp`"))?
+        let day_idx = if day_pos < 0 {
+            let dayset_len = isize::try_from(dayset.len())
+                .expect("dayset is controlled by us and is never more than isize::MAX");
+            let index = dayset_len + day_pos;
+            usize::try_from(index)
+                .map_err(|_| RRuleError::new_iter_err("Index out of bounds `tmp`"))?
         } else {
-            **tmp
-                .get(day_pos as usize)
-                .ok_or_else(|| RRuleError::new_iter_err("Index out of bounds `tmp`"))?
+            usize::try_from(day_pos)
+                .map_err(|_| RRuleError::new_iter_err("Index out of bounds `tmp`"))?
         };
+        let day = dayset
+            .get(day_idx)
+            .ok_or_else(|| RRuleError::new_iter_err("Index out of bounds `tmp`"))?;
+        let day = i64::try_from(*day)
+            .expect("dayset is controlled by us and all elements are within range of i64");
 
         // Get ordinal which is UTC
-        let date = from_ordinal(ii.year_ordinal().unwrap() + i64::from(i));
+        let date = from_ordinal(ii.year_ordinal() + day);
         // Apply timezone
-        let date = tz.ymd_opt(date.year(), date.month(), date.day()).unwrap();
+        let date = match tz.ymd_opt(date.year(), date.month(), date.day()) {
+            LocalResult::Single(date) => date,
+            e => {
+                return Err(RRuleError::new_iter_err(format!(
+                    "Invalid date encountered. Error: {:?}",
+                    e
+                )))
+            }
+        };
         // Create new Date + Time combination
         // Use Date and Timezone from `date`
         // Use Time from `timeset`.
-        let time = timeset[time_pos as usize].to_naive_time();
+        let time = timeset[time_pos];
         let res = date.and_time(time).ok_or_else(|| {
             RRuleError::new_iter_err(format!("Time from `timeset` invalid `{} + {}`", date, time))
         })?;
 
-        if !pos_list.iter().any(|&p| p == res) {
+        if !pos_list.contains(&res) {
             pos_list.push(res);
         }
     }

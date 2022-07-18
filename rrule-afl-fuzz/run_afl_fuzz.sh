@@ -8,7 +8,7 @@ set -e
 # cargo install --force afl
 
 # Create folder
-FOLDER_IN="in_raw_rrule"
+FOLDER_IN="src"
 FOLDER_OUT="out"
 
 # Build

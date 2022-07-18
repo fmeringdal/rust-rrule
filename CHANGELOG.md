@@ -8,7 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- MSRV is bumped to `v1.57.0` from `v1.56.1`
+- Internal `Time` type has been replaced by `chrono::NaiveTime`
+- Iterator module has been refactored
 - The `parser` module has been rewritten from scratch to be more Rust idiomatic and use terminology more consistent with the RFC. The end result of the `parser` phase is now a `Grammar`.
+- Added `cargo clippy -- -D warnings` back to the CI
 
 ### Removed
 
@@ -17,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixes
 
 - The `DTSTART` and `UNTIL` values were not synced before this release. They are now synced according to the RFC.
+- Fix #61 where `collect_with_error` would not return an error in the case where `RRuleSet` iteration had an error.
 
 ## 0.8.0 (2022-06-21)
 

@@ -1,15 +1,18 @@
 use super::datetime::DateTime;
-use crate::iter::iterinfo::IterInfo;
+use crate::core::get_day;
+use crate::core::get_hour;
+use crate::core::get_minute;
+use crate::core::get_month;
+use crate::core::get_second;
 use crate::parser::str_to_weekday;
 use crate::parser::ParseError;
 use crate::validator::check_limits;
 use crate::validator::validate_rrule;
 use crate::{RRuleError, RRuleIter, RRuleSet, Unvalidated, Validated};
-use chrono::{Datelike, Month, Timelike, Weekday};
+use chrono::{Datelike, Month, Weekday};
 use chrono_tz::Tz;
 #[cfg(feature = "serde")]
 use serde_with::{DeserializeFromStr, SerializeDisplay};
-use std::collections::VecDeque;
 use std::fmt::Display;
 use std::fmt::Formatter;
 use std::marker::PhantomData;
@@ -174,7 +177,7 @@ fn weekday_to_str(d: Weekday) -> String {
 /// Represents a complete RRULE property based on the [iCalendar specification](https://datatracker.ietf.org/doc/html/rfc5545#section-3.8.5.3)
 /// It has two stages, based on the attached type, `Validated` or `Unvalidated`.
 /// - `Unvalidated`, which is the raw string representation of the RRULE
-/// - `Validated`, which is when the RRule has been parsed and validated, based on the start date
+/// - `Validated`, which is when the `RRule` has been parsed and validated, based on the start date
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RRule<Stage = Validated> {
     /// The frequency of the rrule.
@@ -267,7 +270,7 @@ impl RRule<Unvalidated> {
     pub fn new(freq: Frequency) -> Self {
         Self {
             freq,
-            ..Default::default()
+            ..RRule::default()
         }
     }
 
@@ -321,11 +324,12 @@ impl RRule<Unvalidated> {
 
     /// When given, these variables will define the months to apply the recurrence to.
     #[must_use]
-    #[allow(clippy::cast_possible_truncation)]
     pub fn by_month(mut self, by_month: &[Month]) -> Self {
         self.by_month = by_month
             .iter()
-            .map(|month| month.number_from_month() as u8)
+            .map(|month| {
+                u8::try_from(month.number_from_month()).expect("1-12 is within range of u8")
+            })
             .collect();
         self
     }
@@ -399,7 +403,6 @@ impl RRule<Unvalidated> {
     }
 
     /// Fills in some additional fields in order to make iter work correctly.
-    #[allow(clippy::cast_possible_truncation)]
     pub(crate) fn finalize_parsed_rrule(mut self, dt_start: &DateTime) -> RRule<Unvalidated> {
         use std::cmp::Ordering;
         // TEMP: move negative months to other list
@@ -433,12 +436,15 @@ impl RRule<Unvalidated> {
             match self.freq {
                 Frequency::Yearly => {
                     if self.by_month.is_empty() {
-                        self.by_month = vec![dt_start.month() as u8];
+                        let month = get_month(dt_start);
+                        self.by_month = vec![month];
                     }
-                    self.by_month_day = vec![dt_start.day() as i8];
+                    let day = get_day(dt_start);
+                    self.by_month_day = vec![day];
                 }
                 Frequency::Monthly => {
-                    self.by_month_day = vec![dt_start.day() as i8];
+                    let day = get_day(dt_start);
+                    self.by_month_day = vec![day];
                 }
                 Frequency::Weekly => {
                     self.by_weekday = vec![NWeekday::Every(dt_start.weekday())];
@@ -449,18 +455,24 @@ impl RRule<Unvalidated> {
 
         // by_hour
         if self.by_hour.is_empty() && self.freq < Frequency::Hourly {
-            self.by_hour = vec![dt_start.hour() as u8];
+            let hour = get_hour(dt_start);
+            self.by_hour = vec![hour];
         }
+        self.by_hour.sort_unstable();
 
         // by_minute
         if self.by_minute.is_empty() && self.freq < Frequency::Minutely {
-            self.by_minute = vec![dt_start.minute() as u8];
+            let minute = get_minute(dt_start);
+            self.by_minute = vec![minute];
         }
+        self.by_minute.sort_unstable();
 
         // by_second
         if self.by_second.is_empty() && self.freq < Frequency::Secondly {
-            self.by_second = vec![dt_start.second() as u8];
+            let second = get_second(dt_start);
+            self.by_second = vec![second];
         }
+        self.by_second.sort_unstable();
 
         self
     }
@@ -514,25 +526,7 @@ impl RRule<Unvalidated> {
 
 impl RRule {
     pub(crate) fn iter_with_ctx(&self, dt_start: DateTime) -> RRuleIter {
-        match RRuleIter::new(self, &dt_start) {
-            Ok(iter) => iter,
-            Err(err) => {
-                // Print error and create iterator that will ways return the error if used.
-                log::error!("{:?}", err);
-                let error = Some(err);
-                // This is mainly a dummy object, as it will ways return the error when called.
-                RRuleIter {
-                    counter_date: dt_start,
-                    ii: IterInfo::new_no_rebuild(self),
-                    timeset: vec![],
-                    dt_start,
-                    buffer: VecDeque::new(),
-                    finished: false,
-                    count: None,
-                    error,
-                }
-            }
-        }
+        RRuleIter::new(self, &dt_start)
     }
 }
 
@@ -548,6 +542,7 @@ impl<S> Display for RRule<S> {
         res.push(format!("FREQ={}", &self.freq));
 
         if let Some(until) = &self.until {
+            // TODO: until is not always in UTC, so `Z` flag should be conditionally added.
             res.push(format!("UNTIL={}", until.format("%Y%m%dT%H%M%SZ")));
         }
 

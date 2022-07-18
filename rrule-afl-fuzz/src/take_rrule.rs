@@ -62,7 +62,7 @@ pub fn take_rrule_from_data(mut data: &[u8]) -> Option<RRuleSet> {
     let by_set_pos = take_vec_i32(&mut data);
     let by_month = take_vec_u8(&mut data)
         .iter()
-        .map(|x| Month::from_u8(*x).unwrap())
+        .filter_map(|x| Month::from_u8(*x))
         .collect::<Vec<_>>();
     let by_month_day = take_vec_i8(&mut data);
     let _by_n_month_day = take_vec_i8(&mut data);

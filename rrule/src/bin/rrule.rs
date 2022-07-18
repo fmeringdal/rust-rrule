@@ -58,7 +58,7 @@ where
     T: Iterator + WithError,
     <T as Iterator>::Item: Display,
 {
-    for _i in 0..limit {
+    for _ in 0..limit {
         let next = rule_iter.next();
         match next {
             Some(value) => {

@@ -1,18 +1,4 @@
-use crate::validator::{ValidationError, DAY_RANGE, MONTH_RANGE, YEAR_RANGE};
-
-#[allow(dead_code)]
-pub(crate) fn check_day_range(day: u8) -> Result<(), ValidationError> {
-    if DAY_RANGE.contains(&day) {
-        Ok(())
-    } else {
-        Err(ValidationError::InvalidFieldValueRange {
-            field: "DAY".into(),
-            value: day.to_string(),
-            start_idx: DAY_RANGE.start().to_string(),
-            end_idx: DAY_RANGE.end().to_string(),
-        })
-    }
-}
+use crate::validator::{ValidationError, MONTH_RANGE, YEAR_RANGE};
 
 pub(crate) fn check_month_range(month: u8) -> Result<(), ValidationError> {
     if MONTH_RANGE.contains(&month) {

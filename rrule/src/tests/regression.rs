@@ -24,23 +24,22 @@ RRULE:FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-2"
 }
 
 #[test]
-#[ignore = "stick in an infinite loop in exrule calculation"]
-fn edge_case_1() {
-    let rrule_set: RRuleSet = "DTSTART;TZID=Europe/Berlin:20210101T000000;
-RRULE:FREQ=MONTHLY
-EXRULE:FREQ=MONTHLY"
+fn issue_61() {
+    let rrule_set: RRuleSet = "DTSTART;TZID=Europe/Berlin:18930401T010000\nRRULE:FREQ=DAILY"
         .parse()
         .expect("The RRule is not valid");
 
-    let _ = rrule_set.all(10);
+    let (_, err) = rrule_set.all_with_error(10);
+    assert!(err.is_some());
 }
 
 #[test]
-#[ignore = "This time doesn't exist at all and some rruleset errors must be there: https://www.timeanddate.com/time/change/germany/berlin?year=1893"]
-fn edge_case_2() {
-    let rrule_set: RRuleSet = "DTSTART;TZID=Europe/Berlin:18930401T010000;\nRRULE:FREQ=DAILY"
-        .parse()
-        .expect("The RRule is not valid");
+#[ignore = "stick in an infinite loop in exrule calculation"]
+fn edge_case_1() {
+    let rrule_set: RRuleSet =
+        "DTSTART;TZID=Europe/Berlin:20210101T000000\nRRULE:FREQ=MONTHLY\nEXRULE:FREQ=MONTHLY"
+            .parse()
+            .expect("The RRule is not valid");
 
-    assert!(rrule_set.all_with_error(10).1.is_some());
+    let _ = rrule_set.all(10);
 }
