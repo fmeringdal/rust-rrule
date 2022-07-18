@@ -474,6 +474,17 @@ impl RRule<Unvalidated> {
         }
         self.by_second.sort_unstable();
 
+        // make sure all BYXXX are unique
+        self.by_hour.dedup();
+        self.by_minute.dedup();
+        self.by_second.dedup();
+        self.by_month.dedup();
+        self.by_month_day.dedup();
+        self.by_n_month_day.dedup();
+        self.by_year_day.dedup();
+        self.by_week_no.dedup();
+        self.by_set_pos.dedup();
+
         self
     }
 
