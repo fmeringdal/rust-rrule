@@ -1,8 +1,8 @@
 use std::ops;
 
-use crate::core::DateTime;
-use chrono::{TimeZone, Utc};
-use chrono_tz::UTC;
+use crate::core::{duration_from_midnight, DateTime};
+use chrono::{Date, NaiveTime, TimeZone, Utc};
+use chrono_tz::{Tz, UTC};
 
 const DAY_SECS: i64 = 24 * 60 * 60;
 
@@ -72,8 +72,23 @@ where
     }
 }
 
+pub(crate) fn add_time_to_date(date: Date<Tz>, time: NaiveTime) -> Option<DateTime> {
+    match date.and_time(time) {
+        Some(dt) => return Some(dt),
+        None => (),
+    }
+    // If the day is a daylight saving time, the above code might now work and we
+    // can try to get a valid datetime by adding the `time` as a duration instead.
+    let dt = date.and_hms_opt(0, 0, 0)?;
+    let day_duration = duration_from_midnight(time);
+    dt.checked_add_signed(day_duration)
+}
+
 #[cfg(test)]
 mod test {
+
+    use chrono::Duration;
+
     use super::*;
 
     #[test]
@@ -117,6 +132,38 @@ mod test {
 
         for (year, expected_output) in tests {
             let res = get_year_len(year);
+            assert_eq!(res, expected_output);
+        }
+    }
+
+    #[test]
+    fn adds_time_to_date() {
+        use chrono_tz::Tz::{America__New_York, America__Vancouver};
+        let tests = [
+            (
+                UTC.ymd(2017, 1, 1),
+                NaiveTime::from_hms(1, 15, 30),
+                Some(UTC.ymd(2017, 1, 1).and_hms(1, 15, 30)),
+            ),
+            (
+                America__Vancouver.ymd(2021, 3, 14),
+                NaiveTime::from_hms(2, 22, 10),
+                Some(
+                    America__Vancouver.ymd(2021, 3, 14).and_hms(0, 0, 0)
+                        + Duration::hours(2)
+                        + Duration::minutes(22)
+                        + Duration::seconds(10),
+                ),
+            ),
+            (
+                America__New_York.ymd(1997, 10, 26),
+                NaiveTime::from_hms(9, 0, 0),
+                Some(America__New_York.ymd(1997, 10, 26).and_hms(9, 0, 0)),
+            ),
+        ];
+
+        for (date, time, expected_output) in tests {
+            let res = add_time_to_date(date, time);
             assert_eq!(res, expected_output);
         }
     }
