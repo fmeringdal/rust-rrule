@@ -1,9 +1,7 @@
-use super::{
-    build_pos_list, counter_date::increment_counter_date, utils::from_ordinal, IterInfo,
-    MAX_ITER_LOOP,
-};
-use crate::core::utils::collect_or_error;
-use crate::core::{duration_from_midnight, get_hour, get_minute, get_second};
+use super::counter_date::DateTimeIter;
+use super::utils::add_time_to_date;
+use super::{build_pos_list, utils::from_ordinal, IterInfo, MAX_ITER_LOOP};
+use crate::core::{get_hour, get_minute, get_second};
 use crate::{core::DateTime, Frequency, RRule, RRuleError, WithError};
 use chrono::Datelike;
 use chrono::{NaiveTime, TimeZone};
@@ -12,7 +10,7 @@ use std::collections::VecDeque;
 #[derive(Debug, Clone)]
 pub(crate) struct RRuleIter<'a> {
     /// Date the iterator is currently at.
-    pub(crate) counter_date: DateTime,
+    pub(crate) counter_date: DateTimeIter,
     pub(crate) ii: IterInfo<'a>,
     pub(crate) timeset: Vec<NaiveTime>,
     pub(crate) dt_start: DateTime,
@@ -39,7 +37,7 @@ impl<'a> RRuleIter<'a> {
         let count = ii.rrule().count;
 
         RRuleIter {
-            counter_date: *dt_start,
+            counter_date: dt_start.into(),
             ii,
             timeset,
             dt_start: *dt_start,
@@ -102,11 +100,6 @@ impl<'a> RRuleIter<'a> {
             return Ok(true);
         }
 
-        // If `counter_date` is later than `until` date, we can stop
-        if matches!(rrule.until, Some(until) if self.counter_date > until) {
-            return Ok(false);
-        }
-
         let mut loop_counter: u32 = 0;
         // Loop until there is at least 1 item in the buffer.
         while self.buffer.is_empty() {
@@ -121,16 +114,11 @@ impl<'a> RRuleIter<'a> {
             }
             let rrule = self.ii.rrule();
 
-            // If `counter_date` is later than `until` date, we can stop
-            if matches!(rrule.until, Some(until) if self.counter_date > until) {
-                return Ok(false);
-            }
-
             let dayset = self.ii.get_dayset(
                 rrule.freq,
-                self.counter_date.year(),
-                self.counter_date.month(),
-                self.counter_date.day(),
+                self.counter_date.year,
+                self.counter_date.month,
+                self.counter_date.day,
             );
 
             if rrule.by_set_pos.is_empty() {
@@ -150,11 +138,10 @@ impl<'a> RRuleIter<'a> {
                         .ymd(date.year(), date.month(), date.day());
 
                     for time in &self.timeset {
-                        let dt = date
-                            .and_hms_opt(0, 0, 0)
-                            .ok_or_else(|| RRuleError::new_iter_err("Invalid datetime."))?
-                            .checked_add_signed(duration_from_midnight(*time))
-                            .ok_or_else(|| RRuleError::new_iter_err("Invalid datetime."))?;
+                        let dt = match add_time_to_date(date, *time) {
+                            Some(dt) => dt,
+                            None => continue,
+                        };
                         if Self::try_add_datetime(
                             dt,
                             rrule,
@@ -188,15 +175,18 @@ impl<'a> RRuleIter<'a> {
             }
 
             let increment_day = dayset.is_empty();
-            self.counter_date = increment_counter_date(self.counter_date, rrule, increment_day)?;
+            self.counter_date.increment(rrule, increment_day)?;
 
             if matches!(
                 rrule.freq,
                 Frequency::Hourly | Frequency::Minutely | Frequency::Secondly
             ) {
-                let hour = get_hour(&self.counter_date);
-                let minute = get_minute(&self.counter_date);
-                let second = get_second(&self.counter_date);
+                let hour =
+                    u8::try_from(self.counter_date.hour).expect("range 0-23 is covered by u8");
+                let minute =
+                    u8::try_from(self.counter_date.minute).expect("range 0-59 is covered by u8");
+                let second =
+                    u8::try_from(self.counter_date.second).expect("range 0-59 is covered by u8");
                 self.timeset = self.ii.get_timeset_unchecked(hour, minute, second);
             }
 
@@ -204,20 +194,6 @@ impl<'a> RRuleIter<'a> {
         }
         // Indicate that there might be more items on the next iteration.
         Ok(false)
-    }
-
-    /// Returns all the recurrences of the rrule between after and before.
-    ///
-    /// The `inclusive` keyword defines what happens if after and/or before are
-    /// themselves recurrences. With `inclusive == true`, they will be included in the
-    /// list, if they are found in the recurrence set.
-    pub(crate) fn all_between(
-        self,
-        start: DateTime,
-        end: DateTime,
-        inclusive: bool,
-    ) -> Result<Vec<DateTime>, RRuleError> {
-        collect_or_error(self, &Some(start), &Some(end), inclusive, u16::MAX)
     }
 }
 

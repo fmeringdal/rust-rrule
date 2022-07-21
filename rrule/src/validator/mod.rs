@@ -12,4 +12,4 @@ pub(crate) use check_limits::{
     FREQ_MONTHLY_INTERVAL_MAX, FREQ_SECONDLY_INTERVAL_MAX, FREQ_WEEKLY_INTERVAL_MAX,
     FREQ_YEARLY_INTERVAL_MAX,
 };
-pub(crate) use validate_rrule::{MONTH_RANGE, YEAR_RANGE};
+pub(crate) use validate_rrule::YEAR_RANGE;

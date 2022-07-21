@@ -1,3 +1,4 @@
+use super::counter_date::DateTimeIter;
 #[cfg(feature = "by-easter")]
 use super::easter::easter;
 use super::{monthinfo::MonthInfo, yearinfo::YearInfo};
@@ -59,10 +60,9 @@ impl<'a> IterInfo<'a> {
         }
     }
 
-    pub fn rebuild(&mut self, counter_date: &DateTime) {
-        let year = counter_date.year();
-        let month = get_month(counter_date);
-        self.rebuild_inner(year, month, false);
+    pub fn rebuild(&mut self, counter_date: &DateTimeIter) {
+        let month = u8::try_from(counter_date.month).expect("range 1-12 is covered by u8");
+        self.rebuild_inner(counter_date.year, month, false);
     }
 
     pub fn year_len(&self) -> u16 {

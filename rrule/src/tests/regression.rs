@@ -29,17 +29,6 @@ fn issue_61() {
         .parse()
         .expect("The RRule is not valid");
 
-    let (_, err) = rrule_set.all_with_error(10);
-    assert!(err.is_some());
-}
-
-#[test]
-#[ignore = "stick in an infinite loop in exrule calculation"]
-fn edge_case_1() {
-    let rrule_set: RRuleSet =
-        "DTSTART;TZID=Europe/Berlin:20210101T000000\nRRULE:FREQ=MONTHLY\nEXRULE:FREQ=MONTHLY"
-            .parse()
-            .expect("The RRule is not valid");
-
-    let _ = rrule_set.all(10);
+    let (res, _err) = rrule_set.all_with_error(10);
+    assert_eq!(res.len(), 10);
 }

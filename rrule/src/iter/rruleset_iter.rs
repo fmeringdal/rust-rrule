@@ -1,6 +1,5 @@
 use super::{rrule_iter::RRuleIter, MAX_ITER_LOOP};
-use crate::{core::DateTime, RRule, RRuleError, RRuleSet, WithError};
-use chrono::Duration;
+use crate::{core::DateTime, RRuleError, RRuleSet, WithError};
 use std::collections::BTreeSet;
 use std::{collections::HashMap, iter::Iterator};
 
@@ -9,21 +8,19 @@ use std::{collections::HashMap, iter::Iterator};
 pub struct RRuleSetIter<'a> {
     queue: HashMap<usize, DateTime>,
     rrule_iters: Vec<RRuleIter<'a>>,
-    exrules: &'a Vec<RRule>,
+    exrules: Vec<RRuleIter<'a>>,
     exdates: BTreeSet<i64>,
     /// Sorted additional dates in descending order
     rdates: Vec<DateTime>,
     /// Store the last error, so it can be handled by the user.
     error: Option<RRuleError>,
-    dt_start: DateTime,
 }
 
 impl<'a> RRuleSetIter<'a> {
     fn generate_date(
         dates: &mut Vec<DateTime>,
-        exrules: &[RRule],
+        exrules: &mut [RRuleIter],
         exdates: &mut BTreeSet<i64>,
-        dt_start: &DateTime,
     ) -> Result<Option<DateTime>, RRuleError> {
         if dates.is_empty() {
             return Ok(None);
@@ -31,7 +28,7 @@ impl<'a> RRuleSetIter<'a> {
 
         let mut date = dates.remove(dates.len() - 1);
         let mut loop_counter: u32 = 0;
-        while Self::is_date_excluded(&Some(date), exrules, exdates, dt_start) {
+        while Self::is_date_excluded(&date, exrules, exdates) {
             if dates.is_empty() {
                 return Ok(None);
             }
@@ -52,13 +49,15 @@ impl<'a> RRuleSetIter<'a> {
 
     fn generate(
         rrule_iter: &mut RRuleIter,
-        exrules: &[RRule],
+        exrules: &mut [RRuleIter],
         exdates: &mut BTreeSet<i64>,
-        dt_start: &DateTime,
     ) -> Result<Option<DateTime>, RRuleError> {
-        let mut date = rrule_iter.next();
+        let mut date = match rrule_iter.next() {
+            Some(d) => d,
+            None => return Ok(None),
+        };
         let mut loop_counter: u32 = 0;
-        while Self::is_date_excluded(&date, exrules, exdates, dt_start) {
+        while Self::is_date_excluded(&date, exrules, exdates) {
             // Prevent infinite loops
             loop_counter += 1;
             if loop_counter >= MAX_ITER_LOOP {
@@ -69,55 +68,33 @@ impl<'a> RRuleSetIter<'a> {
                 )));
             }
 
-            date = rrule_iter.next();
+            date = match rrule_iter.next() {
+                Some(d) => d,
+                None => return Ok(None),
+            };
         }
         if let Some(err) = rrule_iter.get_err() {
             return Err(err.clone());
         }
 
-        Ok(date)
+        Ok(Some(date))
     }
 
     fn is_date_excluded(
-        date: &Option<DateTime>,
-        exrules: &[RRule],
+        date: &DateTime,
+        exrules: &mut [RRuleIter],
         exdates: &mut BTreeSet<i64>,
-        dt_start: &DateTime,
     ) -> bool {
-        match date {
-            None => false,
-            Some(date) => {
-                let ts = date.timestamp();
-
-                let start = match date.checked_sub_signed(Duration::seconds(1)) {
-                    Some(d) => d,
-                    _ => return false,
-                };
-                let end = match date.checked_add_signed(Duration::seconds(1)) {
-                    Some(d) => d,
-                    _ => return false,
-                };
-
-                for exrule in exrules {
-                    let ex = exrule.iter_with_ctx(*dt_start);
-                    match ex.all_between(start, end, true) {
-                        Ok(exrule_dates) => {
-                            for exdate in exrule_dates {
-                                exdates.insert(exdate.timestamp());
-                                if exdate.timestamp() == ts {
-                                    return true;
-                                }
-                            }
-                        }
-                        Err(err) => {
-                            log::error!("Failed to iterate exrule. Error: {}", err);
-                        }
-                    }
+        for exrule in exrules {
+            for exdate in exrule {
+                exdates.insert(exdate.timestamp());
+                if exdate > *date {
+                    break;
                 }
-
-                exdates.contains(&ts)
             }
         }
+
+        exdates.contains(&date.timestamp())
     }
 }
 
@@ -149,12 +126,7 @@ impl<'a> Iterator for RRuleSetIter<'a> {
                 Some(d) => Some(d),
                 None => {
                     // should be method on self
-                    match Self::generate(
-                        rrule_iter,
-                        self.exrules,
-                        &mut self.exdates,
-                        &self.dt_start,
-                    ) {
+                    match Self::generate(rrule_iter, &mut self.exrules, &mut self.exdates) {
                         Ok(next_date) => next_date,
                         Err(err) => {
                             log::error!("{}", err);
@@ -185,19 +157,15 @@ impl<'a> Iterator for RRuleSetIter<'a> {
         }
 
         // TODO: RDates should be prefiltered before starting iteration
-        let generated_date = match Self::generate_date(
-            &mut self.rdates,
-            self.exrules,
-            &mut self.exdates,
-            &self.dt_start,
-        ) {
-            Ok(next_date) => next_date,
-            Err(err) => {
-                log::error!("{}", err);
-                self.error = Some(err);
-                return None;
-            }
-        };
+        let generated_date =
+            match Self::generate_date(&mut self.rdates, &mut self.exrules, &mut self.exdates) {
+                Ok(next_date) => next_date,
+                Err(err) => {
+                    log::error!("{}", err);
+                    self.error = Some(err);
+                    return None;
+                }
+            };
 
         match generated_date {
             Some(first_rdate) => {
@@ -243,10 +211,13 @@ impl<'a> IntoIterator for &'a RRuleSet {
                 .map(|rrule| rrule.iter_with_ctx(self.dt_start))
                 .collect(),
             rdates: rdates_sorted,
-            exrules: &self.exrule,
+            exrules: self
+                .exrule
+                .iter()
+                .map(|exrule| exrule.iter_with_ctx(self.dt_start))
+                .collect(),
             exdates: self.exdate.iter().map(DateTime::timestamp).collect(),
             error: None,
-            dt_start: self.dt_start,
         }
     }
 }
