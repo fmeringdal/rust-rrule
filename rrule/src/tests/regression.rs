@@ -32,13 +32,3 @@ fn issue_61() {
     let (res, _err) = rrule_set.all_with_error(10);
     assert_eq!(res.len(), 10);
 }
-
-#[test]
-fn edge_case_1() {
-    let rrule_set: RRuleSet =
-        "DTSTART;TZID=Europe/Berlin:20210101T000000\nRRULE:FREQ=MONTHLY\nEXRULE:FREQ=MONTHLY;"
-            .parse()
-            .expect("The RRule is not valid");
-
-    let _ = rrule_set.all(10);
-}
