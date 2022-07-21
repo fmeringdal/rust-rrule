@@ -100,12 +100,6 @@ impl<'a> RRuleIter<'a> {
             return Ok(true);
         }
 
-        // If `counter_date` is later than `until` date, we can stop
-        // TODO:
-        // if matches!(rrule.until, Some(until) if self.counter_date > until) {
-        //     return Ok(false);
-        // }
-
         let mut loop_counter: u32 = 0;
         // Loop until there is at least 1 item in the buffer.
         while self.buffer.is_empty() {
@@ -119,12 +113,6 @@ impl<'a> RRuleIter<'a> {
                 )));
             }
             let rrule = self.ii.rrule();
-
-            // If `counter_date` is later than `until` date, we can stop
-            // TODO:
-            // if matches!(rrule.until, Some(until) if self.counter_date > until) {
-            //     return Ok(false);
-            // }
 
             let dayset = self.ii.get_dayset(
                 rrule.freq,
