@@ -6,33 +6,7 @@ use take_rrule::take_rrule_from_data;
 use afl::fuzz;
 use core::str::FromStr;
 use rrule::RRuleSet;
-use std::{fs, str};
-
-// Used for reading the fuzz output
-#[allow(dead_code)]
-fn main2() {
-    let crash_dir = fs::read_dir("out/default/crashes").unwrap();
-    println!("Crashes:");
-    for path in crash_dir {
-        let bytes = fs::read(path.unwrap().path()).unwrap();
-        let rrule = take_rrule_from_data(&bytes);
-        eprintln!("RRule: {:?}", rrule);
-        if let Some(rrule) = rrule {
-            rrule.all(50).unwrap();
-        }
-    }
-    println!("Hangs:");
-    let crash_dir = fs::read_dir("out/default/hangs").unwrap();
-    for path in crash_dir {
-        let bytes = fs::read(path.unwrap().path()).unwrap();
-        let rrule = take_rrule_from_data(&bytes);
-        if let Some(rrule) = rrule {
-            eprintln!("RRule {:?}", rrule);
-            let dates = rrule.all(50);
-            eprintln!("Dates {:?}", dates);
-        }
-    }
-}
+use std::str;
 
 #[allow(clippy::single_match)]
 fn main() {
