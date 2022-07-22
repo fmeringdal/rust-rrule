@@ -158,7 +158,7 @@ impl<'a> RRuleIter<'a> {
                     &rrule.by_set_pos,
                     &dayset,
                     &self.timeset,
-                    &self.ii,
+                    self.ii.year_ordinal(),
                     self.dt_start.timezone(),
                 )?;
                 for dt in pos_list {
