@@ -99,7 +99,6 @@ Limitations:
 | Max interval with freq Hourly | 10_000 (~416 days) | 65_535 (u16::MAX) |
 | Max interval with freq Minutely | 10_000 (~7 days) | 65_535 (u16::MAX) |
 | Max interval with freq Secondly | 50_000 (~13 hours) | 65_535 (u16::MAX) |
-| Formula loop limit | 10_000 | 65_535 (u16::MAX) |
 | Iteration limit | 100_000 | 4_294_967_295 (u32::MAX) |
 
 By default, the "Arbitrary Limit" are used. If you instead want to use the "Crate Limit".
