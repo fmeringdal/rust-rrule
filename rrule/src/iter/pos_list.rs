@@ -1,4 +1,4 @@
-use super::utils::{from_ordinal, pymod};
+use super::utils::{add_time_to_date, from_ordinal, pymod};
 use crate::{core::DateTime, iter::iterinfo::IterInfo, RRuleError};
 use chrono::{Datelike, LocalResult, NaiveTime, TimeZone};
 use chrono_tz::Tz;
@@ -67,9 +67,10 @@ pub(crate) fn build_pos_list(
         // Use Date and Timezone from `date`
         // Use Time from `timeset`.
         let time = timeset[time_pos];
-        let res = date.and_time(time).ok_or_else(|| {
-            RRuleError::new_iter_err(format!("Time from `timeset` invalid `{} + {}`", date, time))
-        })?;
+        let res = match add_time_to_date(date, time) {
+            Some(date) => date,
+            None => continue,
+        };
 
         if !pos_list.contains(&res) {
             pos_list.push(res);
