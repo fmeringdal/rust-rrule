@@ -30,7 +30,7 @@ pub(crate) fn build_pos_list(
             time_pos = usize::try_from(pymod(*pos, timeset_len_int))
                 .expect("modulus is a positive number and within range of usize");
         } else {
-            day_pos = ((f64::from(*pos) - 1.) / timeset_len_float) as isize;
+            day_pos = ((f64::from(*pos) - 1.) / timeset_len_float).floor() as isize;
             time_pos = usize::try_from(pymod(pos - 1, timeset_len_int))
                 .expect("modulus is a positive number and within range of usize");
         }
