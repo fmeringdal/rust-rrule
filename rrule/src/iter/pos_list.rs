@@ -32,7 +32,6 @@ pub(crate) fn build_pos_list(
         let day_pos = (f64::from(pos) / timeset_len_float).floor() as isize;
         let time_pos = usize::try_from(pymod(pos, timeset_len_int))
             .expect("modulus is a positive number and within range of usize");
-        eprintln!("day_pos={day_pos} and time_pos={time_pos}");
 
         let day_idx = if day_pos < 0 {
             let dayset_len = isize::try_from(dayset.len())
