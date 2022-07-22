@@ -2,7 +2,7 @@
 name = "rrule"
 description = "A pure Rust implementation of recurrence rules as defined in the iCalendar RFC."
 license = "MIT OR Apache-2.0"
-version = "0.9.0"
+version = "0.9.1"
 documentation = "https://docs.rs/rrule"
 repository = "https://github.com/fmeringdal/rust-rrule"
 authors = ["Fredrik Meringdal", "Ralph Bisschops <ralph.bisschops.dev@gmail.com>"]
