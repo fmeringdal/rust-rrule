@@ -5,23 +5,13 @@ use crate::{Frequency, NWeekday, RRule, Unvalidated};
 
 use super::ValidationError;
 
-/// Range of values that a weekday can be.
-/// Range: `0..=6`
-#[allow(dead_code)]
-pub(crate) static WEEKDAY_RANGE: RangeInclusive<u8> = 0..=6;
-
 /// Range of values that a month can be.
 /// Range: `1..=12`
 pub(crate) static MONTH_RANGE: RangeInclusive<u8> = 1..=12;
 
 /// Range of values that a year can be.
-/// Range:
-///  - `-10_000..=10_000`
-///  - `-262_000..=262_000` when `no-validation-limits` flag is set
-#[cfg(not(feature = "no-validation-limits"))]
+/// Range: `-10_000..=10_000`
 pub(crate) static YEAR_RANGE: RangeInclusive<i32> = -10_000..=10_000;
-#[cfg(feature = "no-validation-limits")]
-pub(crate) static YEAR_RANGE: RangeInclusive<i32> = -262_000..=262_000;
 
 type Validator = &'static dyn Fn(&RRule<Unvalidated>, &DateTime) -> Result<(), ValidationError>;
 

@@ -6,7 +6,6 @@ use crate::core::get_month;
 use crate::core::get_second;
 use crate::parser::str_to_weekday;
 use crate::parser::ParseError;
-use crate::validator::check_limits;
 use crate::validator::validate_rrule;
 use crate::{RRuleError, RRuleIter, RRuleSet, Unvalidated, Validated};
 use chrono::{Datelike, Month, Weekday};
@@ -498,9 +497,6 @@ impl RRule<Unvalidated> {
 
         // Validate required checks (defined by RFC 5545)
         validate_rrule::validate_rrule_forced(&rrule, &dt_start)?;
-        // Validate (optional) sanity checks. (arbitrary limits)
-        // Can be disabled by `no-validation-limits` feature flag, see README.md for more info.
-        check_limits::check_limits(&rrule, &dt_start)?;
 
         Ok(RRule {
             freq: rrule.freq,
@@ -536,8 +532,8 @@ impl RRule<Unvalidated> {
 }
 
 impl RRule {
-    pub(crate) fn iter_with_ctx(&self, dt_start: DateTime) -> RRuleIter {
-        RRuleIter::new(self, &dt_start)
+    pub(crate) fn iter_with_ctx(&self, dt_start: DateTime, limited: bool) -> RRuleIter {
+        RRuleIter::new(self, &dt_start, limited)
     }
 }
 

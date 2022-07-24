@@ -12,7 +12,7 @@ pub(crate) fn collect_or_error<T>(
     start: &Option<DateTime>,
     end: &Option<DateTime>,
     inclusive: bool,
-    limit: u16,
+    limit: Option<u16>,
 ) -> Result<Vec<DateTime>, RRuleError>
 where
     T: Iterator<Item = DateTime> + WithError,
@@ -32,7 +32,7 @@ pub(super) fn collect_with_error<T>(
     start: &Option<DateTime>,
     end: &Option<DateTime>,
     inclusive: bool,
-    limit: u16,
+    limit: Option<u16>,
 ) -> (Vec<DateTime>, Option<RRuleError>)
 where
     T: Iterator<Item = DateTime> + WithError,
@@ -41,7 +41,7 @@ where
     let mut err = None;
     // This loop should always end because `.next()` has build in limits
     // Once a limit is tripped it will break in the `None` case.
-    while list.len() < limit as usize {
+    while limit.is_none() || matches!(limit, Some(limit) if usize::from(limit) > list.len()) {
         match iterator.next() {
             Some(value) => {
                 if is_in_range(&value, start, end, inclusive) {
@@ -61,14 +61,18 @@ where
         }
     }
     // Make sure that the user always know when there are more dates.
-    if list.len() > u16::MAX as usize {
-        (
-            list,
-            Some(RRuleError::new_iter_err(format!(
-                "List reached maximum limit (`{}`), so there might be more items.",
-                u16::MAX
-            ))),
-        )
+    if let Some(limit) = limit {
+        if usize::from(limit) < list.len() {
+            (
+                list,
+                Some(RRuleError::new_iter_err(format!(
+                    "List reached maximum limit (`{}`), so there might be more items.",
+                    limit
+                ))),
+            )
+        } else {
+            (list, err.cloned())
+        }
     } else {
         (list, err.cloned())
     }

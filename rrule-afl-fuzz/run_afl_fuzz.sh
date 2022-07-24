@@ -12,7 +12,7 @@ FOLDER_IN="src"
 FOLDER_OUT="out"
 
 # Build
-cargo afl build --features "no-validation-limits"
+cargo afl build --release
 # Fuzz binary
 BIN_PATH="../target/debug/rrule-afl-fuzz"
 # Env variable to set for all instances

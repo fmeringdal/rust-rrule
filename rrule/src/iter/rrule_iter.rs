@@ -2,6 +2,7 @@ use super::counter_date::DateTimeIter;
 use super::utils::add_time_to_date;
 use super::{build_pos_list, utils::from_ordinal, IterInfo, MAX_ITER_LOOP};
 use crate::core::{get_hour, get_minute, get_second};
+use crate::validator::check_limits;
 use crate::{core::DateTime, Frequency, RRule, RRuleError, WithError};
 use chrono::Datelike;
 use chrono::{NaiveTime, TimeZone};
@@ -24,10 +25,11 @@ pub(crate) struct RRuleIter<'a> {
     pub(crate) count: Option<u32>,
     /// Store the last error, so it can be handled by the user.
     pub(crate) error: Option<RRuleError>,
+    pub(crate) limited: bool,
 }
 
 impl<'a> RRuleIter<'a> {
-    pub(crate) fn new(rrule: &'a RRule, dt_start: &DateTime) -> Self {
+    pub(crate) fn new(rrule: &'a RRule, dt_start: &DateTime, limited: bool) -> Self {
         let ii = IterInfo::new(rrule, dt_start);
 
         let hour = get_hour(dt_start);
@@ -35,6 +37,17 @@ impl<'a> RRuleIter<'a> {
         let second = get_second(dt_start);
         let timeset = ii.get_timeset(hour, minute, second);
         let count = ii.rrule().count;
+
+        let error = if limited {
+            // Validate (optional) sanity checks. (arbitrary limits)
+            if let Err(e) = check_limits::check_limits(rrule, dt_start) {
+                Some(e.into())
+            } else {
+                None
+            }
+        } else {
+            None
+        };
 
         RRuleIter {
             counter_date: dt_start.into(),
@@ -44,7 +57,8 @@ impl<'a> RRuleIter<'a> {
             buffer: VecDeque::new(),
             finished: false,
             count,
-            error: None,
+            error,
+            limited,
         }
     }
 
@@ -104,13 +118,15 @@ impl<'a> RRuleIter<'a> {
         // Loop until there is at least 1 item in the buffer.
         while self.buffer.is_empty() {
             // Prevent infinite loops
-            loop_counter += 1;
-            if loop_counter >= MAX_ITER_LOOP {
-                return Err(RRuleError::new_iter_err(format!(
-                    "Reached max loop counter (`{}`). \
+            if self.limited {
+                loop_counter += 1;
+                if loop_counter >= MAX_ITER_LOOP {
+                    return Err(RRuleError::new_iter_err(format!(
+                        "Reached max loop counter (`{}`). \
                     See 'validator limits' in docs for more info.",
-                    MAX_ITER_LOOP
-                )));
+                        MAX_ITER_LOOP
+                    )));
+                }
             }
             let rrule = self.ii.rrule();
 

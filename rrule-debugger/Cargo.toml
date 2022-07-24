@@ -19,6 +19,4 @@ yansi = "0.5.1"
 [features]
 default = []
 
-no-validation-limits = ["rrule/no-validation-limits"]
-
 by-easter = ["rrule/by-easter"]

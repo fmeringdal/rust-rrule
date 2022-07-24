@@ -7,7 +7,7 @@ fn daylight_savings_1() {
             .parse()
             .unwrap();
 
-    let (dates, error) = rrule.all_with_error(60);
+    let (dates, error) = rrule.all_with_error();
     check_occurrences(
         &dates,
         &[
@@ -52,7 +52,7 @@ fn daylight_savings_2() {
         RRULE:FREQ=WEEKLY;UNTIL=20210508T083000Z;INTERVAL=2;BYDAY=MO;WKST=MO"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(50)
+        .all()
         .unwrap();
     check_occurrences(
         &dates,

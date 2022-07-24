@@ -16,6 +16,7 @@ fn yearly() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -40,6 +41,7 @@ fn yearly_interval() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -64,6 +66,7 @@ fn yearly_interval_large() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -87,6 +90,7 @@ fn yearly_by_easter() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 4, 12, 9, 0, 0),
@@ -110,6 +114,7 @@ fn yearly_by_easterpos() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 4, 13, 9, 0, 0),
@@ -133,6 +138,7 @@ fn yearly_by_easterpos_neg() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 4, 10, 9, 0, 0),
@@ -156,6 +162,7 @@ fn yearly_by_month() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 2, 9, 0, 0),
@@ -178,6 +185,7 @@ fn yearly_by_monthday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 3, 9, 0, 0),
@@ -201,6 +209,7 @@ fn yearly_by_month_and_monthday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 5, 9, 0, 0),
@@ -223,6 +232,7 @@ fn yearly_by_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -248,6 +258,7 @@ fn yearly_by_nweekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 12, 25, 9, 0, 0),
@@ -273,6 +284,7 @@ fn yearly_by_nweekday_large() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 10, 2, 9, 0, 0),
@@ -296,6 +308,7 @@ fn yearly_by_month_and_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 1, 9, 0, 0),
@@ -322,6 +335,7 @@ fn yearly_by_month_and_nweekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 6, 9, 0, 0),
@@ -348,6 +362,7 @@ fn yearly_by_month_and_nweekday_large() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 15, 9, 0, 0),
@@ -371,6 +386,7 @@ fn yearly_by_monthday_and_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 1, 9, 0, 0),
@@ -395,6 +411,7 @@ fn yearly_by_month_and_monthday_and_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 1, 9, 0, 0),
@@ -417,6 +434,7 @@ fn yearly_by_yearday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 12, 31, 9, 0, 0),
@@ -440,6 +458,7 @@ fn yearly_by_yeardayneg() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 12, 31, 9, 0, 0),
@@ -464,6 +483,7 @@ fn yearly_by_month_and_yearday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 4, 10, 9, 0, 0),
@@ -487,6 +507,7 @@ fn yearly_by_weekno() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 5, 11, 9, 0, 0),
@@ -510,6 +531,7 @@ fn yearly_by_weekno_and_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 12, 29, 9, 0, 0),
@@ -533,6 +555,7 @@ fn yearly_by_weekno_and_weekday_large() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 12, 28, 9, 0, 0),
@@ -556,6 +579,7 @@ fn yearly_by_weekno_and_weekday_last() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 12, 28, 9, 0, 0),
@@ -579,6 +603,7 @@ fn yearly_by_weekno_and_weekday53_last() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 12, 28, 9, 0, 0),
@@ -602,6 +627,7 @@ fn yearly_by_hour() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 0, 0),
@@ -625,6 +651,7 @@ fn yearly_by_minute() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 6, 0),
@@ -648,6 +675,7 @@ fn yearly_by_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 6),
@@ -671,6 +699,7 @@ fn yearly_by_hour_and_minute() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 6, 0),
@@ -694,6 +723,7 @@ fn yearly_by_hour_and_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 0, 6),
@@ -717,6 +747,7 @@ fn yearly_by_minute_and_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 6, 6),
@@ -740,6 +771,7 @@ fn yearly_by_hour_and_minute_and_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 6, 6),
@@ -763,6 +795,7 @@ fn yearly_by_setpos() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 11, 15, 18, 0, 0),
@@ -785,6 +818,7 @@ fn monthly() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -808,6 +842,7 @@ fn monthly_interval() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -831,6 +866,7 @@ fn monthly_interval_large() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -854,6 +890,7 @@ fn monthly_by_easter() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 4, 12, 9, 0, 0),
@@ -877,6 +914,7 @@ fn monthly_by_easterpos() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 4, 13, 9, 0, 0),
@@ -900,6 +938,7 @@ fn monthly_by_easterpos_neg() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 4, 10, 9, 0, 0),
@@ -922,6 +961,7 @@ fn monthly_neg_by_monthday_janfeb_for_nonleapyear() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(2013, 12, 1, 9, 0, 0),
         &[
             ymd_hms(2013, 12, 31, 9, 0, 0),
@@ -945,6 +985,7 @@ fn monthly_neg_by_monthday_janfeb_for_leapyear() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(2015, 12, 1, 9, 0, 0),
         &[
             ymd_hms(2015, 12, 31, 9, 0, 0),
@@ -968,6 +1009,7 @@ fn monthly_neg_monthday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(2015, 12, 1, 9, 0, 0),
         &[
             ymd_hms(2015, 12, 29, 9, 0, 0),
@@ -994,6 +1036,7 @@ fn monthly_by_month() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 2, 9, 0, 0),
@@ -1016,6 +1059,7 @@ fn monthly_by_monthday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 3, 9, 0, 0),
@@ -1039,6 +1083,7 @@ fn monthly_by_month_and_monthday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 5, 9, 0, 0),
@@ -1061,6 +1106,7 @@ fn monthly_by_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1086,6 +1132,7 @@ fn monthly_by_nweekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1111,6 +1158,7 @@ fn monthly_by_nweekday_large() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 11, 9, 0, 0),
@@ -1134,6 +1182,7 @@ fn monthly_by_month_and_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 1, 9, 0, 0),
@@ -1160,6 +1209,7 @@ fn monthly_by_month_and_nweekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 6, 9, 0, 0),
@@ -1186,6 +1236,7 @@ fn monthly_by_month_and_nweekday_large() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 15, 9, 0, 0),
@@ -1209,6 +1260,7 @@ fn monthly_by_monthday_and_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 1, 9, 0, 0),
@@ -1233,6 +1285,7 @@ fn monthly_by_month_and_monthday_and_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 1, 9, 0, 0),
@@ -1255,6 +1308,7 @@ fn monthly_by_hour() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 0, 0),
@@ -1277,6 +1331,7 @@ fn monthly_by_minute() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 6, 0),
@@ -1299,6 +1354,7 @@ fn monthly_by_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 6),
@@ -1321,6 +1377,7 @@ fn monthly_by_hour_and_minute() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 6, 0),
@@ -1343,6 +1400,7 @@ fn monthly_by_hour_and_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 0, 6),
@@ -1365,6 +1423,7 @@ fn monthly_by_minute_and_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 6, 6),
@@ -1387,6 +1446,7 @@ fn monthly_by_hour_and_minute_and_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 6, 6),
@@ -1410,6 +1470,7 @@ fn monthly_by_setpos() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 13, 18, 0, 0),
@@ -1432,6 +1493,7 @@ fn weekly() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1455,6 +1517,7 @@ fn weekly_interval() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1478,6 +1541,7 @@ fn weekly_interval_large() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1501,6 +1565,7 @@ fn weekly_by_month() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 6, 9, 0, 0),
@@ -1526,6 +1591,7 @@ fn weekly_by_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1549,6 +1615,7 @@ fn weekly_by_nweekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1572,6 +1639,7 @@ fn weekly_by_month_and_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 1, 9, 0, 0),
@@ -1594,6 +1662,7 @@ fn weekly_by_hour() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 0, 0),
@@ -1616,6 +1685,7 @@ fn weekly_by_minute() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 6, 0),
@@ -1638,6 +1708,7 @@ fn weekly_by_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 6),
@@ -1660,6 +1731,7 @@ fn weekly_by_hour_and_minute() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 6, 0),
@@ -1682,6 +1754,7 @@ fn weekly_by_hour_and_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 0, 6),
@@ -1704,6 +1777,7 @@ fn weekly_by_minute_and_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 6, 6),
@@ -1726,6 +1800,7 @@ fn weekly_by_hour_and_minute_and_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 6, 6),
@@ -1751,6 +1826,7 @@ fn weekly_by_setpos() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 0, 0),
@@ -1772,6 +1848,7 @@ fn daily() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1794,6 +1871,7 @@ fn daily_interval() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1816,6 +1894,7 @@ fn daily_interval_large() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1838,6 +1917,7 @@ fn daily_by_month() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 1, 9, 0, 0),
@@ -1860,6 +1940,7 @@ fn daily_by_monthday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 3, 9, 0, 0),
@@ -1883,6 +1964,7 @@ fn daily_by_month_and_monthday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 5, 9, 0, 0),
@@ -1905,6 +1987,7 @@ fn daily_by_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -1928,6 +2011,7 @@ fn daily_by_month_and_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 1, 9, 0, 0),
@@ -1951,6 +2035,7 @@ fn daily_by_monthday_and_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 1, 9, 0, 0),
@@ -1975,6 +2060,7 @@ fn daily_by_month_and_monthday_and_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 1, 9, 0, 0),
@@ -1996,6 +2082,7 @@ fn daily_by_hour() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 0, 0),
@@ -2017,6 +2104,7 @@ fn daily_by_minute() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 6, 0),
@@ -2038,6 +2126,7 @@ fn daily_by_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 6),
@@ -2059,6 +2148,7 @@ fn daily_by_hour_and_minute() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 6, 0),
@@ -2080,6 +2170,7 @@ fn daily_by_hour_and_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 0, 6),
@@ -2101,6 +2192,7 @@ fn daily_by_minute_and_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 6, 6),
@@ -2122,6 +2214,7 @@ fn daily_by_hour_and_minute_and_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 6, 6),
@@ -2144,6 +2237,7 @@ fn daily_by_setpos() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 15, 0),
@@ -2164,6 +2258,7 @@ fn hourly() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2185,6 +2280,7 @@ fn hourly_interval() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2206,6 +2302,7 @@ fn hourly_interval_large() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2227,6 +2324,7 @@ fn hourly_by_month() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 1, 0, 0, 0),
@@ -2248,6 +2346,7 @@ fn hourly_by_monthday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 3, 0, 0, 0),
@@ -2270,6 +2369,7 @@ fn hourly_by_month_and_monthday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 5, 0, 0, 0),
@@ -2292,6 +2392,7 @@ fn hourly_by_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2316,6 +2417,7 @@ fn hourly_by_month_and_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 1, 0, 0, 0),
@@ -2338,6 +2440,7 @@ fn hourly_by_monthday_and_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 1, 0, 0, 0),
@@ -2361,6 +2464,7 @@ fn hourly_by_month_and_monthday_and_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 1, 0, 0, 0),
@@ -2383,6 +2487,7 @@ fn hourly_by_yearday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 12, 31, 9, 0, 0),
@@ -2410,6 +2515,7 @@ fn hourly_by_yeardayneg() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 12, 31, 9, 0, 0),
@@ -2437,6 +2543,7 @@ fn hourly_by_month_and_yearday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 4, 10, 0, 0, 0),
@@ -2459,6 +2566,7 @@ fn hourly_by_hour() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 0, 0),
@@ -2479,6 +2587,7 @@ fn hourly_by_minute() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 6, 0),
@@ -2499,6 +2608,7 @@ fn hourly_by_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 6),
@@ -2520,6 +2630,7 @@ fn hourly_by_hour_and_minute() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 6, 0),
@@ -2541,6 +2652,7 @@ fn hourly_by_hour_and_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 0, 6),
@@ -2561,6 +2673,7 @@ fn hourly_by_minute_and_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 6, 6),
@@ -2582,6 +2695,7 @@ fn hourly_by_hour_and_minute_and_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 6, 6),
@@ -2605,6 +2719,7 @@ fn hourly_by_setpos() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 15, 45),
@@ -2624,6 +2739,7 @@ fn minutely() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2644,6 +2760,7 @@ fn minutely_interval() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2664,6 +2781,7 @@ fn minutely_interval_large() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -2684,6 +2802,7 @@ fn minutely_by_month() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 1, 0, 0, 0),
@@ -2704,6 +2823,7 @@ fn minutely_by_monthday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 3, 0, 0, 0),
@@ -2725,6 +2845,7 @@ fn minutely_by_month_and_monthday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 5, 0, 0, 0),
@@ -2745,6 +2866,7 @@ fn minutely_by_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 4, 0, 0, 0),
@@ -2766,6 +2888,7 @@ fn minutely_by_month_and_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 1, 0, 0, 0),
@@ -2787,6 +2910,7 @@ fn minutely_by_monthday_and_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 1, 0, 0, 0),
@@ -2809,6 +2933,7 @@ fn minutely_by_month_and_monthday_and_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 1, 0, 0, 0),
@@ -2829,6 +2954,7 @@ fn minutely_by_yearday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 12, 31, 0, 0, 0),
@@ -2850,6 +2976,7 @@ fn minutely_by_yeardayneg() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 12, 31, 0, 0, 0),
@@ -2872,6 +2999,7 @@ fn minutely_by_month_and_yearday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 4, 10, 0, 0, 0),
@@ -2893,6 +3021,7 @@ fn minutely_by_hour() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 0, 0),
@@ -2913,6 +3042,7 @@ fn minutely_by_minute() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 6, 0),
@@ -2932,6 +3062,7 @@ fn minutely_by_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 6),
@@ -2953,6 +3084,7 @@ fn minutely_by_hour_and_minute() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 6, 0),
@@ -2973,6 +3105,7 @@ fn minutely_by_hour_and_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 0, 6),
@@ -2993,6 +3126,7 @@ fn minutely_by_minute_and_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 6, 6),
@@ -3014,6 +3148,7 @@ fn minutely_by_hour_and_minute_and_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 6, 6),
@@ -3036,6 +3171,7 @@ fn minutely_by_setpos() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 15),
@@ -3054,6 +3190,7 @@ fn secondly() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3073,6 +3210,7 @@ fn secondly_interval() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3092,6 +3230,7 @@ fn secondly_interval_large_under_limit() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3102,7 +3241,6 @@ fn secondly_interval_large_under_limit() {
 }
 
 #[test]
-#[cfg(feature = "no-validation-limits")]
 fn secondly_interval_large() {
     let rrule = RRule {
         freq: Frequency::Secondly,
@@ -3112,6 +3250,7 @@ fn secondly_interval_large() {
     };
     test_recurring_rrule(
         rrule,
+        false,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3131,6 +3270,7 @@ fn secondly_by_month() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 1, 0, 0, 0),
@@ -3150,6 +3290,7 @@ fn secondly_by_monthday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 3, 0, 0, 0),
@@ -3170,6 +3311,7 @@ fn secondly_by_month_and_monthday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 5, 0, 0, 0),
@@ -3189,6 +3331,7 @@ fn secondly_by_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 4, 0, 0, 0),
@@ -3209,6 +3352,7 @@ fn secondly_by_month_and_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 1, 0, 0, 0),
@@ -3229,6 +3373,7 @@ fn secondly_by_monthday_and_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 1, 0, 0, 0),
@@ -3250,6 +3395,7 @@ fn secondly_by_month_and_monthday_and_weekday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 1, 1, 0, 0, 0),
@@ -3269,6 +3415,7 @@ fn secondly_by_yearday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 12, 31, 0, 0, 0),
@@ -3289,6 +3436,7 @@ fn secondly_by_yeardayneg() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 12, 31, 0, 0, 0),
@@ -3310,6 +3458,7 @@ fn secondly_by_month_and_yearday() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1998, 4, 10, 0, 0, 0),
@@ -3320,7 +3469,6 @@ fn secondly_by_month_and_yearday() {
     );
 }
 
-#[cfg(feature = "no-validation-limits")]
 #[test]
 fn secondly_by_hour() {
     let rrule = RRule {
@@ -3331,6 +3479,7 @@ fn secondly_by_hour() {
     };
     test_recurring_rrule(
         rrule,
+        false,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 0, 0),
@@ -3350,6 +3499,7 @@ fn secondly_by_minute() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 6, 0),
@@ -3369,6 +3519,7 @@ fn secondly_by_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 6),
@@ -3378,7 +3529,6 @@ fn secondly_by_second() {
     );
 }
 
-#[cfg(feature = "no-validation-limits")]
 #[test]
 fn secondly_by_hour_and_minute() {
     let rrule = RRule {
@@ -3390,6 +3540,7 @@ fn secondly_by_hour_and_minute() {
     };
     test_recurring_rrule(
         rrule,
+        false,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 6, 0),
@@ -3399,7 +3550,6 @@ fn secondly_by_hour_and_minute() {
     );
 }
 
-#[cfg(feature = "no-validation-limits")]
 #[test]
 fn secondly_by_hour_and_second() {
     let rrule = RRule {
@@ -3411,6 +3561,7 @@ fn secondly_by_hour_and_second() {
     };
     test_recurring_rrule(
         rrule,
+        false,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 0, 6),
@@ -3431,6 +3582,7 @@ fn secondly_by_minute_and_second() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 6, 6),
@@ -3440,7 +3592,6 @@ fn secondly_by_minute_and_second() {
     );
 }
 
-#[cfg(feature = "no-validation-limits")]
 #[test]
 fn secondly_by_hour_and_minute_and_second() {
     let rrule = RRule {
@@ -3453,6 +3604,7 @@ fn secondly_by_hour_and_minute_and_second() {
     };
     test_recurring_rrule(
         rrule,
+        false,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 18, 6, 6),
@@ -3477,6 +3629,7 @@ fn until_not_matching() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3499,6 +3652,7 @@ fn until_matching() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3521,6 +3675,7 @@ fn until_single() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[ymd_hms(1997, 9, 2, 9, 0, 0)],
     );
@@ -3539,6 +3694,7 @@ fn until_with_date() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3562,6 +3718,7 @@ fn week_start_interval_mo() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),
@@ -3586,6 +3743,7 @@ fn week_start_interval_su() {
     };
     test_recurring_rrule(
         rrule,
+        true,
         ymd_hms(1997, 9, 2, 9, 0, 0),
         &[
             ymd_hms(1997, 9, 2, 9, 0, 0),

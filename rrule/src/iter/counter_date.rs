@@ -1,6 +1,6 @@
 use chrono::{Datelike, TimeZone, Timelike, Utc, Weekday};
 
-use crate::{core::DateTime, validator::FREQ_HOURLY_INTERVAL_MAX, Frequency, RRule, RRuleError};
+use crate::{core::DateTime, Frequency, RRule, RRuleError};
 
 use super::{
     checks,
@@ -181,17 +181,6 @@ impl DateTimeIter {
                     "Infinite loop detected. It can be resolved by changing `BYHOUR` or `INTERVAL`",
                 ));
             }
-        }
-
-        // If higher than expected this will return an error
-        if !cfg!(feature = "no-validation-limits")
-            && self.hour > u32::from(FREQ_HOURLY_INTERVAL_MAX)
-        {
-            return Err(RRuleError::new_iter_err(format!(
-                "Hour interval (`{}`) is higher than expected, make sure this is correct. \
-                        See 'validator limits' in docs for more info",
-                self.hour
-            )));
         }
 
         let new_days = u16::try_from(self.hour / 24).map_err(|_| {

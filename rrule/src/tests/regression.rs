@@ -7,7 +7,8 @@ fn issue_34() {
 RRULE:FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-2"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(7)
+        .set_limit(7)
+        .all()
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -25,10 +26,11 @@ RRULE:FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-2"
 
 #[test]
 fn issue_61() {
-    let rrule_set: RRuleSet = "DTSTART;TZID=Europe/Berlin:18930401T010000\nRRULE:FREQ=DAILY"
-        .parse()
-        .expect("The RRule is not valid");
+    let rrule_set = "DTSTART;TZID=Europe/Berlin:18930401T010000\nRRULE:FREQ=DAILY"
+        .parse::<RRuleSet>()
+        .expect("The RRule is not valid")
+        .set_limit(10);
 
-    let (res, _err) = rrule_set.all_with_error(10);
+    let (res, _err) = rrule_set.all_with_error();
     assert_eq!(res.len(), 10);
 }

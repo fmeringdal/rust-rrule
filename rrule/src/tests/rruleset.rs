@@ -141,7 +141,7 @@ fn rrule_and_exdate_2() {
         EXDATE;TZID=Europe/Paris:20201228T093000,20210125T093000,20210208T093000"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(50)
+        .all()
         .unwrap();
     // This results in following set (minus exdate)
     // [

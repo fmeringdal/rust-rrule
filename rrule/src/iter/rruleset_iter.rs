@@ -7,6 +7,7 @@ use std::{collections::HashMap, iter::Iterator};
 /// Iterator over all the dates in an [`RRuleSet`].
 pub struct RRuleSetIter<'a> {
     queue: HashMap<usize, DateTime>,
+    limited: bool,
     rrule_iters: Vec<RRuleIter<'a>>,
     exrules: Vec<RRuleIter<'a>>,
     exdates: BTreeSet<i64>,
@@ -21,6 +22,7 @@ impl<'a> RRuleSetIter<'a> {
         dates: &mut Vec<DateTime>,
         exrules: &mut [RRuleIter],
         exdates: &mut BTreeSet<i64>,
+        limited: bool,
     ) -> Result<Option<DateTime>, RRuleError> {
         if dates.is_empty() {
             return Ok(None);
@@ -33,13 +35,15 @@ impl<'a> RRuleSetIter<'a> {
                 return Ok(None);
             }
             // Prevent infinite loops
-            loop_counter += 1;
-            if loop_counter >= MAX_ITER_LOOP {
-                return Err(RRuleError::new_iter_err(format!(
-                    "Reached max loop counter (`{}`). \
+            if limited {
+                loop_counter += 1;
+                if loop_counter >= MAX_ITER_LOOP {
+                    return Err(RRuleError::new_iter_err(format!(
+                        "Reached max loop counter (`{}`). \
                 See 'validator limits' in docs for more info.",
-                    MAX_ITER_LOOP
-                )));
+                        MAX_ITER_LOOP
+                    )));
+                }
             }
             date = dates.remove(dates.len() - 1);
         }
@@ -51,6 +55,7 @@ impl<'a> RRuleSetIter<'a> {
         rrule_iter: &mut RRuleIter,
         exrules: &mut [RRuleIter],
         exdates: &mut BTreeSet<i64>,
+        limited: bool,
     ) -> Result<Option<DateTime>, RRuleError> {
         let mut date = match rrule_iter.next() {
             Some(d) => d,
@@ -59,13 +64,15 @@ impl<'a> RRuleSetIter<'a> {
         let mut loop_counter: u32 = 0;
         while Self::is_date_excluded(&date, exrules, exdates) {
             // Prevent infinite loops
-            loop_counter += 1;
-            if loop_counter >= MAX_ITER_LOOP {
-                return Err(RRuleError::new_iter_err(format!(
-                    "Reached max loop counter (`{}`). \
+            if limited {
+                loop_counter += 1;
+                if loop_counter >= MAX_ITER_LOOP {
+                    return Err(RRuleError::new_iter_err(format!(
+                        "Reached max loop counter (`{}`). \
                     See 'validator limits' in docs for more info.",
-                    MAX_ITER_LOOP
-                )));
+                        MAX_ITER_LOOP
+                    )));
+                }
             }
 
             date = match rrule_iter.next() {
@@ -126,7 +133,12 @@ impl<'a> Iterator for RRuleSetIter<'a> {
                 Some(d) => Some(d),
                 None => {
                     // should be method on self
-                    match Self::generate(rrule_iter, &mut self.exrules, &mut self.exdates) {
+                    match Self::generate(
+                        rrule_iter,
+                        &mut self.exrules,
+                        &mut self.exdates,
+                        self.limited,
+                    ) {
                         Ok(next_date) => next_date,
                         Err(err) => {
                             log::error!("{}", err);
@@ -156,16 +168,19 @@ impl<'a> Iterator for RRuleSetIter<'a> {
             }
         }
 
-        // TODO: RDates should be prefiltered before starting iteration
-        let generated_date =
-            match Self::generate_date(&mut self.rdates, &mut self.exrules, &mut self.exdates) {
-                Ok(next_date) => next_date,
-                Err(err) => {
-                    log::error!("{}", err);
-                    self.error = Some(err);
-                    return None;
-                }
-            };
+        let generated_date = match Self::generate_date(
+            &mut self.rdates,
+            &mut self.exrules,
+            &mut self.exdates,
+            self.limited,
+        ) {
+            Ok(next_date) => next_date,
+            Err(err) => {
+                log::error!("{}", err);
+                self.error = Some(err);
+                return None;
+            }
+        };
 
         match generated_date {
             Some(first_rdate) => {
@@ -203,18 +218,21 @@ impl<'a> IntoIterator for &'a RRuleSet {
         rdates_sorted
             .sort_by(|d1, d2| d2.partial_cmp(d1).expect("Could not order dates correctly"));
 
+        let limited = self.limit.is_some();
+
         RRuleSetIter {
             queue: HashMap::new(),
+            limited,
             rrule_iters: self
                 .rrule
                 .iter()
-                .map(|rrule| rrule.iter_with_ctx(self.dt_start))
+                .map(|rrule| rrule.iter_with_ctx(self.dt_start, limited))
                 .collect(),
             rdates: rdates_sorted,
             exrules: self
                 .exrule
                 .iter()
-                .map(|exrule| exrule.iter_with_ctx(self.dt_start))
+                .map(|exrule| exrule.iter_with_ctx(self.dt_start, limited))
                 .collect(),
             exdates: self.exdate.iter().map(DateTime::timestamp).collect(),
             error: None,

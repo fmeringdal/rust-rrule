@@ -23,6 +23,8 @@ pub struct RRuleSet {
     pub(crate) exdate: Vec<DateTime>,
     /// The start datetime of the recurring event.
     pub(crate) dt_start: DateTime,
+    /// TODO: document
+    pub(crate) limit: Option<u16>,
 }
 
 impl RRuleSet {
@@ -35,7 +37,22 @@ impl RRuleSet {
             rdate: vec![],
             exrule: vec![],
             exdate: vec![],
+            limit: Some(u16::MAX),
         }
+    }
+
+    /// Disables validation limits
+    #[must_use]
+    pub fn disable_validation_limits(mut self) -> Self {
+        self.limit = None;
+        self
+    }
+
+    /// Set the validation limit
+    #[must_use]
+    pub fn set_limit(mut self, limit: u16) -> Self {
+        self.limit = Some(limit);
+        self
     }
 
     /// Adds a new rrule to the set.
@@ -130,8 +147,8 @@ impl RRuleSet {
     ///
     /// Limit must be set in order to prevent infinite loops.
     /// The max limit is `65535`. If you need more please use `into_iter` directly.
-    pub fn all(self, limit: u16) -> Result<Vec<DateTime>, RRuleError> {
-        collect_or_error(self.into_iter(), &None, &None, true, limit)
+    pub fn all(self) -> Result<Vec<DateTime>, RRuleError> {
+        collect_or_error(self.into_iter(), &None, &None, true, self.limit)
     }
 
     /// Returns all the recurrences of the rrule.
@@ -142,8 +159,8 @@ impl RRuleSet {
     /// In case the iterator ended with an error, the error will be included,
     /// otherwise the second value of the return tuple will be `None`.
     #[must_use]
-    pub fn all_with_error(self, limit: u16) -> (Vec<DateTime>, Option<RRuleError>) {
-        collect_with_error(self.into_iter(), &None, &None, true, limit)
+    pub fn all_with_error(self) -> (Vec<DateTime>, Option<RRuleError>) {
+        collect_with_error(self.into_iter(), &None, &None, true, self.limit)
     }
 
     /// Returns the last recurrence before the given datetime instance.
@@ -155,11 +172,15 @@ impl RRuleSet {
         before: DateTime,
         inclusive: bool,
     ) -> Result<Option<DateTime>, RRuleError> {
-        Ok(
-            collect_or_error(self.into_iter(), &None, &Some(before), inclusive, u16::MAX)?
-                .last()
-                .copied(),
-        )
+        Ok(collect_or_error(
+            self.into_iter(),
+            &None,
+            &Some(before),
+            inclusive,
+            self.limit,
+        )?
+        .last()
+        .copied())
     }
 
     /// Returns all the recurrences of the rrule before the given date.
@@ -174,9 +195,14 @@ impl RRuleSet {
         self,
         before: DateTime,
         inclusive: bool,
-        limit: u16,
     ) -> (Vec<DateTime>, Option<RRuleError>) {
-        collect_with_error(self.into_iter(), &None, &Some(before), inclusive, limit)
+        collect_with_error(
+            self.into_iter(),
+            &None,
+            &Some(before),
+            inclusive,
+            self.limit,
+        )
     }
 
     /// Returns the last recurrence after the given datetime instance.
@@ -189,7 +215,7 @@ impl RRuleSet {
         inclusive: bool,
     ) -> Result<Option<DateTime>, RRuleError> {
         Ok(
-            collect_or_error(self.into_iter(), &Some(after), &None, inclusive, 1)?
+            collect_or_error(self.into_iter(), &Some(after), &None, inclusive, Some(1))?
                 .first()
                 .copied(),
         )
@@ -207,9 +233,8 @@ impl RRuleSet {
         self,
         after: DateTime,
         inclusive: bool,
-        limit: u16,
     ) -> (Vec<DateTime>, Option<RRuleError>) {
-        collect_with_error(self.into_iter(), &Some(after), &None, inclusive, limit)
+        collect_with_error(self.into_iter(), &Some(after), &None, inclusive, self.limit)
     }
 
     /// Returns all the recurrences of the rrule between after and before.
@@ -228,7 +253,7 @@ impl RRuleSet {
             &Some(start),
             &Some(end),
             inclusive,
-            u16::MAX,
+            self.limit,
         )
     }
 
@@ -245,9 +270,14 @@ impl RRuleSet {
         start: DateTime,
         end: DateTime,
         inclusive: bool,
-        limit: u16,
     ) -> (Vec<DateTime>, Option<RRuleError>) {
-        collect_with_error(self.into_iter(), &Some(start), &Some(end), inclusive, limit)
+        collect_with_error(
+            self.into_iter(),
+            &Some(start),
+            &Some(end),
+            inclusive,
+            self.limit,
+        )
     }
 }
 
