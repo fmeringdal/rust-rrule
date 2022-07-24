@@ -17,7 +17,7 @@ pub fn parse_rrule_from_string(rrule: &str) {
     match RRuleSet::from_str(rrule) {
         Ok(rrule) => {
             println!("RRule data: {:#?}", rrule);
-            let (list, err) = rrule.all_with_error(50);
+            let (list, err) = rrule.set_limit(50).all_with_error();
             crate::print_all_datetimes(&list);
             if let Some(err) = err {
                 println!("RRule ended with error: {}", err);

@@ -29,7 +29,7 @@ fn main() {
                 // Everything here is acceptable, but panic is not what we want.
                 match RRuleSet::from_str(s) {
                     Ok(rule) => {
-                        let _ = rule.all(50);
+                        let _ = rule.set_limit(50).all();
                     }
                     Err(_) => {}
                 }
@@ -41,7 +41,7 @@ fn main() {
                 Some(rule) => rule,
                 None => return, // Not enough data to create `RRule`
             };
-            let _ = rule.all(50);
+            let _ = rule.set_limit(50).all();
         }),
         _ => {}
     }

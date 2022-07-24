@@ -12,7 +12,7 @@ pub fn rrule_from_bin(data: &[u8]) {
     match rrule_afl_fuzz::take_rrule::take_rrule_from_data(data) {
         Some(rule) => {
             println!("RRule data: {:#?}", rule);
-            let (list, err) = rule.all_with_error(50);
+            let (list, err) = rule.set_limit(50).all_with_error();
             crate::print_all_datetimes(&list);
             if let Some(err) = err {
                 println!("RRule ended with error: {}", err);

@@ -14,7 +14,7 @@ FOLDER_OUT="out"
 # Build
 cargo afl build --release
 # Fuzz binary
-BIN_PATH="../target/debug/rrule-afl-fuzz"
+BIN_PATH="../target/release/rrule-afl-fuzz"
 # Env variable to set for all instances
 FUZZ_ENV_VAR="AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1 AFL_SKIP_CPUFREQ=1 AFL_MAP_SIZE=131072"
 # What command should be used to open new terminal windows
