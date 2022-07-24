@@ -17,12 +17,10 @@
 //! let rrule_set: RRuleSet = "DTSTART:20120201T023000Z\n\
 //!     RRULE:FREQ=MONTHLY;COUNT=5\n\
 //!     RDATE:20120701T023000Z,20120702T023000Z\n\
-//!     EXRULE:FREQ=MONTHLY;COUNT=2\n\
 //!     EXDATE:20120601T023000Z".parse().unwrap();
 //!
 //! assert_eq!(*rrule_set.get_dt_start(), UTC.ymd(2012, 2, 1).and_hms(2, 30, 0));
 //! assert_eq!(rrule_set.get_rrule().len(), 1);
-//! assert_eq!(rrule_set.get_exrule().len(), 1);
 //! assert_eq!(rrule_set.get_rdate().len(), 2);
 //! assert_eq!(rrule_set.get_exdate().len(), 1);
 //! ```
