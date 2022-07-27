@@ -24,14 +24,14 @@ The crate allows for a "BYEASTER" filter. But this is opt-in with the feature fl
   Allows multiple RRules to be combined. (Union, `A ∪ B`)
 - List of [RDates](https://icalendar.org/iCalendar-RFC-5545/3-8-5-2-recurrence-date-times.html):
   A list of datetime combinations to always include. (Union, `A ∪ B`)
-- List of ExRule (see note below):
+- List of [ExRule](https://datatracker.ietf.org/doc/html/rfc2445#section-4.8.5.2) (see note below):
   Allows of RRules that are removed from the results. (Complement `A \ B` or `A - B`)
 - List of [ExDate](https://icalendar.org/iCalendar-RFC-5545/3-8-5-1-exception-date-times.html):
   A list of datetime combinations to always exclude. (Complement `A \ B` or `A - B`)
 
 Note: "EXRULE" was originally part of [RFC 2445](https://datatracker.ietf.org/doc/html/rfc2445#section-4.8.5.2),
-[RFC 5545][ical_spec] supersedes this specification.
-But "EXRULE" works exactly the same als "RRULE" excepts it excludes dates.
+[RFC 5545][ical_spec] absoletes this specification.
+But "EXRULE" works exactly the same als "RRULE" except that it excludes dates. You can enable "EXRULE" by enabling the "exrule" feature flag which is disabled by default.
 
 If you notice that the implementation differs from the specifications above, please open an issue.
 

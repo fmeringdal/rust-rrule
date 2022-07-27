@@ -47,6 +47,7 @@ impl RRuleSet {
 
     /// Adds a new exrule to the set.
     #[must_use]
+    #[cfg(feature = "exrule")]
     pub fn exrule(mut self, rrule: RRule) -> Self {
         self.exrule.push(rrule);
         self
@@ -75,6 +76,7 @@ impl RRuleSet {
 
     /// Sets the exrules of the set.
     #[must_use]
+    #[cfg(feature = "exrule")]
     pub fn set_exrules(mut self, exrules: Vec<RRule>) -> Self {
         self.exrule = exrules;
         self
@@ -272,9 +274,18 @@ impl FromStr for RRuleSet {
                     let rrule = rrule.validate(start.datetime)?;
                     Ok::<RRuleSet, RRuleError>(rrule_set.rrule(rrule))
                 }
+                #[allow(unused_variables)]
                 ContentLine::ExRule(rrule) => {
-                    let rrule = rrule.validate(start.datetime)?;
-                    Ok(rrule_set.exrule(rrule))
+                    #[cfg(feature = "exrule")]
+                    {
+                        let rrule = rrule.validate(start.datetime)?;
+                        Ok(rrule_set.exrule(rrule))
+                    }
+                    #[cfg(not(feature = "exrule"))]
+                    {
+                        log::warn!("Found EXRULE in input, but it will be ignored since the `exrule` feature is not enabled.");
+                        Ok(rrule_set)
+                    }
                 }
                 ContentLine::ExDate(exdates) => {
                     for exdate in exdates {

@@ -2,6 +2,7 @@ use crate::tests::common::{check_occurrences, test_recurring_rrule_set, ymd_hms}
 use crate::{Frequency, NWeekday, RRule, RRuleSet, Weekday};
 
 #[test]
+#[cfg(feature = "exrule")]
 fn rrule_and_exrule() {
     let dt_start = ymd_hms(1997, 9, 2, 9, 0, 0);
 
@@ -40,6 +41,7 @@ fn rrule_and_exrule() {
 }
 
 #[test]
+#[cfg(feature = "exrule")]
 fn setdate_and_exdate() {
     let set = RRuleSet::new(ymd_hms(1970, 1, 1, 0, 0, 0))
         .set_rdates(vec![
@@ -67,6 +69,7 @@ fn setdate_and_exdate() {
 }
 
 #[test]
+#[cfg(feature = "exrule")]
 fn setdate_and_exrule() {
     let dt_start = ymd_hms(1997, 9, 2, 9, 0, 0);
     let rrule = RRule {
@@ -162,6 +165,7 @@ fn rrule_and_exdate_2() {
 }
 
 #[test]
+#[cfg(feature = "exrule")]
 fn rrule_and_exyearly_yearly_big() {
     let dt_start = ymd_hms(1997, 9, 2, 9, 0, 0);
 
@@ -202,6 +206,7 @@ fn rrule_and_exyearly_yearly_big() {
 }
 
 #[test]
+#[cfg(feature = "exrule")]
 fn before() {
     let dt_start = ymd_hms(1997, 9, 2, 9, 0, 0);
 
@@ -239,6 +244,7 @@ fn before() {
 }
 
 #[test]
+#[cfg(feature = "exrule")]
 fn after() {
     let dt_start = ymd_hms(1997, 9, 2, 9, 0, 0);
 
@@ -276,6 +282,7 @@ fn after() {
 }
 
 #[test]
+#[cfg(feature = "exrule")]
 fn between() {
     let dt_start = ymd_hms(1997, 9, 2, 9, 0, 0);
 

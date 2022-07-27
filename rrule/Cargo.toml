@@ -33,7 +33,7 @@ required-features = ["cli-tool"]
 [features]
 default = []
 
-# Disbale validator limits. This will disable the arbirary limits set on the amount of itterations
+# Disable validator limits. This will disable the arbirary limits set on the amount of itterations
 # and other properties in order to prevent overflowing numbers.
 # Setting this flag remove all the limit.
 #
@@ -49,5 +49,8 @@ by-easter = []
 # Required only for building CLI `rrule` tool.
 cli-tool = ["clap"]
 
-# Enable serde for some of the public structs
+# Enable serde for some of the public structs.
 serde = ["serde_with", "chrono/serde", "chrono-tz/serde"]
+
+# Allows EXRULE's to be used in the `RRuleSet`.
+exrule = []
