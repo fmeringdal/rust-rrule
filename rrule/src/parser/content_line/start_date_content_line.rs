@@ -123,7 +123,7 @@ mod tests {
     }
 
     #[test]
-    fn rejecets_invalid_dtstart() {
+    fn rejects_invalid_dtstart() {
         let tests = [
             ContentLineCaptures {
                 property_name: PropertyName::DtStart,

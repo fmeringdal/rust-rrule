@@ -235,8 +235,8 @@ impl DateTimeIter {
 
             if hours == first_hours && minutes == first_minutes {
                 return Err(RRuleError::new_iter_err(
-                "Infinite loop detected. It can be resolved by changing `BYMINUTE`, `BYHOUR` or `INTERVAL`",
-            ));
+                    "Infinite loop detected. It can be resolved by changing `BYMINUTE`, `BYHOUR` or `INTERVAL`",
+                ));
             }
         }
 
@@ -288,8 +288,8 @@ impl DateTimeIter {
 
             if hours == first_hours && minutes == first_minutes && seconds == first_seconds {
                 return Err(RRuleError::new_iter_err(
-                "Infinite loop detected. It can be resolved by changing `BYSECOND`, `BYMINUTE`, `BYHOUR` or `INTERVAL`",
-            ));
+                    "Infinite loop detected. It can be resolved by changing `BYSECOND`, `BYMINUTE`, `BYHOUR` or `INTERVAL`",
+                ));
             }
         }
 

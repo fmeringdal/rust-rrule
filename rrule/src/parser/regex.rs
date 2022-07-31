@@ -8,7 +8,8 @@ use super::{content_line::PropertyName, ParseError};
 
 lazy_static! {
     static ref DATESTR_RE: Regex =
-        Regex::new(r"(?m)^(\d{4})(\d{2})(\d{2})(T(\d{2})(\d{2})(\d{2})(Z?))?$").unwrap();
+        Regex::new(r"(?m)^([0-9]{4})([0-9]{2})([0-9]{2})(T([0-9]{2})([0-9]{2})([0-9]{2})(Z?))?$")
+            .unwrap();
 }
 
 #[derive(Debug, PartialEq)]

@@ -203,11 +203,13 @@ impl<'a> IterInfo<'a> {
             Frequency::Hourly => self.hour_timeset(hour),
             Frequency::Minutely => self.min_timeset(hour, minute),
             Frequency::Secondly => Self::sec_timeset(hour, minute, second),
-            _ => unreachable!("This method is never called with an invalid frequency and is not publically exposed")
+            _ => unreachable!(
+                "This method is never called with an invalid frequency and is not publicly exposed"
+            ),
         }
     }
 
-    /// Gets a timeset.  
+    /// Gets a timeset.
     ///
     /// An empty set is returned if the hour, minute and second are not valid
     /// according to the `RRule`.
