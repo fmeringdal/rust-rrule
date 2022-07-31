@@ -1,4 +1,4 @@
-use chrono::{Datelike, Duration, NaiveTime, TimeZone, Timelike};
+use chrono::{Datelike, Duration, NaiveTime, TimeZone, Timelike, Weekday};
 use chrono_tz::Tz;
 
 pub(crate) fn duration_from_midnight(time: NaiveTime) -> Duration {
@@ -34,22 +34,38 @@ pub(crate) fn datetime_to_ical_format(dt: &DateTime) -> String {
     let mut tz_prefix = String::new();
     let mut tz_postfix = String::new();
     let tz = dt.timezone();
-    if tz == Tz::UTC {
-        tz_postfix = "Z".to_string();
-    } else {
-        tz_prefix = format!(";TZID={}", tz.name());
-    };
+    match tz {
+        RRuleTimeZone::Local => {}
+        RRuleTimeZone::Tz(tz) => match tz {
+            Tz::UTC => {
+                tz_postfix = "Z".to_string();
+            }
+            _ => {
+                tz_prefix = format!(";TZID={}", tz.name());
+            }
+        },
+    }
 
     let dt = dt.format("%Y%m%dT%H%M%S");
     format!("{}:{}{}", tz_prefix, dt, tz_postfix)
 }
 
+#[derive(Debug, PartialEq)]
 pub(crate) enum RRuleTimeZone {
     Local,
     Tz(chrono_tz::Tz),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+impl RRuleTimeZone {
+    pub fn name(&self) -> String {
+        match self {
+            RRuleTimeZone::Local => "Local".into(),
+            RRuleTimeZone::Tz(tz) => tz.name().into(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub(crate) enum DateTime {
     Local(chrono::DateTime<chrono::Local>),
     Tz(chrono::DateTime<chrono_tz::Tz>),
@@ -67,6 +83,55 @@ impl DateTime {
         match self {
             Self::Local(dt) => RRuleTimeZone::Local,
             Self::Tz(dt) => RRuleTimeZone::Tz(dt.timezone()),
+        }
+    }
+
+    pub fn year(&self) -> i32 {
+        match self {
+            Self::Local(dt) => dt.year(),
+            Self::Tz(dt) => dt.year(),
+        }
+    }
+
+    pub fn month(&self) -> u32 {
+        match self {
+            Self::Local(dt) => dt.month(),
+            Self::Tz(dt) => dt.month(),
+        }
+    }
+
+    pub fn weekday(&self) -> Weekday {
+        match self {
+            Self::Local(dt) => dt.weekday(),
+            Self::Tz(dt) => dt.weekday(),
+        }
+    }
+
+    pub fn day(&self) -> u32 {
+        match self {
+            Self::Local(dt) => dt.day(),
+            Self::Tz(dt) => dt.day(),
+        }
+    }
+
+    pub fn hour(&self) -> u32 {
+        match self {
+            Self::Local(dt) => dt.hour(),
+            Self::Tz(dt) => dt.hour(),
+        }
+    }
+
+    pub fn minute(&self) -> u32 {
+        match self {
+            Self::Local(dt) => dt.minute(),
+            Self::Tz(dt) => dt.minute(),
+        }
+    }
+
+    pub fn second(&self) -> u32 {
+        match self {
+            Self::Local(dt) => dt.second(),
+            Self::Tz(dt) => dt.second(),
         }
     }
 
