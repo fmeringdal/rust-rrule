@@ -352,8 +352,8 @@ mod tests {
                 freq: Frequency::Yearly,
                 ..Default::default()
             }
-                .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
-                .unwrap();
+            .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
+            .unwrap();
 
             let res = counter_date.increment(&rrule, false);
             assert!(res.is_ok());
@@ -396,8 +396,8 @@ mod tests {
                 freq: Frequency::Monthly,
                 ..Default::default()
             }
-                .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
-                .unwrap();
+            .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
+            .unwrap();
 
             let res = counter_date.increment(&rrule, false);
             assert!(res.is_ok());
@@ -440,8 +440,8 @@ mod tests {
                 freq: Frequency::Weekly,
                 ..Default::default()
             }
-                .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
-                .unwrap();
+            .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
+            .unwrap();
 
             let res = counter_date.increment(&rrule, false);
             assert!(res.is_ok());
@@ -479,8 +479,8 @@ mod tests {
                 freq: Frequency::Daily,
                 ..Default::default()
             }
-                .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
-                .unwrap();
+            .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
+            .unwrap();
 
             let res = counter_date.increment(&rrule, false);
             assert!(res.is_ok());
@@ -535,8 +535,8 @@ mod tests {
                 by_hour,
                 ..Default::default()
             }
-                .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
-                .unwrap();
+            .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
+            .unwrap();
 
             let res = counter_date.increment(&rrule, false);
             assert!(res.is_ok());
@@ -584,8 +584,8 @@ mod tests {
                 freq: Frequency::Hourly,
                 ..Default::default()
             }
-                .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
-                .unwrap();
+            .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
+            .unwrap();
 
             let res = counter_date.increment(&rrule, true);
             assert!(res.is_ok());
@@ -623,8 +623,8 @@ mod tests {
                 freq: Frequency::Minutely,
                 ..Default::default()
             }
-                .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
-                .unwrap();
+            .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
+            .unwrap();
 
             let res = counter_date.increment(&rrule, false);
             assert!(res.is_ok());
@@ -657,8 +657,8 @@ mod tests {
                 freq: Frequency::Minutely,
                 ..Default::default()
             }
-                .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
-                .unwrap();
+            .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
+            .unwrap();
 
             let res = counter_date.increment(&rrule, true);
             assert!(res.is_ok());
@@ -696,8 +696,8 @@ mod tests {
                 freq: Frequency::Secondly,
                 ..Default::default()
             }
-                .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
-                .unwrap();
+            .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
+            .unwrap();
 
             let res = counter_date.increment(&rrule, false);
             assert!(res.is_ok());
@@ -730,8 +730,8 @@ mod tests {
                 freq: Frequency::Secondly,
                 ..Default::default()
             }
-                .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
-                .unwrap();
+            .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
+            .unwrap();
 
             let res = counter_date.increment(&rrule, true);
             assert!(res.is_ok());

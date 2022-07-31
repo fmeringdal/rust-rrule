@@ -203,7 +203,9 @@ impl<'a> IterInfo<'a> {
             Frequency::Hourly => self.hour_timeset(hour),
             Frequency::Minutely => self.min_timeset(hour, minute),
             Frequency::Secondly => Self::sec_timeset(hour, minute, second),
-            _ => unreachable!("This method is never called with an invalid frequency and is not publicly exposed")
+            _ => unreachable!(
+                "This method is never called with an invalid frequency and is not publicly exposed"
+            ),
         }
     }
 
