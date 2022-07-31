@@ -31,7 +31,7 @@ fn main() {
             .validate(UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
             .expect("RRule invalid");
 
-        let recurrences = rrule_set.exrule(exrule).all(100).unwrap();
+        let recurrences = rrule_set.exrule(exrule).all(10).unwrap();
 
         // Check that all the recurrences are on a Tuesday
         for occurrence in &recurrences {

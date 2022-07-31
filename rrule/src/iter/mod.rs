@@ -22,7 +22,4 @@ pub use rruleset_iter::RRuleSetIter;
 /// Prevent loops when searching for the next event in the iterator.
 /// If after X amount of iterations it still has not found an event
 /// we can assume it will not find an event.
-#[cfg(not(feature = "no-validation-limits"))]
 static MAX_ITER_LOOP: u32 = 100_000;
-#[cfg(feature = "no-validation-limits")]
-static MAX_ITER_LOOP: u32 = u32::MAX;

@@ -19,6 +19,7 @@ pub fn ymd_hms(
 
 pub fn test_recurring_rrule(
     rrule: RRule<Unvalidated>,
+    limited: bool,
     dt_start: DateTime<Tz>,
     expected_dates: &[DateTime<Tz>],
 ) {
@@ -30,7 +31,11 @@ pub fn test_recurring_rrule(
             RRuleError::IterError(e) => e,
         })
         .unwrap();
-    let res = rrule_set.all(100).unwrap();
+    let res = if !limited {
+        rrule_set.all_unchecked().unwrap()
+    } else {
+        rrule_set.all(u16::MAX).unwrap()
+    };
 
     println!("Actual: {:?}", res);
     println!("Expected: {:?}", expected_dates);
@@ -47,7 +52,7 @@ pub fn test_recurring_rrule(
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn test_recurring_rrule_set(rrule_set: RRuleSet, expected_dates: &[DateTime<Tz>]) {
-    let res = rrule_set.all(100).unwrap();
+    let res = rrule_set.all(u16::MAX).unwrap();
 
     println!("Actual: {:?}", res);
     println!("Expected: {:?}", expected_dates);

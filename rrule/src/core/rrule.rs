@@ -6,13 +6,13 @@ use crate::core::get_month;
 use crate::core::get_second;
 use crate::parser::str_to_weekday;
 use crate::parser::ParseError;
-use crate::validator::check_limits;
 use crate::validator::validate_rrule;
 use crate::{RRuleError, RRuleIter, RRuleSet, Unvalidated, Validated};
 use chrono::{Datelike, Month, Weekday};
 use chrono_tz::Tz;
 #[cfg(feature = "serde")]
 use serde_with::{DeserializeFromStr, SerializeDisplay};
+use std::cmp::Ordering;
 use std::fmt::Display;
 use std::fmt::Formatter;
 use std::marker::PhantomData;
@@ -84,6 +84,39 @@ pub enum NWeekday {
     /// When it is the nth weekday of the month or year.
     /// The first member's value is from -366 to -1 and 1 to 366 depending on frequency
     Nth(i16, Weekday),
+}
+
+// The ordering here doesn't really matter as it is only used to sort for display purposes
+fn n_weekday_cmp(val1: NWeekday, val2: NWeekday) -> Ordering {
+    match val1 {
+        NWeekday::Every(wday) => match val2 {
+            NWeekday::Every(other_wday) => wday
+                .num_days_from_monday()
+                .cmp(&other_wday.num_days_from_monday()),
+            NWeekday::Nth(_n, _other_wday) => Ordering::Less,
+        },
+        NWeekday::Nth(n, wday) => match val2 {
+            NWeekday::Every(_) => Ordering::Greater,
+            NWeekday::Nth(other_n, other_wday) => match n.cmp(&other_n) {
+                Ordering::Equal => wday
+                    .num_days_from_monday()
+                    .cmp(&other_wday.num_days_from_monday()),
+                less_or_greater => less_or_greater,
+            },
+        },
+    }
+}
+
+impl PartialOrd for NWeekday {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(n_weekday_cmp(*self, *other))
+    }
+}
+
+impl Ord for NWeekday {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        n_weekday_cmp(*self, *other)
+    }
 }
 
 impl NWeekday {
@@ -404,7 +437,6 @@ impl RRule<Unvalidated> {
 
     /// Fills in some additional fields in order to make iter work correctly.
     pub(crate) fn finalize_parsed_rrule(mut self, dt_start: &DateTime) -> RRule<Unvalidated> {
-        use std::cmp::Ordering;
         // TEMP: move negative months to other list
         let mut by_month_day = vec![];
         let mut by_n_month_day = self.by_n_month_day;
@@ -458,32 +490,49 @@ impl RRule<Unvalidated> {
             let hour = get_hour(dt_start);
             self.by_hour = vec![hour];
         }
-        self.by_hour.sort_unstable();
 
         // by_minute
         if self.by_minute.is_empty() && self.freq < Frequency::Minutely {
             let minute = get_minute(dt_start);
             self.by_minute = vec![minute];
         }
-        self.by_minute.sort_unstable();
 
         // by_second
         if self.by_second.is_empty() && self.freq < Frequency::Secondly {
             let second = get_second(dt_start);
             self.by_second = vec![second];
         }
-        self.by_second.sort_unstable();
 
-        // make sure all BYXXX are unique
+        // make sure all BYXXX are unique and sorted
+        self.by_hour.sort_unstable();
         self.by_hour.dedup();
+
+        self.by_minute.sort_unstable();
         self.by_minute.dedup();
+
+        self.by_second.sort_unstable();
         self.by_second.dedup();
+
+        self.by_month.sort_unstable();
         self.by_month.dedup();
+
+        self.by_month_day.sort_unstable();
         self.by_month_day.dedup();
+
+        self.by_n_month_day.sort_unstable();
         self.by_n_month_day.dedup();
+
+        self.by_year_day.sort_unstable();
         self.by_year_day.dedup();
+
+        self.by_week_no.sort_unstable();
         self.by_week_no.dedup();
+
+        self.by_set_pos.sort_unstable();
         self.by_set_pos.dedup();
+
+        self.by_weekday.sort_unstable();
+        self.by_weekday.dedup();
 
         self
     }
@@ -498,9 +547,6 @@ impl RRule<Unvalidated> {
 
         // Validate required checks (defined by RFC 5545)
         validate_rrule::validate_rrule_forced(&rrule, &dt_start)?;
-        // Validate (optional) sanity checks. (arbitrary limits)
-        // Can be disabled by `no-validation-limits` feature flag, see README.md for more info.
-        check_limits::check_limits(&rrule, &dt_start)?;
 
         Ok(RRule {
             freq: rrule.freq,
@@ -536,8 +582,8 @@ impl RRule<Unvalidated> {
 }
 
 impl RRule {
-    pub(crate) fn iter_with_ctx(&self, dt_start: DateTime) -> RRuleIter {
-        RRuleIter::new(self, &dt_start)
+    pub(crate) fn iter_with_ctx(&self, dt_start: DateTime, limited: bool) -> RRuleIter {
+        RRuleIter::new(self, &dt_start, limited)
     }
 }
 

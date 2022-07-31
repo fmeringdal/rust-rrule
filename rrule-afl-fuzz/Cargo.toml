@@ -18,5 +18,4 @@ path = "../rrule"
 
 [features]
 default = []
-no-validation-limits = ["rrule/no-validation-limits"]
 by-easter = ["rrule/by-easter"]

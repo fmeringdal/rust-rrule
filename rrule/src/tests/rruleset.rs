@@ -141,7 +141,7 @@ fn rrule_and_exdate_2() {
         EXDATE;TZID=Europe/Paris:20201228T093000,20210125T093000,20210208T093000"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(50)
+        .all(u16::MAX)
         .unwrap();
     // This results in following set (minus exdate)
     // [
@@ -233,13 +233,14 @@ fn before() {
     };
     let exrule = exrule.validate(dt_start).unwrap();
 
-    let set = RRuleSet::new(dt_start).rrule(rrule).exrule(exrule);
+    let set = RRuleSet::new(dt_start)
+        .rrule(rrule)
+        .exrule(exrule)
+        .before(ymd_hms(2015, 9, 2, 9, 0, 0));
 
     assert_eq!(
-        set.just_before(ymd_hms(2015, 9, 2, 9, 0, 0), false)
-            .unwrap()
-            .unwrap(),
-        ymd_hms(2014, 9, 2, 9, 0, 0),
+        set.all_unchecked().unwrap().last().unwrap().clone(),
+        ymd_hms(2015, 9, 2, 9, 0, 0),
     );
 }
 
@@ -271,14 +272,12 @@ fn after() {
     };
     let exrule = exrule.validate(dt_start).unwrap();
 
-    let set = RRuleSet::new(dt_start).rrule(rrule).exrule(exrule);
+    let set = RRuleSet::new(dt_start)
+        .rrule(rrule)
+        .exrule(exrule)
+        .after(ymd_hms(2000, 9, 2, 9, 0, 0));
 
-    assert_eq!(
-        set.just_after(ymd_hms(2000, 9, 2, 9, 0, 0), false)
-            .unwrap()
-            .unwrap(),
-        ymd_hms(2007, 9, 2, 9, 0, 0),
-    );
+    assert_eq!(set.all(1).unwrap()[0], ymd_hms(2007, 9, 2, 9, 0, 0),);
 }
 
 #[test]
@@ -309,19 +308,19 @@ fn between() {
     };
     let exrule = exrule.validate(dt_start).unwrap();
 
-    let set = RRuleSet::new(dt_start).rrule(rrule).exrule(exrule);
+    let set = RRuleSet::new(dt_start)
+        .rrule(rrule)
+        .exrule(exrule)
+        .after(ymd_hms(2000, 9, 2, 9, 0, 0))
+        .before(ymd_hms(2010, 9, 2, 9, 0, 0));
 
     check_occurrences(
-        &set.all_between(
-            ymd_hms(2000, 9, 2, 9, 0, 0),
-            ymd_hms(2010, 9, 2, 9, 0, 0),
-            false,
-        )
-        .unwrap(),
+        &set.all(u16::MAX).unwrap(),
         &[
             "2007-09-02T09:00:00-00:00",
             "2008-09-02T09:00:00-00:00",
             "2009-09-02T09:00:00-00:00",
+            "2010-09-02T09:00:00-00:00",
         ],
     );
 }

@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - EXRULE functionality is put behind the feature flag `exrule` which is not enabled by default. 
+- `RRuleSet::all` takes a `limit` argument to protect against long running iteration.
+- The iterator API does not have any validation limits. So `rrule_set.into_iter().map(|dt| format!("{dt}")).collect<Vec<_>>()` could lead to an infinite loop.
+
+### Removed
+- `no-validation-limits` feature is removed and is repalced by arguments to `RRuleSet`.
+- `RRuleSet::just_before` was removed to keep the public API more lean. Please use the iterator API directly if you need this use-case.
+- `RRuleSet::just_after` was removed to keep the public API more lean. Please use the iterator API directly if you need this use-case.
+- `RRuleSet::all_between` was replaced by `rrule_set.before(dt).after(dt).all(limit)`.
+
+### Added
+- `RRuleSet::after` and `RRuleSet::before` was added to configure the boundaries of the recurrences before calling `RRuleSet::all`. 
+- `RRuleSet::all_unchecked` was added to allow for iterating without any validation limits.
 
 ## 0.9.2 (2022-07-22)
 

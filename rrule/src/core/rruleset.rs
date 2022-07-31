@@ -23,6 +23,10 @@ pub struct RRuleSet {
     pub(crate) exdate: Vec<DateTime>,
     /// The start datetime of the recurring event.
     pub(crate) dt_start: DateTime,
+    /// If set, all returned recurrences must be before this date.
+    pub(crate) before: Option<DateTime>,
+    /// If set, all returned recurrences must be after this date.
+    pub(crate) after: Option<DateTime>,
 }
 
 impl RRuleSet {
@@ -35,7 +39,27 @@ impl RRuleSet {
             rdate: vec![],
             exrule: vec![],
             exdate: vec![],
+            before: None,
+            after: None,
         }
+    }
+
+    /// Only return recurrences that comes before this `DateTime`.
+    ///
+    /// This value will not be used if you use the `Iterator` API directly.
+    #[must_use]
+    pub fn before(mut self, dt: DateTime) -> Self {
+        self.before = Some(dt);
+        self
+    }
+
+    /// Only return recurrences that comes after this `DateTime`.
+    ///
+    /// This value will not be used if you use the `Iterator` API directly.
+    #[must_use]
+    pub fn after(mut self, dt: DateTime) -> Self {
+        self.after = Some(dt);
+        self
     }
 
     /// Adds a new rrule to the set.
@@ -130,8 +154,49 @@ impl RRuleSet {
     ///
     /// Limit must be set in order to prevent infinite loops.
     /// The max limit is `65535`. If you need more please use `into_iter` directly.
+    ///
+    /// # Usage
+    ///
+    /// ```
+    /// use rrule::RRuleSet;
+    ///
+    /// let rrule_set: RRuleSet = "DTSTART:20210101T090000Z\nRRULE:FREQ=DAILY;".parse().unwrap();
+    ///
+    /// // Limit the results to 2 recurrences
+    /// let result = rrule_set.all(2).unwrap();
+    /// assert_eq!(result.len(), 2);
+    /// ```
+    ///
+    /// # Error
+    ///
+    /// An error will be returned if the iterator encountered an error which
+    /// does not allow the iteration to continue. One example would be hitting the validation-limit
+    /// or the `INTERVAL` value was too large. Please use [`RRuleSet::all_with_error`] if you
+    /// want the datetimes generated before encountering the error to be returned as well.
     pub fn all(self, limit: u16) -> Result<Vec<DateTime>, RRuleError> {
-        collect_or_error(self.into_iter(), &None, &None, true, limit)
+        collect_or_error(
+            self.into_iter(),
+            &self.after,
+            &self.before,
+            true,
+            Some(limit),
+        )
+    }
+
+    /// Returns all the recurrences of the rrule.
+    ///
+    /// # Note
+    ///
+    /// This method does not enforce any validation limits and might lead to
+    /// very long iteration times. Please read the `SECURITY.md` for more information.
+    ///
+    /// # Error
+    ///
+    /// An error will be returned if the iterator encountered an error which
+    /// does not allow the iteration to continue. One example would be hitting a datetime
+    /// during the iteration which is outside the allowed range of `chrono::DateTime`.
+    pub fn all_unchecked(self) -> Result<Vec<DateTime>, RRuleError> {
+        collect_or_error(self.into_iter(), &self.after, &self.before, true, None)
     }
 
     /// Returns all the recurrences of the rrule.
@@ -143,111 +208,27 @@ impl RRuleSet {
     /// otherwise the second value of the return tuple will be `None`.
     #[must_use]
     pub fn all_with_error(self, limit: u16) -> (Vec<DateTime>, Option<RRuleError>) {
-        collect_with_error(self.into_iter(), &None, &None, true, limit)
-    }
-
-    /// Returns the last recurrence before the given datetime instance.
-    ///
-    /// The `inclusive` keyword defines what happens if `before` is a recurrence.
-    /// With `inclusive == true`, if `before` itself is a recurrence, it will be returned.
-    pub fn just_before(
-        self,
-        before: DateTime,
-        inclusive: bool,
-    ) -> Result<Option<DateTime>, RRuleError> {
-        Ok(
-            collect_or_error(self.into_iter(), &None, &Some(before), inclusive, u16::MAX)?
-                .last()
-                .copied(),
-        )
-    }
-
-    /// Returns all the recurrences of the rrule before the given date.
-    ///
-    /// Limit must be set in order to prevent infinite loops.
-    /// The max limit is `65535`. If you need more please use `into_iter` directly.
-    ///
-    /// In case the iterator ended with an error, the error will be included,
-    /// otherwise the second value of the return tuple will be `None`.
-    #[must_use]
-    pub fn all_before_with_error(
-        self,
-        before: DateTime,
-        inclusive: bool,
-        limit: u16,
-    ) -> (Vec<DateTime>, Option<RRuleError>) {
-        collect_with_error(self.into_iter(), &None, &Some(before), inclusive, limit)
-    }
-
-    /// Returns the last recurrence after the given datetime instance.
-    ///
-    /// The `inclusive` keyword defines what happens if `after` is a recurrence.
-    /// With `inclusive == true`, if `after` itself is a recurrence, it will be returned.
-    pub fn just_after(
-        self,
-        after: DateTime,
-        inclusive: bool,
-    ) -> Result<Option<DateTime>, RRuleError> {
-        Ok(
-            collect_or_error(self.into_iter(), &Some(after), &None, inclusive, 1)?
-                .first()
-                .copied(),
-        )
-    }
-
-    /// Returns all the recurrences of the rrule after the given date.
-    ///
-    /// Limit must be set in order to prevent infinite loops.
-    /// The max limit is `65535`. If you need more please use `into_iter` directly.
-    ///
-    /// In case the iterator ended with an error, the error will be included,
-    /// otherwise the second value of the return tuple will be `None`.
-    #[must_use]
-    pub fn all_after_with_error(
-        self,
-        after: DateTime,
-        inclusive: bool,
-        limit: u16,
-    ) -> (Vec<DateTime>, Option<RRuleError>) {
-        collect_with_error(self.into_iter(), &Some(after), &None, inclusive, limit)
-    }
-
-    /// Returns all the recurrences of the rrule between after and before.
-    ///
-    /// The `inclusive` keyword defines what happens if after and/or before are
-    /// themselves recurrences. With `inclusive == true`, they will be included in the
-    /// list, if they are found in the recurrence set.
-    pub fn all_between(
-        self,
-        start: DateTime,
-        end: DateTime,
-        inclusive: bool,
-    ) -> Result<Vec<DateTime>, RRuleError> {
-        collect_or_error(
+        collect_with_error(
             self.into_iter(),
-            &Some(start),
-            &Some(end),
-            inclusive,
-            u16::MAX,
+            &self.after,
+            &self.before,
+            true,
+            Some(limit),
         )
     }
 
-    /// Returns all the recurrences of the rrule after the given date and before the other date.
-    ///
-    /// Limit must be set in order to prevent infinite loops.
-    /// The max limit is `65535`. If you need more please use `into_iter` directly.
+    /// Returns all the recurrences of the rrule.
     ///
     /// In case the iterator ended with an error, the error will be included,
     /// otherwise the second value of the return tuple will be `None`.
+    ///
+    /// # Note
+    ///
+    /// This method does not enforce any validation limits and might lead to
+    /// very long iteration times. Please read the `SECURITY.md` for more information.
     #[must_use]
-    pub fn all_between_with_error(
-        self,
-        start: DateTime,
-        end: DateTime,
-        inclusive: bool,
-        limit: u16,
-    ) -> (Vec<DateTime>, Option<RRuleError>) {
-        collect_with_error(self.into_iter(), &Some(start), &Some(end), inclusive, limit)
+    pub fn all_with_error_unchecked(self) -> (Vec<DateTime>, Option<RRuleError>) {
+        collect_with_error(self.into_iter(), &self.after, &self.before, true, None)
     }
 }
 
@@ -269,17 +250,17 @@ impl FromStr for RRuleSet {
 
         content_lines.into_iter().try_fold(
             RRuleSet::new(start.datetime),
-            |mut rrule_set, content_line| match content_line {
-                ContentLine::RRule(rrule) => {
-                    let rrule = rrule.validate(start.datetime)?;
-                    Ok::<RRuleSet, RRuleError>(rrule_set.rrule(rrule))
-                }
+            |rrule_set, content_line| match content_line {
+                ContentLine::RRule(rrule) => rrule
+                    .validate(start.datetime)
+                    .map(|rrule| rrule_set.rrule(rrule)),
                 #[allow(unused_variables)]
-                ContentLine::ExRule(rrule) => {
+                ContentLine::ExRule(exrule) => {
                     #[cfg(feature = "exrule")]
                     {
-                        let rrule = rrule.validate(start.datetime)?;
-                        Ok(rrule_set.exrule(rrule))
+                        exrule
+                            .validate(start.datetime)
+                            .map(|exrule| rrule_set.rrule(exrule))
                     }
                     #[cfg(not(feature = "exrule"))]
                     {
@@ -288,16 +269,10 @@ impl FromStr for RRuleSet {
                     }
                 }
                 ContentLine::ExDate(exdates) => {
-                    for exdate in exdates {
-                        rrule_set = rrule_set.exdate(exdate);
-                    }
-                    Ok(rrule_set)
+                    Ok(exdates.into_iter().fold(rrule_set, RRuleSet::exdate))
                 }
                 ContentLine::RDate(rdates) => {
-                    for rdate in rdates {
-                        rrule_set = rrule_set.rdate(rdate);
-                    }
-                    Ok(rrule_set)
+                    Ok(rdates.into_iter().fold(rrule_set, RRuleSet::rdate))
                 }
             },
         )

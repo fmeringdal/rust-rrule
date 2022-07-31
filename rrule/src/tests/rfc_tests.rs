@@ -13,7 +13,7 @@ fn daily_10_occurrences() {
         RRULE:FREQ=DAILY;COUNT=10"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(50)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -41,7 +41,7 @@ fn daily_until_november() {
         RRULE:FREQ=DAILY;UNTIL=19971103T000000Z"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(60)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -153,7 +153,7 @@ fn every_10_days_5_occurrences() {
         RRULE:FREQ=DAILY;INTERVAL=10;COUNT=5"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(50)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -202,7 +202,7 @@ fn weekly_10_occurrences() {
         RRULE:FREQ=WEEKLY;COUNT=10"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(50)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -230,7 +230,7 @@ fn weekly_until_november() {
         RRULE:FREQ=WEEKLY;UNTIL=19971105T000000Z"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(60)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -286,13 +286,13 @@ fn weekly_on_tue_and_thu_for_5_weeks() {
         RRULE:FREQ=WEEKLY;UNTIL=19971007T000000Z;WKST=SU;BYDAY=TU,TH"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(50)
+        .all(u16::MAX)
         .unwrap();
     let dates_alt = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=WEEKLY;COUNT=10;WKST=SU;BYDAY=TU,TH"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(50)
+        .all(u16::MAX)
         .unwrap();
     let expected = vec![
         "1997-09-02T09:00:00-04:00",
@@ -318,7 +318,7 @@ fn every_other_week_some_days_until_dec() {
         RRULE:FREQ=WEEKLY;INTERVAL=2;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(50)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -359,7 +359,7 @@ fn every_other_week_some_days_8_occurrences() {
         RRULE:FREQ=WEEKLY;INTERVAL=2;COUNT=8;WKST=SU;BYDAY=TU,TH"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(50)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -385,7 +385,7 @@ fn monthly_on_first_friday_10_occurrences() {
         RRULE:FREQ=MONTHLY;COUNT=10;BYDAY=1FR"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(50)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -411,7 +411,7 @@ fn monthly_on_first_friday_until_dec() {
         RRULE:FREQ=MONTHLY;UNTIL=19971224T000000Z;BYDAY=1FR"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(50)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -431,7 +431,7 @@ fn every_other_month_on_first_and_last_sunday_10_occurrences() {
         RRULE:FREQ=MONTHLY;INTERVAL=2;COUNT=10;BYDAY=1SU,-1SU"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(50)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -457,7 +457,7 @@ fn monthly_on_second_to_last_monday_for_6_months() {
         RRULE:FREQ=MONTHLY;COUNT=6;BYDAY=-2MO"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(50)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -501,7 +501,7 @@ fn monthly_on_2nd_and_15th_10_occurrences() {
         RRULE:FREQ=MONTHLY;COUNT=10;BYMONTHDAY=2,15"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(20)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -527,7 +527,7 @@ fn monthly_on_first_and_last_day_10_occurrences() {
         RRULE:FREQ=MONTHLY;COUNT=10;BYMONTHDAY=1,-1"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(20)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -553,7 +553,7 @@ fn every_18_months_10th_to_15th_10_occurrences() {
         RRULE:FREQ=MONTHLY;INTERVAL=18;COUNT=10;BYMONTHDAY=10,11,12,13,14,15"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(20)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -618,7 +618,7 @@ fn yearly_in_june_and_july_for_10_occurrences() {
         RRULE:FREQ=YEARLY;COUNT=10;BYMONTH=6,7"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(20)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -644,7 +644,7 @@ fn every_other_year_on_jan_feb_and_march_for_10_occurrences() {
         RRULE:FREQ=YEARLY;INTERVAL=2;COUNT=10;BYMONTH=1,2,3"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(20)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -670,7 +670,7 @@ fn every_third_year_on_1st_100th_and_200th_day_for_10_occurrences() {
         RRULE:FREQ=YEARLY;INTERVAL=3;COUNT=10;BYYEARDAY=1,100,200"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(20)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -885,7 +885,7 @@ fn every_third_instance_of_weekday_in_month_for_3_months() {
         RRULE:FREQ=MONTHLY;COUNT=3;BYDAY=TU,WE,TH;BYSETPOS=3"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(10)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -928,7 +928,7 @@ fn every_3_hours_on_specific_day() {
         RRULE:FREQ=HOURLY;INTERVAL=3;UNTIL=19970902T210000Z"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(10)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -947,7 +947,7 @@ fn every_15_min_for_6_occurrences() {
         RRULE:FREQ=MINUTELY;INTERVAL=15;COUNT=6"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(10)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -969,7 +969,7 @@ fn every_hour_and_a_half_for_4_occurrences() {
         RRULE:FREQ=MINUTELY;INTERVAL=90;COUNT=4"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(10)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -1038,7 +1038,7 @@ fn week_day_start_monday_generated_days() {
         RRULE:FREQ=WEEKLY;INTERVAL=2;COUNT=4;BYDAY=TU,SU;WKST=MO"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(10)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -1058,7 +1058,7 @@ fn week_day_start_sunday_generated_days() {
         RRULE:FREQ=WEEKLY;INTERVAL=2;COUNT=4;BYDAY=TU,SU;WKST=SU"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(10)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
@@ -1078,7 +1078,7 @@ fn invalid_date_is_ignored() {
         RRULE:FREQ=MONTHLY;BYMONTHDAY=15,30;COUNT=5"
         .parse::<RRuleSet>()
         .unwrap()
-        .all(10)
+        .all(u16::MAX)
         .unwrap();
     common::check_occurrences(
         &dates,
