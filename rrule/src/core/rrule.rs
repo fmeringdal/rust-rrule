@@ -332,7 +332,7 @@ impl RRule<Unvalidated> {
     /// upper-bound limit of the recurrence.
     #[must_use]
     pub fn until(mut self, until: chrono::DateTime<Tz>) -> Self {
-        self.until = Some(until);
+        self.until = Some(until.into());
         self
     }
 

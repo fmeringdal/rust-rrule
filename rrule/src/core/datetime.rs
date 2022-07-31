@@ -1,7 +1,5 @@
-use chrono::{Datelike, Duration, NaiveTime, Timelike};
+use chrono::{Datelike, Duration, NaiveTime, TimeZone, Timelike};
 use chrono_tz::Tz;
-
-pub(crate) type DateTime = chrono::DateTime<Tz>;
 
 pub(crate) fn duration_from_midnight(time: NaiveTime) -> Duration {
     Duration::hours(i64::from(time.hour()))
@@ -44,4 +42,53 @@ pub(crate) fn datetime_to_ical_format(dt: &DateTime) -> String {
 
     let dt = dt.format("%Y%m%dT%H%M%S");
     format!("{}:{}{}", tz_prefix, dt, tz_postfix)
+}
+
+pub(crate) enum RRuleTimeZone {
+    Local,
+    Tz(chrono_tz::Tz),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum DateTime {
+    Local(chrono::DateTime<chrono::Local>),
+    Tz(chrono::DateTime<chrono_tz::Tz>),
+}
+
+impl DateTime {
+    pub fn with_timezone<T: TimeZone>(&self, tz: &T) -> chrono::DateTime<T> {
+        match self {
+            Self::Local(dt) => dt.with_timezone(tz),
+            Self::Tz(dt) => dt.with_timezone(tz),
+        }
+    }
+
+    pub fn timezone(&self) -> RRuleTimeZone {
+        match self {
+            Self::Local(dt) => RRuleTimeZone::Local,
+            Self::Tz(dt) => RRuleTimeZone::Tz(dt.timezone()),
+        }
+    }
+
+    pub fn format<'a>(
+        &self,
+        fmt: &'a str,
+    ) -> chrono::format::DelayedFormat<chrono::format::StrftimeItems<'a>> {
+        match self {
+            Self::Local(dt) => dt.format(fmt),
+            Self::Tz(dt) => dt.format(fmt),
+        }
+    }
+}
+
+impl From<chrono::DateTime<chrono_tz::Tz>> for DateTime {
+    fn from(dt: chrono::DateTime<chrono_tz::Tz>) -> Self {
+        Self::Tz(dt)
+    }
+}
+
+impl From<chrono::DateTime<chrono::Local>> for DateTime {
+    fn from(dt: chrono::DateTime<chrono::Local>) -> Self {
+        Self::Local(dt)
+    }
 }
