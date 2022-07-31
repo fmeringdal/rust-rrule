@@ -19,7 +19,7 @@ fn main() {
         // collides with the second rrule occurrence.
         .exdate(UTC.ymd(2020, 1, 2).and_hms(8, 0, 0));
 
-    let recurrences = rrule_set.set_limit(100).all().unwrap();
+    let recurrences = rrule_set.all(100).unwrap();
     // RRule contained 4 recurrences but 1 was filtered away by the exdate
     assert_eq!(recurrences.len(), 3);
 

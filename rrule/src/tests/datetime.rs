@@ -8,7 +8,7 @@ fn monthly_on_31th() {
         RRULE:FREQ=MONTHLY;COUNT=10;BYMONTHDAY=31"
         .parse::<RRuleSet>()
         .unwrap()
-        .all()
+        .all(u16::MAX)
         .unwrap();
     // TODO: Is this the correct behavior?
     common::check_occurrences(
@@ -35,7 +35,7 @@ fn monthly_on_31th_to_last() {
         RRULE:FREQ=MONTHLY;COUNT=10;BYMONTHDAY=-31"
         .parse::<RRuleSet>()
         .unwrap()
-        .all()
+        .all(u16::MAX)
         .unwrap();
     // TODO: Is this the correct behavior?
     common::check_occurrences(

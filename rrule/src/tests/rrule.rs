@@ -3814,9 +3814,9 @@ fn test_before_inclusive_hit() {
         .unwrap();
 
     let before = ymd_hms(2012, 2, 2, 9, 30, 0);
-    let inc = true;
+    let rrule = rrule.before(before);
 
-    assert_eq!(Some(before), rrule.just_before(before, inc).unwrap());
+    assert_eq!(Some(&before), rrule.all_unchecked().unwrap().last());
 }
 
 #[test]
@@ -3826,10 +3826,10 @@ fn test_before_inclusive_miss() {
         .unwrap();
 
     let before = ymd_hms(2012, 2, 3, 9, 0, 0);
+    let rrule = rrule.before(before);
     let oracle = ymd_hms(2012, 2, 2, 9, 30, 0);
-    let inc = true;
 
-    assert_eq!(Some(oracle), rrule.just_before(before, inc).unwrap());
+    assert_eq!(Some(&oracle), rrule.all_unchecked().unwrap().last());
 }
 
 #[test]
@@ -3839,9 +3839,9 @@ fn test_after_inclusive_hit() {
         .unwrap();
 
     let after = ymd_hms(2012, 2, 2, 9, 30, 0);
-    let inc = true;
+    let rrule = rrule.after(after);
 
-    assert_eq!(Some(after), rrule.just_after(after, inc).unwrap());
+    assert_eq!(after, rrule.all(1).unwrap()[0]);
 }
 
 #[test]
@@ -3851,10 +3851,10 @@ fn test_after_inclusive_miss() {
         .unwrap();
 
     let after = ymd_hms(2012, 2, 2, 10, 0, 0);
+    let rrule = rrule.after(after);
     let oracle = ymd_hms(2012, 2, 3, 9, 30, 0);
-    let inc = true;
 
-    assert_eq!(Some(oracle), rrule.just_after(after, inc).unwrap());
+    assert_eq!(oracle, rrule.all(1).unwrap()[0]);
 }
 
 #[test]
@@ -3863,12 +3863,13 @@ fn test_between_inclusive_both_miss() {
         .parse()
         .unwrap();
 
-    let before = ymd_hms(2012, 2, 2, 10, 0, 0);
+    let after = ymd_hms(2012, 2, 2, 10, 0, 0);
     let middle = ymd_hms(2012, 2, 3, 9, 30, 0);
-    let after = ymd_hms(2012, 2, 4, 9, 0, 0);
-    let inc = true;
+    let before = ymd_hms(2012, 2, 4, 9, 0, 0);
 
-    assert_eq!(vec![middle], rrule.all_between(before, after, inc).unwrap());
+    let rrule = rrule.before(before).after(after);
+
+    assert_eq!(vec![middle], rrule.all_unchecked().unwrap());
 }
 
 #[test]
@@ -3877,15 +3878,13 @@ fn test_between_inclusive_lower_miss() {
         .parse()
         .unwrap();
 
-    let before = ymd_hms(2012, 2, 2, 10, 0, 0);
+    let after = ymd_hms(2012, 2, 2, 10, 0, 0);
     let middle = ymd_hms(2012, 2, 3, 9, 30, 0);
-    let after = ymd_hms(2012, 2, 4, 9, 30, 0);
-    let inc = true;
+    let before = ymd_hms(2012, 2, 4, 9, 30, 0);
 
-    assert_eq!(
-        vec![middle, after],
-        rrule.all_between(before, after, inc).unwrap()
-    );
+    let rrule = rrule.before(before).after(after);
+
+    assert_eq!(vec![middle, before], rrule.all_unchecked().unwrap());
 }
 
 #[test]
@@ -3894,15 +3893,13 @@ fn test_between_inclusive_upper_miss() {
         .parse()
         .unwrap();
 
-    let before = ymd_hms(2012, 2, 2, 9, 30, 0);
+    let after = ymd_hms(2012, 2, 2, 9, 30, 0);
     let middle = ymd_hms(2012, 2, 3, 9, 30, 0);
-    let after = ymd_hms(2012, 2, 4, 9, 0, 0);
-    let inc = true;
+    let before = ymd_hms(2012, 2, 4, 9, 0, 0);
 
-    assert_eq!(
-        vec![before, middle],
-        rrule.all_between(before, after, inc).unwrap()
-    );
+    let rrule = rrule.before(before).after(after);
+
+    assert_eq!(vec![after, middle], rrule.all_unchecked().unwrap());
 }
 
 #[test]
@@ -3911,13 +3908,11 @@ fn test_between_inclusive_both_hit() {
         .parse()
         .unwrap();
 
-    let before = ymd_hms(2012, 2, 2, 9, 30, 0);
+    let after = ymd_hms(2012, 2, 2, 9, 30, 0);
     let middle = ymd_hms(2012, 2, 3, 9, 30, 0);
-    let after = ymd_hms(2012, 2, 4, 9, 30, 0);
-    let inc = true;
+    let before = ymd_hms(2012, 2, 4, 9, 30, 0);
 
-    assert_eq!(
-        vec![before, middle, after],
-        rrule.all_between(before, after, inc).unwrap()
-    );
+    let rrule = rrule.before(before).after(after);
+
+    assert_eq!(vec![after, middle, before], rrule.all_unchecked().unwrap());
 }

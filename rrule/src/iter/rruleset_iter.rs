@@ -218,7 +218,8 @@ impl<'a> IntoIterator for &'a RRuleSet {
         rdates_sorted
             .sort_by(|d1, d2| d2.partial_cmp(d1).expect("Could not order dates correctly"));
 
-        let limited = self.limit.is_some();
+        // Iteration is not limitied when using the iterator api directly.
+        let limited = false;
 
         RRuleSetIter {
             queue: HashMap::new(),

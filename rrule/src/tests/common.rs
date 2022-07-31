@@ -23,7 +23,7 @@ pub fn test_recurring_rrule(
     dt_start: DateTime<Tz>,
     expected_dates: &[DateTime<Tz>],
 ) {
-    let mut rrule_set = rrule
+    let rrule_set = rrule
         .build(dt_start)
         .map_err(|e| match e {
             RRuleError::ParserError(e) => e.to_string(),
@@ -31,10 +31,11 @@ pub fn test_recurring_rrule(
             RRuleError::IterError(e) => e,
         })
         .unwrap();
-    if !limited {
-        rrule_set = rrule_set.disable_validation_limits();
-    }
-    let res = rrule_set.all().unwrap();
+    let res = if !limited {
+        rrule_set.all_unchecked().unwrap()
+    } else {
+        rrule_set.all(u16::MAX).unwrap()
+    };
 
     println!("Actual: {:?}", res);
     println!("Expected: {:?}", expected_dates);
@@ -51,7 +52,7 @@ pub fn test_recurring_rrule(
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn test_recurring_rrule_set(rrule_set: RRuleSet, expected_dates: &[DateTime<Tz>]) {
-    let res = rrule_set.all().unwrap();
+    let res = rrule_set.all(u16::MAX).unwrap();
 
     println!("Actual: {:?}", res);
     println!("Expected: {:?}", expected_dates);
