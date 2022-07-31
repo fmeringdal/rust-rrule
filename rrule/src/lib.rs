@@ -58,17 +58,19 @@
 //! # use rrule::RRuleSet;
 //! #
 //! let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
+//!
 //! // Between two dates
 //! let after = UTC.ymd(2012, 2, 1).and_hms(10, 0, 0);
 //! let before = UTC.ymd(2012, 4, 1).and_hms(9, 0, 0);
-//! let inclusive = true; // Whether dates equal to after or before should be included in the result
+//!
+//! let rrule = rrule.after(after).before(before);
 //!
 //! assert_eq!(
 //!     vec![
 //!         DateTime::parse_from_rfc3339("2012-02-02T09:30:00+00:00").unwrap(),
 //!         DateTime::parse_from_rfc3339("2012-02-03T09:30:00+00:00").unwrap(),
 //!     ],
-//!     rrule.all_between(after, before, inclusive).unwrap()
+//!     rrule.all(100).unwrap()
 //! );
 //! ```
 //!
