@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `no-validation-limits` feature is removed and is repalced by arguments to `RRuleSet`.
 - `RRuleSet::just_before` was removed to keep the public API more lean. Please use the iterator API directly if you need this use-case.
 - `RRuleSet::just_after` was removed to keep the public API more lean. Please use the iterator API directly if you need this use-case.
-- `RRuleSet::all_between` was replaced by `rrule_set.between(dt).after(dt).all(limit)`.
+- `RRuleSet::all_between` was replaced by `rrule_set.before(dt).after(dt).all(limit)`.
 
 ### Added
 - `RRuleSet::after` and `RRuleSet::before` was added to configure the boundaries of the recurrences before calling `RRuleSet::all`. 
