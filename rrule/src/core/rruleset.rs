@@ -166,6 +166,13 @@ impl RRuleSet {
     /// let result = rrule_set.all(2).unwrap();
     /// assert_eq!(result.len(), 2);
     /// ```
+    ///
+    /// # Error
+    ///
+    /// An error will be returned if the iterator encountered an error which
+    /// does not allow the iteration to continue. One example would be hitting the validation-limit
+    /// or the `INTERVAL` value was too large. Please use [`RRuleSet::all_with_error`] if you
+    /// want the datetimes generated before encountering the error to be returned as well.
     pub fn all(self, limit: u16) -> Result<Vec<DateTime>, RRuleError> {
         collect_or_error(
             self.into_iter(),
@@ -177,6 +184,17 @@ impl RRuleSet {
     }
 
     /// Returns all the recurrences of the rrule.
+    ///
+    /// # Note
+    ///
+    /// This method does not enforce any validation limits and might lead to
+    /// very long iteration times. Please read the `SECURITY.md` for more information.
+    ///
+    /// # Error
+    ///
+    /// An error will be returned if the iterator encountered an error which
+    /// does not allow the iteration to continue. One example would be hitting a datetime
+    /// during the iteration which is outside the allowed range of `chrono::DateTime`.
     pub fn all_unchecked(self) -> Result<Vec<DateTime>, RRuleError> {
         collect_or_error(self.into_iter(), &self.after, &self.before, true, None)
     }
@@ -201,11 +219,13 @@ impl RRuleSet {
 
     /// Returns all the recurrences of the rrule.
     ///
-    /// Limit must be set in order to prevent infinite loops.
-    /// The max limit is `65535`. If you need more please use `into_iter` directly.
-    ///
     /// In case the iterator ended with an error, the error will be included,
     /// otherwise the second value of the return tuple will be `None`.
+    ///
+    /// # Note
+    ///
+    /// This method does not enforce any validation limits and might lead to
+    /// very long iteration times. Please read the `SECURITY.md` for more information.
     #[must_use]
     pub fn all_with_error_unchecked(self) -> (Vec<DateTime>, Option<RRuleError>) {
         collect_with_error(self.into_iter(), &self.after, &self.before, true, None)

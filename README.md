@@ -82,11 +82,10 @@ See [Chrono-Tz's limits for more info](https://github.com/chronotope/chrono-tz/#
 ### Validation Limits
 
 <a name="validation_limits"></a>
-Because the specifications does give a lot of flexibility this can be [abused very easily](#safety).
-In order to prevent most of the abuse we have imposed arbitrary limitation on the crate.
-
-These limitations are reasonable in most use cases, but we do allow other developers to opt-out
-if needed.
+Because the specifications does give a lot of flexibility this can be [abused very easily](#Security).
+In order to prevent most of the abuse we have imposed arbitrary limitation when on the `RRuleSet::all`
+method. The validation limits are not enforced for the `RRuleSet::all_unchecked` method or when
+using the `Iterator` api directly.
 
 Limitations:
 | Description | Arbitrary Limit | Crate Limit |
@@ -103,16 +102,6 @@ Limitations:
 
 By default, the "Arbitrary Limit" are used. If you instead want to use the "Crate Limit".
 Make sure you [understand the risks that come with this](#safety).
-
-<details>
-    <summary>Yes, I understand the risks, but I want to disable the arbitrary limits.</summary>
-
-Make sure you actually need this before enabling it.
-
-<span style="color:red;font-weight:bold">**DANGER!**</span><br/>
-To disable all arbitrary limits you can enable the `"no-validation-limits"` feature flag.
-
-</details>
 
 ## Inspired by
 

@@ -28,13 +28,11 @@
 //! # Generating occurrences
 //! You can loop over the occurrences of a [`RRuleSet`] by calling any of the following methods:
 //! - [`RRuleSet::all`]: Generate all recurrences that match the rules (with a limit to prevent infinite loops).
-//! - [`RRuleSet::all_between`]: Generate all recurrences that match the rules and are between two given dates.
-//! - [`RRuleSet::just_before`]: Generate the last recurrence that matches the rules and is before a given date.
-//! - [`RRuleSet::just_after`]: Generate the first recurrence that matches the rules and is after a given date.
+//! - [`RRuleSet::all_unchecked`]: Generate all recurrences that match the rules (without a limit).
 //! - ...
 //!
 //! If you have some additional filters or want to work with infinite recurrence rules
-//! [`RRuleSet`] implements the `Iterator` trait which makes them very flexible.
+//! [`RRuleSet`] implements the `IntoIterator` trait which allows for very flexible queries.
 //! All the methods above uses the iterator trait in its implementation as shown below.
 //! ```rust
 //! use chrono::{DateTime, TimeZone};
