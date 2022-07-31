@@ -1,6 +1,6 @@
 use super::utils::{add_time_to_date, from_ordinal, pymod};
 use crate::{core::DateTime, RRuleError};
-use chrono::{Datelike, LocalResult, NaiveTime, TimeZone};
+use chrono::NaiveTime;
 use chrono_tz::Tz;
 
 pub(crate) fn build_pos_list(
@@ -48,18 +48,8 @@ pub(crate) fn build_pos_list(
         let day = i64::try_from(*day)
             .expect("dayset is controlled by us and all elements are within range of i64");
 
-        // Get ordinal which is UTC
-        let date = from_ordinal(year_ordinal + day);
-        // Apply timezone
-        let date = match tz.ymd_opt(date.year(), date.month(), date.day()) {
-            LocalResult::Single(date) => date,
-            e => {
-                return Err(RRuleError::new_iter_err(format!(
-                    "Invalid date encountered. Error: {:?}",
-                    e
-                )))
-            }
-        };
+        // Get ordinal which is UTC and apply timezone
+        let date = from_ordinal(year_ordinal + day).date().with_timezone(&tz);
         // Create new Date + Time combination
         // Use Date and Timezone from `date`
         // Use Time from `timeset`.
