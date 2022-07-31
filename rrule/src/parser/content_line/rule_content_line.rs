@@ -487,7 +487,7 @@ mod tests {
     }
 
     #[test]
-    fn reject_until_with_value_paramter_different_from_start_date() {
+    fn reject_until_with_value_parameter_different_from_start_date() {
         let mut props = HashMap::new();
         props.insert(RRuleProperty::Freq, "DAILY".into());
         let until_str = "19970902T090000";

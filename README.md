@@ -30,7 +30,7 @@ The crate allows for a "BYEASTER" filter. But this is opt-in with the feature fl
   A list of datetime combinations to always exclude. (Complement `A \ B` or `A - B`)
 
 Note: "EXRULE" was originally part of [RFC 2445](https://datatracker.ietf.org/doc/html/rfc2445#section-4.8.5.2),
-[RFC 5545][ical_spec] absoletes this specification.
+[RFC 5545][ical_spec] obsoletes this specification.
 But "EXRULE" works exactly the same als "RRULE" except that it excludes dates. You can enable "EXRULE" by enabling the "exrule" feature flag which is disabled by default.
 
 If you notice that the implementation differs from the specifications above, please open an issue.

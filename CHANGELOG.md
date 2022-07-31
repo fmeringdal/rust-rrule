@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The iterator API does not have any validation limits. So `rrule_set.into_iter().map(|dt| format!("{dt}")).collect<Vec<_>>()` could lead to an infinite loop.
 
 ### Removed
-- `no-validation-limits` feature is removed and is repalced by arguments to `RRuleSet`.
+- `no-validation-limits` feature is removed and is replaced by arguments to `RRuleSet`.
 - `RRuleSet::just_before` was removed to keep the public API more lean. Please use the iterator API directly if you need this use-case.
 - `RRuleSet::just_after` was removed to keep the public API more lean. Please use the iterator API directly if you need this use-case.
 - `RRuleSet::all_between` was replaced by `rrule_set.before(dt).after(dt).all(limit)`.
@@ -26,14 +26,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixes
 
-- Removed a `println` that accidently was part of the previous release.
+- Removed a `println` that accidentally was part of the previous release.
 
 ## 0.9.1 (2022-07-22)
 
 ### Fixes
 
 - Fixed typos in security docs 
-- Fixed an inifinite loop issue in the iteration phase where the counter date increment method did not increment the counter date and it was unable to make progress. This was solved by using a custom date time implementation for the counter date.
+- Fixed an infinite loop issue in the iteration phase where the counter date increment method did not increment the counter date and it was unable to make progress. This was solved by using a custom date time implementation for the counter date.
 - Fixes issue where iterations that passed a daylight saving time had incorrect hour.
 
 ## 0.9.0 (2022-07-18)
