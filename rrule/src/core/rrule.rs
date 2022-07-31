@@ -87,7 +87,7 @@ pub enum NWeekday {
 }
 
 // The ordering here doesn't really matter as it is only used to sort for display purposes
-fn n_weekday_cmp(val1: &NWeekday, val2: &NWeekday) -> Ordering {
+fn n_weekday_cmp(val1: NWeekday, val2: NWeekday) -> Ordering {
     match val1 {
         NWeekday::Every(wday) => match val2 {
             NWeekday::Every(other_wday) => wday
@@ -109,13 +109,13 @@ fn n_weekday_cmp(val1: &NWeekday, val2: &NWeekday) -> Ordering {
 
 impl PartialOrd for NWeekday {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(n_weekday_cmp(self, other))
+        Some(n_weekday_cmp(*self, *other))
     }
 }
 
 impl Ord for NWeekday {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        n_weekday_cmp(self, other)
+        n_weekday_cmp(*self, *other)
     }
 }
 

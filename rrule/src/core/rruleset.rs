@@ -248,12 +248,12 @@ impl FromStr for RRuleSet {
                         Ok(rrule_set)
                     }
                 }
-                ContentLine::ExDate(exdates) => Ok(exdates
-                    .into_iter()
-                    .fold(rrule_set, |rrule_set, exdate| rrule_set.exdate(exdate))),
-                ContentLine::RDate(rdates) => Ok(rdates
-                    .into_iter()
-                    .fold(rrule_set, |rrule_set, rdate| rrule_set.rdate(rdate))),
+                ContentLine::ExDate(exdates) => {
+                    Ok(exdates.into_iter().fold(rrule_set, RRuleSet::exdate))
+                }
+                ContentLine::RDate(rdates) => {
+                    Ok(rdates.into_iter().fold(rrule_set, RRuleSet::rdate))
+                }
             },
         )
     }
