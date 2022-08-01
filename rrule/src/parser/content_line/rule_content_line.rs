@@ -394,10 +394,7 @@ mod tests {
         props.insert(RRuleProperty::Freq, "DAILY".into());
         let until_str = "19970904";
         let until_local = NaiveDate::from_ymd(1997, 9, 4).and_hms(0, 0, 0);
-        let until_local = chrono::Local
-            .from_local_datetime(&until_local)
-            .unwrap()
-            .with_timezone(&chrono_tz::UTC);
+        let until_local = chrono::Local.from_local_datetime(&until_local).unwrap();
         props.insert(RRuleProperty::Until, until_str.into());
 
         let start_date = ContentLineCaptures::new("DTSTART:19970902").unwrap();
@@ -413,10 +410,7 @@ mod tests {
         props.insert(RRuleProperty::Freq, "DAILY".into());
         let until_str = "19970904T090000";
         let until_local = NaiveDate::from_ymd(1997, 9, 4).and_hms(9, 0, 0);
-        let until_local = chrono::Local
-            .from_local_datetime(&until_local)
-            .unwrap()
-            .with_timezone(&chrono_tz::UTC);
+        let until_local = chrono::Local.from_local_datetime(&until_local).unwrap();
         props.insert(RRuleProperty::Until, until_str.into());
 
         let start_date = ContentLineCaptures::new("DTSTART:19970902T090000").unwrap();
