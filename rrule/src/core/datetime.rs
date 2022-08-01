@@ -1,5 +1,9 @@
-use chrono::{Datelike, Duration, NaiveTime, TimeZone, Timelike, Weekday};
+use std::fmt::Display;
+
+use chrono::{Datelike, Duration, Local, NaiveTime, TimeZone, Timelike, Weekday};
 use chrono_tz::Tz;
+
+use crate::iter::add_time_to_date;
 
 pub(crate) fn duration_from_midnight(time: NaiveTime) -> Duration {
     Duration::hours(i64::from(time.hour()))
@@ -51,7 +55,7 @@ pub(crate) fn datetime_to_ical_format(dt: &DateTime) -> String {
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) enum RRuleTimeZone {
+pub enum RRuleTimeZone {
     Local,
     Tz(chrono_tz::Tz),
 }
@@ -63,10 +67,23 @@ impl RRuleTimeZone {
             RRuleTimeZone::Tz(tz) => tz.name().into(),
         }
     }
+
+    pub fn datetime(&self, year: i32, month: u32, day: u32, time: NaiveTime) -> Option<DateTime> {
+        match self {
+            RRuleTimeZone::Local => {
+                let date = Local.ymd(year, month, day);
+                add_time_to_date(date, time)
+            }
+            RRuleTimeZone::Tz(tz) => {
+                let date = tz.ymd(year, month, day);
+                add_time_to_date(date, time)
+            }
+        }
+    }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub(crate) enum DateTime {
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Copy)]
+pub enum DateTime {
     Local(chrono::DateTime<chrono::Local>),
     Tz(chrono::DateTime<chrono_tz::Tz>),
 }
@@ -135,6 +152,20 @@ impl DateTime {
         }
     }
 
+    pub fn timestamp(&self) -> i64 {
+        match self {
+            Self::Local(dt) => dt.timestamp(),
+            Self::Tz(dt) => dt.timestamp(),
+        }
+    }
+
+    pub fn to_rfc3339(&self) -> String {
+        match self {
+            Self::Local(dt) => dt.to_rfc3339(),
+            Self::Tz(dt) => dt.to_rfc3339(),
+        }
+    }
+
     pub fn format<'a>(
         &self,
         fmt: &'a str,
@@ -152,8 +183,29 @@ impl From<chrono::DateTime<chrono_tz::Tz>> for DateTime {
     }
 }
 
+impl From<&chrono::DateTime<chrono_tz::Tz>> for DateTime {
+    fn from(dt: &chrono::DateTime<chrono_tz::Tz>) -> Self {
+        Self::Tz(*dt)
+    }
+}
+
 impl From<chrono::DateTime<chrono::Local>> for DateTime {
     fn from(dt: chrono::DateTime<chrono::Local>) -> Self {
         Self::Local(dt)
+    }
+}
+
+impl From<chrono::DateTime<chrono::Utc>> for DateTime {
+    fn from(dt: chrono::DateTime<chrono::Utc>) -> Self {
+        Self::Tz(dt.with_timezone(&chrono_tz::UTC))
+    }
+}
+
+impl Display for DateTime {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Local(dt) => dt.fmt(f),
+            Self::Tz(dt) => dt.fmt(f),
+        }
     }
 }

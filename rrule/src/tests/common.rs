@@ -1,27 +1,22 @@
 #![cfg(test)]
 #![allow(dead_code)]
 
-use crate::{RRule, RRuleError, RRuleSet, Unvalidated};
-use chrono::{DateTime, TimeZone};
+use crate::{core::DateTime, RRule, RRuleError, RRuleSet, Unvalidated};
+use chrono::TimeZone;
 use chrono_tz::{Tz, UTC};
 use std::fmt::Debug;
 
-pub fn ymd_hms(
-    year: i32,
-    month: u32,
-    day: u32,
-    hour: u32,
-    minute: u32,
-    second: u32,
-) -> DateTime<Tz> {
-    UTC.ymd(year, month, day).and_hms(hour, minute, second)
+pub fn ymd_hms(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32) -> DateTime {
+    UTC.ymd(year, month, day)
+        .and_hms(hour, minute, second)
+        .into()
 }
 
 pub fn test_recurring_rrule(
     rrule: RRule<Unvalidated>,
     limited: bool,
-    dt_start: DateTime<Tz>,
-    expected_dates: &[DateTime<Tz>],
+    dt_start: DateTime,
+    expected_dates: &[DateTime],
 ) {
     let rrule_set = rrule
         .build(dt_start)
@@ -51,7 +46,7 @@ pub fn test_recurring_rrule(
 }
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn test_recurring_rrule_set(rrule_set: RRuleSet, expected_dates: &[DateTime<Tz>]) {
+pub fn test_recurring_rrule_set(rrule_set: RRuleSet, expected_dates: &[DateTime]) {
     let res = rrule_set.all(u16::MAX).unwrap();
 
     println!("Actual: {:?}", res);
@@ -68,8 +63,8 @@ pub fn test_recurring_rrule_set(rrule_set: RRuleSet, expected_dates: &[DateTime<
 }
 
 /// Print and compare 2 lists of dates and panic it they are not the same.
-pub fn check_occurrences<S: AsRef<str> + Debug>(occurrences: &[DateTime<Tz>], expected: &[S]) {
-    let formatter = |dt: &DateTime<Tz>| -> String { format!("    \"{}\",\n", dt.to_rfc3339()) };
+pub fn check_occurrences<S: AsRef<str> + Debug>(occurrences: &[DateTime], expected: &[S]) {
+    let formatter = |dt: &DateTime| -> String { format!("    \"{}\",\n", dt.to_rfc3339()) };
     println!(
         "Given: [\n{}]\nExpected: {:#?}",
         occurrences.iter().map(formatter).collect::<String>(),

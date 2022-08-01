@@ -542,7 +542,11 @@ impl RRule<Unvalidated> {
     /// # Errors
     ///
     /// If the properties are not valid it will return [`RRuleError`].
-    pub fn validate(self, dt_start: DateTime) -> Result<RRule<Validated>, RRuleError> {
+    pub fn validate<T>(self, dt_start: T) -> Result<RRule<Validated>, RRuleError>
+    where
+        DateTime: From<T>,
+    {
+        let dt_start = dt_start.into();
         let rrule = self.finalize_parsed_rrule(&dt_start);
 
         // Validate required checks (defined by RFC 5545)
@@ -574,7 +578,11 @@ impl RRule<Unvalidated> {
     /// # Errors
     ///
     /// Returns [`RRuleError::ValidationError`] in case the rrule is invalid.
-    pub fn build(self, dt_start: DateTime) -> Result<RRuleSet, RRuleError> {
+    pub fn build<T>(self, dt_start: T) -> Result<RRuleSet, RRuleError>
+    where
+        DateTime: From<T>,
+        T: Copy,
+    {
         let rrule = self.validate(dt_start)?;
         let rrule_set = RRuleSet::new(dt_start).rrule(rrule);
         Ok(rrule_set)

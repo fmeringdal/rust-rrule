@@ -300,7 +300,7 @@ mod tests {
         ];
 
         let start_date = StartDateContentLine {
-            datetime: UTC.ymd(2000, 1, 1).and_hms(0, 0, 0),
+            datetime: UTC.ymd(2000, 1, 1).and_hms(0, 0, 0).into(),
             timezone: None,
             value: "DATE-TIME",
         };
@@ -322,7 +322,7 @@ mod tests {
             ParseError::PropertyParametersNotSupported("TZID=Europe/London".into()),
         )];
         let start_date = StartDateContentLine {
-            datetime: UTC.ymd(2000, 1, 1).and_hms(0, 0, 0),
+            datetime: UTC.ymd(2000, 1, 1).and_hms(0, 0, 0).into(),
             timezone: None,
             value: "DATE-TIME",
         };
@@ -338,7 +338,7 @@ mod tests {
         let mut props = HashMap::new();
         props.insert(RRuleProperty::Freq, "DAIL".into());
         let start_date = StartDateContentLine {
-            datetime: UTC.ymd(2000, 1, 1).and_hms(0, 0, 0),
+            datetime: UTC.ymd(2000, 1, 1).and_hms(0, 0, 0).into(),
             timezone: None,
             value: "DATE-TIME",
         };
@@ -355,7 +355,7 @@ mod tests {
         props.insert(RRuleProperty::Freq, "DAILY".into());
         props.insert(RRuleProperty::ByHour, "24".into());
         let start_date = StartDateContentLine {
-            datetime: UTC.ymd(2000, 1, 1).and_hms(0, 0, 0),
+            datetime: UTC.ymd(2000, 1, 1).and_hms(0, 0, 0).into(),
             timezone: None,
             value: "DATE-TIME",
         };
@@ -373,7 +373,7 @@ mod tests {
         props.insert(RRuleProperty::Freq, "DAILY".into());
         props.insert(RRuleProperty::ByMinute, "60".into());
         let start_date = StartDateContentLine {
-            datetime: UTC.ymd(2000, 1, 1).and_hms(0, 0, 0),
+            datetime: UTC.ymd(2000, 1, 1).and_hms(0, 0, 0).into(),
             timezone: None,
             value: "DATE-TIME",
         };
@@ -404,7 +404,7 @@ mod tests {
         let start_date = StartDateContentLine::try_from(&start_date).unwrap();
 
         let rrule = props_to_rrule(&props, &start_date).unwrap();
-        assert_eq!(rrule.until, Some(until_local));
+        assert_eq!(rrule.until, Some(until_local.into()));
     }
 
     #[test]
@@ -423,7 +423,7 @@ mod tests {
         let start_date = StartDateContentLine::try_from(&start_date).unwrap();
 
         let rrule = props_to_rrule(&props, &start_date).unwrap();
-        assert_eq!(rrule.until, Some(until_local));
+        assert_eq!(rrule.until, Some(until_local.into()));
     }
 
     #[test]
@@ -444,7 +444,7 @@ mod tests {
             let start_date = StartDateContentLine::try_from(&start_date).unwrap();
 
             let rrule = props_to_rrule(&props, &start_date).unwrap();
-            assert_eq!(rrule.until, Some(until_local));
+            assert_eq!(rrule.until, Some(until_local.into()));
         }
     }
 
@@ -468,7 +468,7 @@ mod tests {
             let start_date = StartDateContentLine::try_from(&start_date).unwrap();
 
             let rrule = props_to_rrule(&props, &start_date).unwrap();
-            assert_eq!(rrule.until, Some(until_local));
+            assert_eq!(rrule.until, Some(until_local.into()));
         }
     }
 

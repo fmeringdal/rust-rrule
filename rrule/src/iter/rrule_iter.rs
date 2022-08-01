@@ -147,14 +147,14 @@ impl<'a> RRuleIter<'a> {
                     // Ordinal conversion uses UTC: if we apply local-TZ here, then
                     // just below we'll end up double-applying.
                     let date = from_ordinal(year_ordinal + current_day);
-                    // We apply the local-TZ here,
-                    let date = self
-                        .dt_start
-                        .timezone()
-                        .ymd(date.year(), date.month(), date.day());
 
                     for time in &self.timeset {
-                        let dt = match add_time_to_date(date, *time) {
+                        let dt = match self.dt_start.timezone().datetime(
+                            date.year(),
+                            date.month(),
+                            date.day(),
+                            *time,
+                        ) {
                             Some(dt) => dt,
                             None => continue,
                         };

@@ -7,6 +7,7 @@ pub use self::rrule::{Frequency, NWeekday, RRule};
 pub use self::rruleset::RRuleSet;
 pub(crate) use datetime::{
     duration_from_midnight, get_day, get_hour, get_minute, get_month, get_second, DateTime,
+    RRuleTimeZone,
 };
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]

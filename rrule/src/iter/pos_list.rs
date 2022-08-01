@@ -1,14 +1,16 @@
 use super::utils::{add_time_to_date, from_ordinal, pymod};
-use crate::{core::DateTime, RRuleError};
+use crate::{
+    core::{DateTime, RRuleTimeZone},
+    RRuleError,
+};
 use chrono::NaiveTime;
-use chrono_tz::Tz;
 
 pub(crate) fn build_pos_list(
     by_set_pos: &[i32],
     dayset: &[usize],
     timeset: &[NaiveTime],
     year_ordinal: i64,
-    tz: Tz,
+    tz: RRuleTimeZone,
 ) -> Result<Vec<DateTime>, RRuleError> {
     let mut pos_list = vec![];
     if timeset.is_empty() {
@@ -49,12 +51,12 @@ pub(crate) fn build_pos_list(
             .expect("dayset is controlled by us and all elements are within range of i64");
 
         // Get ordinal which is UTC and apply timezone
-        let date = from_ordinal(year_ordinal + day).date().with_timezone(&tz);
+        let date = from_ordinal(year_ordinal + day);
         // Create new Date + Time combination
         // Use Date and Timezone from `date`
         // Use Time from `timeset`.
         let time = timeset[time_pos];
-        let res = match add_time_to_date(date, time) {
+        let res = match tz.datetime(date.year(), date.month(), date.day(), time) {
             Some(date) => date,
             None => continue,
         };

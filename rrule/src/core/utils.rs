@@ -127,26 +127,26 @@ mod tests {
     #[test]
     fn in_range_exclusive_start_to_end() {
         let inclusive = false;
-        let start = UTC.ymd(2021, 10, 1).and_hms(8, 0, 0);
-        let end = UTC.ymd(2021, 10, 1).and_hms(10, 0, 0);
+        let start = UTC.ymd(2021, 10, 1).and_hms(8, 0, 0).into();
+        let end = UTC.ymd(2021, 10, 1).and_hms(10, 0, 0).into();
 
         // In middle
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
+            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0).into(),
             &Some(start),
             &Some(end),
             inclusive
         ));
         // To small
         assert!(!is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(7, 0, 0),
+            &UTC.ymd(2021, 10, 1).and_hms(7, 0, 0).into(),
             &Some(start),
             &Some(end),
             inclusive
         ));
         // To big
         assert!(!is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(11, 0, 0),
+            &UTC.ymd(2021, 10, 1).and_hms(11, 0, 0).into(),
             &Some(start),
             &Some(end),
             inclusive
@@ -160,25 +160,25 @@ mod tests {
     #[test]
     fn in_range_exclusive_start() {
         let inclusive = false;
-        let start = UTC.ymd(2021, 10, 1).and_hms(8, 0, 0);
+        let start = UTC.ymd(2021, 10, 1).and_hms(8, 0, 0).into();
 
         // Just after
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
+            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0).into(),
             &Some(start),
             &None,
             inclusive
         ));
         // To small
         assert!(!is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(7, 0, 0),
+            &UTC.ymd(2021, 10, 1).and_hms(7, 0, 0).into(),
             &Some(start),
             &None,
             inclusive
         ));
         // Bigger
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0),
+            &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0).into(),
             &Some(start),
             &None,
             inclusive
@@ -190,25 +190,25 @@ mod tests {
     #[test]
     fn in_range_exclusive_end() {
         let inclusive = false;
-        let end = UTC.ymd(2021, 10, 1).and_hms(10, 0, 0);
+        let end = UTC.ymd(2021, 10, 1).and_hms(10, 0, 0).into();
 
         // Just before
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
+            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0).into(),
             &None,
             &Some(end),
             inclusive
         ));
         // Smaller
         assert!(is_in_range(
-            &UTC.ymd(2021, 9, 20).and_hms(10, 0, 0),
+            &UTC.ymd(2021, 9, 20).and_hms(10, 0, 0).into(),
             &None,
             &Some(end),
             inclusive
         ));
         // Bigger
         assert!(!is_in_range(
-            &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0),
+            &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0).into(),
             &None,
             &Some(end),
             inclusive
@@ -223,21 +223,21 @@ mod tests {
 
         // Some date
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
+            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0).into(),
             &None,
             &None,
             inclusive
         ));
         // Smaller
         assert!(is_in_range(
-            &UTC.ymd(2021, 9, 20).and_hms(10, 0, 0),
+            &UTC.ymd(2021, 9, 20).and_hms(10, 0, 0).into(),
             &None,
             &None,
             inclusive
         ));
         // Bigger
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0),
+            &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0).into(),
             &None,
             &None,
             inclusive
@@ -249,26 +249,26 @@ mod tests {
     #[test]
     fn in_range_inclusive_start_to_end() {
         let inclusive = true;
-        let start = UTC.ymd(2021, 10, 1).and_hms(8, 0, 0);
-        let end = UTC.ymd(2021, 10, 1).and_hms(10, 0, 0);
+        let start = UTC.ymd(2021, 10, 1).and_hms(8, 0, 0).into();
+        let end = UTC.ymd(2021, 10, 1).and_hms(10, 0, 0).into();
 
         // In middle
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
+            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0).into(),
             &Some(start),
             &Some(end),
             inclusive
         ));
         // To small
         assert!(!is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(7, 0, 0),
+            &UTC.ymd(2021, 10, 1).and_hms(7, 0, 0).into(),
             &Some(start),
             &Some(end),
             inclusive
         ));
         // To big
         assert!(!is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(11, 0, 0),
+            &UTC.ymd(2021, 10, 1).and_hms(11, 0, 0).into(),
             &Some(start),
             &Some(end),
             inclusive
@@ -282,25 +282,25 @@ mod tests {
     #[test]
     fn in_range_inclusive_start() {
         let inclusive = true;
-        let start = UTC.ymd(2021, 10, 1).and_hms(8, 0, 0);
+        let start = UTC.ymd(2021, 10, 1).and_hms(8, 0, 0).into();
 
         // Just after
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
+            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0).into(),
             &Some(start),
             &None,
             inclusive
         ));
         // To small
         assert!(!is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(7, 0, 0),
+            &UTC.ymd(2021, 10, 1).and_hms(7, 0, 0).into(),
             &Some(start),
             &None,
             inclusive
         ));
         // Bigger
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0),
+            &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0).into(),
             &Some(start),
             &None,
             inclusive
@@ -312,25 +312,25 @@ mod tests {
     #[test]
     fn in_range_inclusive_end() {
         let inclusive = true;
-        let end = UTC.ymd(2021, 10, 1).and_hms(10, 0, 0);
+        let end = UTC.ymd(2021, 10, 1).and_hms(10, 0, 0).into();
 
         // Just before
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
+            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0).into(),
             &None,
             &Some(end),
             inclusive
         ));
         // Smaller
         assert!(is_in_range(
-            &UTC.ymd(2021, 9, 20).and_hms(10, 0, 0),
+            &UTC.ymd(2021, 9, 20).and_hms(10, 0, 0).into(),
             &None,
             &Some(end),
             inclusive
         ));
         // Bigger
         assert!(!is_in_range(
-            &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0),
+            &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0).into(),
             &None,
             &Some(end),
             inclusive
@@ -345,21 +345,21 @@ mod tests {
 
         // Some date
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
+            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0).into(),
             &None,
             &None,
             inclusive
         ));
         // Smaller
         assert!(is_in_range(
-            &UTC.ymd(2021, 9, 20).and_hms(10, 0, 0),
+            &UTC.ymd(2021, 9, 20).and_hms(10, 0, 0).into(),
             &None,
             &None,
             inclusive
         ));
         // Bigger
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0),
+            &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0).into(),
             &None,
             &None,
             inclusive

@@ -9,7 +9,7 @@ const DAY_SECS: i64 = 24 * 60 * 60;
 /// Converts number of days since unix epoch back to `DataTime`
 pub(crate) fn from_ordinal(ordinal: i64) -> DateTime {
     let timestamp = ordinal * DAY_SECS;
-    UTC.timestamp(timestamp, 0)
+    UTC.timestamp(timestamp, 0).into()
 }
 
 /// Returns number of days since unix epoch (rounded down)
@@ -72,16 +72,22 @@ where
     }
 }
 
-pub(crate) fn add_time_to_date(date: Date<Tz>, time: NaiveTime) -> Option<DateTime> {
+pub(crate) fn add_time_to_date<T: TimeZone>(
+    date: chrono::Date<T>,
+    time: NaiveTime,
+) -> Option<DateTime>
+where
+    DateTime: From<chrono::DateTime<T>>,
+{
     match date.and_time(time) {
-        Some(dt) => return Some(dt),
+        Some(dt) => return Some(dt.into()),
         None => (),
     }
     // If the day is a daylight saving time, the above code might now work and we
     // can try to get a valid datetime by adding the `time` as a duration instead.
     let dt = date.and_hms_opt(0, 0, 0)?;
     let day_duration = duration_from_midnight(time);
-    dt.checked_add_signed(day_duration)
+    dt.checked_add_signed(day_duration).map(From::from)
 }
 
 #[cfg(test)]
@@ -164,7 +170,7 @@ mod test {
 
         for (date, time, expected_output) in tests {
             let res = add_time_to_date(date, time);
-            assert_eq!(res, expected_output);
+            assert_eq!(res, expected_output.map(From::from));
         }
     }
 }

@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
-use chrono::{NaiveDate, TimeZone, Weekday};
-use chrono_tz::{Tz, UTC};
+use chrono::{NaiveDate, TimeZone, Utc, Weekday};
+use chrono_tz::Tz;
 
 use super::{regex::ParsedDateString, ParseError};
 use crate::{core::DateTime, NWeekday};
@@ -54,9 +54,9 @@ pub(crate) fn datestring_to_date(
 
     // Apply timezone appended to the datetime before converting to UTC.
     // For more info https://icalendar.org/iCalendar-RFC-5545/3-3-5-date-time.html
-    let datetime: chrono::DateTime<chrono::Utc> = if flags.zulu_timezone_set {
+    let datetime: DateTime = if flags.zulu_timezone_set {
         // If a `Z` is present, UTC should be used.
-        chrono::DateTime::<_>::from_utc(datetime, chrono::Utc)
+        chrono::DateTime::<Utc>::from_utc(datetime, Utc).into()
     } else {
         // If no `Z` is present, local time should be used.
         use chrono::offset::LocalResult;
@@ -80,7 +80,7 @@ pub(crate) fn datestring_to_date(
                         })
                     }
                 }?
-                .with_timezone(&chrono::Utc)
+                .into()
             }
             None => {
                 // Use current system timezone
@@ -101,15 +101,12 @@ pub(crate) fn datestring_to_date(
                         })
                     }
                 }?
-                .with_timezone(&chrono::Utc)
+                .into()
             }
         }
     };
 
-    // Apply timezone from `TZID=` part (if any), else set datetime as UTC
-    let datetime_with_timezone = datetime.with_timezone(&tz.unwrap_or(UTC));
-
-    Ok(datetime_with_timezone)
+    Ok(datetime)
 }
 
 /// Attempts to convert a `str` to a `Weekday`.
@@ -238,7 +235,7 @@ mod tests {
 
         for (datetime_str, timezone, expected_output) in tests {
             let output = datestring_to_date(datetime_str, timezone, "DTSTART");
-            assert_eq!(output, Ok(expected_output));
+            assert_eq!(output, Ok(expected_output.into()));
         }
     }
 

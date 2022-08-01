@@ -32,9 +32,12 @@ pub struct RRuleSet {
 impl RRuleSet {
     /// Creates an empty [`RRuleSet`], starting from `ds_start`.
     #[must_use]
-    pub fn new(dt_start: DateTime) -> Self {
+    pub fn new<T>(dt_start: T) -> Self
+    where
+        DateTime: From<T>,
+    {
         Self {
-            dt_start,
+            dt_start: dt_start.into(),
             rrule: vec![],
             rdate: vec![],
             exrule: vec![],
@@ -79,15 +82,21 @@ impl RRuleSet {
 
     /// Adds a new rdate to the set.
     #[must_use]
-    pub fn rdate(mut self, rdate: DateTime) -> Self {
-        self.rdate.push(rdate);
+    pub fn rdate<T>(mut self, rdate: T) -> Self
+    where
+        DateTime: From<T>,
+    {
+        self.rdate.push(rdate.into());
         self
     }
 
     /// Adds a new exdate to the set.
     #[must_use]
-    pub fn exdate(mut self, exdate: DateTime) -> Self {
-        self.exdate.push(exdate);
+    pub fn exdate<T>(mut self, exdate: T) -> Self
+    where
+        DateTime: From<T>,
+    {
+        self.exdate.push(exdate.into());
         self
     }
 

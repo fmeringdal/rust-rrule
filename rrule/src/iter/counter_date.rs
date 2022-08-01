@@ -318,7 +318,7 @@ mod tests {
     use super::*;
 
     fn ymd_hms(year: i32, month: u32, day: u32, hour: u32, min: u32, sec: u32) -> DateTimeIter {
-        let dt = UTC.ymd(year, month, day).and_hms(hour, min, sec);
+        let dt = UTC.ymd(year, month, day).and_hms(hour, min, sec).into();
         DateTimeIter::from(&dt)
     }
 

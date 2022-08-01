@@ -338,7 +338,7 @@ mod tests {
             by_set_pos: vec![-1],
             ..Default::default()
         };
-        let dt_start = UTC.ymd(1970, 1, 1).and_hms(0, 0, 0);
+        let dt_start = UTC.ymd(1970, 1, 1).and_hms(0, 0, 0).into();
         let res = validate_rrule_forced(&rrule, &dt_start);
         assert!(res.is_err());
         let err = res.unwrap_err();
@@ -385,7 +385,7 @@ mod tests {
             ),
         ];
         for (field, rrule) in tests {
-            let res = validate_rrule_forced(&rrule, &UTC.ymd(1970, 1, 1).and_hms(0, 0, 0));
+            let res = validate_rrule_forced(&rrule, &UTC.ymd(1970, 1, 1).and_hms(0, 0, 0).into());
             assert!(res.is_err());
             let err = res.unwrap_err();
             assert_eq!(
@@ -423,7 +423,7 @@ mod tests {
             ),
         ];
         for (field, rrule, value, start_idx, end_idx) in tests {
-            let res = validate_rrule_forced(&rrule, &UTC.ymd(1970, 1, 1).and_hms(0, 0, 0));
+            let res = validate_rrule_forced(&rrule, &UTC.ymd(1970, 1, 1).and_hms(0, 0, 0).into());
             assert!(res.is_err());
             let err = res.unwrap_err();
             assert_eq!(
@@ -465,7 +465,7 @@ mod tests {
             ),
         ];
         for (field, rrule, value, start_idx, end_idx) in tests {
-            let res = validate_rrule_forced(&rrule, &UTC.ymd(1970, 1, 1).and_hms(0, 0, 0));
+            let res = validate_rrule_forced(&rrule, &UTC.ymd(1970, 1, 1).and_hms(0, 0, 0).into());
             assert!(res.is_err());
             let err = res.unwrap_err();
             assert_eq!(
@@ -518,7 +518,7 @@ mod tests {
             ),
         ];
         for (field, rrule) in tests {
-            let res = validate_rrule_forced(&rrule, &UTC.ymd(1970, 1, 1).and_hms(0, 0, 0));
+            let res = validate_rrule_forced(&rrule, &UTC.ymd(1970, 1, 1).and_hms(0, 0, 0).into());
             assert!(res.is_err());
             let err = res.unwrap_err();
             assert_eq!(
@@ -534,10 +534,10 @@ mod tests {
     #[test]
     fn rejects_start_date_after_until() {
         let rrule = RRule {
-            until: Some(UTC.ymd_opt(2020, 1, 1).and_hms_opt(0, 0, 0).unwrap()),
+            until: Some(UTC.ymd_opt(2020, 1, 1).and_hms_opt(0, 0, 0).unwrap().into()),
             ..Default::default()
         };
-        let dt_start = UTC.ymd_opt(2020, 1, 2).and_hms_opt(0, 0, 0).unwrap();
+        let dt_start = UTC.ymd_opt(2020, 1, 2).and_hms_opt(0, 0, 0).unwrap().into();
         let res = validate_rrule_forced(&rrule, &dt_start);
         assert!(res.is_err());
         let err = res.unwrap_err();
