@@ -3,7 +3,7 @@
 
 use crate::{core::DateTime, RRule, RRuleError, RRuleSet, Unvalidated};
 use chrono::TimeZone;
-use chrono_tz::{Tz, UTC};
+use chrono_tz::UTC;
 use std::fmt::Debug;
 
 pub fn ymd_hms(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32) -> DateTime {

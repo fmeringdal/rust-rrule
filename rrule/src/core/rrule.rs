@@ -8,7 +8,7 @@ use crate::parser::str_to_weekday;
 use crate::parser::ParseError;
 use crate::validator::validate_rrule;
 use crate::{RRuleError, RRuleIter, RRuleSet, Unvalidated, Validated};
-use chrono::{Datelike, Month, Weekday};
+use chrono::{Month, Weekday};
 use chrono_tz::Tz;
 #[cfg(feature = "serde")]
 use serde_with::{DeserializeFromStr, SerializeDisplay};

@@ -5,10 +5,9 @@ mod iter_rrule;
 mod parser_rrule;
 mod simple_logger;
 
-use chrono::DateTime;
-use chrono_tz::Tz;
 use clap::Parser;
 use log::LevelFilter;
+use rrule::DateTime;
 
 const CRASHES_PATH: &str = "rrule-afl-fuzz/out/default/crashes/";
 
@@ -122,8 +121,8 @@ fn read_all_crash_file() -> Vec<Vec<u8>> {
     list
 }
 
-pub fn print_all_datetimes(list: &[DateTime<Tz>]) {
-    let formatter = |dt: &DateTime<Tz>| -> String { format!("    \"{}\",\n", dt.to_rfc3339()) };
+pub fn print_all_datetimes(list: &[DateTime]) {
+    let formatter = |dt: &DateTime| -> String { format!("    \"{}\",\n", dt.to_rfc3339()) };
     println!("[\n{}]", list.iter().map(formatter).collect::<String>(),);
 }
 

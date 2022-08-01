@@ -1,8 +1,8 @@
 use std::ops;
 
 use crate::core::{duration_from_midnight, DateTime};
-use chrono::{Date, NaiveTime, TimeZone, Utc};
-use chrono_tz::{Tz, UTC};
+use chrono::{NaiveTime, TimeZone, Utc};
+use chrono_tz::UTC;
 
 const DAY_SECS: i64 = 24 * 60 * 60;
 

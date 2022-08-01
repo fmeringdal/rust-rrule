@@ -82,10 +82,36 @@ impl RRuleTimeZone {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Copy)]
+/// DateTime that is able to represent datetimes in Local and chrono_tz::Tz
+/// timezones.
+#[derive(Debug, Clone, Eq, Ord, Copy)]
 pub enum DateTime {
+    /// Local timezone
     Local(chrono::DateTime<chrono::Local>),
+    /// Specific non-local timezone
     Tz(chrono::DateTime<chrono_tz::Tz>),
+}
+
+impl PartialEq for DateTime {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Local(l0), Self::Local(r0)) => l0 == r0,
+            (Self::Tz(l0), Self::Tz(r0)) => l0 == r0,
+            (Self::Tz(l0), Self::Local(r0)) => l0 == r0,
+            (Self::Local(l0), Self::Tz(r0)) => l0 == r0,
+        }
+    }
+}
+
+impl PartialOrd for DateTime {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        match (self, other) {
+            (Self::Local(l0), Self::Local(r0)) => l0.partial_cmp(r0),
+            (Self::Tz(l0), Self::Tz(r0)) => l0.partial_cmp(r0),
+            (Self::Tz(l0), Self::Local(r0)) => l0.partial_cmp(r0),
+            (Self::Local(l0), Self::Tz(r0)) => l0.partial_cmp(r0),
+        }
+    }
 }
 
 impl DateTime {
@@ -98,7 +124,7 @@ impl DateTime {
 
     pub fn timezone(&self) -> RRuleTimeZone {
         match self {
-            Self::Local(dt) => RRuleTimeZone::Local,
+            Self::Local(_) => RRuleTimeZone::Local,
             Self::Tz(dt) => RRuleTimeZone::Tz(dt.timezone()),
         }
     }

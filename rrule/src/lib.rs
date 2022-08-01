@@ -89,7 +89,7 @@ mod parser;
 mod tests;
 mod validator;
 
-pub use crate::core::{Frequency, NWeekday, RRule, RRuleSet};
+pub use crate::core::{DateTime, Frequency, NWeekday, RRule, RRuleSet};
 pub use crate::core::{Unvalidated, Validated};
 pub use chrono::Weekday;
 pub use error::{RRuleError, WithError};

@@ -39,7 +39,6 @@ pub(crate) static FREQ_SECONDLY_INTERVAL_MAX: u16 = 50_000;
 /// iterator.
 pub(crate) fn check_limits(rrule: &RRule, dt_start: &DateTime) -> Result<(), ValidationError> {
     use crate::{validator::YEAR_RANGE, Frequency};
-    use chrono::Datelike;
 
     // Interval:
     // - Value should not be to big

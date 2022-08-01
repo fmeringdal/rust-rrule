@@ -51,8 +51,11 @@ impl RRuleSet {
     ///
     /// This value will not be used if you use the `Iterator` API directly.
     #[must_use]
-    pub fn before(mut self, dt: DateTime) -> Self {
-        self.before = Some(dt);
+    pub fn before<T>(mut self, dt: T) -> Self
+    where
+        DateTime: From<T>,
+    {
+        self.before = Some(dt.into());
         self
     }
 
@@ -60,8 +63,11 @@ impl RRuleSet {
     ///
     /// This value will not be used if you use the `Iterator` API directly.
     #[must_use]
-    pub fn after(mut self, dt: DateTime) -> Self {
-        self.after = Some(dt);
+    pub fn after<T>(mut self, dt: T) -> Self
+    where
+        DateTime: From<T>,
+    {
+        self.after = Some(dt.into());
         self
     }
 
@@ -117,15 +123,21 @@ impl RRuleSet {
 
     /// Sets the rdates of the set.
     #[must_use]
-    pub fn set_rdates(mut self, rdates: Vec<DateTime>) -> Self {
-        self.rdate = rdates;
+    pub fn set_rdates<T>(mut self, rdates: Vec<T>) -> Self
+    where
+        DateTime: From<T>,
+    {
+        self.rdate = rdates.into_iter().map(From::from).collect();
         self
     }
 
     /// Set the exdates of the set.
     #[must_use]
-    pub fn set_exdates(mut self, exdates: Vec<DateTime>) -> Self {
-        self.exdate = exdates;
+    pub fn set_exdates<T>(mut self, exdates: Vec<T>) -> Self
+    where
+        DateTime: From<T>,
+    {
+        self.exdate = exdates.into_iter().map(From::from).collect();
         self
     }
 

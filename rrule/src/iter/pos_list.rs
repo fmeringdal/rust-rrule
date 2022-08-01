@@ -1,4 +1,4 @@
-use super::utils::{add_time_to_date, from_ordinal, pymod};
+use super::utils::{from_ordinal, pymod};
 use crate::{
     core::{DateTime, RRuleTimeZone},
     RRuleError,

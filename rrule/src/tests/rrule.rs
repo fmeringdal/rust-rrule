@@ -1,6 +1,6 @@
 use crate::tests::common::{test_recurring_rrule, ymd_hms};
 use crate::{Frequency, NWeekday, RRule, RRuleSet, Weekday};
-use chrono::{Datelike, TimeZone};
+use chrono::TimeZone;
 
 #[test]
 fn yearly() {

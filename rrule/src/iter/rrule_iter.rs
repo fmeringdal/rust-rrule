@@ -1,11 +1,9 @@
 use super::counter_date::DateTimeIter;
-use super::utils::add_time_to_date;
 use super::{build_pos_list, utils::from_ordinal, IterInfo, MAX_ITER_LOOP};
 use crate::core::{get_hour, get_minute, get_second};
 use crate::validator::check_limits;
 use crate::{core::DateTime, Frequency, RRule, RRuleError, WithError};
-use chrono::Datelike;
-use chrono::{NaiveTime, TimeZone};
+use chrono::NaiveTime;
 use std::collections::VecDeque;
 
 #[derive(Debug, Clone)]

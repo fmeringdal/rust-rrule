@@ -1,6 +1,6 @@
 use std::ops::RangeInclusive;
 
-use crate::core::DateTime;
+use crate::core::{DateTime, RRuleTimeZone};
 use crate::{Frequency, NWeekday, RRule, Unvalidated};
 
 use super::ValidationError;
@@ -45,13 +45,42 @@ pub(crate) fn validate_rrule_forced(
 }
 
 // Until:
+// - Timezones are correctly synced as specified in the RFC
 // - Value should be later than `dt_start`.
 fn validate_until(rrule: &RRule<Unvalidated>, dt_start: &DateTime) -> Result<(), ValidationError> {
     match rrule.until {
-        Some(until) if until < *dt_start => Err(ValidationError::UntilBeforeStart {
-            until: until.to_rfc3339(),
-            dt_start: dt_start.to_rfc3339(),
-        }),
+        Some(until) => {
+            match dt_start.timezone() {
+                RRuleTimeZone::Local => {
+                    let allowed_timezones =
+                        vec![RRuleTimeZone::Local, RRuleTimeZone::Tz(chrono_tz::Tz::UTC)];
+                    if !allowed_timezones.contains(&until.timezone()) {
+                        return Err(ValidationError::DtStartUntilMismatchTimezone {
+                            dt_start_tz: dt_start.timezone().name(),
+                            until_tz: until.timezone().name(),
+                            expected: allowed_timezones.into_iter().map(|tz| tz.name()).collect(),
+                        });
+                    }
+                }
+                _ => {
+                    if until.timezone() != RRuleTimeZone::Tz(chrono_tz::Tz::UTC) {
+                        return Err(ValidationError::DtStartUntilMismatchTimezone {
+                            dt_start_tz: dt_start.timezone().name(),
+                            until_tz: until.timezone().name(),
+                            expected: vec!["UTC".into()],
+                        });
+                    }
+                }
+            }
+
+            if until < *dt_start {
+                return Err(ValidationError::UntilBeforeStart {
+                    until: until.to_rfc3339(),
+                    dt_start: dt_start.to_rfc3339(),
+                });
+            }
+            Ok(())
+        }
         _ => Ok(()),
     }
 }
@@ -327,8 +356,8 @@ fn validate_not_equal_for_vec<T: PartialEq<T> + ToString>(
 
 #[cfg(test)]
 mod tests {
-    use chrono::TimeZone;
-    use chrono_tz::UTC;
+    use chrono::{Local, TimeZone};
+    use chrono_tz::{Europe, UTC};
 
     use super::*;
 
@@ -528,6 +557,85 @@ mod tests {
                     freq: rrule.freq
                 }
             );
+        }
+    }
+
+    #[test]
+    fn allows_until_with_compatible_timezone() {
+        fn t<T1, T2>(start_tz: T1, until_tz: T2) -> (DateTime, DateTime)
+        where
+            T1: TimeZone,
+            T2: TimeZone,
+            DateTime: From<chrono::DateTime<T1>>,
+            DateTime: From<chrono::DateTime<T2>>,
+        {
+            (
+                start_tz
+                    .ymd_opt(2020, 1, 1)
+                    .and_hms_opt(0, 0, 0)
+                    .unwrap()
+                    .into(),
+                until_tz
+                    .ymd_opt(2020, 1, 1)
+                    .and_hms_opt(0, 0, 0)
+                    .unwrap()
+                    .into(),
+            )
+        }
+
+        let tests = [t(Local, Local), t(Local, UTC), t(UTC, UTC)];
+
+        for (start_date, until) in tests {
+            let rrule = RRule {
+                until: Some(until),
+                ..Default::default()
+            };
+            let res = validate_rrule_forced(&rrule, &start_date);
+            assert!(res.is_ok());
+        }
+    }
+
+    #[test]
+    fn rejects_until_with_incompatible_timezone() {
+        fn t<T1, T2>(start_tz: T1, until_tz: T2) -> (DateTime, DateTime)
+        where
+            T1: TimeZone,
+            T2: TimeZone,
+            DateTime: From<chrono::DateTime<T1>>,
+            DateTime: From<chrono::DateTime<T2>>,
+        {
+            (
+                start_tz
+                    .ymd_opt(2020, 1, 1)
+                    .and_hms_opt(0, 0, 0)
+                    .unwrap()
+                    .into(),
+                until_tz
+                    .ymd_opt(2020, 1, 1)
+                    .and_hms_opt(0, 0, 0)
+                    .unwrap()
+                    .into(),
+            )
+        }
+
+        let tests = [
+            t(UTC, Local),
+            t(Europe::Berlin, Local),
+            t(Local, Europe::Berlin),
+        ];
+
+        for (start_date, until) in tests {
+            let rrule = RRule {
+                until: Some(until),
+                ..Default::default()
+            };
+            let res = validate_rrule_forced(&rrule, &start_date);
+            assert!(res.is_err());
+            let err = res.unwrap_err();
+            assert!(matches!(
+                err,
+                ValidationError::DtStartUntilMismatchTimezone { .. }
+            ));
         }
     }
 

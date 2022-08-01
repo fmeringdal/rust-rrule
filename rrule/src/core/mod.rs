@@ -5,9 +5,9 @@ pub(crate) mod utils;
 
 pub use self::rrule::{Frequency, NWeekday, RRule};
 pub use self::rruleset::RRuleSet;
+pub use datetime::DateTime;
 pub(crate) use datetime::{
-    duration_from_midnight, get_day, get_hour, get_minute, get_month, get_second, DateTime,
-    RRuleTimeZone,
+    duration_from_midnight, get_day, get_hour, get_minute, get_month, get_second, RRuleTimeZone,
 };
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]

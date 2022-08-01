@@ -2,7 +2,7 @@
 //!
 //! Create an [`RRule`] object.
 
-use chrono::{Datelike, TimeZone, Timelike};
+use chrono::TimeZone;
 use chrono_tz::UTC;
 use rrule::{Frequency, RRule};
 

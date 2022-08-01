@@ -44,11 +44,11 @@ impl FromStr for Grammar {
         for parts in content_lines_parts {
             let line = match parts.property_name {
                 PropertyName::RRule => {
-                    let rrule = RRule::try_from((parts, &start))?;
+                    let rrule = RRule::try_from(parts)?;
                     ContentLine::RRule(rrule)
                 }
                 PropertyName::ExRule => {
-                    let rrule = RRule::try_from((parts, &start))?;
+                    let rrule = RRule::try_from(parts)?;
                     ContentLine::ExRule(rrule)
                 }
                 PropertyName::RDate => ContentLine::RDate(TryFrom::try_from(parts)?),

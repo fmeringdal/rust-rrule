@@ -1,4 +1,4 @@
-use chrono::{Datelike, TimeZone, Timelike, Utc, Weekday};
+use chrono::{Datelike, TimeZone, Utc, Weekday};
 
 use crate::{core::DateTime, Frequency, RRule, RRuleError};
 
