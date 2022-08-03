@@ -175,8 +175,9 @@ impl RRuleSet {
     /// let rrule_set: RRuleSet = "DTSTART:20210101T090000Z\nRRULE:FREQ=DAILY".parse().unwrap();
     ///
     /// // Limit the results to 2 recurrences
-    /// let result = rrule_set.all(2).unwrap();
+    /// let (result, limited) = rrule_set.all(2);
     /// assert_eq!(result.len(), 2);
+    /// assert_eq!(limited, false);
     /// ```
     #[must_use]
     pub fn all(mut self, limit: u16) -> (Vec<DateTime>, bool) {
