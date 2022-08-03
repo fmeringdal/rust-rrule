@@ -177,7 +177,7 @@ impl RRuleSet {
     /// // Limit the results to 2 recurrences
     /// let (result, limited) = rrule_set.all(2);
     /// assert_eq!(result.len(), 2);
-    /// assert_eq!(limited, false);
+    /// assert_eq!(limited, true);
     /// ```
     #[must_use]
     pub fn all(mut self, limit: u16) -> (Vec<DateTime>, bool) {
