@@ -24,11 +24,3 @@ impl RRuleError {
         Self::IterError(msg.as_ref().to_owned())
     }
 }
-
-/// A trait for [`crate::RRuleSetIter`] and the private `crate::RRuleIter` to handle their errors.
-pub trait WithError {
-    /// Return `true` if an error has occurred.
-    fn has_err(&self) -> bool;
-    /// Return the last error while iterating.
-    fn get_err(&self) -> Option<&RRuleError>;
-}

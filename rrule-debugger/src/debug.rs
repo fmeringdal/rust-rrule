@@ -16,8 +16,8 @@ fn test_from_string() {
         .parse()
         .unwrap();
     println!("RRule: {:#?}", rrule);
-    let (list, err) = rrule.all_with_error(20);
-    println!("Error: {:#?}", err);
+    let (list, limited) = rrule.all(20);
+    println!("Limited: {}", limited);
     crate::print_all_datetimes(&list);
 }
 
@@ -30,9 +30,9 @@ fn test_parsed_rrule() {
         .by_second(vec![0]);
 
     let rrule = properties.build(ymd_hms(1997, 9, 2, 9, 0, 0)).unwrap();
-    let (list, err) = rrule.all_with_error(50);
+    let (list, limited) = rrule.all(50);
 
-    println!("Error: {:#?}", err);
+    println!("Limited: {}", limited);
     crate::print_all_datetimes(&list);
 }
 

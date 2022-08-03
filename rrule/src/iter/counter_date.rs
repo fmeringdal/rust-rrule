@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use chrono::{Datelike, TimeZone, Timelike, Utc, Weekday};
 
 use crate::{core::DateTime, Frequency, RRule, RRuleError};
@@ -165,7 +167,7 @@ impl DateTimeIter {
             )?;
         }
 
-        let first_hours = u8::try_from(self.hour % 24).expect("range 0 - 23 is covered by u8");
+        let mut prev_hours = HashSet::new();
         loop {
             self.hour = checked_add_u32(
                 self.hour,
@@ -176,11 +178,12 @@ impl DateTimeIter {
             if by_hour.is_empty() || by_hour.iter().any(|bh| *bh == new_hours) {
                 break;
             }
-            if new_hours == first_hours {
+            if prev_hours.contains(&new_hours) {
                 return Err(RRuleError::new_iter_err(
                     "Infinite loop detected. It can be resolved by changing `BYHOUR` or `INTERVAL`",
                 ));
             }
+            prev_hours.insert(new_hours);
         }
 
         let new_days = u16::try_from(self.hour / 24).map_err(|_| {
@@ -212,8 +215,7 @@ impl DateTimeIter {
             )?;
         }
 
-        let first_hours = u8::try_from(self.hour % 24).expect("range 0 - 23 is covered by u8");
-        let first_minutes = u8::try_from(self.minute % 60).expect("range 0 - 59 is covered by u8");
+        let mut prev_values = HashSet::new();
         loop {
             self.minute += u32::from(interval);
             let hours_div = u16::try_from(self.minute / 60).map_err(|_| {
@@ -233,11 +235,12 @@ impl DateTimeIter {
                 break;
             }
 
-            if hours == first_hours && minutes == first_minutes {
+            if prev_values.contains(&(hours, minutes)) {
                 return Err(RRuleError::new_iter_err(
                     "Infinite loop detected. It can be resolved by changing `BYMINUTE`, `BYHOUR` or `INTERVAL`",
                 ));
             }
+            prev_values.insert((hours, minutes));
         }
 
         Ok(())
@@ -262,9 +265,7 @@ impl DateTimeIter {
             )?;
         }
 
-        let first_hours = u8::try_from(self.hour % 24).expect("range 0 - 23 is covered by u8");
-        let first_minutes = u8::try_from(self.minute % 60).expect("range 0 - 59 is covered by u8");
-        let first_seconds = u8::try_from(self.second % 60).expect("range 0 - 59 is covered by u8");
+        let mut prev_values = HashSet::new();
         loop {
             self.second += u32::from(interval);
             let minutes_div = u16::try_from(self.second / 60).map_err(|_| {
@@ -286,11 +287,12 @@ impl DateTimeIter {
                 break;
             }
 
-            if hours == first_hours && minutes == first_minutes && seconds == first_seconds {
+            if prev_values.contains(&(hours, minutes, seconds)) {
                 return Err(RRuleError::new_iter_err(
                     "Infinite loop detected. It can be resolved by changing `BYSECOND`, `BYMINUTE`, `BYHOUR` or `INTERVAL`",
                 ));
             }
+            prev_values.insert((hours, minutes, seconds));
         }
 
         Ok(())

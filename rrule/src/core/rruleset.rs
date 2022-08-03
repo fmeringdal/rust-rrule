@@ -1,5 +1,5 @@
 use crate::core::datetime::datetime_to_ical_format;
-use crate::core::utils::{collect_or_error, collect_with_error};
+use crate::core::utils::collect_with_error;
 use crate::core::DateTime;
 use crate::parser::{ContentLine, Grammar};
 use crate::{RRule, RRuleError};
@@ -27,6 +27,8 @@ pub struct RRuleSet {
     pub(crate) before: Option<DateTime>,
     /// If set, all returned recurrences must be after this date.
     pub(crate) after: Option<DateTime>,
+    /// If validation limits are enabled
+    pub(crate) limited: bool,
 }
 
 impl RRuleSet {
@@ -41,7 +43,17 @@ impl RRuleSet {
             exdate: vec![],
             before: None,
             after: None,
+            limited: false,
         }
+    }
+
+    /// Enable validation limits.
+    ///
+    /// This is only needed if you are going to use the Iterator api directly.
+    #[must_use]
+    pub fn limit(mut self) -> Self {
+        self.limited = true;
+        self
     }
 
     /// Only return recurrences that comes before this `DateTime`.
@@ -160,54 +172,15 @@ impl RRuleSet {
     /// ```
     /// use rrule::RRuleSet;
     ///
-    /// let rrule_set: RRuleSet = "DTSTART:20210101T090000Z\nRRULE:FREQ=DAILY;".parse().unwrap();
+    /// let rrule_set: RRuleSet = "DTSTART:20210101T090000Z\nRRULE:FREQ=DAILY".parse().unwrap();
     ///
     /// // Limit the results to 2 recurrences
     /// let result = rrule_set.all(2).unwrap();
     /// assert_eq!(result.len(), 2);
     /// ```
-    ///
-    /// # Error
-    ///
-    /// An error will be returned if the iterator encountered an error which
-    /// does not allow the iteration to continue. One example would be hitting the validation-limit
-    /// or the `INTERVAL` value was too large. Please use [`RRuleSet::all_with_error`] if you
-    /// want the datetimes generated before encountering the error to be returned as well.
-    pub fn all(self, limit: u16) -> Result<Vec<DateTime>, RRuleError> {
-        collect_or_error(
-            self.into_iter(),
-            &self.after,
-            &self.before,
-            true,
-            Some(limit),
-        )
-    }
-
-    /// Returns all the recurrences of the rrule.
-    ///
-    /// # Note
-    ///
-    /// This method does not enforce any validation limits and might lead to
-    /// very long iteration times. Please read the `SECURITY.md` for more information.
-    ///
-    /// # Error
-    ///
-    /// An error will be returned if the iterator encountered an error which
-    /// does not allow the iteration to continue. One example would be hitting a datetime
-    /// during the iteration which is outside the allowed range of `chrono::DateTime`.
-    pub fn all_unchecked(self) -> Result<Vec<DateTime>, RRuleError> {
-        collect_or_error(self.into_iter(), &self.after, &self.before, true, None)
-    }
-
-    /// Returns all the recurrences of the rrule.
-    ///
-    /// Limit must be set in order to prevent infinite loops.
-    /// The max limit is `65535`. If you need more please use `into_iter` directly.
-    ///
-    /// In case the iterator ended with an error, the error will be included,
-    /// otherwise the second value of the return tuple will be `None`.
     #[must_use]
-    pub fn all_with_error(self, limit: u16) -> (Vec<DateTime>, Option<RRuleError>) {
+    pub fn all(mut self, limit: u16) -> (Vec<DateTime>, bool) {
+        self.limited = true;
         collect_with_error(
             self.into_iter(),
             &self.after,
@@ -219,16 +192,13 @@ impl RRuleSet {
 
     /// Returns all the recurrences of the rrule.
     ///
-    /// In case the iterator ended with an error, the error will be included,
-    /// otherwise the second value of the return tuple will be `None`.
-    ///
     /// # Note
     ///
     /// This method does not enforce any validation limits and might lead to
     /// very long iteration times. Please read the `SECURITY.md` for more information.
     #[must_use]
-    pub fn all_with_error_unchecked(self) -> (Vec<DateTime>, Option<RRuleError>) {
-        collect_with_error(self.into_iter(), &self.after, &self.before, true, None)
+    pub fn all_unchecked(self) -> Vec<DateTime> {
+        collect_with_error(self.into_iter(), &self.after, &self.before, true, None).0
     }
 }
 
@@ -239,9 +209,7 @@ impl FromStr for RRuleSet {
     ///
     /// # Errors
     ///
-    /// Returns [`RRuleError`], if iCalendar string contains invalid parts
-    /// This should never panic, but it might be in odd cases.
-    /// Please report if it does panic.
+    /// Returns [`RRuleError`], if iCalendar string contains invalid parts.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let Grammar {
             start,

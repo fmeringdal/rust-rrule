@@ -9,7 +9,7 @@ fn monthly_on_31th() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .unwrap();
+        .0;
     // TODO: Is this the correct behavior?
     common::check_occurrences(
         &dates,
@@ -36,7 +36,7 @@ fn monthly_on_31th_to_last() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .unwrap();
+        .0;
     // TODO: Is this the correct behavior?
     common::check_occurrences(
         &dates,

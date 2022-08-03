@@ -8,7 +8,7 @@ RRULE:FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-2"
         .parse::<RRuleSet>()
         .unwrap()
         .all(7)
-        .unwrap();
+        .0;
     common::check_occurrences(
         &dates,
         &[
@@ -29,6 +29,6 @@ fn issue_61() {
         .parse::<RRuleSet>()
         .expect("The RRule is not valid");
 
-    let (res, _err) = rrule_set.all_with_error(10);
+    let res = rrule_set.all(10).0;
     assert_eq!(res.len(), 10);
 }

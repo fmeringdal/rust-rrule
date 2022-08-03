@@ -1,7 +1,7 @@
 use std::{fmt::Display, str::FromStr};
 
 use clap::Parser;
-use rrule::{RRuleSet, WithError};
+use rrule::RRuleSet;
 
 /// Recurrence Rule parser and iterator
 ///
@@ -34,6 +34,7 @@ fn main() -> Result<(), String> {
     let limit = opts.limit.unwrap_or(100);
     let rrule_str = opts.input.replace("\\n", "\n");
     let rrule: RRuleSet = parse_rule(&rrule_str)?;
+    let rrule = rrule.limit();
     let iter = rrule.into_iter();
     iterator_dates(iter, limit);
 
@@ -55,7 +56,7 @@ where
 
 fn iterator_dates<T>(mut rule_iter: T, limit: u16)
 where
-    T: Iterator + WithError,
+    T: Iterator,
     <T as Iterator>::Item: Display,
 {
     for _ in 0..limit {
@@ -64,11 +65,7 @@ where
             Some(value) => {
                 println!("{}", value);
             }
-            None => {
-                if let Some(error) = rule_iter.get_err() {
-                    eprintln!("Error: {}", error);
-                }
-            }
+            None => {}
         }
     }
 }

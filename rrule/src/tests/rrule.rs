@@ -3816,7 +3816,7 @@ fn test_before_inclusive_hit() {
     let before = ymd_hms(2012, 2, 2, 9, 30, 0);
     let rrule = rrule.before(before);
 
-    assert_eq!(Some(&before), rrule.all_unchecked().unwrap().last());
+    assert_eq!(Some(&before), rrule.all_unchecked().last());
 }
 
 #[test]
@@ -3829,7 +3829,7 @@ fn test_before_inclusive_miss() {
     let rrule = rrule.before(before);
     let oracle = ymd_hms(2012, 2, 2, 9, 30, 0);
 
-    assert_eq!(Some(&oracle), rrule.all_unchecked().unwrap().last());
+    assert_eq!(Some(&oracle), rrule.all_unchecked().last());
 }
 
 #[test]
@@ -3841,7 +3841,7 @@ fn test_after_inclusive_hit() {
     let after = ymd_hms(2012, 2, 2, 9, 30, 0);
     let rrule = rrule.after(after);
 
-    assert_eq!(after, rrule.all(1).unwrap()[0]);
+    assert_eq!(after, rrule.all(1).0[0]);
 }
 
 #[test]
@@ -3854,7 +3854,7 @@ fn test_after_inclusive_miss() {
     let rrule = rrule.after(after);
     let oracle = ymd_hms(2012, 2, 3, 9, 30, 0);
 
-    assert_eq!(oracle, rrule.all(1).unwrap()[0]);
+    assert_eq!(oracle, rrule.all(1).0[0]);
 }
 
 #[test]
@@ -3869,7 +3869,7 @@ fn test_between_inclusive_both_miss() {
 
     let rrule = rrule.before(before).after(after);
 
-    assert_eq!(vec![middle], rrule.all_unchecked().unwrap());
+    assert_eq!(vec![middle], rrule.all_unchecked());
 }
 
 #[test]
@@ -3884,7 +3884,7 @@ fn test_between_inclusive_lower_miss() {
 
     let rrule = rrule.before(before).after(after);
 
-    assert_eq!(vec![middle, before], rrule.all_unchecked().unwrap());
+    assert_eq!(vec![middle, before], rrule.all_unchecked());
 }
 
 #[test]
@@ -3899,7 +3899,7 @@ fn test_between_inclusive_upper_miss() {
 
     let rrule = rrule.before(before).after(after);
 
-    assert_eq!(vec![after, middle], rrule.all_unchecked().unwrap());
+    assert_eq!(vec![after, middle], rrule.all_unchecked());
 }
 
 #[test]
@@ -3914,5 +3914,5 @@ fn test_between_inclusive_both_hit() {
 
     let rrule = rrule.before(before).after(after);
 
-    assert_eq!(vec![after, middle, before], rrule.all_unchecked().unwrap());
+    assert_eq!(vec![after, middle, before], rrule.all_unchecked());
 }

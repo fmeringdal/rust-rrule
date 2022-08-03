@@ -7,7 +7,7 @@ fn daylight_savings_1() {
             .parse()
             .unwrap();
 
-    let (dates, error) = rrule.all_with_error(u16::MAX);
+    let dates = rrule.all_unchecked();
     check_occurrences(
         &dates,
         &[
@@ -43,7 +43,6 @@ fn daylight_savings_1() {
             "2021-03-30T02:22:10-07:00",
         ],
     );
-    assert!(error.is_none());
 }
 
 #[test]
@@ -53,7 +52,7 @@ fn daylight_savings_2() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .unwrap();
+        .0;
     check_occurrences(
         &dates,
         &[
