@@ -1,8 +1,7 @@
 #![allow(clippy::module_name_repetitions)]
 
 use chrono::{DateTime, TimeZone, Utc, Weekday};
-use chrono_tz::{Tz, UTC};
-use rrule::NWeekday;
+use rrule::{NWeekday, Tz};
 use std::convert::TryInto;
 
 // https://doc.rust-lang.org/std/mem/fn.size_of.html
@@ -68,10 +67,10 @@ pub fn take_datetime(input: &mut &[u8]) -> DateTime<Tz> {
         LocalResult::None => {
             // Will always succeed
             let nanos: i64 = take_data_i64(input);
-            Utc.timestamp_nanos(nanos).with_timezone(&UTC)
+            Utc.timestamp_nanos(nanos).with_timezone(&Tz::utc())
         }
         LocalResult::Single(datetime) | LocalResult::Ambiguous(datetime, _) => {
-            datetime.with_timezone(&UTC)
+            datetime.with_timezone(&Tz::utc())
         }
     }
 }

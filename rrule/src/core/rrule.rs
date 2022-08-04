@@ -10,7 +10,6 @@ use crate::validator::validate_rrule;
 use crate::validator::ValidationError;
 use crate::{RRuleError, RRuleIter, RRuleSet, Unvalidated, Validated};
 use chrono::{Datelike, Month, Weekday};
-use chrono_tz::Tz;
 #[cfg(feature = "serde")]
 use serde_with::{DeserializeFromStr, SerializeDisplay};
 use std::cmp::Ordering;
@@ -332,7 +331,7 @@ impl RRule<Unvalidated> {
     /// If given, this must be a datetime instance specifying the
     /// upper-bound limit of the recurrence.
     #[must_use]
-    pub fn until(mut self, until: chrono::DateTime<Tz>) -> Self {
+    pub fn until(mut self, until: DateTime) -> Self {
         self.until = Some(until);
         self
     }

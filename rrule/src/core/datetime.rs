@@ -1,7 +1,9 @@
 use chrono::{Datelike, Duration, NaiveTime, Timelike};
 use chrono_tz::Tz;
 
-pub(crate) type DateTime = chrono::DateTime<Tz>;
+use super::timezone::RRuleTz;
+
+pub(crate) type DateTime = chrono::DateTime<RRuleTz>;
 
 pub(crate) fn duration_from_midnight(time: NaiveTime) -> Duration {
     Duration::hours(i64::from(time.hour()))
@@ -36,7 +38,7 @@ pub(crate) fn datetime_to_ical_format(dt: &DateTime) -> String {
     let mut tz_prefix = String::new();
     let mut tz_postfix = String::new();
     let tz = dt.timezone();
-    if tz == Tz::UTC {
+    if tz == Tz::UTC.into() {
         tz_postfix = "Z".to_string();
     } else {
         tz_prefix = format!(";TZID={}", tz.name());

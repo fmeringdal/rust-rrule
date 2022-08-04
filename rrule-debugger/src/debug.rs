@@ -1,8 +1,8 @@
 #![allow(dead_code, unused_imports)]
 
 use chrono::{DateTime, TimeZone, Weekday};
-use chrono_tz::{Tz, UTC};
-use rrule::{Frequency, RRule, RRuleSet};
+use chrono_tz::UTC;
+use rrule::{Frequency, RRule, RRuleSet, Tz};
 
 /// This function can be used to test anything and can be changes as you wish.
 pub fn run_debug_function() {
@@ -37,5 +37,7 @@ fn test_parsed_rrule() {
 }
 
 fn ymd_hms(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32) -> DateTime<Tz> {
-    UTC.ymd(year, month, day).and_hms(hour, minute, second)
+    Tz::utc()
+        .ymd(year, month, day)
+        .and_hms(hour, minute, second)
 }

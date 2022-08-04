@@ -61,11 +61,12 @@ impl<'a> TryFrom<ContentLineCaptures<'a>> for Vec<DateTime> {
 #[cfg(test)]
 mod tests {
     use chrono::TimeZone;
-    use chrono_tz::UTC;
 
-    use crate::parser::content_line::PropertyName;
+    use crate::{core::RRuleTz, parser::content_line::PropertyName};
 
     use super::*;
+
+    const UTC: RRuleTz = RRuleTz::Tz(chrono_tz::UTC);
 
     #[test]
     fn parses_date_content_line() {

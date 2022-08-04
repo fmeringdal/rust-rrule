@@ -88,9 +88,12 @@ pub(super) fn is_in_range(
 
 #[cfg(test)]
 mod tests {
+    use crate::core::RRuleTz;
+
     use super::*;
     use chrono::TimeZone;
-    use chrono_tz::UTC;
+
+    const UTC: RRuleTz = RRuleTz::Tz(chrono_tz::UTC);
 
     #[test]
     fn in_range_exclusive_start_to_end() {

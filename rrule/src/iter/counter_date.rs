@@ -314,10 +314,12 @@ impl From<&DateTime> for DateTimeIter {
 
 #[cfg(test)]
 mod tests {
-    use chrono::TimeZone;
-    use chrono_tz::UTC;
+    use crate::core::RRuleTz;
 
     use super::*;
+    use chrono::TimeZone;
+
+    const UTC: RRuleTz = RRuleTz::Tz(chrono_tz::UTC);
 
     fn ymd_hms(year: i32, month: u32, day: u32, hour: u32, min: u32, sec: u32) -> DateTimeIter {
         let dt = UTC.ymd(year, month, day).and_hms(hour, min, sec);

@@ -1,23 +1,23 @@
 use std::collections::HashMap;
 
-use chrono_tz::{Tz, UTC};
-
 use super::{
     content_line_parts::ContentLineCaptures, date_content_line::DateParameter,
     parameters::parse_parameters,
 };
 use crate::{
-    core::DateTime,
+    core::{DateTime, RRuleTz},
     parser::{
         datetime::{datestring_to_date, parse_timezone},
         ParseError,
     },
 };
 
+const UTC: RRuleTz = RRuleTz::Tz(chrono_tz::UTC);
+
 #[derive(Debug, PartialEq)]
 pub(crate) struct StartDateContentLine {
     pub datetime: DateTime,
-    pub timezone: Option<Tz>,
+    pub timezone: Option<RRuleTz>,
     pub value: &'static str,
 }
 
@@ -69,7 +69,6 @@ impl<'a> TryFrom<&ContentLineCaptures<'a>> for StartDateContentLine {
 #[cfg(test)]
 mod tests {
     use chrono::TimeZone;
-    use chrono_tz::UTC;
 
     use crate::parser::content_line::PropertyName;
 

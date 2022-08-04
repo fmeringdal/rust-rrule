@@ -1,14 +1,21 @@
 use std::str::FromStr;
 
 use chrono::{NaiveDate, TimeZone, Weekday};
-use chrono_tz::{Tz, UTC};
+use chrono_tz::Tz;
 
 use super::{regex::ParsedDateString, ParseError};
-use crate::{core::DateTime, NWeekday};
+use crate::{
+    core::{DateTime, RRuleTz},
+    NWeekday,
+};
+
+const UTC: RRuleTz = RRuleTz::Tz(chrono_tz::UTC);
 
 /// Attempts to convert a `str` to a `chrono_tz::Tz`.
-pub(crate) fn parse_timezone(tz: &str) -> Result<Tz, ParseError> {
-    Tz::from_str(tz).map_err(|_| ParseError::InvalidTimezone(tz.into()))
+pub(crate) fn parse_timezone(tz: &str) -> Result<RRuleTz, ParseError> {
+    Tz::from_str(tz)
+        .map_err(|_| ParseError::InvalidTimezone(tz.into()))
+        .map(RRuleTz::Tz)
 }
 
 /// Convert a datetime string and a timezone to a `chrono::DateTime<Tz>`.
@@ -16,7 +23,7 @@ pub(crate) fn parse_timezone(tz: &str) -> Result<Tz, ParseError> {
 /// argument will be ignored.
 pub(crate) fn datestring_to_date(
     dt: &str,
-    tz: Option<Tz>,
+    tz: Option<RRuleTz>,
     property: &str,
 ) -> Result<DateTime, ParseError> {
     let ParsedDateString {
@@ -144,7 +151,8 @@ pub(crate) fn parse_weekdays(val: &str) -> Result<Vec<NWeekday>, ParseError> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chrono_tz::{US, UTC};
+
+    const US_PACIFIC: RRuleTz = RRuleTz::Tz(chrono_tz::US::Pacific);
 
     #[test]
     fn parses_valid_nweekdays() {
@@ -225,12 +233,12 @@ mod tests {
             ),
             (
                 "19970902T090000",
-                Some(US::Pacific),
-                US::Pacific.ymd(1997, 9, 2).and_hms(9, 0, 0),
+                Some(US_PACIFIC),
+                US_PACIFIC.ymd(1997, 9, 2).and_hms(9, 0, 0),
             ),
             (
                 "19970902T090000Z",
-                Some(US::Pacific),
+                Some(US_PACIFIC),
                 // Timezone is overwritten by the zulu specified in the datetime string
                 UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
             ),
@@ -248,7 +256,7 @@ mod tests {
             ("", None),
             ("TZID=America/New_York:19970902T090000", None),
             ("19970902T09", None),
-            ("19970902T09", Some(US::Pacific)),
+            ("19970902T09", Some(US_PACIFIC)),
         ];
 
         for (datetime_str, timezone) in tests {

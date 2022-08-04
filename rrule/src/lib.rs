@@ -10,8 +10,7 @@
 //!
 //! ```rust
 //! use chrono::{DateTime, TimeZone};
-//! use chrono_tz::UTC;
-//! use rrule::{RRuleSet, RRule};
+//! use rrule::{RRuleSet, Tz};
 //!
 //! // Parse a RRuleSet string
 //! let rrule_set: RRuleSet = "DTSTART:20120201T023000Z\n\
@@ -19,7 +18,7 @@
 //!     RDATE:20120701T023000Z,20120702T023000Z\n\
 //!     EXDATE:20120601T023000Z".parse().unwrap();
 //!
-//! assert_eq!(*rrule_set.get_dt_start(), UTC.ymd(2012, 2, 1).and_hms(2, 30, 0));
+//! assert_eq!(*rrule_set.get_dt_start(), Tz::utc().ymd(2012, 2, 1).and_hms(2, 30, 0));
 //! assert_eq!(rrule_set.get_rrule().len(), 1);
 //! assert_eq!(rrule_set.get_rdate().len(), 2);
 //! assert_eq!(rrule_set.get_exdate().len(), 1);
@@ -36,8 +35,7 @@
 //! All the methods above uses the iterator trait in its implementation as shown below.
 //! ```rust
 //! use chrono::{DateTime, TimeZone};
-//! use chrono_tz::UTC;
-//! use rrule::RRuleSet;
+//! use rrule::{RRuleSet, Tz};
 //!
 //! let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
 //! let (events, _) = rrule.all(100);
@@ -54,15 +52,14 @@
 //! ```
 //! Find all events that are within a given range.
 //! ```rust
-//! # use chrono::{DateTime, TimeZone};
-//! # use chrono_tz::UTC;
-//! # use rrule::RRuleSet;
-//! #
+//!  use chrono::{DateTime, TimeZone};
+//!  use rrule::{RRuleSet, Tz};
+//!
 //! let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
 //!
 //! // Between two dates
-//! let after = UTC.ymd(2012, 2, 1).and_hms(10, 0, 0);
-//! let before = UTC.ymd(2012, 4, 1).and_hms(9, 0, 0);
+//! let after = Tz::utc().ymd(2012, 2, 1).and_hms(10, 0, 0);
+//! let before = Tz::utc().ymd(2012, 4, 1).and_hms(9, 0, 0);
 //!
 //! let rrule = rrule.after(after).before(before);
 //! let (events, _) = rrule.all(100);
@@ -91,7 +88,7 @@ mod parser;
 mod tests;
 mod validator;
 
-pub use crate::core::{Frequency, NWeekday, RRule, RRuleSet};
+pub use crate::core::{Frequency, NWeekday, RRule, RRuleSet, RRuleTz as Tz};
 pub use crate::core::{Unvalidated, Validated};
 pub use chrono::Weekday;
 pub use error::RRuleError;
