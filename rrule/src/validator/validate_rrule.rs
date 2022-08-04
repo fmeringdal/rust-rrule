@@ -64,7 +64,7 @@ fn validate_until(rrule: &RRule<Unvalidated>, dt_start: &DateTime) -> Result<(),
                         });
                     }
                 }
-                _ => {
+                Tz::Tz(_) => {
                     if until.timezone() != Tz::Tz(chrono_tz::Tz::UTC) {
                         return Err(ValidationError::DtStartUntilMismatchTimezone {
                             dt_start_tz: dt_start.timezone().name().into(),
