@@ -45,6 +45,15 @@ impl RRuleTz {
     pub fn local() -> Self {
         Self::Local(Local)
     }
+
+    /// Check if timezone is the Local timezone
+    #[must_use]
+    pub fn is_local(&self) -> bool {
+        match self {
+            RRuleTz::Local(_) => true,
+            RRuleTz::Tz(_) => false,
+        }
+    }
 }
 
 impl PartialEq for RRuleTz {

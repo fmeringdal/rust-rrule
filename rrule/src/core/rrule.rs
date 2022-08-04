@@ -5,13 +5,14 @@ use crate::core::get_minute;
 use crate::core::get_month;
 use crate::core::get_second;
 use crate::parser::str_to_weekday;
+use crate::parser::ContentLineCaptures;
 use crate::parser::ParseError;
 use crate::validator::validate_rrule;
 use crate::validator::ValidationError;
 use crate::{RRuleError, RRuleIter, RRuleSet, Unvalidated, Validated};
 use chrono::{Datelike, Month, Weekday};
 #[cfg(feature = "serde")]
-use serde_with::{DeserializeFromStr, SerializeDisplay};
+use serde_with::{serde_as, DeserializeFromStr, SerializeDisplay};
 use std::cmp::Ordering;
 use std::fmt::Display;
 use std::fmt::Formatter;
@@ -212,6 +213,8 @@ fn weekday_to_str(d: Weekday) -> String {
 /// - `Unvalidated`, which is the raw string representation of the RRULE
 /// - `Validated`, which is when the `RRule` has been parsed and validated, based on the start date
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", serde_as)]
+#[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
 pub struct RRule<Stage = Validated> {
     /// The frequency of the rrule.
     /// For example: yearly, weekly, hourly
@@ -225,6 +228,7 @@ pub struct RRule<Stage = Validated> {
     pub(crate) count: Option<u32>,
     /// The end date after which new events will no longer be generated.
     /// If the `DateTime` is equal to an instance of the event it will be the last event.
+    #[cfg_attr(feature = "serde", serde_as(as = "DisplayFromStr"))]
     pub(crate) until: Option<DateTime>,
     /// The start day of the week.
     /// This will affect recurrences based on weekly periods.
@@ -269,6 +273,7 @@ pub struct RRule<Stage = Validated> {
     /// Note: Only used when `by-easter` feature flag is set. Otherwise, it is ignored.
     pub(crate) by_easter: Option<i16>,
     /// A phantom data to have the stage (unvalidated or validated).
+    #[cfg_attr(feature = "serde", serde_as(as = "ignore"))]
     pub(crate) stage: PhantomData<Stage>,
 }
 
@@ -610,6 +615,15 @@ impl RRule {
     }
 }
 
+impl FromStr for RRule<Unvalidated> {
+    type Err = RRuleError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let parts = ContentLineCaptures::new(s)?;
+        RRule::try_from(parts).map_err(From::from)
+    }
+}
+
 impl<S> Display for RRule<S> {
     /// Generates a string based on the [iCalendar RRULE spec](https://datatracker.ietf.org/doc/html/rfc5545#section-3.8.5.3).
     /// It doesn't prepend "RRULE:" to the string.
@@ -622,8 +636,12 @@ impl<S> Display for RRule<S> {
         res.push(format!("FREQ={}", &self.freq));
 
         if let Some(until) = &self.until {
-            // TODO: until is not always in UTC, so `Z` flag should be conditionally added.
-            res.push(format!("UNTIL={}", until.format("%Y%m%dT%H%M%SZ")));
+            let maybe_zulu = if until.timezone().is_local() { "" } else { "Z" };
+            res.push(format!(
+                "UNTIL={}{}",
+                until.format("%Y%m%dT%H%M%S"),
+                maybe_zulu
+            ));
         }
 
         if let Some(count) = &self.count {

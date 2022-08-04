@@ -8,13 +8,13 @@ mod utils;
 
 use std::str::FromStr;
 
-pub(crate) use content_line::ContentLine;
+pub(crate) use content_line::{ContentLine, ContentLineCaptures};
 pub(crate) use datetime::str_to_weekday;
 pub use error::ParseError;
 
 use crate::RRule;
 
-use self::content_line::{ContentLineCaptures, PropertyName, StartDateContentLine};
+use self::content_line::{PropertyName, StartDateContentLine};
 
 /// Grammar represents a well formatted rrule input.
 #[derive(Debug, PartialEq)]

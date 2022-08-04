@@ -38,11 +38,17 @@ pub(crate) fn datetime_to_ical_format(dt: &DateTime) -> String {
     let mut tz_prefix = String::new();
     let mut tz_postfix = String::new();
     let tz = dt.timezone();
-    if tz == Tz::UTC.into() {
-        tz_postfix = "Z".to_string();
-    } else {
-        tz_prefix = format!(";TZID={}", tz.name());
-    };
+    match tz {
+        RRuleTz::Local(_) => {}
+        RRuleTz::Tz(tz) => match tz {
+            Tz::UTC => {
+                tz_postfix = "Z".to_string();
+            }
+            tz => {
+                tz_prefix = format!(";TZID={}", tz.name());
+            }
+        },
+    }
 
     let dt = dt.format("%Y%m%dT%H%M%S");
     format!("{}:{}{}", tz_prefix, dt, tz_postfix)
