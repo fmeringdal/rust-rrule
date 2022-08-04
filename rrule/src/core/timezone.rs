@@ -3,6 +3,7 @@ use chrono::Offset;
 use chrono::TimeZone;
 
 use chrono::Local;
+use chrono::Utc;
 
 /// A wrapper around `chrono_tz::Tz` that is able to represent `Local` timezone also.
 ///
@@ -69,6 +70,12 @@ impl PartialEq for RRuleTz {
 impl From<Local> for RRuleTz {
     fn from(tz: Local) -> Self {
         Self::Local(tz)
+    }
+}
+
+impl From<Utc> for RRuleTz {
+    fn from(_tz: Utc) -> Self {
+        Self::Tz(chrono_tz::UTC)
     }
 }
 
