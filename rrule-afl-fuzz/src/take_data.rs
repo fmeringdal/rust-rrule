@@ -67,10 +67,10 @@ pub fn take_datetime(input: &mut &[u8]) -> DateTime<Tz> {
         LocalResult::None => {
             // Will always succeed
             let nanos: i64 = take_data_i64(input);
-            Utc.timestamp_nanos(nanos).with_timezone(&Tz::utc())
+            Utc.timestamp_nanos(nanos).with_timezone(&Tz::UTC)
         }
         LocalResult::Single(datetime) | LocalResult::Ambiguous(datetime, _) => {
-            datetime.with_timezone(&Tz::utc())
+            datetime.with_timezone(&Tz::UTC)
         }
     }
 }
