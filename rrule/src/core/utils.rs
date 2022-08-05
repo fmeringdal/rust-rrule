@@ -1,27 +1,9 @@
 use super::DateTime;
-use crate::{RRuleError, WithError};
+use crate::iter::rrule_iter::WasLimited;
 use std::ops::{
     Bound::{Excluded, Unbounded},
     RangeBounds,
 };
-
-/// Collects all dates, but once an error is found it will return the error
-/// and not the items that where already found.
-pub(crate) fn collect_or_error<T>(
-    iterator: T,
-    start: &Option<DateTime>,
-    end: &Option<DateTime>,
-    inclusive: bool,
-    limit: Option<u16>,
-) -> Result<Vec<DateTime>, RRuleError>
-where
-    T: Iterator<Item = DateTime> + WithError,
-{
-    match collect_with_error(iterator, start, end, inclusive, limit) {
-        (_list, Some(err)) => Err(err),
-        (list, None) => Ok(list),
-    }
-}
 
 /// Helper function to collect dates given some filters.
 ///
@@ -33,12 +15,12 @@ pub(super) fn collect_with_error<T>(
     end: &Option<DateTime>,
     inclusive: bool,
     limit: Option<u16>,
-) -> (Vec<DateTime>, Option<RRuleError>)
+) -> (Vec<DateTime>, bool)
 where
-    T: Iterator<Item = DateTime> + WithError,
+    T: Iterator<Item = DateTime> + WasLimited,
 {
     let mut list = vec![];
-    let mut err = None;
+    let mut was_limited = false;
     // This loop should always end because `.next()` has build in limits
     // Once a limit is tripped it will break in the `None` case.
     while limit.is_none() || matches!(limit, Some(limit) if usize::from(limit) > list.len()) {
@@ -53,29 +35,15 @@ where
                 }
             }
             None => {
-                if iterator.has_err() {
-                    err = iterator.get_err();
-                }
+                was_limited = iterator.was_limited();
                 break;
             }
         }
     }
-    // Make sure that the user always know when there are more dates.
-    if let Some(limit) = limit {
-        if usize::from(limit) < list.len() {
-            (
-                list,
-                Some(RRuleError::new_iter_err(format!(
-                    "List reached maximum limit (`{}`), so there might be more items.",
-                    limit
-                ))),
-            )
-        } else {
-            (list, err.cloned())
-        }
-    } else {
-        (list, err.cloned())
-    }
+
+    was_limited = was_limited || matches!(limit, Some(limit) if usize::from(limit) == list.len());
+
+    (list, was_limited)
 }
 
 /// Checks if `date` is after `end`.

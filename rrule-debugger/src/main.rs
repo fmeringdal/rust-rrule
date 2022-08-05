@@ -63,7 +63,7 @@ fn main() {
     initialize_logger(&opts);
 
     let data_files: Vec<Vec<u8>> = if let Some(id) = opts.id {
-        vec![read_crash_file(u32::from(id)).unwrap_or_default()]
+        vec![read_crash_file(u32::from(id)).expect("Could not find a crash file with the given id")]
     } else if opts.all {
         read_all_crash_file()
     } else {

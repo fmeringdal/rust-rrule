@@ -32,9 +32,9 @@ pub fn test_recurring_rrule(
         })
         .unwrap();
     let res = if !limited {
-        rrule_set.all_unchecked().unwrap()
+        rrule_set.all_unchecked()
     } else {
-        rrule_set.all(u16::MAX).unwrap()
+        rrule_set.all(u16::MAX).0
     };
 
     println!("Actual: {:?}", res);
@@ -52,7 +52,7 @@ pub fn test_recurring_rrule(
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn test_recurring_rrule_set(rrule_set: RRuleSet, expected_dates: &[DateTime<Tz>]) {
-    let res = rrule_set.all(u16::MAX).unwrap();
+    let res = rrule_set.all(u16::MAX).0;
 
     println!("Actual: {:?}", res);
     println!("Expected: {:?}", expected_dates);

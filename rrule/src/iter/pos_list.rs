@@ -1,5 +1,5 @@
 use super::utils::{add_time_to_date, from_ordinal, pymod};
-use crate::{core::DateTime, RRuleError};
+use crate::core::DateTime;
 use chrono::NaiveTime;
 use chrono_tz::Tz;
 
@@ -9,26 +9,21 @@ pub(crate) fn build_pos_list(
     timeset: &[NaiveTime],
     year_ordinal: i64,
     tz: Tz,
-) -> Result<Vec<DateTime>, RRuleError> {
+) -> Vec<DateTime> {
     let mut pos_list = vec![];
+
     if timeset.is_empty() {
-        // This will prevent the divide by 0 and out of bounds in this function.
-        return Err(RRuleError::new_iter_err("`timeset` can not be empty"));
+        return vec![];
     }
 
     let timeset_len = u32::try_from(timeset.len())
-        .map_err(|_| RRuleError::new_iter_err("timeset length is too large"))?;
+        .expect("timeset length is a maximum of 24 * 60 * 60 which is covered by u32");
     let timeset_len_float = f64::try_from(timeset_len)
-        .map_err(|_| RRuleError::new_iter_err("timeset length is too large"))?;
+        .expect("timeset length is a maximum of 24 * 60 * 60 which is covered by f64");
     let timeset_len_int = i32::try_from(timeset_len)
-        .map_err(|_| RRuleError::new_iter_err("timeset length is too large"))?;
+        .expect("timeset length is a maximum of 24 * 60 * 60 which is covered by i32");
     for pos in by_set_pos {
-        let pos = if *pos > 0 {
-            pos.checked_sub(1)
-                .ok_or_else(|| RRuleError::new_iter_err("invalid BYSETPOS values encountered"))?
-        } else {
-            *pos
-        };
+        let pos = if *pos > 0 { pos - 1 } else { *pos };
         let day_pos = (f64::from(pos) / timeset_len_float).floor() as isize;
         let time_pos = usize::try_from(pymod(pos, timeset_len_int))
             .expect("modulus is a positive number and within range of usize");
@@ -37,14 +32,17 @@ pub(crate) fn build_pos_list(
             let dayset_len = isize::try_from(dayset.len())
                 .expect("dayset is controlled by us and is never more than isize::MAX");
             let index = dayset_len + day_pos;
-            usize::try_from(index)
-                .map_err(|_| RRuleError::new_iter_err("`day_pos` overflowed `dayset_len`"))?
+            match usize::try_from(index) {
+                Ok(day_idx) => day_idx,
+                Err(_) => continue,
+            }
         } else {
             usize::try_from(day_pos).expect("a non-negative isize fits within a usize")
         };
-        let day = dayset
-            .get(day_idx)
-            .ok_or_else(|| RRuleError::new_iter_err("Computed day index is not in the `dayset`"))?;
+        let day = match dayset.get(day_idx) {
+            Some(day) => day,
+            None => continue,
+        };
         let day = i64::try_from(*day)
             .expect("dayset is controlled by us and all elements are within range of i64");
 
@@ -66,5 +64,5 @@ pub(crate) fn build_pos_list(
 
     pos_list.sort();
 
-    Ok(pos_list)
+    pos_list
 }
