@@ -14,7 +14,7 @@ fn main() {
         .build(UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
         .expect("RRule invalid");
 
-    let recurrences = rrule_set.all(10).expect("Error found during iterations.");
+    let recurrences = rrule_set.all_unchecked();
     for (i, rec) in recurrences.iter().enumerate() {
         assert_eq!(rec.year(), 2020);
         assert_eq!(rec.month(), 1);

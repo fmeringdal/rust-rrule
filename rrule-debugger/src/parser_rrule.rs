@@ -17,10 +17,10 @@ pub fn parse_rrule_from_string(rrule: &str) {
     match RRuleSet::from_str(rrule) {
         Ok(rrule) => {
             println!("RRule data: {:#?}", rrule);
-            let (list, err) = rrule.all_with_error(50);
+            let (list, limited) = rrule.all(50);
             crate::print_all_datetimes(&list);
-            if let Some(err) = err {
-                println!("RRule ended with error: {}", err);
+            if limited {
+                println!("RRule was limited");
             }
         }
         Err(err) => println!("RRule could not be parsed: {}", err),

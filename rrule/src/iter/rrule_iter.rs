@@ -2,8 +2,7 @@ use super::counter_date::DateTimeIter;
 use super::utils::add_time_to_date;
 use super::{build_pos_list, utils::from_ordinal, IterInfo, MAX_ITER_LOOP};
 use crate::core::{get_hour, get_minute, get_second};
-use crate::validator::check_limits;
-use crate::{core::DateTime, Frequency, RRule, RRuleError, WithError};
+use crate::{core::DateTime, Frequency, RRule};
 use chrono::Datelike;
 use chrono::{NaiveTime, TimeZone};
 use std::collections::VecDeque;
@@ -23,9 +22,10 @@ pub(crate) struct RRuleIter<'a> {
     /// Number of events that should still be generated before the end.
     /// Counter always goes down after each iteration.
     pub(crate) count: Option<u32>,
-    /// Store the last error, so it can be handled by the user.
-    pub(crate) error: Option<RRuleError>,
+    /// If the iterator should be using iterator limits.
     pub(crate) limited: bool,
+    /// If the iterator has been stopped by the iterator limits.
+    pub(crate) was_limited: bool,
 }
 
 impl<'a> RRuleIter<'a> {
@@ -38,17 +38,6 @@ impl<'a> RRuleIter<'a> {
         let timeset = ii.get_timeset(hour, minute, second);
         let count = ii.rrule().count;
 
-        let error = if limited {
-            // Validate (optional) sanity checks. (arbitrary limits)
-            if let Err(e) = check_limits::check_limits(rrule, dt_start) {
-                Some(e.into())
-            } else {
-                None
-            }
-        } else {
-            None
-        };
-
         RRuleIter {
             counter_date: dt_start.into(),
             ii,
@@ -57,8 +46,8 @@ impl<'a> RRuleIter<'a> {
             buffer: VecDeque::new(),
             finished: false,
             count,
-            error,
             limited,
+            was_limited: false,
         }
     }
 
@@ -93,25 +82,20 @@ impl<'a> RRuleIter<'a> {
 
     /// Generates a list of dates that will be added to the buffer.
     /// Returns true if finished, no more items should/can be returned.
-    fn generate(&mut self) -> Result<bool, RRuleError> {
-        // If there already was an error, return the error again.
-        if let Some(err) = self.get_err() {
-            return Err(err.clone());
-        }
-
+    fn generate(&mut self) -> bool {
         // Do early check if done (if known)
         if self.finished {
-            return Ok(true);
+            return true;
         }
         // Check if the count is set, and if 0
         if matches!(self.count, Some(count) if count == 0) {
-            return Ok(true);
+            return true;
         }
 
         let rrule = self.ii.rrule();
 
         if rrule.interval == 0 {
-            return Ok(true);
+            return true;
         }
 
         let mut loop_counter: u32 = 0;
@@ -121,11 +105,14 @@ impl<'a> RRuleIter<'a> {
             if self.limited {
                 loop_counter += 1;
                 if loop_counter >= MAX_ITER_LOOP {
-                    return Err(RRuleError::new_iter_err(format!(
+                    self.finished = true;
+                    self.was_limited = true;
+                    log::warn!(
                         "Reached max loop counter (`{}`). \
                     See 'validator limits' in docs for more info.",
                         MAX_ITER_LOOP
-                    )));
+                    );
+                    return true;
                 }
             }
             let rrule = self.ii.rrule();
@@ -165,7 +152,7 @@ impl<'a> RRuleIter<'a> {
                             &mut self.buffer,
                             &self.dt_start,
                         ) {
-                            return Ok(true);
+                            return true;
                         }
                     }
                 }
@@ -176,7 +163,7 @@ impl<'a> RRuleIter<'a> {
                     &self.timeset,
                     self.ii.year_ordinal(),
                     self.dt_start.timezone(),
-                )?;
+                );
                 for dt in pos_list {
                     if Self::try_add_datetime(
                         dt,
@@ -185,13 +172,16 @@ impl<'a> RRuleIter<'a> {
                         &mut self.buffer,
                         &self.dt_start,
                     ) {
-                        return Ok(true);
+                        return true;
                     }
                 }
             }
 
             let increment_day = dayset.is_empty();
-            self.counter_date.increment(rrule, increment_day)?;
+            if self.counter_date.increment(rrule, increment_day).is_err() {
+                self.finished = true;
+                return true;
+            }
 
             if matches!(
                 rrule.freq,
@@ -208,18 +198,9 @@ impl<'a> RRuleIter<'a> {
 
             self.ii.rebuild(&self.counter_date);
         }
+
         // Indicate that there might be more items on the next iteration.
-        Ok(false)
-    }
-}
-
-impl<'a> WithError for RRuleIter<'a> {
-    fn has_err(&self) -> bool {
-        self.error.is_some()
-    }
-
-    fn get_err(&self) -> Option<&RRuleError> {
-        self.error.as_ref()
+        false
     }
 }
 
@@ -235,15 +216,21 @@ impl<'a> Iterator for RRuleIter<'a> {
             return None;
         }
 
-        self.finished = self.generate().unwrap_or_else(|err| {
-            log::error!("{:?}", err);
-            self.error = Some(err);
-            true
-        });
+        self.finished = self.generate();
 
         if self.buffer.is_empty() {
             self.finished = true;
         }
         self.buffer.pop_front()
+    }
+}
+
+pub(crate) trait WasLimited {
+    fn was_limited(&self) -> bool;
+}
+
+impl<'a> WasLimited for RRuleIter<'a> {
+    fn was_limited(&self) -> bool {
+        self.was_limited
     }
 }

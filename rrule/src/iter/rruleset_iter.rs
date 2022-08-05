@@ -1,5 +1,6 @@
+use super::rrule_iter::WasLimited;
 use super::{rrule_iter::RRuleIter, MAX_ITER_LOOP};
-use crate::{core::DateTime, RRuleError, RRuleSet, WithError};
+use crate::{core::DateTime, RRuleSet};
 use std::collections::BTreeSet;
 use std::{collections::HashMap, iter::Iterator};
 
@@ -13,8 +14,7 @@ pub struct RRuleSetIter<'a> {
     exdates: BTreeSet<i64>,
     /// Sorted additional dates in descending order
     rdates: Vec<DateTime>,
-    /// Store the last error, so it can be handled by the user.
-    error: Option<RRuleError>,
+    was_limited: bool,
 }
 
 impl<'a> RRuleSetIter<'a> {
@@ -23,32 +23,33 @@ impl<'a> RRuleSetIter<'a> {
         exrules: &mut [RRuleIter],
         exdates: &mut BTreeSet<i64>,
         limited: bool,
-    ) -> Result<Option<DateTime>, RRuleError> {
+    ) -> (Option<DateTime>, bool) {
         if dates.is_empty() {
-            return Ok(None);
+            return (None, false);
         }
 
         let mut date = dates.remove(dates.len() - 1);
         let mut loop_counter: u32 = 0;
         while Self::is_date_excluded(&date, exrules, exdates) {
             if dates.is_empty() {
-                return Ok(None);
+                return (None, false);
             }
             // Prevent infinite loops
             if limited {
                 loop_counter += 1;
                 if loop_counter >= MAX_ITER_LOOP {
-                    return Err(RRuleError::new_iter_err(format!(
+                    log::warn!(
                         "Reached max loop counter (`{}`). \
                 See 'validator limits' in docs for more info.",
                         MAX_ITER_LOOP
-                    )));
+                    );
+                    return (None, true);
                 }
             }
             date = dates.remove(dates.len() - 1);
         }
 
-        Ok(Some(date))
+        (Some(date), false)
     }
 
     fn generate(
@@ -56,10 +57,10 @@ impl<'a> RRuleSetIter<'a> {
         exrules: &mut [RRuleIter],
         exdates: &mut BTreeSet<i64>,
         limited: bool,
-    ) -> Result<Option<DateTime>, RRuleError> {
+    ) -> (Option<DateTime>, bool) {
         let mut date = match rrule_iter.next() {
             Some(d) => d,
-            None => return Ok(None),
+            None => return (None, false),
         };
         let mut loop_counter: u32 = 0;
         while Self::is_date_excluded(&date, exrules, exdates) {
@@ -67,24 +68,22 @@ impl<'a> RRuleSetIter<'a> {
             if limited {
                 loop_counter += 1;
                 if loop_counter >= MAX_ITER_LOOP {
-                    return Err(RRuleError::new_iter_err(format!(
+                    log::warn!(
                         "Reached max loop counter (`{}`). \
                     See 'validator limits' in docs for more info.",
                         MAX_ITER_LOOP
-                    )));
+                    );
+                    return (None, true);
                 }
             }
 
             date = match rrule_iter.next() {
                 Some(d) => d,
-                None => return Ok(None),
+                None => return (None, false),
             };
         }
-        if let Some(err) = rrule_iter.get_err() {
-            return Err(err.clone());
-        }
 
-        Ok(Some(date))
+        (Some(date), false)
     }
 
     fn is_date_excluded(
@@ -105,16 +104,6 @@ impl<'a> RRuleSetIter<'a> {
     }
 }
 
-impl<'a> WithError for RRuleSetIter<'a> {
-    fn has_err(&self) -> bool {
-        self.error.is_some()
-    }
-
-    fn get_err(&self) -> Option<&RRuleError> {
-        self.error.as_ref()
-    }
-}
-
 impl<'a> Iterator for RRuleSetIter<'a> {
     type Item = DateTime;
 
@@ -122,8 +111,7 @@ impl<'a> Iterator for RRuleSetIter<'a> {
         let mut next_date: Option<(usize, DateTime)> = None;
 
         // If there already was an error, return the error again.
-        if let Some(err) = self.get_err() {
-            log::error!("{}", err);
+        if self.was_limited {
             return None;
         }
 
@@ -133,19 +121,19 @@ impl<'a> Iterator for RRuleSetIter<'a> {
                 Some(d) => Some(d),
                 None => {
                     // should be method on self
-                    match Self::generate(
+                    let (date, was_limited) = Self::generate(
                         rrule_iter,
                         &mut self.exrules,
                         &mut self.exdates,
                         self.limited,
-                    ) {
-                        Ok(next_date) => next_date,
-                        Err(err) => {
-                            log::error!("{}", err);
-                            self.error = Some(err);
-                            return None;
-                        }
+                    );
+
+                    if was_limited {
+                        self.was_limited = true;
+                        return None;
                     }
+
+                    date
                 }
             };
 
@@ -168,19 +156,16 @@ impl<'a> Iterator for RRuleSetIter<'a> {
             }
         }
 
-        let generated_date = match Self::generate_date(
+        let (generated_date, was_limited) = Self::generate_date(
             &mut self.rdates,
             &mut self.exrules,
             &mut self.exdates,
             self.limited,
-        ) {
-            Ok(next_date) => next_date,
-            Err(err) => {
-                log::error!("{}", err);
-                self.error = Some(err);
-                return None;
-            }
-        };
+        );
+        if was_limited {
+            self.was_limited = true;
+            return None;
+        }
 
         match generated_date {
             Some(first_rdate) => {
@@ -218,8 +203,7 @@ impl<'a> IntoIterator for &'a RRuleSet {
         rdates_sorted
             .sort_by(|d1, d2| d2.partial_cmp(d1).expect("Could not order dates correctly"));
 
-        // Iteration is not limited when using the iterator api directly.
-        let limited = false;
+        let limited = self.limited;
 
         RRuleSetIter {
             queue: HashMap::new(),
@@ -236,7 +220,13 @@ impl<'a> IntoIterator for &'a RRuleSet {
                 .map(|exrule| exrule.iter_with_ctx(self.dt_start, limited))
                 .collect(),
             exdates: self.exdate.iter().map(DateTime::timestamp).collect(),
-            error: None,
+            was_limited: false,
         }
+    }
+}
+
+impl<'a> WasLimited for RRuleSetIter<'a> {
+    fn was_limited(&self) -> bool {
+        self.was_limited
     }
 }

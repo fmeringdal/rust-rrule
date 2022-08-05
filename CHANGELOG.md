@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - EXRULE functionality is put behind the feature flag `exrule` which is not enabled by default. 
 - `RRuleSet::all` takes a `limit` argument to protect against long running iteration.
-- The iterator API does not have any validation limits. So `rrule_set.into_iter().map(|dt| format!("{dt}")).collect<Vec<_>>()` could lead to an infinite loop.
+- The iterator API does not have any validation limits by default. So `rrule_set.into_iter().map(|dt| format!("{dt}")).collect<Vec<_>>()` could lead to an infinite loop.
+- `RRuleSet::all` returns a tuple `(Vec<DateTime>, bool)` instead of the previous `Result` type. The boolean in the tuple indicates if the iteration was limited or not.
 
 ### Removed
 - `no-validation-limits` feature is removed and is replaced by arguments to `RRuleSet`.

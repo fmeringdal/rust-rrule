@@ -7,6 +7,7 @@ use crate::core::get_second;
 use crate::parser::str_to_weekday;
 use crate::parser::ParseError;
 use crate::validator::validate_rrule;
+use crate::validator::ValidationError;
 use crate::{RRuleError, RRuleIter, RRuleSet, Unvalidated, Validated};
 use chrono::{Datelike, Month, Weekday};
 use chrono_tz::Tz;
@@ -547,6 +548,29 @@ impl RRule<Unvalidated> {
 
         // Validate required checks (defined by RFC 5545)
         validate_rrule::validate_rrule_forced(&rrule, &dt_start)?;
+
+        // Check if it is possible to generate a timeset
+        match rrule.freq {
+            Frequency::Hourly => {
+                if rrule.by_minute.is_empty() && rrule.by_second.is_empty() {
+                    return Err(ValidationError::UnableToGenerateTimeset.into());
+                }
+            }
+            Frequency::Minutely => {
+                if rrule.by_second.is_empty() {
+                    return Err(ValidationError::UnableToGenerateTimeset.into());
+                }
+            }
+            Frequency::Secondly => {}
+            _ => {
+                if rrule.by_hour.is_empty()
+                    && rrule.by_minute.is_empty()
+                    && rrule.by_second.is_empty()
+                {
+                    return Err(ValidationError::UnableToGenerateTimeset.into());
+                }
+            }
+        }
 
         Ok(RRule {
             freq: rrule.freq,

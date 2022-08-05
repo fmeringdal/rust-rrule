@@ -21,6 +21,7 @@ jobs:
       - name: Cargo Doc
         run: |
           cargo doc --no-deps --all-features --examples
+          cargo test --doc -- --show-output
 
   test:
     needs: lints
