@@ -1,4 +1,4 @@
-use crate::core::RRuleTz;
+use crate::core::Tz;
 use crate::tests::common::{test_recurring_rrule, ymd_hms};
 use crate::{Frequency, NWeekday, RRule, RRuleSet, Weekday};
 use chrono::{Datelike, TimeZone};
@@ -3758,9 +3758,9 @@ fn week_start_interval_su() {
 fn test_timezones_weekly() {
     use chrono::Weekday::Sat;
 
-    const LOS_ANGELES: RRuleTz = RRuleTz::Tz(chrono_tz::America::Los_Angeles);
-    const NEW_YORK: RRuleTz = RRuleTz::Tz(chrono_tz::America::New_York);
-    const BERLIN: RRuleTz = RRuleTz::Tz(chrono_tz::Europe::Berlin);
+    const LOS_ANGELES: Tz = Tz::Tz(chrono_tz::America::Los_Angeles);
+    const NEW_YORK: Tz = Tz::Tz(chrono_tz::America::New_York);
+    const BERLIN: Tz = Tz::Tz(chrono_tz::Europe::Berlin);
 
     let rrule = RRule::default()
         .count(2)

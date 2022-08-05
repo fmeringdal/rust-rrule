@@ -1,9 +1,9 @@
 use std::ops;
 
-use crate::core::{duration_from_midnight, DateTime, RRuleTz};
+use crate::core::{duration_from_midnight, DateTime, Tz};
 use chrono::{Date, NaiveTime, TimeZone, Utc};
 
-const UTC: RRuleTz = RRuleTz::Tz(chrono_tz::UTC);
+const UTC: Tz = Tz::UTC;
 
 const DAY_SECS: i64 = 24 * 60 * 60;
 
@@ -73,7 +73,7 @@ where
     }
 }
 
-pub(crate) fn add_time_to_date(date: Date<RRuleTz>, time: NaiveTime) -> Option<DateTime> {
+pub(crate) fn add_time_to_date(date: Date<Tz>, time: NaiveTime) -> Option<DateTime> {
     match date.and_time(time) {
         Some(dt) => return Some(dt),
         None => (),
@@ -139,8 +139,8 @@ mod test {
 
     #[test]
     fn adds_time_to_date() {
-        const AMERICA_NEW_YORK: RRuleTz = RRuleTz::Tz(chrono_tz::Tz::America__New_York);
-        const AMERICA_VANCOUVER: RRuleTz = RRuleTz::Tz(chrono_tz::Tz::America__Vancouver);
+        const AMERICA_NEW_YORK: Tz = Tz::Tz(chrono_tz::Tz::America__New_York);
+        const AMERICA_VANCOUVER: Tz = Tz::Tz(chrono_tz::Tz::America__Vancouver);
 
         let tests = [
             (

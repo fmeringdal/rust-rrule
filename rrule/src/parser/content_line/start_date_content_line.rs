@@ -5,19 +5,19 @@ use super::{
     parameters::parse_parameters,
 };
 use crate::{
-    core::{DateTime, RRuleTz},
+    core::{DateTime, Tz},
     parser::{
         datetime::{datestring_to_date, parse_timezone},
         ParseError,
     },
 };
 
-const UTC: RRuleTz = RRuleTz::Tz(chrono_tz::UTC);
+const UTC: Tz = Tz::UTC;
 
 #[derive(Debug, PartialEq)]
 pub(crate) struct StartDateContentLine {
     pub datetime: DateTime,
-    pub timezone: Option<RRuleTz>,
+    pub timezone: Option<Tz>,
     pub value: &'static str,
 }
 

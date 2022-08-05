@@ -1,21 +1,19 @@
 use std::str::FromStr;
 
-use chrono::{NaiveDate, TimeZone, Weekday};
-use chrono_tz::Tz;
-
 use super::{regex::ParsedDateString, ParseError};
 use crate::{
-    core::{DateTime, RRuleTz},
+    core::{DateTime, Tz},
     NWeekday,
 };
+use chrono::{NaiveDate, TimeZone, Weekday};
 
-const UTC: RRuleTz = RRuleTz::Tz(chrono_tz::UTC);
+const UTC: Tz = Tz::UTC;
 
 /// Attempts to convert a `str` to a `chrono_tz::Tz`.
-pub(crate) fn parse_timezone(tz: &str) -> Result<RRuleTz, ParseError> {
-    Tz::from_str(tz)
+pub(crate) fn parse_timezone(tz: &str) -> Result<Tz, ParseError> {
+    chrono_tz::Tz::from_str(tz)
         .map_err(|_| ParseError::InvalidTimezone(tz.into()))
-        .map(RRuleTz::Tz)
+        .map(Tz::Tz)
 }
 
 /// Convert a datetime string and a timezone to a `chrono::DateTime<Tz>`.
@@ -23,7 +21,7 @@ pub(crate) fn parse_timezone(tz: &str) -> Result<RRuleTz, ParseError> {
 /// argument will be ignored.
 pub(crate) fn datestring_to_date(
     dt: &str,
-    tz: Option<RRuleTz>,
+    tz: Option<Tz>,
     property: &str,
 ) -> Result<DateTime, ParseError> {
     let ParsedDateString {
@@ -152,7 +150,7 @@ pub(crate) fn parse_weekdays(val: &str) -> Result<Vec<NWeekday>, ParseError> {
 mod tests {
     use super::*;
 
-    const US_PACIFIC: RRuleTz = RRuleTz::Tz(chrono_tz::US::Pacific);
+    const US_PACIFIC: Tz = Tz::Tz(chrono_tz::US::Pacific);
 
     #[test]
     fn parses_valid_nweekdays() {

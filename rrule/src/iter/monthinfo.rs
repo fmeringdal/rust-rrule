@@ -123,11 +123,11 @@ impl MonthInfo {
 mod tests {
     use chrono::{TimeZone, Weekday};
 
-    use crate::core::RRuleTz;
+    use crate::core::Tz;
 
     use super::*;
 
-    const UTC: RRuleTz = RRuleTz::Tz(chrono_tz::UTC);
+    const UTC: Tz = Tz::UTC;
 
     #[test]
     fn get_neg_weekday_mask_with_daily_freq() {

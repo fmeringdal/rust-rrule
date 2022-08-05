@@ -1,5 +1,5 @@
 use super::utils::{add_time_to_date, from_ordinal, pymod};
-use crate::core::{DateTime, RRuleTz};
+use crate::core::{DateTime, Tz};
 use chrono::NaiveTime;
 
 pub(crate) fn build_pos_list(
@@ -7,7 +7,7 @@ pub(crate) fn build_pos_list(
     dayset: &[usize],
     timeset: &[NaiveTime],
     year_ordinal: i64,
-    tz: RRuleTz,
+    tz: Tz,
 ) -> Vec<DateTime> {
     let mut pos_list = vec![];
 
