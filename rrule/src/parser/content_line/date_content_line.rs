@@ -61,11 +61,12 @@ impl<'a> TryFrom<ContentLineCaptures<'a>> for Vec<DateTime> {
 #[cfg(test)]
 mod tests {
     use chrono::TimeZone;
-    use chrono_tz::UTC;
 
-    use crate::parser::content_line::PropertyName;
+    use crate::{core::Tz, parser::content_line::PropertyName};
 
     use super::*;
+
+    const UTC: Tz = Tz::UTC;
 
     #[test]
     fn parses_date_content_line() {
@@ -77,6 +78,14 @@ mod tests {
                     value: "19970714T123000Z",
                 },
                 vec![UTC.ymd(1997, 7, 14).and_hms(12, 30, 0)],
+            ),
+            (
+                ContentLineCaptures {
+                    property_name: PropertyName::RDate,
+                    parameters: None,
+                    value: "19970714T123000",
+                },
+                vec![Tz::LOCAL.ymd(1997, 7, 14).and_hms(12, 30, 0)],
             ),
             (
                 ContentLineCaptures {

@@ -1,3 +1,4 @@
+use crate::core::Tz;
 use crate::tests::common::{test_recurring_rrule, ymd_hms};
 use crate::{Frequency, NWeekday, RRule, RRuleSet, Weekday};
 use chrono::{Datelike, TimeZone};
@@ -3756,10 +3757,10 @@ fn week_start_interval_su() {
 #[test]
 fn test_timezones_weekly() {
     use chrono::Weekday::Sat;
-    use chrono_tz::{
-        America::{Los_Angeles, New_York},
-        Europe::Berlin,
-    };
+
+    const LOS_ANGELES: Tz = Tz::America__Los_Angeles;
+    const NEW_YORK: Tz = Tz::America__New_York;
+    const BERLIN: Tz = Tz::Europe__Berlin;
 
     let rrule = RRule::default()
         .count(2)
@@ -3776,7 +3777,7 @@ fn test_timezones_weekly() {
         .freq(Frequency::Weekly)
         .by_weekday(vec![NWeekday::Every(Sat)]);
     let rrule_set = rrule
-        .build(New_York.ymd(2021, 1, 1).and_hms(9, 0, 0))
+        .build(NEW_YORK.ymd(2021, 1, 1).and_hms(9, 0, 0))
         .unwrap();
     for o in &rrule_set {
         assert_eq!(o.weekday(), Sat);
@@ -3788,7 +3789,7 @@ fn test_timezones_weekly() {
         .freq(Frequency::Weekly)
         .by_weekday(vec![NWeekday::Every(Sat)]);
     let rrule_set = rrule
-        .build(Berlin.ymd(2021, 1, 1).and_hms(9, 0, 0))
+        .build(BERLIN.ymd(2021, 1, 1).and_hms(9, 0, 0))
         .unwrap();
     for o in &rrule_set {
         assert_eq!(o.weekday(), Sat);
@@ -3800,7 +3801,7 @@ fn test_timezones_weekly() {
         .freq(Frequency::Weekly)
         .by_weekday(vec![NWeekday::Every(Sat)]);
     let rrule_set = rrule
-        .build(Los_Angeles.ymd(2021, 1, 1).and_hms(9, 0, 0))
+        .build(LOS_ANGELES.ymd(2021, 1, 1).and_hms(9, 0, 0))
         .unwrap();
     for o in &rrule_set {
         assert_eq!(o.weekday(), Sat);

@@ -4,20 +4,23 @@
 //! in the Europe/Berlin timezone, and one EXDATE that is specified
 //! in UTC and collides with one of those recurrences.
 
-use chrono::{DateTime, Local, TimeZone};
-use chrono_tz::{Europe::Berlin, Tz, UTC};
-use rrule::{Frequency, RRule};
+use chrono::{DateTime, TimeZone};
+use rrule::{Frequency, RRule, Tz};
 
 fn main() {
+    let tz = Tz::Europe__Berlin;
+    let start_date = tz.ymd(2020, 1, 1).and_hms(9, 0, 0);
+    let exdate = Tz::UTC.ymd(2020, 1, 2).and_hms(8, 0, 0);
+
     // Build rrule set that occurs daily at 9:00 for 4 times
     let rrule_set = RRule::default()
         .count(4)
         .freq(Frequency::Daily)
-        .build(Berlin.ymd(2020, 1, 1).and_hms(9, 0, 0))
+        .build(start_date)
         .expect("RRule invalid")
         // Exdate in the UTC at 8:00 which is 9:00 in Berlin and therefore
         // collides with the second rrule occurrence.
-        .exdate(UTC.ymd(2020, 1, 2).and_hms(8, 0, 0));
+        .exdate(exdate);
 
     let recurrences = rrule_set.all_unchecked();
     // RRule contained 4 recurrences but 1 was filtered away by the exdate
@@ -27,16 +30,10 @@ fn main() {
     // and convert them to another timezone by using the with_timezone method provided by the DateTime type.
     // Refer to the chrono and chrono-tz crates for more documentation on working with the DateTime type.
 
-    // Example of converting to Moscow timezone
-    let _recurrences_in_moscow_tz: Vec<DateTime<Tz>> = recurrences
+    // Convert to `chrono_tz::Tz`
+    let _recurrences_in_moscow_tz: Vec<DateTime<chrono_tz::Tz>> = recurrences
         .iter()
         .map(|d| d.with_timezone(&chrono_tz::Europe::Moscow))
-        .collect();
-
-    // Example of converting to local timezone.
-    let _recurrences_in_local_tz: Vec<DateTime<Local>> = recurrences
-        .iter()
-        .map(|d| d.with_timezone(&Local))
         .collect();
 
     println!("Done, everything worked.");

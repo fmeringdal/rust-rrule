@@ -1,14 +1,17 @@
 use std::str::FromStr;
 
-use chrono::{NaiveDate, TimeZone, Weekday};
-use chrono_tz::{Tz, UTC};
-
 use super::{regex::ParsedDateString, ParseError};
-use crate::{core::DateTime, NWeekday};
+use crate::{
+    core::{DateTime, Tz},
+    NWeekday,
+};
+use chrono::{NaiveDate, TimeZone, Weekday};
 
 /// Attempts to convert a `str` to a `chrono_tz::Tz`.
 pub(crate) fn parse_timezone(tz: &str) -> Result<Tz, ParseError> {
-    Tz::from_str(tz).map_err(|_| ParseError::InvalidTimezone(tz.into()))
+    chrono_tz::Tz::from_str(tz)
+        .map_err(|_| ParseError::InvalidTimezone(tz.into()))
+        .map(Tz::Tz)
 }
 
 /// Convert a datetime string and a timezone to a `chrono::DateTime<Tz>`.
@@ -54,9 +57,9 @@ pub(crate) fn datestring_to_date(
 
     // Apply timezone appended to the datetime before converting to UTC.
     // For more info https://icalendar.org/iCalendar-RFC-5545/3-3-5-date-time.html
-    let datetime: chrono::DateTime<chrono::Utc> = if flags.zulu_timezone_set {
+    let datetime: chrono::DateTime<Tz> = if flags.zulu_timezone_set {
         // If a `Z` is present, UTC should be used.
-        chrono::DateTime::<_>::from_utc(datetime, chrono::Utc)
+        chrono::DateTime::<chrono::Utc>::from_utc(datetime, chrono::Utc).with_timezone(&Tz::UTC)
     } else {
         // If no `Z` is present, local time should be used.
         use chrono::offset::LocalResult;
@@ -80,36 +83,33 @@ pub(crate) fn datestring_to_date(
                         })
                     }
                 }?
-                .with_timezone(&chrono::Utc)
             }
             None => {
                 // Use current system timezone
                 // TODO Add option to always use UTC when this is executed on a server.
-                let local = chrono::Local;
+                let local = Tz::LOCAL;
                 match local.from_local_datetime(&datetime) {
-                    LocalResult::None => Err(ParseError::InvalidDateTimeInLocalTimezone {
-                        value: dt.into(),
-                        property: property.into(),
-                    }),
-                    LocalResult::Single(date) => Ok(date),
+                    LocalResult::None => {
+                        return Err(ParseError::InvalidDateTimeInLocalTimezone {
+                            value: dt.into(),
+                            property: property.into(),
+                        })
+                    }
+                    LocalResult::Single(date) => date,
                     LocalResult::Ambiguous(date1, date2) => {
-                        Err(ParseError::DateTimeInLocalTimezoneIsAmbiguous {
+                        return Err(ParseError::DateTimeInLocalTimezoneIsAmbiguous {
                             value: dt.into(),
                             property: property.into(),
                             date1: date1.to_rfc3339(),
                             date2: date2.to_rfc3339(),
                         })
                     }
-                }?
-                .with_timezone(&chrono::Utc)
+                }
             }
         }
     };
 
-    // Apply timezone from `TZID=` part (if any), else set datetime as UTC
-    let datetime_with_timezone = datetime.with_timezone(&tz.unwrap_or(UTC));
-
-    Ok(datetime_with_timezone)
+    Ok(datetime)
 }
 
 /// Attempts to convert a `str` to a `Weekday`.
@@ -144,7 +144,8 @@ pub(crate) fn parse_weekdays(val: &str) -> Result<Vec<NWeekday>, ParseError> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chrono_tz::{US, UTC};
+
+    const US_PACIFIC: Tz = Tz::US__Pacific;
 
     #[test]
     fn parses_valid_nweekdays() {
@@ -216,23 +217,23 @@ mod tests {
             (
                 "19970902T090000Z",
                 None,
-                UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
+                Tz::UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
             ),
             (
                 "19970902T090000",
-                Some(UTC),
-                UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
+                Some(Tz::UTC),
+                Tz::UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
             ),
             (
                 "19970902T090000",
-                Some(US::Pacific),
-                US::Pacific.ymd(1997, 9, 2).and_hms(9, 0, 0),
+                Some(US_PACIFIC),
+                US_PACIFIC.ymd(1997, 9, 2).and_hms(9, 0, 0),
             ),
             (
                 "19970902T090000Z",
-                Some(US::Pacific),
+                Some(US_PACIFIC),
                 // Timezone is overwritten by the zulu specified in the datetime string
-                UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
+                Tz::UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
             ),
         ];
 
@@ -248,7 +249,7 @@ mod tests {
             ("", None),
             ("TZID=America/New_York:19970902T090000", None),
             ("19970902T09", None),
-            ("19970902T09", Some(US::Pacific)),
+            ("19970902T09", Some(US_PACIFIC)),
         ];
 
         for (datetime_str, timezone) in tests {

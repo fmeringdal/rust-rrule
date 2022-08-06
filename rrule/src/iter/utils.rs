@@ -1,8 +1,9 @@
 use std::ops;
 
-use crate::core::{duration_from_midnight, DateTime};
+use crate::core::{duration_from_midnight, DateTime, Tz};
 use chrono::{Date, NaiveTime, TimeZone, Utc};
-use chrono_tz::{Tz, UTC};
+
+const UTC: Tz = Tz::UTC;
 
 const DAY_SECS: i64 = 24 * 60 * 60;
 
@@ -138,7 +139,9 @@ mod test {
 
     #[test]
     fn adds_time_to_date() {
-        use chrono_tz::Tz::{America__New_York, America__Vancouver};
+        const AMERICA_NEW_YORK: Tz = Tz::America__New_York;
+        const AMERICA_VANCOUVER: Tz = Tz::America__Vancouver;
+
         let tests = [
             (
                 UTC.ymd(2017, 1, 1),
@@ -146,19 +149,19 @@ mod test {
                 Some(UTC.ymd(2017, 1, 1).and_hms(1, 15, 30)),
             ),
             (
-                America__Vancouver.ymd(2021, 3, 14),
+                AMERICA_VANCOUVER.ymd(2021, 3, 14),
                 NaiveTime::from_hms(2, 22, 10),
                 Some(
-                    America__Vancouver.ymd(2021, 3, 14).and_hms(0, 0, 0)
+                    AMERICA_VANCOUVER.ymd(2021, 3, 14).and_hms(0, 0, 0)
                         + Duration::hours(2)
                         + Duration::minutes(22)
                         + Duration::seconds(10),
                 ),
             ),
             (
-                America__New_York.ymd(1997, 10, 26),
+                AMERICA_NEW_YORK.ymd(1997, 10, 26),
                 NaiveTime::from_hms(9, 0, 0),
-                Some(America__New_York.ymd(1997, 10, 26).and_hms(9, 0, 0)),
+                Some(AMERICA_NEW_YORK.ymd(1997, 10, 26).and_hms(9, 0, 0)),
             ),
         ];
 

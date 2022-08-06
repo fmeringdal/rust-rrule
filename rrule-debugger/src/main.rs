@@ -6,9 +6,9 @@ mod parser_rrule;
 mod simple_logger;
 
 use chrono::DateTime;
-use chrono_tz::Tz;
 use clap::Parser;
 use log::LevelFilter;
+use rrule::Tz;
 
 const CRASHES_PATH: &str = "rrule-afl-fuzz/out/default/crashes/";
 

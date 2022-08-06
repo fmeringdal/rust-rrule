@@ -8,13 +8,13 @@ mod utils;
 
 use std::str::FromStr;
 
-pub(crate) use content_line::ContentLine;
+pub(crate) use content_line::{ContentLine, ContentLineCaptures};
 pub(crate) use datetime::str_to_weekday;
 pub use error::ParseError;
 
 use crate::RRule;
 
-use self::content_line::{ContentLineCaptures, PropertyName, StartDateContentLine};
+use self::content_line::{PropertyName, StartDateContentLine};
 
 /// Grammar represents a well formatted rrule input.
 #[derive(Debug, PartialEq)]
@@ -44,11 +44,11 @@ impl FromStr for Grammar {
         for parts in content_lines_parts {
             let line = match parts.property_name {
                 PropertyName::RRule => {
-                    let rrule = RRule::try_from((parts, &start))?;
+                    let rrule = RRule::try_from(parts)?;
                     ContentLine::RRule(rrule)
                 }
                 PropertyName::ExRule => {
-                    let rrule = RRule::try_from((parts, &start))?;
+                    let rrule = RRule::try_from(parts)?;
                     ContentLine::ExRule(rrule)
                 }
                 PropertyName::RDate => ContentLine::RDate(TryFrom::try_from(parts)?),
@@ -79,10 +79,12 @@ impl FromStr for Grammar {
 #[cfg(test)]
 mod test {
     use chrono::{TimeZone, Weekday};
-    use chrono_tz::{Europe, UTC};
 
     use super::*;
-    use crate::{parser::content_line::ContentLine, Frequency, NWeekday, RRule};
+    use crate::{core::Tz, parser::content_line::ContentLine, Frequency, NWeekday, RRule};
+
+    const UTC: Tz = Tz::UTC;
+    const BERLIN: Tz = Tz::Europe__Berlin;
 
     #[test]
     fn parses_valid_input_to_grammar() {
@@ -120,8 +122,8 @@ mod test {
             ..Default::default()
         }),
         ContentLine::ExDate(vec![
-            Europe::Berlin.ymd(2012, 2, 2).and_hms(13, 0, 0),
-            Europe::Berlin.ymd(2012, 2, 3).and_hms(13, 0, 0),
+            BERLIN.ymd(2012, 2, 2).and_hms(13, 0, 0),
+            BERLIN.ymd(2012, 2, 3).and_hms(13, 0, 0),
         ])
     ]
 }),
@@ -134,8 +136,8 @@ mod test {
             ..Default::default()
         }),
         ContentLine::ExDate(vec![
-            Europe::Berlin.ymd(2012, 2, 2).and_hms(13, 0, 0),
-            Europe::Berlin.ymd(2012, 2, 3).and_hms(13, 0, 0),
+            BERLIN.ymd(2012, 2, 2).and_hms(13, 0, 0),
+            BERLIN.ymd(2012, 2, 3).and_hms(13, 0, 0),
         ]),
         ContentLine::ExRule(RRule {
             freq: Frequency::Weekly,

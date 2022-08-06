@@ -4,14 +4,20 @@
 //! properties are represented by the [`RRule`] type and the `DTSTART`, `RDATE` and `EXDATE` properties are represented by the [`chrono::DateTime<Tz>`].
 //!
 //! # Building `RRule` and `RRuleSet`
-//! [`RRuleSet`] implements the [`std::str::FromStr`] trait so that it can be parsed and built from a string representation.
+//! [`RRuleSet`] and [`RRule`] both implements the [`std::str::FromStr`] trait so that it can be parsed and built from a string representation.
 //! [`RRuleSet`] can also be built by composing multiple [`RRule`]s for its `rrule` and `exrule` properties and [`chrono::DateTime<Tz>`] for its
 //! `dt_start`, `exdate` and `rdate` properties. See the examples below.
 //!
 //! ```rust
 //! use chrono::{DateTime, TimeZone};
-//! use chrono_tz::UTC;
-//! use rrule::{RRuleSet, RRule};
+//! use rrule::{RRuleSet, RRule, Tz, Unvalidated, Frequency};
+//!
+//! // Parse a single RRule string. Useful when you don't have a start date yet or
+//! // just want to check if the input string is grammatically correct.
+//! let rrule: RRule<Unvalidated> = "FREQ=DAILY;COUNT=40;INTERVAL=3".parse().unwrap();
+//! assert_eq!(rrule.get_freq(), Frequency::Daily);
+//! assert_eq!(rrule.get_count(), Some(40));
+//! assert_eq!(rrule.get_interval(), 3);
 //!
 //! // Parse a RRuleSet string
 //! let rrule_set: RRuleSet = "DTSTART:20120201T023000Z\n\
@@ -19,10 +25,15 @@
 //!     RDATE:20120701T023000Z,20120702T023000Z\n\
 //!     EXDATE:20120601T023000Z".parse().unwrap();
 //!
-//! assert_eq!(*rrule_set.get_dt_start(), UTC.ymd(2012, 2, 1).and_hms(2, 30, 0));
+//! assert_eq!(*rrule_set.get_dt_start(), Tz::UTC.ymd(2012, 2, 1).and_hms(2, 30, 0));
 //! assert_eq!(rrule_set.get_rrule().len(), 1);
 //! assert_eq!(rrule_set.get_rdate().len(), 2);
 //! assert_eq!(rrule_set.get_exdate().len(), 1);
+//!
+//! // Add an rrule manually
+//! let rrule = rrule.validate(*rrule_set.get_dt_start()).unwrap();
+//! let rrule_set = rrule_set.rrule(rrule);
+//! assert_eq!(rrule_set.get_rrule().len(), 2);
 //! ```
 //!
 //! # Generating occurrences
@@ -36,8 +47,7 @@
 //! All the methods above uses the iterator trait in its implementation as shown below.
 //! ```rust
 //! use chrono::{DateTime, TimeZone};
-//! use chrono_tz::UTC;
-//! use rrule::RRuleSet;
+//! use rrule::{RRuleSet, Tz};
 //!
 //! let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
 //! let (events, _) = rrule.all(100);
@@ -54,15 +64,14 @@
 //! ```
 //! Find all events that are within a given range.
 //! ```rust
-//! # use chrono::{DateTime, TimeZone};
-//! # use chrono_tz::UTC;
-//! # use rrule::RRuleSet;
-//! #
+//!  use chrono::{DateTime, TimeZone};
+//!  use rrule::{RRuleSet, Tz};
+//!
 //! let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
 //!
 //! // Between two dates
-//! let after = UTC.ymd(2012, 2, 1).and_hms(10, 0, 0);
-//! let before = UTC.ymd(2012, 4, 1).and_hms(9, 0, 0);
+//! let after = Tz::UTC.ymd(2012, 2, 1).and_hms(10, 0, 0);
+//! let before = Tz::UTC.ymd(2012, 4, 1).and_hms(9, 0, 0);
 //!
 //! let rrule = rrule.after(after).before(before);
 //! let (events, _) = rrule.all(100);
@@ -91,7 +100,7 @@ mod parser;
 mod tests;
 mod validator;
 
-pub use crate::core::{Frequency, NWeekday, RRule, RRuleSet};
+pub use crate::core::{Frequency, NWeekday, RRule, RRuleSet, Tz};
 pub use crate::core::{Unvalidated, Validated};
 pub use chrono::Weekday;
 pub use error::RRuleError;

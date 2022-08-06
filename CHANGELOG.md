@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `RRuleSet::all` takes a `limit` argument to protect against long running iteration.
 - The iterator API does not have any validation limits by default. So `rrule_set.into_iter().map(|dt| format!("{dt}")).collect<Vec<_>>()` could lead to an infinite loop.
 - `RRuleSet::all` returns a tuple `(Vec<DateTime>, bool)` instead of the previous `Result` type. The boolean in the tuple indicates if the iteration was limited or not.
+- Datetime type returned from iteration is `chrono::DateTime<rrule::Tz>` rather than `chrono::DateTime<chrono_tz::Tz>`. Please use `.with_timezone` if use still want to use `chrono_tz::Tz`.
 
 ### Removed
 - `no-validation-limits` feature is removed and is replaced by arguments to `RRuleSet`.
@@ -22,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - `RRuleSet::after` and `RRuleSet::before` was added to configure the boundaries of the recurrences before calling `RRuleSet::all`. 
 - `RRuleSet::all_unchecked` was added to allow for iterating without any validation limits.
+- `RRule<Unvalidated>` implements `FromStr` and `Deserialize`
+- `rrule::Tz` "replaced" `chrono_tz::Tz` by wrapping it and adding support for the `chrono::Local` timezone. 
 
 ## 0.9.2 (2022-07-22)
 

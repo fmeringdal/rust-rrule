@@ -1,9 +1,8 @@
 #![cfg(test)]
 #![allow(dead_code)]
 
-use crate::{RRule, RRuleError, RRuleSet, Unvalidated};
+use crate::{core::Tz, RRule, RRuleError, RRuleSet, Unvalidated};
 use chrono::{DateTime, TimeZone};
-use chrono_tz::{Tz, UTC};
 use std::fmt::Debug;
 
 pub fn ymd_hms(
@@ -14,7 +13,7 @@ pub fn ymd_hms(
     minute: u32,
     second: u32,
 ) -> DateTime<Tz> {
-    UTC.ymd(year, month, day).and_hms(hour, minute, second)
+    Tz::UTC.ymd(year, month, day).and_hms(hour, minute, second)
 }
 
 pub fn test_recurring_rrule(
