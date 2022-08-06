@@ -4,13 +4,20 @@
 //! properties are represented by the [`RRule`] type and the `DTSTART`, `RDATE` and `EXDATE` properties are represented by the [`chrono::DateTime<Tz>`].
 //!
 //! # Building `RRule` and `RRuleSet`
-//! [`RRuleSet`] implements the [`std::str::FromStr`] trait so that it can be parsed and built from a string representation.
+//! [`RRuleSet`] and [`RRule`] both implements the [`std::str::FromStr`] trait so that it can be parsed and built from a string representation.
 //! [`RRuleSet`] can also be built by composing multiple [`RRule`]s for its `rrule` and `exrule` properties and [`chrono::DateTime<Tz>`] for its
 //! `dt_start`, `exdate` and `rdate` properties. See the examples below.
 //!
 //! ```rust
 //! use chrono::{DateTime, TimeZone};
-//! use rrule::{RRuleSet, Tz};
+//! use rrule::{RRuleSet, RRule, Tz, Unvalidated, Frequency};
+//!
+//! // Parse a single RRule string. Useful when you don't have a start date yet or
+//! // just want to check if the input string is grammatically correct.
+//! let rrule: RRule<Unvalidated> = "FREQ=DAILY;COUNT=40;INTERVAL=3".parse().unwrap();
+//! assert_eq!(rrule.get_freq(), Frequency::Daily);
+//! assert_eq!(rrule.get_count(), Some(40));
+//! assert_eq!(rrule.get_interval(), 3);
 //!
 //! // Parse a RRuleSet string
 //! let rrule_set: RRuleSet = "DTSTART:20120201T023000Z\n\
@@ -22,6 +29,11 @@
 //! assert_eq!(rrule_set.get_rrule().len(), 1);
 //! assert_eq!(rrule_set.get_rdate().len(), 2);
 //! assert_eq!(rrule_set.get_exdate().len(), 1);
+//!
+//! // Add an rrule manually
+//! let rrule = rrule.validate(*rrule_set.get_dt_start()).unwrap();
+//! let rrule_set = rrule_set.rrule(rrule);
+//! assert_eq!(rrule_set.get_rrule().len(), 2);
 //! ```
 //!
 //! # Generating occurrences
