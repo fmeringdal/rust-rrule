@@ -82,6 +82,14 @@ mod tests {
             (
                 ContentLineCaptures {
                     property_name: PropertyName::RDate,
+                    parameters: None,
+                    value: "19970714T123000",
+                },
+                vec![Tz::LOCAL.ymd(1997, 7, 14).and_hms(12, 30, 0)],
+            ),
+            (
+                ContentLineCaptures {
+                    property_name: PropertyName::RDate,
                     parameters: Some("VALUE=DATE;TZID=UTC"),
                     value: "19970101,19970120,19970217,19970421",
                 },
