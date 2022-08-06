@@ -24,6 +24,19 @@ RRULE:FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-2"
 }
 
 #[test]
+fn issue_49() {
+    let rrule_set = "DTSTART:20211214T091500\nEXDATE:20211228T091500,20220104T091500\nRRULE:FREQ=WEEKLY;UNTIL=20220906T091500;INTERVAL=1;BYDAY=TU;WKST=MO"
+        .parse::<RRuleSet>()
+        .expect("The RRule is not valid");
+
+    let res = rrule_set.all(1).0;
+    assert!(!res.is_empty());
+    let res_str = format!("{}", res[0]);
+    // Check that result datetime is not in UTC
+    assert!(!res_str.contains("UTC"));
+}
+
+#[test]
 fn issue_61() {
     let rrule_set = "DTSTART;TZID=Europe/Berlin:18930401T010000\nRRULE:FREQ=DAILY"
         .parse::<RRuleSet>()
