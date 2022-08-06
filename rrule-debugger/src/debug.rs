@@ -1,7 +1,6 @@
 #![allow(dead_code, unused_imports)]
 
 use chrono::{DateTime, TimeZone, Weekday};
-use chrono_tz::UTC;
 use rrule::{Frequency, RRule, RRuleSet, Tz};
 
 /// This function can be used to test anything and can be changes as you wish.

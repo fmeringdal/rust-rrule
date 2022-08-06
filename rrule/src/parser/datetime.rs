@@ -150,7 +150,7 @@ pub(crate) fn parse_weekdays(val: &str) -> Result<Vec<NWeekday>, ParseError> {
 mod tests {
     use super::*;
 
-    const US_PACIFIC: Tz = Tz::Tz(chrono_tz::US::Pacific);
+    const US_PACIFIC: Tz = Tz::US__Pacific;
 
     #[test]
     fn parses_valid_nweekdays() {

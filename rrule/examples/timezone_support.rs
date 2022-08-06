@@ -8,7 +8,7 @@ use chrono::{DateTime, TimeZone};
 use rrule::{Frequency, RRule, Tz};
 
 fn main() {
-    let tz: Tz = chrono_tz::Tz::Europe__Berlin.into();
+    let tz = Tz::Europe__Berlin;
     let start_date = tz.ymd(2020, 1, 1).and_hms(9, 0, 0);
     let exdate = Tz::UTC.ymd(2020, 1, 2).and_hms(8, 0, 0);
 

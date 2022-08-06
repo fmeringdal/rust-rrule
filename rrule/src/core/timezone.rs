@@ -7,8 +7,9 @@ use chrono::Local;
 /// ```
 /// use rrule::Tz;
 ///
-/// let utc = Tz::utc();
-/// let local = Tz::local();
+/// let utc = Tz::UTC;
+/// let local = Tz::LOCAL;
+/// let berlin = Tz::Europe__Berlin;
 /// // From `chrono_tz::Tz`
 /// let berlin: Tz = chrono_tz::Tz::Europe__Berlin.into();
 /// ```

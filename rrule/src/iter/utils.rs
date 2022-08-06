@@ -139,8 +139,8 @@ mod test {
 
     #[test]
     fn adds_time_to_date() {
-        const AMERICA_NEW_YORK: Tz = Tz::Tz(chrono_tz::Tz::America__New_York);
-        const AMERICA_VANCOUVER: Tz = Tz::Tz(chrono_tz::Tz::America__Vancouver);
+        const AMERICA_NEW_YORK: Tz = Tz::America__New_York;
+        const AMERICA_VANCOUVER: Tz = Tz::America__Vancouver;
 
         let tests = [
             (

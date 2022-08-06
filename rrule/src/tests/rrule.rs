@@ -3758,9 +3758,9 @@ fn week_start_interval_su() {
 fn test_timezones_weekly() {
     use chrono::Weekday::Sat;
 
-    const LOS_ANGELES: Tz = Tz::Tz(chrono_tz::America::Los_Angeles);
-    const NEW_YORK: Tz = Tz::Tz(chrono_tz::America::New_York);
-    const BERLIN: Tz = Tz::Tz(chrono_tz::Europe::Berlin);
+    const LOS_ANGELES: Tz = Tz::America__Los_Angeles;
+    const NEW_YORK: Tz = Tz::America__New_York;
+    const BERLIN: Tz = Tz::Europe__Berlin;
 
     let rrule = RRule::default()
         .count(2)

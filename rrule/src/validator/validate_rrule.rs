@@ -65,7 +65,7 @@ fn validate_until(rrule: &RRule<Unvalidated>, dt_start: &DateTime) -> Result<(),
                     }
                 }
                 Tz::Tz(_) => {
-                    if until.timezone() != Tz::Tz(chrono_tz::Tz::UTC) {
+                    if until.timezone() != Tz::UTC {
                         return Err(ValidationError::DtStartUntilMismatchTimezone {
                             dt_start_tz: dt_start.timezone().name().into(),
                             until_tz: until.timezone().name().into(),
@@ -358,7 +358,7 @@ fn validate_not_equal_for_vec<T: PartialEq<T> + ToString>(
 
 #[cfg(test)]
 mod tests {
-    use chrono::{Local, TimeZone};
+    use chrono::TimeZone;
 
     use crate::core::Tz;
 
@@ -586,19 +586,14 @@ mod tests {
 
     #[test]
     fn allows_until_with_compatible_timezone() {
-        fn t<T1: TimeZone + Into<Tz>, T2: TimeZone + Into<Tz>>(
-            start_tz: T1,
-            until_tz: T2,
-        ) -> (DateTime, DateTime) {
+        fn t(start_tz: Tz, until_tz: Tz) -> (DateTime, DateTime) {
             (
                 start_tz
-                    .into()
                     .ymd_opt(2020, 1, 1)
                     .and_hms_opt(0, 0, 0)
                     .unwrap()
                     .into(),
                 until_tz
-                    .into()
                     .ymd_opt(2020, 1, 1)
                     .and_hms_opt(0, 0, 0)
                     .unwrap()
@@ -606,7 +601,7 @@ mod tests {
             )
         }
 
-        let tests = [t(Local, Local), t(Local, UTC), t(UTC, UTC)];
+        let tests = [t(Tz::LOCAL, Tz::LOCAL), t(Tz::LOCAL, UTC), t(UTC, UTC)];
 
         for (start_date, until) in tests {
             let rrule = RRule {
@@ -620,19 +615,14 @@ mod tests {
 
     #[test]
     fn rejects_until_with_incompatible_timezone() {
-        fn t<T1: TimeZone + Into<Tz>, T2: TimeZone + Into<Tz>>(
-            start_tz: T1,
-            until_tz: T2,
-        ) -> (DateTime, DateTime) {
+        fn t(start_tz: Tz, until_tz: Tz) -> (DateTime, DateTime) {
             (
                 start_tz
-                    .into()
                     .ymd_opt(2020, 1, 1)
                     .and_hms_opt(0, 0, 0)
                     .unwrap()
                     .into(),
                 until_tz
-                    .into()
                     .ymd_opt(2020, 1, 1)
                     .and_hms_opt(0, 0, 0)
                     .unwrap()
@@ -641,9 +631,9 @@ mod tests {
         }
 
         let tests = [
-            t(UTC, Local),
-            t(chrono_tz::Tz::Europe__Berlin, Local),
-            t(Local, chrono_tz::Tz::Europe__Berlin),
+            t(Tz::UTC, Tz::LOCAL),
+            t(Tz::Europe__Berlin, Tz::LOCAL),
+            t(Tz::LOCAL, Tz::Europe__Berlin),
         ];
 
         for (start_date, until) in tests {
