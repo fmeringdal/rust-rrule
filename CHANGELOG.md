@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 0.10.0 (2022-08-08)
+
 ### Changed
 
 - EXRULE functionality is put behind the feature flag `exrule` which is not enabled by default. 
