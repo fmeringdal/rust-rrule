@@ -4,7 +4,7 @@ use thiserror::Error;
 
 use crate::{parser::ParseError, validator::ValidationError};
 
-#[derive(Error, Debug, Clone, PartialEq)]
+#[derive(Error, Debug, Clone, PartialEq, Eq)]
 /// The error type for the rrule crate.
 pub enum RRuleError {
     /// Parsing error

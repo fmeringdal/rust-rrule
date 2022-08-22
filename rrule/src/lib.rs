@@ -100,9 +100,8 @@ mod parser;
 mod tests;
 mod validator;
 
-pub use crate::core::{Frequency, NWeekday, RRule, RRuleSet, Tz};
+pub use crate::core::{Frequency, NWeekday, RRule, RRuleSet, RRuleSetResult, Tz};
 pub use crate::core::{Unvalidated, Validated};
 pub use chrono::Weekday;
 pub use error::RRuleError;
-pub(crate) use iter::RRuleIter;
 pub use iter::RRuleSetIter;

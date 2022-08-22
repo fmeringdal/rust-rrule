@@ -74,9 +74,8 @@ where
 }
 
 pub(crate) fn add_time_to_date(date: Date<Tz>, time: NaiveTime) -> Option<DateTime> {
-    match date.and_time(time) {
-        Some(dt) => return Some(dt),
-        None => (),
+    if let Some(dt) = date.and_time(time) {
+        return Some(dt)
     }
     // If the day is a daylight saving time, the above code might now work and we
     // can try to get a valid datetime by adding the `time` as a duration instead.

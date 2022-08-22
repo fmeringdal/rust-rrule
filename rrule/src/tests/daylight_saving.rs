@@ -52,7 +52,7 @@ fn daylight_savings_2() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .0;
+        .list;
     check_occurrences(
         &dates,
         &[

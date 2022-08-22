@@ -30,10 +30,10 @@ pub fn test_recurring_rrule(
             RRuleError::IterError(e) => e,
         })
         .unwrap();
-    let res = if !limited {
-        rrule_set.all_unchecked()
+    let res = if limited {
+        rrule_set.all(u16::MAX).list
     } else {
-        rrule_set.all(u16::MAX).0
+        rrule_set.all_unchecked()
     };
 
     println!("Actual: {:?}", res);
@@ -51,7 +51,7 @@ pub fn test_recurring_rrule(
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn test_recurring_rrule_set(rrule_set: RRuleSet, expected_dates: &[DateTime<Tz>]) {
-    let res = rrule_set.all(u16::MAX).0;
+    let res = rrule_set.all(u16::MAX).list;
 
     println!("Actual: {:?}", res);
     println!("Expected: {:?}", expected_dates);

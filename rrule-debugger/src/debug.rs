@@ -15,9 +15,9 @@ fn test_from_string() {
         .parse()
         .unwrap();
     println!("RRule: {:#?}", rrule);
-    let (list, limited) = rrule.all(20);
-    println!("Limited: {}", limited);
-    crate::print_all_datetimes(&list);
+    let result = rrule.all(20);
+    println!("Limited: {}", result.limited);
+    crate::print_all_datetimes(&result.list);
 }
 
 fn test_parsed_rrule() {
@@ -29,10 +29,10 @@ fn test_parsed_rrule() {
         .by_second(vec![0]);
 
     let rrule = properties.build(ymd_hms(1997, 9, 2, 9, 0, 0)).unwrap();
-    let (list, limited) = rrule.all(50);
+    let result = rrule.all(50);
 
-    println!("Limited: {}", limited);
-    crate::print_all_datetimes(&list);
+    println!("Limited: {}", result.limited);
+    crate::print_all_datetimes(&result.list);
 }
 
 fn ymd_hms(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32) -> DateTime<Tz> {

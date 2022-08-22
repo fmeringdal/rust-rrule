@@ -588,16 +588,8 @@ mod tests {
     fn allows_until_with_compatible_timezone() {
         fn t(start_tz: Tz, until_tz: Tz) -> (DateTime, DateTime) {
             (
-                start_tz
-                    .ymd_opt(2020, 1, 1)
-                    .and_hms_opt(0, 0, 0)
-                    .unwrap()
-                    .into(),
-                until_tz
-                    .ymd_opt(2020, 1, 1)
-                    .and_hms_opt(0, 0, 0)
-                    .unwrap()
-                    .into(),
+                start_tz.ymd_opt(2020, 1, 1).and_hms_opt(0, 0, 0).unwrap(),
+                until_tz.ymd_opt(2020, 1, 1).and_hms_opt(0, 0, 0).unwrap(),
             )
         }
 
@@ -617,16 +609,8 @@ mod tests {
     fn rejects_until_with_incompatible_timezone() {
         fn t(start_tz: Tz, until_tz: Tz) -> (DateTime, DateTime) {
             (
-                start_tz
-                    .ymd_opt(2020, 1, 1)
-                    .and_hms_opt(0, 0, 0)
-                    .unwrap()
-                    .into(),
-                until_tz
-                    .ymd_opt(2020, 1, 1)
-                    .and_hms_opt(0, 0, 0)
-                    .unwrap()
-                    .into(),
+                start_tz.ymd_opt(2020, 1, 1).and_hms_opt(0, 0, 0).unwrap(),
+                until_tz.ymd_opt(2020, 1, 1).and_hms_opt(0, 0, 0).unwrap(),
             )
         }
 

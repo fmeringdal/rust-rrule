@@ -31,6 +31,14 @@ pub struct RRuleSet {
     pub(crate) limited: bool,
 }
 
+/// A validated Recurrence Rule that can be used to create an iterator.
+pub struct RRuleSetResult {
+    /// List of recurrences.
+    pub list: Vec<DateTime>,
+    /// If recurrence are truncated
+    pub limited: bool,
+}
+
 impl RRuleSet {
     /// Creates an empty [`RRuleSet`], starting from `ds_start`.
     #[must_use]
@@ -180,7 +188,7 @@ impl RRuleSet {
     /// assert_eq!(limited, true);
     /// ```
     #[must_use]
-    pub fn all(mut self, limit: u16) -> (Vec<DateTime>, bool) {
+    pub fn all(mut self, limit: u16) -> RRuleSetResult {
         self.limited = true;
         collect_with_error(
             self.into_iter(),
@@ -199,7 +207,7 @@ impl RRuleSet {
     /// very long iteration times. Please read the `SECURITY.md` for more information.
     #[must_use]
     pub fn all_unchecked(self) -> Vec<DateTime> {
-        collect_with_error(self.into_iter(), &self.after, &self.before, true, None).0
+        collect_with_error(self.into_iter(), &self.after, &self.before, true, None).list
     }
 }
 

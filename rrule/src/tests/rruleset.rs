@@ -142,7 +142,7 @@ fn rrule_and_exdate_2() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .0;
+        .list;
     // This results in following set (minus exdate)
     // [
     //     2020-12-14T09:30:00CET,
@@ -277,7 +277,7 @@ fn after() {
         .exrule(exrule)
         .after(ymd_hms(2000, 9, 2, 9, 0, 0));
 
-    assert_eq!(set.all(1).0[0], ymd_hms(2007, 9, 2, 9, 0, 0),);
+    assert_eq!(set.all(1).list[0], ymd_hms(2007, 9, 2, 9, 0, 0),);
 }
 
 #[test]
@@ -315,7 +315,7 @@ fn between() {
         .before(ymd_hms(2010, 9, 2, 9, 0, 0));
 
     check_occurrences(
-        &set.all(u16::MAX).0,
+        &set.all(u16::MAX).list,
         &[
             "2007-09-02T09:00:00-00:00",
             "2008-09-02T09:00:00-00:00",

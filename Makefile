@@ -9,9 +9,9 @@ check:
 	@cargo +nightly udeps --all-targets --all-features
 	@cargo doc --no-deps --all-features --examples --document-private-items
 
-check_nightly: check
+check_nightly:
 	@cargo +nightly clippy --fix --allow-dirty --allow-staged --all-targets --all-features
 
-check_strictly: check
+check_strictly:
 	@cargo +nightly clippy --fix --allow-dirty --allow-staged --all-features --all-targets -- -W clippy::all -W clippy::pedantic -W clippy::cargo
 
