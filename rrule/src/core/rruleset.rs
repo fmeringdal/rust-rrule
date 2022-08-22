@@ -31,11 +31,11 @@ pub struct RRuleSet {
     pub(crate) limited: bool,
 }
 
-/// A validated Recurrence Rule that can be used to create an iterator.
+/// The return result of `RRuleSet::all`.
 pub struct RRuleSetResult {
     /// List of recurrences.
     pub list: Vec<DateTime>,
-    /// If recurrence are truncated
+    /// If recurrence is limited
     pub limited: bool,
 }
 
