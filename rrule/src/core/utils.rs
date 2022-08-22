@@ -17,8 +17,8 @@ pub(super) fn collect_with_error<T>(
     inclusive: bool,
     limit: Option<u16>,
 ) -> RRuleSetResult
-    where
-        T: Iterator<Item=DateTime> + WasLimited,
+where
+    T: Iterator<Item = DateTime> + WasLimited,
 {
     let mut list = vec![];
     let mut was_limited = false;
