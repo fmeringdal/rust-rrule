@@ -50,7 +50,7 @@
 //! use rrule::{RRuleSet, Tz};
 //!
 //! let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
-//! let (events, _) = rrule.all(100);
+//! let result = rrule.all(100);
 //!
 //! // All dates
 //! assert_eq!(
@@ -59,7 +59,7 @@
 //!         DateTime::parse_from_rfc3339("2012-02-02T09:30:00+00:00").unwrap(),
 //!         DateTime::parse_from_rfc3339("2012-02-03T09:30:00+00:00").unwrap(),
 //!     ],
-//!     events
+//!     result.list
 //! );
 //! ```
 //! Find all events that are within a given range.
@@ -74,14 +74,14 @@
 //! let before = Tz::UTC.ymd(2012, 4, 1).and_hms(9, 0, 0);
 //!
 //! let rrule = rrule.after(after).before(before);
-//! let (events, _) = rrule.all(100);
+//! let result = rrule.all(100);
 //!
 //! assert_eq!(
 //!     vec![
 //!         DateTime::parse_from_rfc3339("2012-02-02T09:30:00+00:00").unwrap(),
 //!         DateTime::parse_from_rfc3339("2012-02-03T09:30:00+00:00").unwrap(),
 //!     ],
-//!     events
+//!     result.list
 //! );
 //! ```
 //!
