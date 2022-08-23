@@ -32,9 +32,9 @@ pub struct RRuleSet {
 }
 
 /// The return result of `RRuleSet::all`.
-pub struct RRuleSetResult {
+pub struct RRuleResult {
     /// List of recurrences.
-    pub list: Vec<DateTime>,
+    pub dates: Vec<DateTime>,
     /// If recurrence is limited
     pub limited: bool,
 }
@@ -184,11 +184,11 @@ impl RRuleSet {
     ///
     /// // Limit the results to 2 recurrences
     /// let result = rrule_set.all(2);
-    /// assert_eq!(result.list.len(), 2);
+    /// assert_eq!(result.dates.len(), 2);
     /// assert_eq!(result.limited, true);
     /// ```
     #[must_use]
-    pub fn all(mut self, limit: u16) -> RRuleSetResult {
+    pub fn all(mut self, limit: u16) -> RRuleResult {
         self.limited = true;
         collect_with_error(
             self.into_iter(),
@@ -207,7 +207,7 @@ impl RRuleSet {
     /// very long iteration times. Please read the `SECURITY.md` for more information.
     #[must_use]
     pub fn all_unchecked(self) -> Vec<DateTime> {
-        collect_with_error(self.into_iter(), &self.after, &self.before, true, None).list
+        collect_with_error(self.into_iter(), &self.after, &self.before, true, None).dates
     }
 }
 

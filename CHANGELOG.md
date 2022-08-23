@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- `RRuleSet::all` returns an `RRuleSetResult` struct instead of a tuple.
+- `RRuleSet::all` returns an `RRuleResult` struct instead of a tuple.
 
 ## 0.10.0 (2022-08-08)
 

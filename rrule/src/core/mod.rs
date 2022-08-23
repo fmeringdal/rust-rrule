@@ -6,7 +6,7 @@ mod timezone_impl;
 pub(crate) mod utils;
 
 pub use self::rrule::{Frequency, NWeekday, RRule};
-pub use self::rruleset::{RRuleSet, RRuleSetResult};
+pub use self::rruleset::{RRuleSet, RRuleResult};
 pub(crate) use datetime::{
     duration_from_midnight, get_day, get_hour, get_minute, get_month, get_second, DateTime,
 };

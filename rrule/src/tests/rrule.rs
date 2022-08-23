@@ -3842,7 +3842,7 @@ fn test_after_inclusive_hit() {
     let after = ymd_hms(2012, 2, 2, 9, 30, 0);
     let rrule = rrule.after(after);
 
-    assert_eq!(after, rrule.all(1).list[0]);
+    assert_eq!(after, rrule.all(1).dates[0]);
 }
 
 #[test]
@@ -3855,7 +3855,7 @@ fn test_after_inclusive_miss() {
     let rrule = rrule.after(after);
     let oracle = ymd_hms(2012, 2, 3, 9, 30, 0);
 
-    assert_eq!(oracle, rrule.all(1).list[0]);
+    assert_eq!(oracle, rrule.all(1).dates[0]);
 }
 
 #[test]

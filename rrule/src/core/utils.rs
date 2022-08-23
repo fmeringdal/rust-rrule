@@ -1,6 +1,6 @@
 use super::DateTime;
 use crate::iter::rrule_iter::WasLimited;
-use crate::RRuleSetResult;
+use crate::RRuleResult;
 use std::ops::{
     Bound::{Excluded, Unbounded},
     RangeBounds,
@@ -16,7 +16,7 @@ pub(super) fn collect_with_error<T>(
     end: &Option<DateTime>,
     inclusive: bool,
     limit: Option<u16>,
-) -> RRuleSetResult
+) -> RRuleResult
 where
     T: Iterator<Item = DateTime> + WasLimited,
 {
@@ -44,8 +44,8 @@ where
 
     was_limited = was_limited || matches!(limit, Some(limit) if usize::from(limit) == list.len());
 
-    RRuleSetResult {
-        list,
+    RRuleResult {
+        dates: list,
         limited: was_limited,
     }
 }

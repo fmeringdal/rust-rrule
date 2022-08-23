@@ -59,7 +59,7 @@
 //!         DateTime::parse_from_rfc3339("2012-02-02T09:30:00+00:00").unwrap(),
 //!         DateTime::parse_from_rfc3339("2012-02-03T09:30:00+00:00").unwrap(),
 //!     ],
-//!     result.list
+//!     result.dates
 //! );
 //! ```
 //! Find all events that are within a given range.
@@ -81,7 +81,7 @@
 //!         DateTime::parse_from_rfc3339("2012-02-02T09:30:00+00:00").unwrap(),
 //!         DateTime::parse_from_rfc3339("2012-02-03T09:30:00+00:00").unwrap(),
 //!     ],
-//!     result.list
+//!     result.dates
 //! );
 //! ```
 //!
@@ -100,7 +100,7 @@ mod parser;
 mod tests;
 mod validator;
 
-pub use crate::core::{Frequency, NWeekday, RRule, RRuleSet, RRuleSetResult, Tz};
+pub use crate::core::{Frequency, NWeekday, RRule, RRuleSet, RRuleResult, Tz};
 pub use crate::core::{Unvalidated, Validated};
 pub use chrono::Weekday;
 pub use error::RRuleError;

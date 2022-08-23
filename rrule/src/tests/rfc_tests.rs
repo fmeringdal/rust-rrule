@@ -14,7 +14,7 @@ fn daily_10_occurrences() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -42,7 +42,7 @@ fn daily_until_november() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -106,7 +106,7 @@ fn every_other_day() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(32)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -154,7 +154,7 @@ fn every_10_days_5_occurrences() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -176,13 +176,13 @@ fn every_days_in_jan_for_3_years() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(100)
-        .list;
+        .dates;
     let dates_alt = "DTSTART;TZID=America/New_York:19980101T090000\n\
         RRULE:FREQ=DAILY;UNTIL=20000131T140000Z;BYMONTH=1"
         .parse::<RRuleSet>()
         .unwrap()
         .all(100)
-        .list;
+        .dates;
     let mut expected = vec![];
     for year in 1998..=2000 {
         for day in 1..=31 {
@@ -203,7 +203,7 @@ fn weekly_10_occurrences() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -231,7 +231,7 @@ fn weekly_until_november() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -258,7 +258,7 @@ fn every_other_week() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(13)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -287,13 +287,13 @@ fn weekly_on_tue_and_thu_for_5_weeks() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     let dates_alt = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=WEEKLY;COUNT=10;WKST=SU;BYDAY=TU,TH"
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     let expected = vec![
         "1997-09-02T09:00:00-04:00",
         "1997-09-04T09:00:00-04:00",
@@ -319,7 +319,7 @@ fn every_other_week_some_days_until_dec() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -360,7 +360,7 @@ fn every_other_week_some_days_8_occurrences() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -386,7 +386,7 @@ fn monthly_on_first_friday_10_occurrences() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -412,7 +412,7 @@ fn monthly_on_first_friday_until_dec() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -432,7 +432,7 @@ fn every_other_month_on_first_and_last_sunday_10_occurrences() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -458,7 +458,7 @@ fn monthly_on_second_to_last_monday_for_6_months() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -480,7 +480,7 @@ fn monthly_on_third_to_last_day_forever() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(6)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -502,7 +502,7 @@ fn monthly_on_2nd_and_15th_10_occurrences() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -528,7 +528,7 @@ fn monthly_on_first_and_last_day_10_occurrences() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -554,7 +554,7 @@ fn every_18_months_10th_to_15th_10_occurrences() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -580,7 +580,7 @@ fn every_tuesday_every_other_month() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(18)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -619,7 +619,7 @@ fn yearly_in_june_and_july_for_10_occurrences() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -645,7 +645,7 @@ fn every_other_year_on_jan_feb_and_march_for_10_occurrences() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -671,7 +671,7 @@ fn every_third_year_on_1st_100th_and_200th_day_for_10_occurrences() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -697,7 +697,7 @@ fn every_20th_monday_of_year_forever() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(3)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -716,7 +716,7 @@ fn monday_of_week_20_forever() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(3)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -735,7 +735,7 @@ fn every_thursday_in_march_forever() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(11)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -762,7 +762,7 @@ fn every_thursday_only_during_june_july_and_august_forever() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(39)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -818,7 +818,7 @@ fn every_friday_the_13th_forever() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(5)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -839,7 +839,7 @@ fn first_sat_follows_first_sunday_of_month_forever() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(10)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -866,7 +866,7 @@ fn every_4_years_us_presidential_election_day_forever() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(3)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -886,7 +886,7 @@ fn every_third_instance_of_weekday_in_month_for_3_months() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -905,7 +905,7 @@ fn second_to_last_weekday_of_month() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(7)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -929,7 +929,7 @@ fn every_3_hours_on_specific_day() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -948,7 +948,7 @@ fn every_15_min_for_6_occurrences() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -970,7 +970,7 @@ fn every_hour_and_a_half_for_4_occurrences() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -990,13 +990,13 @@ fn every_20_min_at_time_every_day() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(72)
-        .list;
+        .dates;
     let dates_alt = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=MINUTELY;INTERVAL=20;BYHOUR=9,10,11,12,13,14,15,16"
         .parse::<RRuleSet>()
         .unwrap()
         .all(72)
-        .list;
+        .dates;
 
     let mut expected = vec![];
     for day in 2..=4 {
@@ -1039,7 +1039,7 @@ fn week_day_start_monday_generated_days() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -1059,7 +1059,7 @@ fn week_day_start_sunday_generated_days() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -1079,7 +1079,7 @@ fn invalid_date_is_ignored() {
         .parse::<RRuleSet>()
         .unwrap()
         .all(u16::MAX)
-        .list;
+        .dates;
     common::check_occurrences(
         &dates,
         &[

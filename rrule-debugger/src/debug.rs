@@ -17,7 +17,7 @@ fn test_from_string() {
     println!("RRule: {:#?}", rrule);
     let result = rrule.all(20);
     println!("Limited: {}", result.limited);
-    crate::print_all_datetimes(&result.list);
+    crate::print_all_datetimes(&result.dates);
 }
 
 fn test_parsed_rrule() {
@@ -32,7 +32,7 @@ fn test_parsed_rrule() {
     let result = rrule.all(50);
 
     println!("Limited: {}", result.limited);
-    crate::print_all_datetimes(&result.list);
+    crate::print_all_datetimes(&result.dates);
 }
 
 fn ymd_hms(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32) -> DateTime<Tz> {
