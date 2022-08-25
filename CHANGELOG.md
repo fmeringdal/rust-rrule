@@ -4,17 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [Unreleased] (2022-0X-YY)
+
+### Changed
+
+- `RRuleSet::all` returns an `RRuleResult` struct instead of a tuple.
 
 ## 0.10.0 (2022-08-08)
 
 ### Changed
 
 - EXRULE functionality is put behind the feature flag `exrule` which is not enabled by default. 
-- `RRuleSet::all` takes a `limit` argument to protect against long running iteration.
+- `RRuleSet::all` takes a `limit` argument to protect against long-running iteration.
 - The iterator API does not have any validation limits by default. So `rrule_set.into_iter().map(|dt| format!("{dt}")).collect<Vec<_>>()` could lead to an infinite loop.
 - `RRuleSet::all` returns a tuple `(Vec<DateTime>, bool)` instead of the previous `Result` type. The boolean in the tuple indicates if the iteration was limited or not.
-- Datetime type returned from iteration is `chrono::DateTime<rrule::Tz>` rather than `chrono::DateTime<chrono_tz::Tz>`. Please use `.with_timezone` if use still want to use `chrono_tz::Tz`.
+- Datetime type returned from iteration is `chrono::DateTime<rrule::Tz>` rather than `chrono::DateTime<chrono_tz::Tz>`. Please use `.with_timezone` if you still want to use `chrono_tz::Tz`.
 
 ### Removed
 - `no-validation-limits` feature is removed and is replaced by arguments to `RRuleSet`.

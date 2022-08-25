@@ -17,9 +17,9 @@ pub fn parse_rrule_from_string(rrule: &str) {
     match RRuleSet::from_str(rrule) {
         Ok(rrule) => {
             println!("RRule data: {:#?}", rrule);
-            let (list, limited) = rrule.all(50);
-            crate::print_all_datetimes(&list);
-            if limited {
+            let result = rrule.all(50);
+            crate::print_all_datetimes(&result.dates);
+            if result.limited {
                 println!("RRule was limited");
             }
         }

@@ -46,8 +46,8 @@ let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse
 // Set hard limit in case of infinitely recurring rules.
 let limit = 100;
 // Get all recurrences of the rrule
-let (recurrences, _) = rrule.all(limit);
-assert_eq!(recurrences.len(), 3);
+let result = rrule.all(limit);
+assert_eq!(result.dates.len(), 3);
 ```
 
 See more examples at [docs.rs](https://docs.rs/rrule)

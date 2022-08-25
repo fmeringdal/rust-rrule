@@ -1,7 +1,7 @@
 #![allow(clippy::module_name_repetitions)]
 use thiserror::Error;
 
-#[derive(Error, Debug, Clone, PartialEq)]
+#[derive(Error, Debug, Clone, PartialEq, Eq)]
 pub enum ParseError {
     #[error("`{0}` is not a valid timezone.")]
     InvalidTimezone(String),

@@ -61,11 +61,8 @@ where
 {
     for _ in 0..limit {
         let next = rule_iter.next();
-        match next {
-            Some(value) => {
-                println!("{}", value);
-            }
-            None => {}
+        if let Some(value) = next {
+            println!("{}", value);
         }
     }
 }

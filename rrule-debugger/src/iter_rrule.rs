@@ -12,9 +12,9 @@ pub fn rrule_from_bin(data: &[u8]) {
     match rrule_afl_fuzz::take_rrule::take_rrule_from_data(data) {
         Some(rule) => {
             println!("RRule data: {:#?}", rule);
-            let (list, limited) = rule.all(50);
-            crate::print_all_datetimes(&list);
-            if limited {
+            let result = rule.all(50);
+            crate::print_all_datetimes(&result.dates);
+            if result.limited {
                 println!("RRule was limited");
             }
         }

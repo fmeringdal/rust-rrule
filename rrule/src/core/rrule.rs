@@ -4,12 +4,13 @@ use crate::core::get_hour;
 use crate::core::get_minute;
 use crate::core::get_month;
 use crate::core::get_second;
+use crate::iter::RRuleIter;
 use crate::parser::str_to_weekday;
 use crate::parser::ContentLineCaptures;
 use crate::parser::ParseError;
 use crate::validator::validate_rrule;
 use crate::validator::ValidationError;
-use crate::{RRuleError, RRuleIter, RRuleSet, Unvalidated, Validated};
+use crate::{RRuleError, RRuleSet, Unvalidated, Validated};
 use chrono::{Datelike, Month, Weekday};
 #[cfg(feature = "serde")]
 use serde_with::{serde_as, DeserializeFromStr, SerializeDisplay};

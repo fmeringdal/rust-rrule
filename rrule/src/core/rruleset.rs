@@ -31,6 +31,14 @@ pub struct RRuleSet {
     pub(crate) limited: bool,
 }
 
+/// The return result of `RRuleSet::all`.
+pub struct RRuleResult {
+    /// List of recurrences.
+    pub dates: Vec<DateTime>,
+    /// It is be true, if the list of dates is limited. To indicate that it can potentially contain more dates.
+    pub limited: bool,
+}
+
 impl RRuleSet {
     /// Creates an empty [`RRuleSet`], starting from `ds_start`.
     #[must_use]
@@ -175,12 +183,12 @@ impl RRuleSet {
     /// let rrule_set: RRuleSet = "DTSTART:20210101T090000Z\nRRULE:FREQ=DAILY".parse().unwrap();
     ///
     /// // Limit the results to 2 recurrences
-    /// let (result, limited) = rrule_set.all(2);
-    /// assert_eq!(result.len(), 2);
-    /// assert_eq!(limited, true);
+    /// let result = rrule_set.all(2);
+    /// assert_eq!(result.dates.len(), 2);
+    /// assert_eq!(result.limited, true);
     /// ```
     #[must_use]
-    pub fn all(mut self, limit: u16) -> (Vec<DateTime>, bool) {
+    pub fn all(mut self, limit: u16) -> RRuleResult {
         self.limited = true;
         collect_with_error(
             self.into_iter(),
@@ -199,7 +207,7 @@ impl RRuleSet {
     /// very long iteration times. Please read the `SECURITY.md` for more information.
     #[must_use]
     pub fn all_unchecked(self) -> Vec<DateTime> {
-        collect_with_error(self.into_iter(), &self.after, &self.before, true, None).0
+        collect_with_error(self.into_iter(), &self.after, &self.before, true, None).dates
     }
 }
 

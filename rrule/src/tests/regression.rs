@@ -8,7 +8,7 @@ RRULE:FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-2"
         .parse::<RRuleSet>()
         .unwrap()
         .all(7)
-        .0;
+        .dates;
     common::check_occurrences(
         &dates,
         &[
@@ -29,7 +29,7 @@ fn issue_49() {
         .parse::<RRuleSet>()
         .expect("The RRule is not valid");
 
-    let res = rrule_set.all(1).0;
+    let res = rrule_set.all(1).dates;
     assert!(!res.is_empty());
     let res_str = format!("{}", res[0]);
     // Check that result datetime is not in UTC
@@ -42,6 +42,6 @@ fn issue_61() {
         .parse::<RRuleSet>()
         .expect("The RRule is not valid");
 
-    let res = rrule_set.all(10).0;
+    let res = rrule_set.all(10).dates;
     assert_eq!(res.len(), 10);
 }

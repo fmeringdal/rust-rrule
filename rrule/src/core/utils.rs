@@ -1,5 +1,6 @@
 use super::DateTime;
 use crate::iter::rrule_iter::WasLimited;
+use crate::RRuleResult;
 use std::ops::{
     Bound::{Excluded, Unbounded},
     RangeBounds,
@@ -15,7 +16,7 @@ pub(super) fn collect_with_error<T>(
     end: &Option<DateTime>,
     inclusive: bool,
     limit: Option<u16>,
-) -> (Vec<DateTime>, bool)
+) -> RRuleResult
 where
     T: Iterator<Item = DateTime> + WasLimited,
 {
@@ -43,7 +44,10 @@ where
 
     was_limited = was_limited || matches!(limit, Some(limit) if usize::from(limit) == list.len());
 
-    (list, was_limited)
+    RRuleResult {
+        dates: list,
+        limited: was_limited,
+    }
 }
 
 /// Checks if `date` is after `end`.
@@ -106,21 +110,21 @@ mod tests {
             &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
             &Some(start),
             &Some(end),
-            inclusive
+            inclusive,
         ));
         // To small
         assert!(!is_in_range(
             &UTC.ymd(2021, 10, 1).and_hms(7, 0, 0),
             &Some(start),
             &Some(end),
-            inclusive
+            inclusive,
         ));
         // To big
         assert!(!is_in_range(
             &UTC.ymd(2021, 10, 1).and_hms(11, 0, 0),
             &Some(start),
             &Some(end),
-            inclusive
+            inclusive,
         ));
         // Equal to end
         assert!(!is_in_range(&end, &Some(start), &Some(end), inclusive));
@@ -138,21 +142,21 @@ mod tests {
             &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
             &Some(start),
             &None,
-            inclusive
+            inclusive,
         ));
         // To small
         assert!(!is_in_range(
             &UTC.ymd(2021, 10, 1).and_hms(7, 0, 0),
             &Some(start),
             &None,
-            inclusive
+            inclusive,
         ));
         // Bigger
         assert!(is_in_range(
             &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0),
             &Some(start),
             &None,
-            inclusive
+            inclusive,
         ));
         // Equal to start
         assert!(!is_in_range(&start, &Some(start), &None, inclusive));
@@ -168,21 +172,21 @@ mod tests {
             &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
             &None,
             &Some(end),
-            inclusive
+            inclusive,
         ));
         // Smaller
         assert!(is_in_range(
             &UTC.ymd(2021, 9, 20).and_hms(10, 0, 0),
             &None,
             &Some(end),
-            inclusive
+            inclusive,
         ));
         // Bigger
         assert!(!is_in_range(
             &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0),
             &None,
             &Some(end),
-            inclusive
+            inclusive,
         ));
         // Equal to end
         assert!(!is_in_range(&end, &None, &Some(end), inclusive));
@@ -197,21 +201,21 @@ mod tests {
             &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
             &None,
             &None,
-            inclusive
+            inclusive,
         ));
         // Smaller
         assert!(is_in_range(
             &UTC.ymd(2021, 9, 20).and_hms(10, 0, 0),
             &None,
             &None,
-            inclusive
+            inclusive,
         ));
         // Bigger
         assert!(is_in_range(
             &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0),
             &None,
             &None,
-            inclusive
+            inclusive,
         ));
     }
 
@@ -228,21 +232,21 @@ mod tests {
             &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
             &Some(start),
             &Some(end),
-            inclusive
+            inclusive,
         ));
         // To small
         assert!(!is_in_range(
             &UTC.ymd(2021, 10, 1).and_hms(7, 0, 0),
             &Some(start),
             &Some(end),
-            inclusive
+            inclusive,
         ));
         // To big
         assert!(!is_in_range(
             &UTC.ymd(2021, 10, 1).and_hms(11, 0, 0),
             &Some(start),
             &Some(end),
-            inclusive
+            inclusive,
         ));
         // Equal to end
         assert!(is_in_range(&end, &Some(start), &Some(end), inclusive));
@@ -260,21 +264,21 @@ mod tests {
             &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
             &Some(start),
             &None,
-            inclusive
+            inclusive,
         ));
         // To small
         assert!(!is_in_range(
             &UTC.ymd(2021, 10, 1).and_hms(7, 0, 0),
             &Some(start),
             &None,
-            inclusive
+            inclusive,
         ));
         // Bigger
         assert!(is_in_range(
             &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0),
             &Some(start),
             &None,
-            inclusive
+            inclusive,
         ));
         // Equal to start
         assert!(is_in_range(&start, &Some(start), &None, inclusive));
@@ -290,21 +294,21 @@ mod tests {
             &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
             &None,
             &Some(end),
-            inclusive
+            inclusive,
         ));
         // Smaller
         assert!(is_in_range(
             &UTC.ymd(2021, 9, 20).and_hms(10, 0, 0),
             &None,
             &Some(end),
-            inclusive
+            inclusive,
         ));
         // Bigger
         assert!(!is_in_range(
             &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0),
             &None,
             &Some(end),
-            inclusive
+            inclusive,
         ));
         // Equal to end
         assert!(is_in_range(&end, &None, &Some(end), inclusive));
@@ -319,21 +323,21 @@ mod tests {
             &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
             &None,
             &None,
-            inclusive
+            inclusive,
         ));
         // Smaller
         assert!(is_in_range(
             &UTC.ymd(2021, 9, 20).and_hms(10, 0, 0),
             &None,
             &None,
-            inclusive
+            inclusive,
         ));
         // Bigger
         assert!(is_in_range(
             &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0),
             &None,
             &None,
-            inclusive
+            inclusive,
         ));
     }
 }
