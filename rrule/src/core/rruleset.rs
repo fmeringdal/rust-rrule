@@ -35,7 +35,7 @@ pub struct RRuleSet {
 pub struct RRuleResult {
     /// List of recurrences.
     pub dates: Vec<DateTime>,
-    /// If recurrence is limited
+    /// It is be true, if the list of dates is limited. To indicate that it can potentially contain more dates.
     pub limited: bool,
 }
 
