@@ -18,12 +18,12 @@ use self::content_line::{ContentLineCaptures, PropertyName, StartDateContentLine
 
 /// Grammar represents a well formatted rrule input.
 #[derive(Debug, PartialEq)]
-pub(crate) struct Grammar {
-    pub start: StartDateContentLine,
-    pub content_lines: Vec<ContentLine>,
+pub(crate) struct Grammar<TZ: chrono::TimeZone> {
+    pub start: StartDateContentLine<TZ>,
+    pub content_lines: Vec<ContentLine<TZ>>,
 }
 
-impl FromStr for Grammar {
+impl FromStr for Grammar<chrono_tz::Tz> {
     type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {

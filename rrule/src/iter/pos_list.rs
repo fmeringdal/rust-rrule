@@ -1,11 +1,7 @@
+use chrono::Datelike;
+
 use super::utils::{from_ordinal, pymod};
-use crate::{
-    core::{DateTime, Time},
-    iter::iterinfo::IterInfo,
-    RRuleError,
-};
-use chrono::{Datelike, TimeZone};
-use chrono_tz::Tz;
+use crate::{core::Time, iter::iterinfo::IterInfo, RRuleError};
 
 #[allow(
     clippy::cast_possible_truncation,
@@ -13,15 +9,15 @@ use chrono_tz::Tz;
     clippy::cast_possible_wrap,
     clippy::cast_sign_loss
 )]
-pub(crate) fn build_pos_list(
+pub(crate) fn build_pos_list<TZ: chrono::TimeZone>(
     by_set_pos: &[i32],
     timeset: &[Time],
     start: u64,
     end: u64,
-    ii: &IterInfo,
+    ii: &IterInfo<TZ>,
     dayset: &[Option<i32>],
-    tz: Tz,
-) -> Result<Vec<DateTime>, RRuleError> {
+    tz: TZ,
+) -> Result<Vec<chrono::DateTime<TZ>>, RRuleError> {
     let mut pos_list = vec![];
     if timeset.is_empty() {
         // This will prevent the divide by 0 and out of bounds in this function.
@@ -70,15 +66,18 @@ pub(crate) fn build_pos_list(
         // Use Time from `timeset`.
         let time = timeset[time_pos as usize].to_naive_time();
         let res = date.and_time(time).ok_or_else(|| {
-            RRuleError::new_iter_err(format!("Time from `timeset` invalid `{} + {}`", date, time))
+            RRuleError::new_iter_err(format!(
+                "Time from `timeset` invalid `{:?} + {}`",
+                date, time
+            ))
         })?;
 
-        if !pos_list.iter().any(|&p| p == res) {
+        if !pos_list.iter().any(|p| *p == res) {
             pos_list.push(res);
         }
     }
 
-    pos_list.sort_by_key(DateTime::timestamp);
+    pos_list.sort_by_key(chrono::DateTime::timestamp);
 
     Ok(pos_list)
 }

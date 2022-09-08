@@ -17,10 +17,10 @@ pub fn ymd_hms(
     UTC.ymd(year, month, day).and_hms(hour, minute, second)
 }
 
-pub fn test_recurring_rrule(
-    rrule: RRule<Unvalidated>,
-    dt_start: DateTime<Tz>,
-    expected_dates: &[DateTime<Tz>],
+pub fn test_recurring_rrule<TZ: chrono::TimeZone>(
+    rrule: RRule<TZ, Unvalidated>,
+    dt_start: DateTime<TZ>,
+    expected_dates: &[DateTime<TZ>],
 ) {
     let rrule_set = rrule
         .build(dt_start)
@@ -46,7 +46,10 @@ pub fn test_recurring_rrule(
 }
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn test_recurring_rrule_set(rrule_set: RRuleSet, expected_dates: &[DateTime<Tz>]) {
+pub fn test_recurring_rrule_set<TZ: chrono::TimeZone>(
+    rrule_set: RRuleSet<TZ>,
+    expected_dates: &[DateTime<Tz>],
+) {
     let res = rrule_set.all(100).unwrap();
 
     println!("Actual: {:?}", res);

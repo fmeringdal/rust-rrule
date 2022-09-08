@@ -24,7 +24,7 @@
 //! use chrono_tz::UTC;
 //! use rrule::{RRuleSet};
 //!
-//! let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
+//! let rrule: RRuleSet<_> = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
 //!
 //! // All dates
 //! assert_eq!(
@@ -42,7 +42,7 @@
 //! # use chrono_tz::UTC;
 //! # use rrule::{RRuleSet};
 //! #
-//! let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
+//! let rrule: RRuleSet<_> = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
 //! // Between two dates
 //! let after = UTC.ymd(2012, 2, 1).and_hms(10, 0, 0);
 //! let before = UTC.ymd(2012, 4, 1).and_hms(9, 0, 0);
@@ -68,12 +68,12 @@
 //! use rrule::{RRuleSet};
 //!
 //! // Parse a RRule string
-//! let rrule: RRuleSet = "DTSTART:20120201T093000Z\n\
+//! let rrule: RRuleSet<_> = "DTSTART:20120201T093000Z\n\
 //!    RRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR".parse().unwrap();
 //! assert_eq!(rrule.all(100).unwrap().len(), 21);
 //!
 //! // Parse a RRuleSet string
-//! let rrule_set: RRuleSet = "DTSTART:20120201T023000Z\n\
+//! let rrule_set: RRuleSet<_> = "DTSTART:20120201T023000Z\n\
 //!     RRULE:FREQ=MONTHLY;COUNT=5\n\
 //!     RDATE:20120701T023000Z,20120702T023000Z\n\
 //!     EXRULE:FREQ=MONTHLY;COUNT=2\n\

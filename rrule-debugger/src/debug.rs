@@ -11,7 +11,7 @@ pub fn run_debug_function() {
 }
 
 fn test_from_string() {
-    let rrule: RRuleSet = "DTSTART;TZID=America/New_York:19970519T090000\n\
+    let rrule: RRuleSet<_> = "DTSTART;TZID=America/New_York:19970519T090000\n\
     RRULE:FREQ=YEARLY;BYDAY=20MO"
         .parse()
         .unwrap();

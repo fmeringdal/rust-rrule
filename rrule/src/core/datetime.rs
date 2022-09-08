@@ -1,8 +1,6 @@
 use chrono::{Duration, NaiveTime};
 use chrono_tz::Tz;
 
-pub(crate) type DateTime = chrono::DateTime<Tz>;
-
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct Time {
     pub hour: u8,
@@ -45,7 +43,7 @@ impl Time {
 /// Generates an iCalendar date-time string format with the prefix symbols.
 /// Like: `:19970714T173000Z` or `;TZID=America/New_York:19970714T133000`
 /// ref: <https://tools.ietf.org/html/rfc5545#section-3.3.5>
-pub(crate) fn datetime_to_ical_format(dt: &DateTime) -> String {
+pub(crate) fn datetime_to_ical_format(dt: &chrono::DateTime<chrono_tz::Tz>) -> String {
     let mut tz_prefix = String::new();
     let mut tz_postfix = String::new();
     let tz = dt.timezone();

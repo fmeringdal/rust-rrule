@@ -138,7 +138,7 @@ fn rrule_and_exdate_2() {
     let dates = "DTSTART;TZID=Europe/Paris:20201214T093000\n\
         RRULE:FREQ=WEEKLY;UNTIL=20210308T083000Z;INTERVAL=2;BYDAY=MO;WKST=MO\n\
         EXDATE;TZID=Europe/Paris:20201228T093000,20210125T093000,20210208T093000"
-        .parse::<RRuleSet>()
+        .parse::<RRuleSet<chrono_tz::Tz>>()
         .unwrap()
         .all(50)
         .unwrap();

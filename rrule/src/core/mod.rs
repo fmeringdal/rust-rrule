@@ -5,7 +5,7 @@ pub(crate) mod utils;
 
 pub use self::rrule::{Frequency, NWeekday, RRule};
 pub use self::rruleset::RRuleSet;
-pub(crate) use datetime::{DateTime, Time};
+pub(crate) use datetime::Time;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 /// An empty struct to keep the validated stage

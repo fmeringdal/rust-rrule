@@ -13,9 +13,7 @@ mod utils;
 mod yearinfo;
 
 use crate::{
-    core::{DateTime, Time},
-    validator::FREQ_HOURLY_INTERVAL_MAX,
-    Frequency, NWeekday, RRule, RRuleError,
+    core::Time, validator::FREQ_HOURLY_INTERVAL_MAX, Frequency, NWeekday, RRule, RRuleError,
 };
 use chrono::{Datelike, Duration, Timelike};
 use iterinfo::IterInfo;
@@ -40,11 +38,11 @@ static MAX_ITER_LOOP: u32 = 100_000;
 #[cfg(feature = "no-validation-limits")]
 static MAX_ITER_LOOP: u32 = u32::MAX;
 
-fn decrement_date_until_valid(
-    date: DateTime,
+fn decrement_date_until_valid<TZ: chrono::TimeZone>(
+    date: chrono::DateTime<TZ>,
     new_month: u8,
     new_year: Option<i32>,
-) -> Result<DateTime, RRuleError> {
+) -> Result<chrono::DateTime<TZ>, RRuleError> {
     // Check if month and year are valid
     checks::check_month_range(new_month)?;
     if let Some(year) = new_year {
@@ -74,7 +72,7 @@ fn decrement_date_until_valid(
             RRuleError::new_iter_err("No valid date by changing day and year could be found.")
         })?
     } else {
-        date
+        date.clone()
     };
     // Set month when day is valid
     let mut new_date = new_date.with_month(u32::from(new_month));
@@ -104,11 +102,11 @@ fn decrement_date_until_valid(
     clippy::cast_precision_loss,
     clippy::cast_sign_loss
 )]
-fn increment_counter_date(
-    counter_date: DateTime,
-    rrule: &RRule,
+fn increment_counter_date<TZ: chrono::TimeZone>(
+    counter_date: chrono::DateTime<TZ>,
+    rrule: &RRule<TZ>,
     filtered: bool,
-) -> Result<DateTime, RRuleError> {
+) -> Result<chrono::DateTime<TZ>, RRuleError> {
     match rrule.freq {
         Frequency::Yearly => {
             let new_year = counter_date.year() + i32::from(rrule.interval);
@@ -203,7 +201,7 @@ fn increment_counter_date(
             let duration = Duration::hours(i64::from(new_hours));
             let counter_date_hour_0 = counter_date.with_hour(0).ok_or_else(|| {
                 RRuleError::new_iter_err(format!(
-                    "Could not set hour to `0` for date {}",
+                    "Could not set hour to `0` for date {:?}",
                     counter_date
                 ))
             })?;
@@ -317,7 +315,11 @@ fn increment_counter_date(
 
 // TODO break this up into parts because this is unmaintainable.
 #[allow(clippy::cast_possible_wrap)]
-fn is_filtered(ii: &IterInfo, current_day: i32, rrule: &RRule) -> bool {
+fn is_filtered<TZ: chrono::TimeZone>(
+    ii: &IterInfo<TZ>,
+    current_day: i32,
+    rrule: &RRule<TZ>,
+) -> bool {
     let by_month: bool = !rrule.by_month.is_empty()
         && !rrule
             .by_month
@@ -389,7 +391,12 @@ fn is_filtered(ii: &IterInfo, current_day: i32, rrule: &RRule) -> bool {
         || by_year_day
 }
 
-fn remove_filtered_days(day_set: &mut [Option<i32>], start: u64, end: u64, ii: &IterInfo) -> bool {
+fn remove_filtered_days<TZ: chrono::TimeZone>(
+    day_set: &mut [Option<i32>],
+    start: u64,
+    end: u64,
+    ii: &IterInfo<TZ>,
+) -> bool {
     let mut filtered = false;
 
     // Loop over `start..end`
@@ -408,7 +415,10 @@ fn remove_filtered_days(day_set: &mut [Option<i32>], start: u64, end: u64, ii: &
 }
 
 #[allow(clippy::cast_sign_loss)]
-fn build_timeset(rrule: &RRule, dt_start: &DateTime) -> Vec<Time> {
+fn build_timeset<TZ: chrono::TimeZone>(
+    rrule: &RRule<TZ>,
+    dt_start: &chrono::DateTime<TZ>,
+) -> Vec<Time> {
     let millisecond_mod = (dt_start.timestamp_millis() % 1000) as u16;
 
     if rrule.freq > Frequency::Daily {
@@ -428,10 +438,10 @@ fn build_timeset(rrule: &RRule, dt_start: &DateTime) -> Vec<Time> {
     timeset
 }
 
-fn make_timeset(
-    ii: &IterInfo,
-    counter_date: &DateTime,
-    rrule: &RRule,
+fn make_timeset<TZ: chrono::TimeZone>(
+    ii: &IterInfo<TZ>,
+    counter_date: &chrono::DateTime<TZ>,
+    rrule: &RRule<TZ>,
 ) -> Result<Vec<Time>, RRuleError> {
     if rrule.freq < Frequency::Hourly {
         return Ok(build_timeset(rrule, counter_date));

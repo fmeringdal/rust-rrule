@@ -5,7 +5,7 @@ use crate::RRuleSet;
 fn issue_34() {
     let dates = "DTSTART;TZID=America/New_York:19970929T090000
 RRULE:FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-2"
-        .parse::<RRuleSet>()
+        .parse::<RRuleSet<chrono_tz::Tz>>()
         .unwrap()
         .all(7)
         .unwrap();
@@ -26,7 +26,7 @@ RRULE:FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-2"
 #[test]
 #[ignore = "stick in an infinite loop in exrule calculation"]
 fn edge_case_1() {
-    let rrule_set: RRuleSet = "DTSTART;TZID=Europe/Berlin:20210101T000000;
+    let rrule_set: RRuleSet<chrono_tz::Tz> = "DTSTART;TZID=Europe/Berlin:20210101T000000;
 RRULE:FREQ=MONTHLY
 EXRULE:FREQ=MONTHLY"
         .parse()
@@ -38,7 +38,7 @@ EXRULE:FREQ=MONTHLY"
 #[test]
 #[ignore = "This time doesn't exist at all and some rruleset errors must be there: https://www.timeanddate.com/time/change/germany/berlin?year=1893"]
 fn edge_case_2() {
-    let rrule_set: RRuleSet = "DTSTART;TZID=Europe/Berlin:18930401T010000;\nRRULE:FREQ=DAILY"
+    let rrule_set: RRuleSet<chrono_tz::Tz> = "DTSTART;TZID=Europe/Berlin:18930401T010000;\nRRULE:FREQ=DAILY"
         .parse()
         .expect("The RRule is not valid");
 

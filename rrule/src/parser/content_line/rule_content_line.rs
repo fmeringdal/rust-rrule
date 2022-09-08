@@ -4,7 +4,6 @@ use chrono::Weekday;
 use chrono_tz::UTC;
 
 use crate::{
-    core::DateTime,
     parser::{
         content_line::parameters::parse_parameters,
         datetime::{datestring_to_date, parse_weekdays},
@@ -66,11 +65,16 @@ impl FromStr for RRuleProperty {
     }
 }
 
-impl<'a> TryFrom<(ContentLineCaptures<'a>, &StartDateContentLine)> for RRule<Unvalidated> {
+impl<'a>
+    TryFrom<(
+        ContentLineCaptures<'a>,
+        &StartDateContentLine<chrono_tz::Tz>,
+    )> for RRule<chrono_tz::Tz, Unvalidated>
+{
     type Error = ParseError;
 
     fn try_from(
-        (value, dtstart): (ContentLineCaptures, &StartDateContentLine),
+        (value, dtstart): (ContentLineCaptures, &StartDateContentLine<chrono_tz::Tz>),
     ) -> Result<Self, Self::Error> {
         if let Some(parameters) = value.parameters {
             if !parameters.is_empty() {
@@ -90,8 +94,8 @@ impl<'a> TryFrom<(ContentLineCaptures<'a>, &StartDateContentLine)> for RRule<Unv
 #[allow(clippy::too_many_lines)]
 fn props_to_rrule(
     props: HashMap<RRuleProperty, String>,
-    dtstart: &StartDateContentLine,
-) -> Result<RRule<Unvalidated>, ParseError> {
+    dtstart: &StartDateContentLine<chrono_tz::Tz>,
+) -> Result<RRule<chrono_tz::Tz, Unvalidated>, ParseError> {
     let freq = props
         .get(&RRuleProperty::Freq)
         .map(|freq| Frequency::from_str(freq))
@@ -116,7 +120,7 @@ fn props_to_rrule(
         .transpose()?;
     let until = props
         .get(&RRuleProperty::Until)
-        .map(|until| parse_until(until, dtstart))
+        .map(|until| parse_until::<chrono_tz::Tz>(until, dtstart))
         .transpose()?;
     let week_start = props
         .get(&RRuleProperty::Wkst)
@@ -230,7 +234,10 @@ fn props_to_rrule(
 }
 
 /// Parses UNTIL string to a `DateTime` based on values parsed from the start date.
-fn parse_until(until: &str, dtstart: &StartDateContentLine) -> Result<DateTime, ParseError> {
+fn parse_until<TZ: chrono::TimeZone>(
+    until: &str,
+    dtstart: &StartDateContentLine<chrono_tz::Tz>,
+) -> Result<chrono::DateTime<chrono_tz::Tz>, ParseError> {
     let until_value = if until.len() > 8 { "DATE-TIME" } else { "DATE" };
     if until_value != dtstart.value {
         return Err(ParseError::DtStartUntilMismatchValue);

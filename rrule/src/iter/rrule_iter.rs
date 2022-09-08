@@ -3,23 +3,19 @@ use super::{
     utils::from_ordinal, IterInfo, MAX_ITER_LOOP,
 };
 use crate::core::utils::collect_or_error;
-use crate::{
-    core::{DateTime, Time},
-    Frequency, RRule, RRuleError, WithError,
-};
-use chrono::TimeZone;
+use crate::{core::Time, Frequency, RRule, RRuleError, WithError};
 use chrono::{Datelike, Timelike};
 use std::collections::VecDeque;
 
 #[derive(Debug, Clone)]
-pub(crate) struct RRuleIter<'a> {
+pub(crate) struct RRuleIter<'a, TZ: chrono::TimeZone> {
     /// Date the iterator is currently at.
-    pub(crate) counter_date: DateTime,
-    pub(crate) ii: IterInfo<'a>,
+    pub(crate) counter_date: chrono::DateTime<TZ>,
+    pub(crate) ii: IterInfo<'a, TZ>,
     pub(crate) timeset: Vec<Time>,
-    pub(crate) dt_start: DateTime,
+    pub(crate) dt_start: chrono::DateTime<TZ>,
     /// Buffer of datetimes not yet yielded
-    pub(crate) buffer: VecDeque<DateTime>,
+    pub(crate) buffer: VecDeque<chrono::DateTime<TZ>>,
     /// Indicate of iterator should not return more items.
     /// Once set `true` is will always return `None`.
     pub(crate) finished: bool,
@@ -30,18 +26,21 @@ pub(crate) struct RRuleIter<'a> {
     pub(crate) error: Option<RRuleError>,
 }
 
-impl<'a> RRuleIter<'a> {
-    pub(crate) fn new(rrule: &'a RRule, dt_start: &DateTime) -> Result<Self, RRuleError> {
+impl<'a, TZ: chrono::TimeZone> RRuleIter<'a, TZ> {
+    pub(crate) fn new(
+        rrule: &'a RRule<TZ>,
+        dt_start: &chrono::DateTime<TZ>,
+    ) -> Result<Self, RRuleError> {
         let ii = IterInfo::new(rrule, dt_start)?;
 
         let timeset = make_timeset(&ii, dt_start, rrule)?;
         let count = ii.get_rrule().count;
 
         Ok(RRuleIter {
-            counter_date: *dt_start,
+            counter_date: dt_start.clone(),
             ii,
             timeset,
-            dt_start: *dt_start,
+            dt_start: dt_start.clone(),
             buffer: VecDeque::new(),
             finished: false,
             count,
@@ -144,7 +143,7 @@ impl<'a> RRuleIter<'a> {
                             .checked_add_signed(timeset.duration_from_midnight())
                             .ok_or_else(|| RRuleError::new_iter_err("Invalid datetime."))?;
 
-                        if rrule.until.is_some() && res > rrule.until.unwrap() {
+                        if rrule.until.is_some() && res > *rrule.until.as_ref().unwrap() {
                             return Ok(true);
                         }
                         if res >= self.dt_start {
@@ -175,7 +174,7 @@ impl<'a> RRuleIter<'a> {
                 )?;
 
                 for res in pos_list {
-                    if rrule.until.is_some() && res > rrule.until.unwrap() {
+                    if rrule.until.is_some() && res > *rrule.until.as_ref().unwrap() {
                         continue; // or break ?
                     }
 
@@ -197,7 +196,7 @@ impl<'a> RRuleIter<'a> {
             }
 
             // Handle frequency and interval
-            self.counter_date = increment_counter_date(self.counter_date, rrule, filtered)?;
+            self.counter_date = increment_counter_date(self.counter_date.clone(), rrule, filtered)?;
 
             #[allow(clippy::cast_possible_truncation)]
             if rrule.freq == Frequency::Hourly
@@ -230,15 +229,15 @@ impl<'a> RRuleIter<'a> {
     /// list, if they are found in the recurrence set.
     pub(crate) fn all_between(
         self,
-        start: DateTime,
-        end: DateTime,
+        start: chrono::DateTime<TZ>,
+        end: chrono::DateTime<TZ>,
         inclusive: bool,
-    ) -> Result<Vec<DateTime>, RRuleError> {
+    ) -> Result<Vec<chrono::DateTime<TZ>>, RRuleError> {
         collect_or_error(self, &Some(start), &Some(end), inclusive, u16::MAX)
     }
 }
 
-impl<'a> WithError for RRuleIter<'a> {
+impl<'a, TZ: chrono::TimeZone> WithError for RRuleIter<'a, TZ> {
     fn has_err(&self) -> bool {
         self.error.is_some()
     }
@@ -248,8 +247,8 @@ impl<'a> WithError for RRuleIter<'a> {
     }
 }
 
-impl<'a> Iterator for RRuleIter<'a> {
-    type Item = DateTime;
+impl<'a, TZ: chrono::TimeZone> Iterator for RRuleIter<'a, TZ> {
+    type Item = chrono::DateTime<TZ>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if !self.buffer.is_empty() {

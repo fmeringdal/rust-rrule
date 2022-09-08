@@ -7,7 +7,6 @@ mod start_date_content_line;
 use std::fmt::Display;
 use std::str::FromStr;
 
-use crate::core::DateTime;
 use crate::RRule;
 use crate::Unvalidated;
 
@@ -17,11 +16,11 @@ pub(crate) use start_date_content_line::StartDateContentLine;
 use super::ParseError;
 
 #[derive(Debug, PartialEq)]
-pub(crate) enum ContentLine {
-    RRule(RRule<Unvalidated>),
-    ExRule(RRule<Unvalidated>),
-    ExDate(Vec<DateTime>),
-    RDate(Vec<DateTime>),
+pub(crate) enum ContentLine<TZ: chrono::TimeZone> {
+    RRule(RRule<TZ, Unvalidated>),
+    ExRule(RRule<TZ, Unvalidated>),
+    ExDate(Vec<chrono::DateTime<TZ>>),
+    RDate(Vec<chrono::DateTime<TZ>>),
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]

@@ -1,37 +1,36 @@
 use super::{rrule_iter::RRuleIter, MAX_ITER_LOOP};
-use crate::{core::DateTime, RRule, RRuleError, RRuleSet, WithError};
-use chrono::TimeZone;
+use crate::{RRule, RRuleError, RRuleSet, WithError};
 use std::collections::BTreeSet;
 use std::{collections::HashMap, iter::Iterator};
 
 #[derive(Debug, Clone)]
 /// Iterator over all the dates in an [`RRuleSet`].
-pub struct RRuleSetIter<'a> {
-    queue: HashMap<usize, DateTime>,
-    rrule_iters: Vec<RRuleIter<'a>>,
-    exrules: &'a Vec<RRule>,
+pub struct RRuleSetIter<'a, TZ: chrono::TimeZone> {
+    queue: HashMap<usize, chrono::DateTime<TZ>>,
+    rrule_iters: Vec<RRuleIter<'a, TZ>>,
+    exrules: &'a Vec<RRule<TZ>>,
     exdates: BTreeSet<i64>,
     /// Sorted additional dates in descending order
-    rdates: Vec<DateTime>,
+    rdates: Vec<chrono::DateTime<TZ>>,
     /// Store the last error, so it can be handled by the user.
     error: Option<RRuleError>,
-    dt_start: DateTime,
+    dt_start: chrono::DateTime<TZ>,
 }
 
-impl<'a> RRuleSetIter<'a> {
+impl<'a, TZ: chrono::TimeZone + 'a> RRuleSetIter<'a, TZ> {
     fn generate_date(
-        dates: &mut Vec<DateTime>,
-        exrules: &[RRule],
+        dates: &mut Vec<chrono::DateTime<TZ>>,
+        exrules: &[RRule<TZ>],
         exdates: &mut BTreeSet<i64>,
-        dt_start: &DateTime,
-    ) -> Result<Option<DateTime>, RRuleError> {
+        dt_start: &chrono::DateTime<TZ>,
+    ) -> Result<Option<chrono::DateTime<TZ>>, RRuleError> {
         if dates.is_empty() {
             return Ok(None);
         }
 
         let mut date = dates.remove(dates.len() - 1);
         let mut loop_counter: u32 = 0;
-        while Self::is_date_excluded(&Some(date), exrules, exdates, dt_start) {
+        while Self::is_date_excluded(&Some(date.clone()), exrules, exdates, dt_start) {
             if dates.is_empty() {
                 return Ok(None);
             }
@@ -51,11 +50,11 @@ impl<'a> RRuleSetIter<'a> {
     }
 
     fn generate(
-        rrule_iter: &mut RRuleIter,
-        exrules: &[RRule],
+        rrule_iter: &mut RRuleIter<TZ>,
+        exrules: &[RRule<TZ>],
         exdates: &mut BTreeSet<i64>,
-        dt_start: &DateTime,
-    ) -> Result<Option<DateTime>, RRuleError> {
+        dt_start: &chrono::DateTime<TZ>,
+    ) -> Result<Option<chrono::DateTime<TZ>>, RRuleError> {
         let mut date = rrule_iter.next();
         let mut loop_counter: u32 = 0;
         while Self::is_date_excluded(&date, exrules, exdates, dt_start) {
@@ -76,10 +75,10 @@ impl<'a> RRuleSetIter<'a> {
     }
 
     fn is_date_excluded(
-        date: &Option<DateTime>,
-        exrules: &[RRule],
+        date: &Option<chrono::DateTime<TZ>>,
+        exrules: &[RRule<TZ>],
         exdates: &mut BTreeSet<i64>,
-        dt_start: &DateTime,
+        dt_start: &chrono::DateTime<TZ>,
     ) -> bool {
         match date {
             None => false,
@@ -90,8 +89,8 @@ impl<'a> RRuleSetIter<'a> {
                     let start = date.timezone().timestamp(ts - 1, 0);
                     let end = date.timezone().timestamp(ts + 1, 0);
                     for exrule in exrules {
-                        let ex = exrule.iter_with_ctx(*dt_start);
-                        for date in ex.all_between(start, end, true).unwrap() {
+                        let ex = exrule.iter_with_ctx(dt_start.clone());
+                        for date in ex.all_between(start.clone(), end.clone(), true).unwrap() {
                             exdates.insert(date.timestamp());
                         }
                     }
@@ -103,7 +102,7 @@ impl<'a> RRuleSetIter<'a> {
     }
 }
 
-impl<'a> WithError for RRuleSetIter<'a> {
+impl<'a, TZ: chrono::TimeZone> WithError for RRuleSetIter<'a, TZ> {
     fn has_err(&self) -> bool {
         self.error.is_some()
     }
@@ -113,11 +112,11 @@ impl<'a> WithError for RRuleSetIter<'a> {
     }
 }
 
-impl<'a> Iterator for RRuleSetIter<'a> {
-    type Item = DateTime;
+impl<'a, TZ: chrono::TimeZone> Iterator for RRuleSetIter<'a, TZ> {
+    type Item = chrono::DateTime<TZ>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let mut next_date: Option<(usize, DateTime)> = None;
+        let mut next_date: Option<(usize, chrono::DateTime<TZ>)> = None;
 
         // If there already was an error, return the error again.
         if let Some(err) = self.get_err() {
@@ -148,12 +147,12 @@ impl<'a> Iterator for RRuleSetIter<'a> {
             };
 
             if let Some(next_rrule_date) = next_rrule_date {
-                match next_date {
+                match &next_date {
                     None => next_date = Some((i, next_rrule_date)),
                     Some(date) => {
                         if date.1 >= next_rrule_date {
                             // Add previous date to its rrule queue
-                            self.queue.insert(date.0, date.1);
+                            self.queue.insert(date.0.clone(), date.1.clone());
 
                             // Update next_date
                             next_date = Some((i, next_rrule_date));
@@ -206,10 +205,10 @@ impl<'a> Iterator for RRuleSetIter<'a> {
     }
 }
 
-impl<'a> IntoIterator for &'a RRuleSet {
-    type Item = DateTime;
+impl<'a, TZ: chrono::TimeZone> IntoIterator for &'a RRuleSet<TZ> {
+    type Item = chrono::DateTime<TZ>;
 
-    type IntoIter = RRuleSetIter<'a>;
+    type IntoIter = RRuleSetIter<'a, TZ>;
 
     fn into_iter(self) -> Self::IntoIter {
         // Sort in decreasing order
@@ -222,13 +221,17 @@ impl<'a> IntoIterator for &'a RRuleSet {
             rrule_iters: self
                 .rrule
                 .iter()
-                .map(|rrule| rrule.iter_with_ctx(self.dt_start))
+                .map(|rrule| rrule.iter_with_ctx(self.dt_start.clone()))
                 .collect(),
             rdates: rdates_sorted,
             exrules: &self.exrule,
-            exdates: self.exdate.iter().map(DateTime::timestamp).collect(),
+            exdates: self
+                .exdate
+                .iter()
+                .map(chrono::DateTime::timestamp)
+                .collect(),
             error: None,
-            dt_start: self.dt_start,
+            dt_start: self.dt_start.clone(),
         }
     }
 }

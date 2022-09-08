@@ -1,6 +1,5 @@
 use std::ops::RangeInclusive;
 
-use crate::core::DateTime;
 use crate::{Frequency, NWeekday, RRule, Unvalidated};
 
 use super::ValidationError;
@@ -36,9 +35,9 @@ pub(crate) static YEAR_RANGE: RangeInclusive<i32> = -262_000..=262_000;
 ///
 // TODO too many lines
 #[warn(clippy::too_many_lines)]
-pub(crate) fn validate_rrule_forced(
-    rrule: &RRule<Unvalidated>,
-    dt_start: &DateTime,
+pub(crate) fn validate_rrule_forced<TZ: chrono::TimeZone>(
+    rrule: &RRule<TZ, Unvalidated>,
+    dt_start: &chrono::DateTime<TZ>,
 ) -> Result<(), ValidationError> {
     // Freq:
     // - Enum, so always valid on its own.
@@ -64,8 +63,10 @@ pub(crate) fn validate_rrule_forced(
         // Check if before `dt_start`
         if until < dt_start {
             return Err(ValidationError::UntilBeforeStart {
-                until: until.to_rfc3339(),
-                dt_start: dt_start.to_rfc3339(),
+                // Using `Debug` here since not `TimeZone` does not imply `Display`.
+                // Notably, `chrono::Local` is not `Display`.
+                until: format!("{:?}", until),
+                dt_start: format!("{:?}", dt_start),
             });
         }
     }
@@ -529,8 +530,8 @@ mod tests {
         assert_eq!(
             err,
             ValidationError::UntilBeforeStart {
-                until: rrule.until.unwrap().to_rfc3339(),
-                dt_start: dt_start.to_rfc3339()
+                until: format!("{:?}", rrule.until.unwrap()),
+                dt_start: format!("{:?}", dt_start),
             }
         );
     }

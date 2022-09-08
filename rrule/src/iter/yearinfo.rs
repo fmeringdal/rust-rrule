@@ -66,7 +66,7 @@ fn base_year_masks(year_weekday: u8, year_len: u16) -> BaseMasks {
     clippy::cast_precision_loss,
     clippy::cast_sign_loss
 )]
-pub(crate) fn rebuild_year(year: i32, rrule: &RRule) -> YearInfo {
+pub(crate) fn rebuild_year<TZ: chrono::TimeZone>(year: i32, rrule: &RRule<TZ>) -> YearInfo {
     let first_year_day = Utc.ymd(year, 1, 1).and_hms(0, 0, 0);
 
     let year_len = get_year_len(year);

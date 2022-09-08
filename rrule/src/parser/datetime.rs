@@ -4,7 +4,7 @@ use chrono::{NaiveDate, TimeZone, Weekday};
 use chrono_tz::{Tz, UTC};
 
 use super::{regex::ParsedDateString, ParseError};
-use crate::{core::DateTime, NWeekday};
+use crate::NWeekday;
 
 /// Attempts to convert a `str` to a `chrono_tz::Tz`.
 pub(crate) fn parse_timezone(tz: &str) -> Result<Tz, ParseError> {
@@ -16,9 +16,9 @@ pub(crate) fn parse_timezone(tz: &str) -> Result<Tz, ParseError> {
 /// argument will be ignored.
 pub(crate) fn datestring_to_date(
     dt: &str,
-    tz: Option<Tz>,
+    tz: Option<chrono_tz::Tz>,
     property: &str,
-) -> Result<DateTime, ParseError> {
+) -> Result<chrono::DateTime<Tz>, ParseError> {
     let ParsedDateString {
         year,
         month,
@@ -75,8 +75,8 @@ pub(crate) fn datestring_to_date(
                         Err(ParseError::DateTimeInLocalTimezoneIsAmbiguous {
                             value: dt.into(),
                             property: property.into(),
-                            date1: date1.to_rfc3339(),
-                            date2: date2.to_rfc3339(),
+                            date1: format!("{:?}", date1),
+                            date2: format!("{:?}", date2),
                         })
                     }
                 }?

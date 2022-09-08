@@ -6,7 +6,7 @@ use crate::RRuleSet;
 fn monthly_on_31th() {
     let dates = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=MONTHLY;COUNT=10;BYMONTHDAY=31"
-        .parse::<RRuleSet>()
+        .parse::<RRuleSet<_>>()
         .unwrap()
         .all(20)
         .unwrap();
@@ -33,7 +33,7 @@ fn monthly_on_31th() {
 fn monthly_on_31th_to_last() {
     let dates = "DTSTART;TZID=America/New_York:19970902T090000\n\
         RRULE:FREQ=MONTHLY;COUNT=10;BYMONTHDAY=-31"
-        .parse::<RRuleSet>()
+        .parse::<RRuleSet<_>>()
         .unwrap()
         .all(20)
         .unwrap();

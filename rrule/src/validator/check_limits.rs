@@ -1,4 +1,3 @@
-use crate::core::DateTime;
 use crate::{validator::ValidationError, RRule, Unvalidated};
 
 /// Maximum value of `option.interval` when frequency is yearly.
@@ -48,9 +47,9 @@ pub(crate) static FREQ_SECONDLY_INTERVAL_MAX: u16 = 50_000;
 /// When `no-validation-limits` feature is set this function will always return `Ok`.
 /// See README.md for more info.
 #[cfg(not(feature = "no-validation-limits"))]
-pub(crate) fn check_limits(
-    rrule: &RRule<Unvalidated>,
-    dt_start: &DateTime,
+pub(crate) fn check_limits<TZ: chrono::TimeZone>(
+    rrule: &RRule<TZ, Unvalidated>,
+    dt_start: &chrono::DateTime<TZ>,
 ) -> Result<(), ValidationError> {
     use crate::{validator::YEAR_RANGE, Frequency};
     use chrono::Datelike;

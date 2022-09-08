@@ -9,13 +9,13 @@ pub(crate) struct MonthInfo {
     pub neg_weekday_mask: Vec<i8>,
 }
 
-pub(crate) fn rebuild_month(
+pub(crate) fn rebuild_month<TZ: chrono::TimeZone>(
     year: i32,
     month: u8,
     year_len: u16,
     month_range: &[u16],
     weekday_mask: &[u8],
-    rrule: &RRule,
+    rrule: &RRule<TZ>,
 ) -> Result<MonthInfo, RRuleError> {
     let mut result = MonthInfo {
         last_year: year,

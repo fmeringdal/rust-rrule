@@ -1,11 +1,10 @@
-use crate::core::DateTime;
 use chrono::{TimeZone, Utc};
 use chrono_tz::UTC;
 
 const DAY_SECS: i64 = 24 * 60 * 60;
 
 /// Converts number of days since unix epoch back to `DataTime`
-pub(crate) fn from_ordinal(ordinal: i64) -> DateTime {
+pub(crate) fn from_ordinal(ordinal: i64) -> chrono::DateTime<chrono_tz::Tz> {
     let timestamp = ordinal * DAY_SECS;
     UTC.timestamp(timestamp, 0)
 }

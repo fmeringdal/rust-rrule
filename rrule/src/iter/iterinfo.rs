@@ -5,22 +5,21 @@ use super::{
     utils::to_ordinal,
     yearinfo::{rebuild_year, YearInfo},
 };
-use crate::core::DateTime;
 use crate::{core::Time, Frequency, NWeekday, RRule, RRuleError};
 use chrono::{Datelike, TimeZone};
 
 #[derive(Debug, Clone)]
-pub(crate) struct IterInfo<'a> {
+pub(crate) struct IterInfo<'a, TZ: chrono::TimeZone> {
     year_info: Option<YearInfo>,
     month_info: Option<MonthInfo>,
     easter_mask: Option<Vec<isize>>,
-    rrule: &'a RRule,
+    rrule: &'a RRule<TZ>,
 }
 
-impl<'a> IterInfo<'a> {
+impl<'a, TZ: chrono::TimeZone> IterInfo<'a, TZ> {
     /// Only used to create a dummy instance of this because
     /// `into_iter` does not return an error.
-    pub(crate) fn new_no_rebuild(rrule: &'a RRule) -> Self {
+    pub(crate) fn new_no_rebuild(rrule: &'a RRule<TZ>) -> Self {
         Self {
             rrule,
             year_info: None,
@@ -29,7 +28,7 @@ impl<'a> IterInfo<'a> {
         }
     }
 
-    pub fn new(rrule: &'a RRule, dt_start: &DateTime) -> Result<Self, RRuleError> {
+    pub fn new(rrule: &'a RRule<TZ>, dt_start: &chrono::DateTime<TZ>) -> Result<Self, RRuleError> {
         let mut ii = Self {
             rrule,
             year_info: None,
@@ -259,7 +258,7 @@ impl<'a> IterInfo<'a> {
         }
     }
 
-    pub fn get_rrule(&self) -> &RRule {
+    pub fn get_rrule(&self) -> &RRule<TZ> {
         self.rrule
     }
 }
