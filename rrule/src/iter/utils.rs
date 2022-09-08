@@ -1,6 +1,6 @@
 use std::ops;
 
-use crate::core::{duration_from_midnight, DateTime, Tz};
+use crate::core::{duration_from_midnight, Tz};
 use chrono::{Date, NaiveTime, TimeZone, Utc};
 
 const UTC: Tz = Tz::UTC;
@@ -8,7 +8,7 @@ const UTC: Tz = Tz::UTC;
 const DAY_SECS: i64 = 24 * 60 * 60;
 
 /// Converts number of days since unix epoch back to `DataTime`
-pub(crate) fn from_ordinal(ordinal: i64) -> DateTime {
+pub(crate) fn from_ordinal(ordinal: i64) -> chrono::DateTime<crate::Tz> {
     let timestamp = ordinal * DAY_SECS;
     UTC.timestamp(timestamp, 0)
 }
@@ -73,7 +73,10 @@ where
     }
 }
 
-pub(crate) fn add_time_to_date(date: Date<Tz>, time: NaiveTime) -> Option<DateTime> {
+pub(crate) fn add_time_to_date<TZ: chrono::TimeZone>(
+    date: Date<TZ>,
+    time: NaiveTime,
+) -> Option<chrono::DateTime<TZ>> {
     if let Some(dt) = date.and_time(time) {
         return Some(dt);
     }

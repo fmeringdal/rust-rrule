@@ -54,7 +54,7 @@ pub(crate) struct YearInfo {
 }
 
 impl YearInfo {
-    pub fn new(year: i32, rrule: &RRule) -> Self {
+    pub fn new<TZ: chrono::TimeZone>(year: i32, rrule: &RRule<TZ>) -> Self {
         let first_year_day = Utc.ymd(year, 1, 1).and_hms(0, 0, 0);
 
         let year_len = get_year_len(year);

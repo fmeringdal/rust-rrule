@@ -18,12 +18,12 @@ use self::content_line::{PropertyName, StartDateContentLine};
 
 /// Grammar represents a well formatted rrule input.
 #[derive(Debug, PartialEq)]
-pub(crate) struct Grammar {
-    pub start: StartDateContentLine,
-    pub content_lines: Vec<ContentLine>,
+pub(crate) struct Grammar<TZ: chrono::TimeZone> {
+    pub start: StartDateContentLine<TZ>,
+    pub content_lines: Vec<ContentLine<TZ>>,
 }
 
-impl FromStr for Grammar {
+impl FromStr for Grammar<crate::Tz> {
     type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -39,7 +39,7 @@ impl FromStr for Grammar {
             .map(StartDateContentLine::try_from)
             .ok_or(ParseError::MissingStartDate)??;
 
-        let mut content_lines = vec![];
+        let mut content_lines: Vec<ContentLine<crate::Tz>> = vec![];
 
         for parts in content_lines_parts {
             let line = match parts.property_name {

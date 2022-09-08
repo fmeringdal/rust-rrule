@@ -1,6 +1,5 @@
 use crate::core::datetime::datetime_to_ical_format;
 use crate::core::utils::collect_with_error;
-use crate::core::DateTime;
 use crate::parser::{ContentLine, Grammar};
 use crate::{RRule, RRuleError};
 #[cfg(feature = "serde")]
@@ -12,37 +11,40 @@ use std::str::FromStr;
 #[cfg_attr(feature = "serde", serde_as)]
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
-pub struct RRuleSet {
+pub struct RRuleSet<TZ: chrono::TimeZone> {
     /// List of rrules.
-    pub(crate) rrule: Vec<RRule>,
+    pub(crate) rrule: Vec<RRule<TZ>>,
     /// List of rdates.
-    pub(crate) rdate: Vec<DateTime>,
+    pub(crate) rdate: Vec<chrono::DateTime<TZ>>,
     /// List of exules.
-    pub(crate) exrule: Vec<RRule>,
+    pub(crate) exrule: Vec<RRule<TZ>>,
     /// List of exdates.
-    pub(crate) exdate: Vec<DateTime>,
+    pub(crate) exdate: Vec<chrono::DateTime<TZ>>,
     /// The start datetime of the recurring event.
-    pub(crate) dt_start: DateTime,
+    pub(crate) dt_start: chrono::DateTime<TZ>,
     /// If set, all returned recurrences must be before this date.
-    pub(crate) before: Option<DateTime>,
+    pub(crate) before: Option<chrono::DateTime<TZ>>,
     /// If set, all returned recurrences must be after this date.
-    pub(crate) after: Option<DateTime>,
+    pub(crate) after: Option<chrono::DateTime<TZ>>,
     /// If validation limits are enabled
     pub(crate) limited: bool,
 }
 
 /// The return result of `RRuleSet::all`.
-pub struct RRuleResult {
+pub struct RRuleResult<TZ: chrono::TimeZone> {
     /// List of recurrences.
-    pub dates: Vec<DateTime>,
+    pub dates: Vec<chrono::DateTime<TZ>>,
     /// It is be true, if the list of dates is limited. To indicate that it can potentially contain more dates.
     pub limited: bool,
 }
 
-impl RRuleSet {
+impl<TZ: chrono::TimeZone> RRuleSet<TZ> {
     /// Creates an empty [`RRuleSet`], starting from `ds_start`.
     #[must_use]
-    pub fn new(dt_start: DateTime) -> Self {
+    pub fn new(dt_start: chrono::DateTime<TZ>) -> Self
+    where
+        TZ: chrono::TimeZone,
+    {
         Self {
             dt_start,
             rrule: vec![],
@@ -68,7 +70,7 @@ impl RRuleSet {
     ///
     /// This value will not be used if you use the `Iterator` API directly.
     #[must_use]
-    pub fn before(mut self, dt: DateTime) -> Self {
+    pub fn before(mut self, dt: chrono::DateTime<TZ>) -> Self {
         self.before = Some(dt);
         self
     }
@@ -77,14 +79,14 @@ impl RRuleSet {
     ///
     /// This value will not be used if you use the `Iterator` API directly.
     #[must_use]
-    pub fn after(mut self, dt: DateTime) -> Self {
+    pub fn after(mut self, dt: chrono::DateTime<TZ>) -> Self {
         self.after = Some(dt);
         self
     }
 
     /// Adds a new rrule to the set.
     #[must_use]
-    pub fn rrule(mut self, rrule: RRule) -> Self {
+    pub fn rrule(mut self, rrule: RRule<TZ>) -> Self {
         self.rrule.push(rrule);
         self
     }
@@ -92,28 +94,28 @@ impl RRuleSet {
     /// Adds a new exrule to the set.
     #[must_use]
     #[cfg(feature = "exrule")]
-    pub fn exrule(mut self, rrule: RRule) -> Self {
+    pub fn exrule(mut self, rrule: RRule<TZ>) -> Self {
         self.exrule.push(rrule);
         self
     }
 
     /// Adds a new rdate to the set.
     #[must_use]
-    pub fn rdate(mut self, rdate: DateTime) -> Self {
+    pub fn rdate(mut self, rdate: chrono::DateTime<TZ>) -> Self {
         self.rdate.push(rdate);
         self
     }
 
     /// Adds a new exdate to the set.
     #[must_use]
-    pub fn exdate(mut self, exdate: DateTime) -> Self {
+    pub fn exdate(mut self, exdate: chrono::DateTime<TZ>) -> Self {
         self.exdate.push(exdate);
         self
     }
 
     /// Sets the rrules of the set.
     #[must_use]
-    pub fn set_rrules(mut self, rrules: Vec<RRule>) -> Self {
+    pub fn set_rrules(mut self, rrules: Vec<RRule<TZ>>) -> Self {
         self.rrule = rrules;
         self
     }
@@ -121,52 +123,52 @@ impl RRuleSet {
     /// Sets the exrules of the set.
     #[must_use]
     #[cfg(feature = "exrule")]
-    pub fn set_exrules(mut self, exrules: Vec<RRule>) -> Self {
+    pub fn set_exrules(mut self, exrules: Vec<RRule<TZ>>) -> Self {
         self.exrule = exrules;
         self
     }
 
     /// Sets the rdates of the set.
     #[must_use]
-    pub fn set_rdates(mut self, rdates: Vec<DateTime>) -> Self {
+    pub fn set_rdates(mut self, rdates: Vec<chrono::DateTime<TZ>>) -> Self {
         self.rdate = rdates;
         self
     }
 
     /// Set the exdates of the set.
     #[must_use]
-    pub fn set_exdates(mut self, exdates: Vec<DateTime>) -> Self {
+    pub fn set_exdates(mut self, exdates: Vec<chrono::DateTime<TZ>>) -> Self {
         self.exdate = exdates;
         self
     }
 
     /// Returns the rrules of the set.
     #[must_use]
-    pub fn get_rrule(&self) -> &Vec<RRule> {
+    pub fn get_rrule(&self) -> &Vec<RRule<TZ>> {
         &self.rrule
     }
 
     /// Returns the exrules of the set.
     #[must_use]
-    pub fn get_exrule(&self) -> &Vec<RRule> {
+    pub fn get_exrule(&self) -> &Vec<RRule<TZ>> {
         &self.exrule
     }
 
     /// Returns the rdates of the set.
     #[must_use]
-    pub fn get_rdate(&self) -> &Vec<DateTime> {
+    pub fn get_rdate(&self) -> &Vec<chrono::DateTime<TZ>> {
         &self.rdate
     }
 
     /// Returns the exdates of the set.
     #[must_use]
-    pub fn get_exdate(&self) -> &Vec<DateTime> {
+    pub fn get_exdate(&self) -> &Vec<chrono::DateTime<TZ>> {
         &self.exdate
     }
 
     /// Returns the start datetime of the recurring event.
     #[must_use]
-    pub fn get_dt_start(&self) -> &DateTime {
+    pub fn get_dt_start(&self) -> &chrono::DateTime<TZ> {
         &self.dt_start
     }
 
@@ -188,7 +190,7 @@ impl RRuleSet {
     /// assert_eq!(result.limited, true);
     /// ```
     #[must_use]
-    pub fn all(mut self, limit: u16) -> RRuleResult {
+    pub fn all(mut self, limit: u16) -> RRuleResult<TZ> {
         self.limited = true;
         collect_with_error(
             self.into_iter(),
@@ -206,12 +208,12 @@ impl RRuleSet {
     /// This method does not enforce any validation limits and might lead to
     /// very long iteration times. Please read the `SECURITY.md` for more information.
     #[must_use]
-    pub fn all_unchecked(self) -> Vec<DateTime> {
+    pub fn all_unchecked(self) -> Vec<chrono::DateTime<TZ>> {
         collect_with_error(self.into_iter(), &self.after, &self.before, true, None).dates
     }
 }
 
-impl FromStr for RRuleSet {
+impl FromStr for RRuleSet<crate::Tz> {
     type Err = RRuleError;
 
     /// Creates an [`RRuleSet`] from a string if input is valid.
@@ -256,7 +258,7 @@ impl FromStr for RRuleSet {
     }
 }
 
-impl Display for RRuleSet {
+impl Display for RRuleSet<crate::Tz> {
     /// Prints a valid set of iCalendar properties which can be used to create a new [`RRuleSet`] later.
     /// You may use the generated string to create a new iCalendar component, like VEVENT.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

@@ -1,10 +1,7 @@
 use std::str::FromStr;
 
 use super::{regex::ParsedDateString, ParseError};
-use crate::{
-    core::{DateTime, Tz},
-    NWeekday,
-};
+use crate::{core::Tz, NWeekday};
 use chrono::{NaiveDate, TimeZone, Weekday};
 
 /// Attempts to convert a `str` to a `chrono_tz::Tz`.
@@ -19,9 +16,9 @@ pub(crate) fn parse_timezone(tz: &str) -> Result<Tz, ParseError> {
 /// argument will be ignored.
 pub(crate) fn datestring_to_date(
     dt: &str,
-    tz: Option<Tz>,
+    tz: Option<crate::Tz>,
     property: &str,
-) -> Result<DateTime, ParseError> {
+) -> Result<chrono::DateTime<crate::Tz>, ParseError> {
     let ParsedDateString {
         year,
         month,
@@ -78,8 +75,8 @@ pub(crate) fn datestring_to_date(
                         Err(ParseError::DateTimeInLocalTimezoneIsAmbiguous {
                             value: dt.into(),
                             property: property.into(),
-                            date1: date1.to_rfc3339(),
-                            date2: date2.to_rfc3339(),
+                            date1: format!("{:?}", date1),
+                            date2: format!("{:?}", date2),
                         })
                     }
                 }?

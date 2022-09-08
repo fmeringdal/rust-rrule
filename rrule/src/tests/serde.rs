@@ -24,7 +24,7 @@ fn serialize_deserialize_json_to_and_from_rrule_set() {
     #[derive(orig_serde::Deserialize, orig_serde::Serialize, PartialEq, Eq, Debug)]
     #[serde(crate = "orig_serde")]
     struct RruleTest {
-        rrule: RRuleSet,
+        rrule: RRuleSet<crate::Tz>,
     }
 
     let test_cases = [

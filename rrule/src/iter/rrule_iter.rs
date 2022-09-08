@@ -2,20 +2,20 @@ use super::counter_date::DateTimeIter;
 use super::utils::add_time_to_date;
 use super::{build_pos_list, utils::from_ordinal, IterInfo, MAX_ITER_LOOP};
 use crate::core::{get_hour, get_minute, get_second};
-use crate::{core::DateTime, Frequency, RRule};
+use crate::{Frequency, RRule};
 use chrono::Datelike;
-use chrono::{NaiveTime, TimeZone};
+use chrono::NaiveTime;
 use std::collections::VecDeque;
 
 #[derive(Debug, Clone)]
-pub(crate) struct RRuleIter<'a> {
+pub(crate) struct RRuleIter<'a, TZ: chrono::TimeZone> {
     /// Date the iterator is currently at.
     pub(crate) counter_date: DateTimeIter,
-    pub(crate) ii: IterInfo<'a>,
+    pub(crate) ii: IterInfo<'a, TZ>,
     pub(crate) timeset: Vec<NaiveTime>,
-    pub(crate) dt_start: DateTime,
+    pub(crate) dt_start: chrono::DateTime<TZ>,
     /// Buffer of datetimes not yet yielded
-    pub(crate) buffer: VecDeque<DateTime>,
+    pub(crate) buffer: VecDeque<chrono::DateTime<TZ>>,
     /// Indicate of iterator should not return more items.
     /// Once set `true` is will always return `None`.
     pub(crate) finished: bool,
@@ -28,8 +28,12 @@ pub(crate) struct RRuleIter<'a> {
     pub(crate) was_limited: bool,
 }
 
-impl<'a> RRuleIter<'a> {
-    pub(crate) fn new(rrule: &'a RRule, dt_start: &DateTime, limited: bool) -> Self {
+impl<'a, TZ: chrono::TimeZone> RRuleIter<'a, TZ> {
+    pub(crate) fn new(
+        rrule: &'a RRule<TZ>,
+        dt_start: &chrono::DateTime<TZ>,
+        limited: bool,
+    ) -> Self {
         let ii = IterInfo::new(rrule, dt_start);
 
         let hour = get_hour(dt_start);
@@ -42,7 +46,7 @@ impl<'a> RRuleIter<'a> {
             counter_date: dt_start.into(),
             ii,
             timeset,
-            dt_start: *dt_start,
+            dt_start: dt_start.clone(),
             buffer: VecDeque::new(),
             finished: false,
             count,
@@ -54,13 +58,13 @@ impl<'a> RRuleIter<'a> {
     /// Attempts to add a date to the result. Returns `true` if we should
     /// terminate the iteration.
     fn try_add_datetime(
-        dt: DateTime,
-        rrule: &RRule,
+        dt: chrono::DateTime<TZ>,
+        rrule: &RRule<TZ>,
         count: &mut Option<u32>,
-        buffer: &mut VecDeque<DateTime>,
-        dt_start: &DateTime,
+        buffer: &mut VecDeque<chrono::DateTime<TZ>>,
+        dt_start: &chrono::DateTime<TZ>,
     ) -> bool {
-        if matches!(rrule.until, Some(until) if dt > until) {
+        if matches!(&rrule.until, Some(until) if dt > *until) {
             // We can break because `pos_list` is sorted and
             // all the next dates will only be larger than `until`.
             return true;
@@ -135,13 +139,13 @@ impl<'a> RRuleIter<'a> {
                     // just below we'll end up double-applying.
                     let date = from_ordinal(year_ordinal + current_day);
                     // We apply the local-TZ here,
-                    let date = self
+                    let date = &self
                         .dt_start
                         .timezone()
                         .ymd(date.year(), date.month(), date.day());
 
                     for time in &self.timeset {
-                        let dt = match add_time_to_date(date, *time) {
+                        let dt = match add_time_to_date(date.clone(), *time) {
                             Some(dt) => dt,
                             None => continue,
                         };
@@ -204,8 +208,8 @@ impl<'a> RRuleIter<'a> {
     }
 }
 
-impl<'a> Iterator for RRuleIter<'a> {
-    type Item = DateTime;
+impl<'a, TZ: chrono::TimeZone> Iterator for RRuleIter<'a, TZ> {
+    type Item = chrono::DateTime<TZ>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if !self.buffer.is_empty() {
@@ -229,7 +233,7 @@ pub(crate) trait WasLimited {
     fn was_limited(&self) -> bool;
 }
 
-impl<'a> WasLimited for RRuleIter<'a> {
+impl<'a, TZ: chrono::TimeZone> WasLimited for RRuleIter<'a, TZ> {
     fn was_limited(&self) -> bool {
         self.was_limited
     }

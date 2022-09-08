@@ -8,7 +8,7 @@ use rrule::{Frequency, RRule, RRuleSet};
 /// This function uses the data to construct a deterministic input for [`RRuleSet`].
 /// This can also be used to reconstruct the [`RRuleSet`] from crashes in order to debug the code.
 #[must_use]
-pub fn take_rrule_from_data(mut data: &[u8]) -> Option<RRuleSet> {
+pub fn take_rrule_from_data(mut data: &[u8]) -> Option<RRuleSet<rrule::Tz>> {
     // Byte uses: (always account for max used)
     // bytes => variable
     // ----------------

@@ -3810,7 +3810,7 @@ fn test_timezones_weekly() {
 
 #[test]
 fn test_before_inclusive_hit() {
-    let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3"
+    let rrule: RRuleSet<_> = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3"
         .parse()
         .unwrap();
 
@@ -3822,7 +3822,7 @@ fn test_before_inclusive_hit() {
 
 #[test]
 fn test_before_inclusive_miss() {
-    let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3"
+    let rrule: RRuleSet<crate::Tz> = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3"
         .parse()
         .unwrap();
 
@@ -3835,7 +3835,7 @@ fn test_before_inclusive_miss() {
 
 #[test]
 fn test_after_inclusive_hit() {
-    let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3"
+    let rrule: RRuleSet<crate::Tz> = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3"
         .parse()
         .unwrap();
 
@@ -3847,7 +3847,7 @@ fn test_after_inclusive_hit() {
 
 #[test]
 fn test_after_inclusive_miss() {
-    let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3"
+    let rrule: RRuleSet<crate::Tz> = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3"
         .parse()
         .unwrap();
 
@@ -3860,7 +3860,7 @@ fn test_after_inclusive_miss() {
 
 #[test]
 fn test_between_inclusive_both_miss() {
-    let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=5"
+    let rrule: RRuleSet<crate::Tz> = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=5"
         .parse()
         .unwrap();
 
@@ -3875,7 +3875,7 @@ fn test_between_inclusive_both_miss() {
 
 #[test]
 fn test_between_inclusive_lower_miss() {
-    let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=5"
+    let rrule: RRuleSet<crate::Tz> = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=5"
         .parse()
         .unwrap();
 
@@ -3890,7 +3890,7 @@ fn test_between_inclusive_lower_miss() {
 
 #[test]
 fn test_between_inclusive_upper_miss() {
-    let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=5"
+    let rrule: RRuleSet<crate::Tz> = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=5"
         .parse()
         .unwrap();
 
@@ -3905,7 +3905,7 @@ fn test_between_inclusive_upper_miss() {
 
 #[test]
 fn test_between_inclusive_both_hit() {
-    let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=5"
+    let rrule: RRuleSet<crate::Tz> = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=5"
         .parse()
         .unwrap();
 

@@ -9,7 +9,7 @@ pub(crate) struct MonthInfo {
 }
 
 impl MonthInfo {
-    pub fn new(year_info: &YearInfo, month: u8, rrule: &RRule) -> Self {
+    pub fn new<TZ: chrono::TimeZone>(year_info: &YearInfo, month: u8, rrule: &RRule<TZ>) -> Self {
         let neg_weekday_mask = Self::get_neg_weekday_mask(year_info, month, rrule);
         Self {
             last_year: year_info.year,
@@ -18,7 +18,11 @@ impl MonthInfo {
         }
     }
 
-    fn get_neg_weekday_mask(year_info: &YearInfo, month: u8, rrule: &RRule) -> Vec<u8> {
+    fn get_neg_weekday_mask<TZ: chrono::TimeZone>(
+        year_info: &YearInfo,
+        month: u8,
+        rrule: &RRule<TZ>,
+    ) -> Vec<u8> {
         let YearInfo {
             year_len,
             month_range,

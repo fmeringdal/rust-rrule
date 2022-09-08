@@ -1,29 +1,29 @@
 use super::rrule_iter::WasLimited;
 use super::{rrule_iter::RRuleIter, MAX_ITER_LOOP};
-use crate::{core::DateTime, RRuleSet};
+use crate::RRuleSet;
 use std::collections::BTreeSet;
 use std::{collections::HashMap, iter::Iterator};
 
 #[derive(Debug, Clone)]
 /// Iterator over all the dates in an [`RRuleSet`].
-pub struct RRuleSetIter<'a> {
-    queue: HashMap<usize, DateTime>,
+pub struct RRuleSetIter<'a, TZ: chrono::TimeZone> {
+    queue: HashMap<usize, chrono::DateTime<TZ>>,
     limited: bool,
-    rrule_iters: Vec<RRuleIter<'a>>,
-    exrules: Vec<RRuleIter<'a>>,
+    rrule_iters: Vec<RRuleIter<'a, TZ>>,
+    exrules: Vec<RRuleIter<'a, TZ>>,
     exdates: BTreeSet<i64>,
     /// Sorted additional dates in descending order
-    rdates: Vec<DateTime>,
+    rdates: Vec<chrono::DateTime<TZ>>,
     was_limited: bool,
 }
 
-impl<'a> RRuleSetIter<'a> {
+impl<'a, TZ: chrono::TimeZone + 'a> RRuleSetIter<'a, TZ> {
     fn generate_date(
-        dates: &mut Vec<DateTime>,
-        exrules: &mut [RRuleIter],
+        dates: &mut Vec<chrono::DateTime<TZ>>,
+        exrules: &mut [RRuleIter<TZ>],
         exdates: &mut BTreeSet<i64>,
         limited: bool,
-    ) -> (Option<DateTime>, bool) {
+    ) -> (Option<chrono::DateTime<TZ>>, bool) {
         if dates.is_empty() {
             return (None, false);
         }
@@ -53,11 +53,11 @@ impl<'a> RRuleSetIter<'a> {
     }
 
     fn generate(
-        rrule_iter: &mut RRuleIter,
-        exrules: &mut [RRuleIter],
+        rrule_iter: &mut RRuleIter<TZ>,
+        exrules: &mut [RRuleIter<TZ>],
         exdates: &mut BTreeSet<i64>,
         limited: bool,
-    ) -> (Option<DateTime>, bool) {
+    ) -> (Option<chrono::DateTime<TZ>>, bool) {
         let mut date = match rrule_iter.next() {
             Some(d) => d,
             None => return (None, false),
@@ -87,8 +87,8 @@ impl<'a> RRuleSetIter<'a> {
     }
 
     fn is_date_excluded(
-        date: &DateTime,
-        exrules: &mut [RRuleIter],
+        date: &chrono::DateTime<TZ>,
+        exrules: &mut [RRuleIter<TZ>],
         exdates: &mut BTreeSet<i64>,
     ) -> bool {
         for exrule in exrules {
@@ -104,11 +104,11 @@ impl<'a> RRuleSetIter<'a> {
     }
 }
 
-impl<'a> Iterator for RRuleSetIter<'a> {
-    type Item = DateTime;
+impl<'a, TZ: chrono::TimeZone> Iterator for RRuleSetIter<'a, TZ> {
+    type Item = chrono::DateTime<TZ>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let mut next_date: Option<(usize, DateTime)> = None;
+        let mut next_date: Option<(usize, chrono::DateTime<TZ>)> = None;
 
         // If there already was an error, return the error again.
         if self.was_limited {
@@ -138,12 +138,12 @@ impl<'a> Iterator for RRuleSetIter<'a> {
             };
 
             if let Some(next_rrule_date) = next_rrule_date {
-                match next_date {
+                match &next_date {
                     None => next_date = Some((i, next_rrule_date)),
                     Some((idx, date)) => {
-                        if date >= next_rrule_date {
+                        if date >= &next_rrule_date {
                             // Add previous date to its rrule queue
-                            self.queue.insert(idx, date);
+                            self.queue.insert(*idx, date.clone());
 
                             // Update next_date
                             next_date = Some((i, next_rrule_date));
@@ -192,10 +192,10 @@ impl<'a> Iterator for RRuleSetIter<'a> {
     }
 }
 
-impl<'a> IntoIterator for &'a RRuleSet {
-    type Item = DateTime;
+impl<'a, TZ: chrono::TimeZone> IntoIterator for &'a RRuleSet<TZ> {
+    type Item = chrono::DateTime<TZ>;
 
-    type IntoIter = RRuleSetIter<'a>;
+    type IntoIter = RRuleSetIter<'a, TZ>;
 
     fn into_iter(self) -> Self::IntoIter {
         // Sort in decreasing order
@@ -211,21 +211,25 @@ impl<'a> IntoIterator for &'a RRuleSet {
             rrule_iters: self
                 .rrule
                 .iter()
-                .map(|rrule| rrule.iter_with_ctx(self.dt_start, limited))
+                .map(|rrule| rrule.iter_with_ctx(self.dt_start.clone(), limited))
                 .collect(),
             rdates: rdates_sorted,
             exrules: self
                 .exrule
                 .iter()
-                .map(|exrule| exrule.iter_with_ctx(self.dt_start, limited))
+                .map(|exrule| exrule.iter_with_ctx(self.dt_start.clone(), limited))
                 .collect(),
-            exdates: self.exdate.iter().map(DateTime::timestamp).collect(),
+            exdates: self
+                .exdate
+                .iter()
+                .map(chrono::DateTime::timestamp)
+                .collect(),
             was_limited: false,
         }
     }
 }
 
-impl<'a> WasLimited for RRuleSetIter<'a> {
+impl<'a, TZ: chrono::TimeZone> WasLimited for RRuleSetIter<'a, TZ> {
     fn was_limited(&self) -> bool {
         self.was_limited
     }

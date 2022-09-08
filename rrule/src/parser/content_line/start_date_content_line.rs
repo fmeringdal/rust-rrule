@@ -5,7 +5,7 @@ use super::{
     parameters::parse_parameters,
 };
 use crate::{
-    core::{DateTime, Tz},
+    core::Tz,
     parser::{
         datetime::{datestring_to_date, parse_timezone},
         ParseError,
@@ -15,13 +15,13 @@ use crate::{
 const UTC: Tz = Tz::UTC;
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct StartDateContentLine {
-    pub datetime: DateTime,
-    pub timezone: Option<Tz>,
+pub(crate) struct StartDateContentLine<TZ: chrono::TimeZone> {
+    pub datetime: chrono::DateTime<TZ>,
+    pub timezone: Option<TZ>,
     pub value: &'static str,
 }
 
-impl<'a> TryFrom<&ContentLineCaptures<'a>> for StartDateContentLine {
+impl<'a> TryFrom<&ContentLineCaptures<'a>> for StartDateContentLine<crate::Tz> {
     type Error = ParseError;
 
     fn try_from(content_line: &ContentLineCaptures) -> Result<Self, Self::Error> {

@@ -2,26 +2,23 @@ use crate::{NWeekday, RRule};
 
 use super::iterinfo::IterInfo;
 
-type RRuleFilter = &'static dyn Fn(&IterInfo, usize, &RRule) -> bool;
-
-const FILTERS: [RRuleFilter; 7] = [
-    &is_filtered_by_month,
-    &is_filtered_by_week_number,
-    &is_filtered_by_weekday,
-    &is_filtered_by_neg_weekday,
-    &is_filtered_by_easter,
-    &is_filtered_by_month_day,
-    &is_filtered_by_year_day,
-];
-
-pub(crate) fn is_filtered(ii: &IterInfo, current_day: usize) -> bool {
+pub(crate) fn is_filtered<TZ: chrono::TimeZone>(ii: &IterInfo<TZ>, current_day: usize) -> bool {
     let rrule = ii.rrule();
-    FILTERS
-        .into_iter()
-        .any(|filter| filter(ii, current_day, rrule))
+
+    is_filtered_by_month(ii, current_day, rrule)
+        || is_filtered_by_week_number(ii, current_day, rrule)
+        || is_filtered_by_weekday(ii, current_day, rrule)
+        || is_filtered_by_neg_weekday(ii, current_day, rrule)
+        || is_filtered_by_easter(ii, current_day, rrule)
+        || is_filtered_by_month_day(ii, current_day, rrule)
+        || is_filtered_by_year_day(ii, current_day, rrule)
 }
 
-fn is_filtered_by_month(ii: &IterInfo, current_day: usize, rrule: &RRule) -> bool {
+fn is_filtered_by_month<TZ: chrono::TimeZone>(
+    ii: &IterInfo<TZ>,
+    current_day: usize,
+    rrule: &RRule<TZ>,
+) -> bool {
     if rrule.by_month.is_empty() {
         return false;
     }
@@ -30,7 +27,11 @@ fn is_filtered_by_month(ii: &IterInfo, current_day: usize, rrule: &RRule) -> boo
     !rrule.by_month.contains(&current_month)
 }
 
-fn is_filtered_by_week_number(ii: &IterInfo, current_day: usize, rrule: &RRule) -> bool {
+fn is_filtered_by_week_number<TZ: chrono::TimeZone>(
+    ii: &IterInfo<TZ>,
+    current_day: usize,
+    rrule: &RRule<TZ>,
+) -> bool {
     if rrule.by_week_no.is_empty() {
         return false;
     }
@@ -38,7 +39,11 @@ fn is_filtered_by_week_number(ii: &IterInfo, current_day: usize, rrule: &RRule) 
     matches!(ii.week_no_mask(), Some(week_no_mask) if week_no_mask[current_day] == 0)
 }
 
-fn is_filtered_by_weekday(ii: &IterInfo, current_day: usize, rrule: &RRule) -> bool {
+fn is_filtered_by_weekday<TZ: chrono::TimeZone>(
+    ii: &IterInfo<TZ>,
+    current_day: usize,
+    rrule: &RRule<TZ>,
+) -> bool {
     let mut by_weekday_every_week_only = rrule
         .by_weekday
         .iter()
@@ -58,7 +63,11 @@ fn is_filtered_by_weekday(ii: &IterInfo, current_day: usize, rrule: &RRule) -> b
     !by_weekday_every_week_only.any(|el| el == current_weekday)
 }
 
-fn is_filtered_by_neg_weekday(ii: &IterInfo, current_day: usize, _rrule: &RRule) -> bool {
+fn is_filtered_by_neg_weekday<TZ: chrono::TimeZone>(
+    ii: &IterInfo<TZ>,
+    current_day: usize,
+    _rrule: &RRule<TZ>,
+) -> bool {
     if let Some(neg_weekday_mask) = ii.neg_weekday_mask() {
         if neg_weekday_mask.is_empty() {
             return false;
@@ -71,7 +80,11 @@ fn is_filtered_by_neg_weekday(ii: &IterInfo, current_day: usize, _rrule: &RRule)
     }
 }
 
-fn is_filtered_by_easter(ii: &IterInfo, current_day: usize, rrule: &RRule) -> bool {
+fn is_filtered_by_easter<TZ: chrono::TimeZone>(
+    ii: &IterInfo<TZ>,
+    current_day: usize,
+    rrule: &RRule<TZ>,
+) -> bool {
     if cfg!(feature = "by-easter") {
         if rrule.by_easter.is_none() {
             return false;
@@ -87,7 +100,11 @@ fn is_filtered_by_easter(ii: &IterInfo, current_day: usize, rrule: &RRule) -> bo
     }
 }
 
-fn is_filtered_by_month_day(ii: &IterInfo, current_day: usize, rrule: &RRule) -> bool {
+fn is_filtered_by_month_day<TZ: chrono::TimeZone>(
+    ii: &IterInfo<TZ>,
+    current_day: usize,
+    rrule: &RRule<TZ>,
+) -> bool {
     if rrule.by_month_day.is_empty() && rrule.by_n_month_day.is_empty() {
         return false;
     }
@@ -100,7 +117,11 @@ fn is_filtered_by_month_day(ii: &IterInfo, current_day: usize, rrule: &RRule) ->
     filtered_by_month_day && filtered_by_n_month_day
 }
 
-fn is_filtered_by_year_day(ii: &IterInfo, current_day: usize, rrule: &RRule) -> bool {
+fn is_filtered_by_year_day<TZ: chrono::TimeZone>(
+    ii: &IterInfo<TZ>,
+    current_day: usize,
+    rrule: &RRule<TZ>,
+) -> bool {
     if rrule.by_year_day.is_empty() {
         return false;
     }

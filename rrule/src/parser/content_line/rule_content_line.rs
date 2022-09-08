@@ -62,7 +62,7 @@ impl FromStr for RRuleProperty {
     }
 }
 
-impl<'a> TryFrom<ContentLineCaptures<'a>> for RRule<Unvalidated> {
+impl<'a> TryFrom<ContentLineCaptures<'a>> for RRule<crate::Tz, Unvalidated> {
     type Error = ParseError;
 
     fn try_from(value: ContentLineCaptures) -> Result<Self, Self::Error> {
@@ -84,7 +84,7 @@ impl<'a> TryFrom<ContentLineCaptures<'a>> for RRule<Unvalidated> {
 #[allow(clippy::too_many_lines)]
 fn props_to_rrule(
     props: &HashMap<RRuleProperty, String>,
-) -> Result<RRule<Unvalidated>, ParseError> {
+) -> Result<RRule<crate::Tz, Unvalidated>, ParseError> {
     let freq = props
         .get(&RRuleProperty::Freq)
         .map(|freq| Frequency::from_str(freq))

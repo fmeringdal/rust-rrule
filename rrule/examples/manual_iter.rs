@@ -6,7 +6,7 @@ use chrono::Datelike;
 use rrule::RRuleSet;
 
 fn main() {
-    let rrule: RRuleSet = "DTSTART;TZID=America/New_York:20200902T130000\n\
+    let rrule: RRuleSet<_> = "DTSTART;TZID=America/New_York:20200902T130000\n\
         RRULE:FREQ=Weekly"
         .parse()
         .expect("The RRule is not valid");

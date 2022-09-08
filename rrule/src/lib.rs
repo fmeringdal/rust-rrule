@@ -49,7 +49,7 @@
 //! use chrono::{DateTime, TimeZone};
 //! use rrule::{RRuleSet, Tz};
 //!
-//! let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
+//! let rrule: RRuleSet<_> = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
 //! let result = rrule.all(100);
 //!
 //! // All dates
@@ -67,7 +67,7 @@
 //!  use chrono::{DateTime, TimeZone};
 //!  use rrule::{RRuleSet, Tz};
 //!
-//! let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
+//! let rrule: RRuleSet<_> = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
 //!
 //! // Between two dates
 //! let after = Tz::UTC.ymd(2012, 2, 1).and_hms(10, 0, 0);

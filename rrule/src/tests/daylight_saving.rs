@@ -2,7 +2,7 @@ use crate::{tests::common::check_occurrences, RRuleSet};
 
 #[test]
 fn daylight_savings_1() {
-    let rrule: RRuleSet =
+    let rrule: RRuleSet<_> =
         "DTSTART;TZID=America/Vancouver:20210301T022210\nRRULE:FREQ=DAILY;COUNT=30"
             .parse()
             .unwrap();
@@ -49,7 +49,7 @@ fn daylight_savings_1() {
 fn daylight_savings_2() {
     let dates = "DTSTART;TZID=Europe/Paris:20210214T093000\n\
         RRULE:FREQ=WEEKLY;UNTIL=20210508T083000Z;INTERVAL=2;BYDAY=MO;WKST=MO"
-        .parse::<RRuleSet>()
+        .parse::<RRuleSet<_>>()
         .unwrap()
         .all(u16::MAX)
         .dates;

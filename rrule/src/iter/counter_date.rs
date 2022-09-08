@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use chrono::{Datelike, TimeZone, Timelike, Utc, Weekday};
 
-use crate::{core::DateTime, Frequency, RRule, RRuleError};
+use crate::{Frequency, RRule, RRuleError};
 
 use super::{
     checks,
@@ -33,7 +33,11 @@ impl DateTimeIter {
     /// is higher than daily (e.g. hourly) where this function might return a date with the
     /// same day, but the iterator already knows that the current day cannot
     /// be part of the result.
-    pub fn increment(&mut self, rrule: &RRule, increment_day: bool) -> Result<(), RRuleError> {
+    pub fn increment<TZ: chrono::TimeZone>(
+        &mut self,
+        rrule: &RRule<TZ>,
+        increment_day: bool,
+    ) -> Result<(), RRuleError> {
         let RRule {
             interval,
             week_start,
@@ -299,8 +303,8 @@ impl DateTimeIter {
     }
 }
 
-impl From<&DateTime> for DateTimeIter {
-    fn from(dt: &DateTime) -> Self {
+impl<TZ: chrono::TimeZone> From<&chrono::DateTime<TZ>> for DateTimeIter {
+    fn from(dt: &chrono::DateTime<TZ>) -> Self {
         Self {
             year: dt.year(),
             month: dt.month(),

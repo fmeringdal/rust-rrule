@@ -1,4 +1,3 @@
-use super::datetime::DateTime;
 use crate::core::get_day;
 use crate::core::get_hour;
 use crate::core::get_minute;
@@ -6,7 +5,6 @@ use crate::core::get_month;
 use crate::core::get_second;
 use crate::iter::RRuleIter;
 use crate::parser::str_to_weekday;
-use crate::parser::ContentLineCaptures;
 use crate::parser::ParseError;
 use crate::validator::validate_rrule;
 use crate::validator::ValidationError;
@@ -216,7 +214,7 @@ fn weekday_to_str(d: Weekday) -> String {
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", serde_as)]
 #[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
-pub struct RRule<Stage = Validated> {
+pub struct RRule<TZ: chrono::TimeZone, Stage = Validated> {
     /// The frequency of the rrule.
     /// For example: yearly, weekly, hourly
     pub(crate) freq: Frequency,
@@ -230,7 +228,7 @@ pub struct RRule<Stage = Validated> {
     /// The end date after which new events will no longer be generated.
     /// If the `DateTime` is equal to an instance of the event it will be the last event.
     #[cfg_attr(feature = "serde", serde_as(as = "DisplayFromStr"))]
-    pub(crate) until: Option<DateTime>,
+    pub(crate) until: Option<chrono::DateTime<TZ>>,
     /// The start day of the week.
     /// This will affect recurrences based on weekly periods.
     pub(crate) week_start: Weekday,
@@ -278,7 +276,7 @@ pub struct RRule<Stage = Validated> {
     pub(crate) stage: PhantomData<Stage>,
 }
 
-impl Default for RRule<Unvalidated> {
+impl<TZ: chrono::TimeZone> Default for RRule<TZ, Unvalidated> {
     /// Creates a new unvalidated `RRule` with default values and Yearly frequency.
     fn default() -> Self {
         Self {
@@ -303,7 +301,7 @@ impl Default for RRule<Unvalidated> {
     }
 }
 
-impl RRule<Unvalidated> {
+impl<TZ: chrono::TimeZone> RRule<TZ, Unvalidated> {
     /// Creates a new unvalidated `RRule` with default values and the given frequency.
     #[must_use]
     pub fn new(freq: Frequency) -> Self {
@@ -337,7 +335,7 @@ impl RRule<Unvalidated> {
     /// If given, this must be a datetime instance specifying the
     /// upper-bound limit of the recurrence.
     #[must_use]
-    pub fn until(mut self, until: DateTime) -> Self {
+    pub fn until(mut self, until: chrono::DateTime<TZ>) -> Self {
         self.until = Some(until);
         self
     }
@@ -442,7 +440,10 @@ impl RRule<Unvalidated> {
     }
 
     /// Fills in some additional fields in order to make iter work correctly.
-    pub(crate) fn finalize_parsed_rrule(mut self, dt_start: &DateTime) -> RRule<Unvalidated> {
+    pub(crate) fn finalize_parsed_rrule(
+        mut self,
+        dt_start: &chrono::DateTime<TZ>,
+    ) -> RRule<TZ, Unvalidated> {
         // TEMP: move negative months to other list
         let mut by_month_day = vec![];
         let mut by_n_month_day = self.by_n_month_day;
@@ -548,7 +549,10 @@ impl RRule<Unvalidated> {
     /// # Errors
     ///
     /// If the properties are not valid it will return [`RRuleError`].
-    pub fn validate(self, dt_start: DateTime) -> Result<RRule<Validated>, RRuleError> {
+    pub fn validate(
+        self,
+        dt_start: chrono::DateTime<TZ>,
+    ) -> Result<RRule<TZ, Validated>, RRuleError> {
         let rrule = self.finalize_parsed_rrule(&dt_start);
 
         // Validate required checks (defined by RFC 5545)
@@ -603,29 +607,24 @@ impl RRule<Unvalidated> {
     /// # Errors
     ///
     /// Returns [`RRuleError::ValidationError`] in case the rrule is invalid.
-    pub fn build(self, dt_start: DateTime) -> Result<RRuleSet, RRuleError> {
-        let rrule = self.validate(dt_start)?;
+    pub fn build(self, dt_start: chrono::DateTime<TZ>) -> Result<RRuleSet<TZ>, RRuleError> {
+        let rrule = self.validate(dt_start.clone())?;
         let rrule_set = RRuleSet::new(dt_start).rrule(rrule);
         Ok(rrule_set)
     }
 }
 
-impl RRule {
-    pub(crate) fn iter_with_ctx(&self, dt_start: DateTime, limited: bool) -> RRuleIter {
+impl<TZ: chrono::TimeZone> RRule<TZ> {
+    pub(crate) fn iter_with_ctx(
+        &self,
+        dt_start: chrono::DateTime<TZ>,
+        limited: bool,
+    ) -> RRuleIter<TZ> {
         RRuleIter::new(self, &dt_start, limited)
     }
 }
 
-impl FromStr for RRule<Unvalidated> {
-    type Err = RRuleError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parts = ContentLineCaptures::new(s)?;
-        RRule::try_from(parts).map_err(From::from)
-    }
-}
-
-impl<S> Display for RRule<S> {
+impl Display for RRule<crate::Tz> {
     /// Generates a string based on the [iCalendar RRULE spec](https://datatracker.ietf.org/doc/html/rfc5545#section-3.8.5.3).
     /// It doesn't prepend "RRULE:" to the string.
     /// When you call this function on [`RRule<Unvalidated>`], it can generate an invalid string, like 'FREQ=YEARLY;INTERVAL=-1'
@@ -767,7 +766,7 @@ impl<S> Display for RRule<S> {
     }
 }
 
-impl<S> RRule<S> {
+impl<TZ: chrono::TimeZone> RRule<TZ> {
     /// Get the frequency of the recurrence.
     #[must_use]
     pub fn get_freq(&self) -> Frequency {
@@ -788,7 +787,7 @@ impl<S> RRule<S> {
 
     /// Get the until of the recurrence.
     #[must_use]
-    pub fn get_until(&self) -> Option<&DateTime> {
+    pub fn get_until(&self) -> Option<&chrono::DateTime<TZ>> {
         self.until.as_ref()
     }
 

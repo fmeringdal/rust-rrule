@@ -2,20 +2,20 @@ use super::counter_date::DateTimeIter;
 #[cfg(feature = "by-easter")]
 use super::easter::easter;
 use super::{monthinfo::MonthInfo, yearinfo::YearInfo};
-use crate::core::{get_month, DateTime};
+use crate::core::get_month;
 use crate::{Frequency, NWeekday, RRule};
 use chrono::{Datelike, NaiveTime, TimeZone};
 
 #[derive(Debug, Clone)]
-pub(crate) struct IterInfo<'a> {
+pub(crate) struct IterInfo<'a, TZ: chrono::TimeZone> {
     year_info: YearInfo,
     month_info: Option<MonthInfo>,
     easter_mask: Option<Vec<i32>>,
-    rrule: &'a RRule,
+    rrule: &'a RRule<TZ>,
 }
 
-impl<'a> IterInfo<'a> {
-    pub fn new(rrule: &'a RRule, dt_start: &DateTime) -> Self {
+impl<'a, TZ: chrono::TimeZone> IterInfo<'a, TZ> {
+    pub fn new(rrule: &'a RRule<TZ>, dt_start: &chrono::DateTime<TZ>) -> Self {
         let year = dt_start.year();
         let month = get_month(dt_start);
 
@@ -257,7 +257,7 @@ impl<'a> IterInfo<'a> {
         }
     }
 
-    pub fn rrule(&self) -> &RRule {
+    pub fn rrule(&self) -> &RRule<TZ> {
         self.rrule
     }
 }
