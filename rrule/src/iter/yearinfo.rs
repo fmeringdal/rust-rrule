@@ -117,8 +117,8 @@ impl YearInfo {
             }
 
             let i = if n > 1 {
-                let n = u16::try_from(n)
-                    .expect("We know that 1 < n < i8::MAX which is covered by u16");
+                let n =
+                    u16::try_from(n).expect("We know that 1 < n < i8::MAX which is covered by u16");
                 let mut i = no1_week_start + ((n - 1) * 7);
                 if no1_week_start != first_week_start {
                     i -= 7 - first_week_start;

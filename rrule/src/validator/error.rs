@@ -10,7 +10,9 @@ pub enum ValidationError {
     BySetPosWithoutByRule,
     #[error("`{field}` can't be `{value}`, must be larger or smaller then `{value}`.")]
     InvalidFieldValue { field: String, value: String },
-    #[error("`{field}` is `{value}`, but is not allowed outside the range: `{start_idx}..={end_idx}`.")]
+    #[error(
+        "`{field}` is `{value}`, but is not allowed outside the range: `{start_idx}..={end_idx}`."
+    )]
     InvalidFieldValueRange {
         field: String,
         value: String,
