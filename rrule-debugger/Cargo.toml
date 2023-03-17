@@ -1,17 +1,18 @@
 [package]
 name = "rrule-debugger"
 version = "0.1.0"
-edition = "2021"
 authors = ["Ralph Bisschops <ralph.bisschops.dev@gmail.com>"]
 publish = false
+license.workspace = true
+edition.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 rrule = { path = "../rrule" }
 chrono = "0.4.19"
-chrono-tz = "0.6.1"
-clap = { version = "3.2.5", features = ["derive"] }
+chrono-tz = "0.8.1"
+clap = { version = "4.1.9", features = ["derive"] }
 rrule-afl-fuzz = { version = "0.1.0", path = "../rrule-afl-fuzz" }
 log = "0.4.16"
 yansi = "0.5.1"

@@ -63,5 +63,5 @@ jobs:
           cd rrule
           cargo update
           cargo audit
-        # Allowed to fail but this will notify us that some dependency might need an update.
+        # Allowed to fail, but this will notify us that some dependency might need an update.
         continue-on-error: true

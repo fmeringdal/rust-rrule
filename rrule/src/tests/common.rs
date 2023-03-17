@@ -13,7 +13,9 @@ pub fn ymd_hms(
     minute: u32,
     second: u32,
 ) -> DateTime<Tz> {
-    Tz::UTC.ymd(year, month, day).and_hms(hour, minute, second)
+    Tz::UTC
+        .with_ymd_and_hms(year, month, day, hour, minute, second)
+        .unwrap()
 }
 
 pub fn test_recurring_rrule(

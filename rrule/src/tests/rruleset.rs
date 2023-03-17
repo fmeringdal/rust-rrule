@@ -143,7 +143,7 @@ fn rrule_and_exdate_2() {
         .unwrap()
         .all(u16::MAX)
         .dates;
-    // This results in following set (minus exdate)
+    // This results in the following set (minus exdate)
     // [
     //     2020-12-14T09:30:00CET,
     //     2020-12-28T09:30:00CET, // Removed because of exdate

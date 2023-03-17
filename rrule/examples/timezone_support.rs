@@ -9,10 +9,10 @@ use rrule::{Frequency, RRule, Tz};
 
 fn main() {
     let tz = Tz::Europe__Berlin;
-    let start_date = tz.ymd(2020, 1, 1).and_hms(9, 0, 0);
-    let exdate = Tz::UTC.ymd(2020, 1, 2).and_hms(8, 0, 0);
+    let start_date = tz.with_ymd_and_hms(2020, 1, 1, 9, 0, 0).unwrap();
+    let exdate = Tz::UTC.with_ymd_and_hms(2020, 1, 2, 8, 0, 0).unwrap();
 
-    // Build rrule set that occurs daily at 9:00 for 4 times
+    // Build an rrule set that occurs daily at 9:00 for 4 times
     let rrule_set = RRule::default()
         .count(4)
         .freq(Frequency::Daily)
@@ -26,7 +26,7 @@ fn main() {
     // RRule contained 4 recurrences but 1 was filtered away by the exdate
     assert_eq!(recurrences.len(), 3);
 
-    // If you want to get back the DateTimes in another timezone you can just iterate over the result
+    // If you want to get back the DateTimes in another timezone, you can just iterate over the result
     // and convert them to another timezone by using the with_timezone method provided by the DateTime type.
     // Refer to the chrono and chrono-tz crates for more documentation on working with the DateTime type.
 

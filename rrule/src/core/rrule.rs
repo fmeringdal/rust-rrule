@@ -218,17 +218,17 @@ fn weekday_to_str(d: Weekday) -> String {
 #[cfg_attr(feature = "serde", derive(DeserializeFromStr, SerializeDisplay))]
 pub struct RRule<Stage = Validated> {
     /// The frequency of the rrule.
-    /// For example: yearly, weekly, hourly
+    /// For example, yearly, weekly, hourly
     pub(crate) freq: Frequency,
     /// The interval between each frequency iteration.
-    /// For example:
+    /// For example,
     /// - A yearly frequency with an interval of `2` creates 1 event every two years.
     /// - An hourly frequency with an interval of `2` created 1 event every two hours.
     pub(crate) interval: u16,
     /// How many occurrences will be generated.
     pub(crate) count: Option<u32>,
     /// The end date after which new events will no longer be generated.
-    /// If the `DateTime` is equal to an instance of the event it will be the last event.
+    /// If the `DateTime` is equal to an instance of the event, it will be the last event.
     #[cfg_attr(feature = "serde", serde_as(as = "DisplayFromStr"))]
     pub(crate) until: Option<DateTime>,
     /// The start day of the week.
@@ -251,7 +251,7 @@ pub struct RRule<Stage = Validated> {
     pub(crate) by_year_day: Vec<i16>,
     /// The week numbers to apply the recurrence to.
     /// Week numbers have the meaning described in ISO8601, that is,
-    /// the first week of the year is that containing at least four days of the new year.
+    /// the first week of the year is that it contains at least four days of the new year.
     /// Week day starts counting on from `week_start` value.
     /// Can be a value from -53 to -1 and 1 to 53.
     pub(crate) by_week_no: Vec<i8>,
@@ -391,7 +391,7 @@ impl RRule<Unvalidated> {
 
     /// If given, it must be either an integer, or a sequence of integers, meaning
     /// the week numbers to apply the recurrence to. Week numbers have the meaning
-    /// described in ISO8601, that is, the first week of the year is that containing
+    /// described in ISO8601, that is, the first week of the year is that it contains
     /// at least four days of the new year.
     #[must_use]
     pub fn by_week_no(mut self, by_week_no: Vec<i8>) -> Self {
@@ -443,7 +443,7 @@ impl RRule<Unvalidated> {
 
     /// Fills in some additional fields in order to make iter work correctly.
     pub(crate) fn finalize_parsed_rrule(mut self, dt_start: &DateTime) -> RRule<Unvalidated> {
-        // TEMP: move negative months to other list
+        // TEMP: move negative months to another list
         let mut by_month_day = vec![];
         let mut by_n_month_day = self.by_n_month_day;
         for by_month_day_item in self.by_month_day {
@@ -456,14 +456,14 @@ impl RRule<Unvalidated> {
         self.by_month_day = by_month_day;
         self.by_n_month_day = by_n_month_day;
 
-        // Can only be set to true if feature flag is set.
+        // Can only be set to true if the feature flag is set.
         let by_easter_is_some = if cfg!(feature = "by-easter") {
             self.by_easter.is_some()
         } else {
             false
         };
 
-        // Add some freq specific additional properties
+        // Add some freq-specific additional properties
         if !(!self.by_week_no.is_empty()
             || !self.by_year_day.is_empty()
             || !self.by_month_day.is_empty()
@@ -547,7 +547,7 @@ impl RRule<Unvalidated> {
     ///
     /// # Errors
     ///
-    /// If the properties are not valid it will return [`RRuleError`].
+    /// If the properties aren't valid, it will return [`RRuleError`].
     pub fn validate(self, dt_start: DateTime) -> Result<RRule<Validated>, RRuleError> {
         let rrule = self.finalize_parsed_rrule(&dt_start);
 
@@ -629,7 +629,7 @@ impl<S> Display for RRule<S> {
     /// Generates a string based on the [iCalendar RRULE spec](https://datatracker.ietf.org/doc/html/rfc5545#section-3.8.5.3).
     /// It doesn't prepend "RRULE:" to the string.
     /// When you call this function on [`RRule<Unvalidated>`], it can generate an invalid string, like 'FREQ=YEARLY;INTERVAL=-1'
-    /// But it supposed to always generate a valid string on [`RRule<Validated>`].
+    /// But it is supposed to always generate a valid string on [`RRule<Validated>`].
     /// So if you want a valid string, it's smarter to always use `rrule.validate(ds_start)?.to_string()`.
     #[allow(clippy::too_many_lines)]
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

@@ -8,7 +8,7 @@ use std::ops::{
 
 /// Helper function to collect dates given some filters.
 ///
-/// In case where the iterator ended with an errors the error will be included,
+/// In the case where the iterator ended with errors, the error will be included,
 /// otherwise the second value of the return tuple will be `None`.
 pub(super) fn collect_with_error<T>(
     mut iterator: T,
@@ -102,26 +102,26 @@ mod tests {
     #[test]
     fn in_range_exclusive_start_to_end() {
         let inclusive = false;
-        let start = UTC.ymd(2021, 10, 1).and_hms(8, 0, 0);
-        let end = UTC.ymd(2021, 10, 1).and_hms(10, 0, 0);
+        let start = UTC.with_ymd_and_hms(2021, 10, 1, 8, 0, 0).unwrap();
+        let end = UTC.with_ymd_and_hms(2021, 10, 1, 10, 0, 0).unwrap();
 
         // In middle
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 10, 1, 9, 0, 0).unwrap(),
             &Some(start),
             &Some(end),
             inclusive,
         ));
         // To small
         assert!(!is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(7, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 10, 1, 7, 0, 0).unwrap(),
             &Some(start),
             &Some(end),
             inclusive,
         ));
         // To big
         assert!(!is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(11, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 10, 1, 11, 0, 0).unwrap(),
             &Some(start),
             &Some(end),
             inclusive,
@@ -135,25 +135,25 @@ mod tests {
     #[test]
     fn in_range_exclusive_start() {
         let inclusive = false;
-        let start = UTC.ymd(2021, 10, 1).and_hms(8, 0, 0);
+        let start = UTC.with_ymd_and_hms(2021, 10, 1, 8, 0, 0).unwrap();
 
         // Just after
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 10, 1, 9, 0, 0).unwrap(),
             &Some(start),
             &None,
             inclusive,
         ));
         // To small
         assert!(!is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(7, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 10, 1, 7, 0, 0).unwrap(),
             &Some(start),
             &None,
             inclusive,
         ));
         // Bigger
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 10, 2, 8, 0, 0).unwrap(),
             &Some(start),
             &None,
             inclusive,
@@ -165,25 +165,25 @@ mod tests {
     #[test]
     fn in_range_exclusive_end() {
         let inclusive = false;
-        let end = UTC.ymd(2021, 10, 1).and_hms(10, 0, 0);
+        let end = UTC.with_ymd_and_hms(2021, 10, 1, 10, 0, 0).unwrap();
 
         // Just before
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 10, 1, 9, 0, 0).unwrap(),
             &None,
             &Some(end),
             inclusive,
         ));
         // Smaller
         assert!(is_in_range(
-            &UTC.ymd(2021, 9, 20).and_hms(10, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 9, 20, 10, 0, 0).unwrap(),
             &None,
             &Some(end),
             inclusive,
         ));
         // Bigger
         assert!(!is_in_range(
-            &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 10, 2, 8, 0, 0).unwrap(),
             &None,
             &Some(end),
             inclusive,
@@ -198,21 +198,21 @@ mod tests {
 
         // Some date
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 10, 1, 9, 0, 0).unwrap(),
             &None,
             &None,
             inclusive,
         ));
         // Smaller
         assert!(is_in_range(
-            &UTC.ymd(2021, 9, 20).and_hms(10, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 9, 20, 10, 0, 0).unwrap(),
             &None,
             &None,
             inclusive,
         ));
         // Bigger
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 10, 2, 8, 0, 0).unwrap(),
             &None,
             &None,
             inclusive,
@@ -224,26 +224,26 @@ mod tests {
     #[test]
     fn in_range_inclusive_start_to_end() {
         let inclusive = true;
-        let start = UTC.ymd(2021, 10, 1).and_hms(8, 0, 0);
-        let end = UTC.ymd(2021, 10, 1).and_hms(10, 0, 0);
+        let start = UTC.with_ymd_and_hms(2021, 10, 1, 8, 0, 0).unwrap();
+        let end = UTC.with_ymd_and_hms(2021, 10, 1, 10, 0, 0).unwrap();
 
         // In middle
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 10, 1, 9, 0, 0).unwrap(),
             &Some(start),
             &Some(end),
             inclusive,
         ));
         // To small
         assert!(!is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(7, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 10, 1, 7, 0, 0).unwrap(),
             &Some(start),
             &Some(end),
             inclusive,
         ));
         // To big
         assert!(!is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(11, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 10, 1, 11, 0, 0).unwrap(),
             &Some(start),
             &Some(end),
             inclusive,
@@ -257,25 +257,25 @@ mod tests {
     #[test]
     fn in_range_inclusive_start() {
         let inclusive = true;
-        let start = UTC.ymd(2021, 10, 1).and_hms(8, 0, 0);
+        let start = UTC.with_ymd_and_hms(2021, 10, 1, 8, 0, 0).unwrap();
 
         // Just after
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 10, 1, 9, 0, 0).unwrap(),
             &Some(start),
             &None,
             inclusive,
         ));
         // To small
         assert!(!is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(7, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 10, 1, 7, 0, 0).unwrap(),
             &Some(start),
             &None,
             inclusive,
         ));
         // Bigger
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 10, 2, 8, 0, 0).unwrap(),
             &Some(start),
             &None,
             inclusive,
@@ -287,25 +287,25 @@ mod tests {
     #[test]
     fn in_range_inclusive_end() {
         let inclusive = true;
-        let end = UTC.ymd(2021, 10, 1).and_hms(10, 0, 0);
+        let end = UTC.with_ymd_and_hms(2021, 10, 1, 10, 0, 0).unwrap();
 
         // Just before
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 10, 1, 9, 0, 0).unwrap(),
             &None,
             &Some(end),
             inclusive,
         ));
         // Smaller
         assert!(is_in_range(
-            &UTC.ymd(2021, 9, 20).and_hms(10, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 9, 20, 10, 0, 0).unwrap(),
             &None,
             &Some(end),
             inclusive,
         ));
         // Bigger
         assert!(!is_in_range(
-            &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 10, 2, 8, 0, 0).unwrap(),
             &None,
             &Some(end),
             inclusive,
@@ -320,21 +320,21 @@ mod tests {
 
         // Some date
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 1).and_hms(9, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 10, 1, 9, 0, 0).unwrap(),
             &None,
             &None,
             inclusive,
         ));
         // Smaller
         assert!(is_in_range(
-            &UTC.ymd(2021, 9, 20).and_hms(10, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 9, 20, 10, 0, 0).unwrap(),
             &None,
             &None,
             inclusive,
         ));
         // Bigger
         assert!(is_in_range(
-            &UTC.ymd(2021, 10, 2).and_hms(8, 0, 0),
+            &UTC.with_ymd_and_hms(2021, 10, 2, 8, 0, 0).unwrap(),
             &None,
             &None,
             inclusive,

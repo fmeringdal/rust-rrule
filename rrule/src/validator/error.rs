@@ -8,9 +8,9 @@ use crate::Frequency;
 pub enum ValidationError {
     #[error("BYSETPOS should only be used in conjunction with another BYxxx rule part.")]
     BySetPosWithoutByRule,
-    #[error("`{field}` can not be `{value}`, must be larger or smaller then `{value}`.")]
+    #[error("`{field}` can't be `{value}`, must be larger or smaller then `{value}`.")]
     InvalidFieldValue { field: String, value: String },
-    #[error("`{field}` is `{value}`, but is not allowed outside of the range: `{start_idx}..={end_idx}`.")]
+    #[error("`{field}` is `{value}`, but is not allowed outside the range: `{start_idx}..={end_idx}`.")]
     InvalidFieldValueRange {
         field: String,
         value: String,

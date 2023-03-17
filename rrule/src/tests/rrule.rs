@@ -3777,7 +3777,7 @@ fn test_timezones_weekly() {
         .freq(Frequency::Weekly)
         .by_weekday(vec![NWeekday::Every(Sat)]);
     let rrule_set = rrule
-        .build(NEW_YORK.ymd(2021, 1, 1).and_hms(9, 0, 0))
+        .build(NEW_YORK.with_ymd_and_hms(2021, 1, 1, 9, 0, 0).unwrap())
         .unwrap();
     for o in &rrule_set {
         assert_eq!(o.weekday(), Sat);
@@ -3789,7 +3789,7 @@ fn test_timezones_weekly() {
         .freq(Frequency::Weekly)
         .by_weekday(vec![NWeekday::Every(Sat)]);
     let rrule_set = rrule
-        .build(BERLIN.ymd(2021, 1, 1).and_hms(9, 0, 0))
+        .build(BERLIN.with_ymd_and_hms(2021, 1, 1, 9, 0, 0).unwrap())
         .unwrap();
     for o in &rrule_set {
         assert_eq!(o.weekday(), Sat);
@@ -3801,7 +3801,7 @@ fn test_timezones_weekly() {
         .freq(Frequency::Weekly)
         .by_weekday(vec![NWeekday::Every(Sat)]);
     let rrule_set = rrule
-        .build(LOS_ANGELES.ymd(2021, 1, 1).and_hms(9, 0, 0))
+        .build(LOS_ANGELES.with_ymd_and_hms(2021, 1, 1, 9, 0, 0).unwrap())
         .unwrap();
     for o in &rrule_set {
         assert_eq!(o.weekday(), Sat);

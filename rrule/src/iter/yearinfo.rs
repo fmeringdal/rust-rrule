@@ -38,9 +38,9 @@ fn base_year_masks(year_weekday: u16, year_len: u16) -> BaseMasks {
 pub(crate) struct YearInfo {
     /// The year
     pub year: i32,
-    /// Amount of days in the current year (365 or 366)
+    /// Number of days in the current year (365 or 366)
     pub year_len: u16,
-    /// Amount of days in the next year (365 or 366)
+    /// Number of days in the next year (365 or 366)
     pub next_year_len: u16,
     /// Number of days since Unix epoch
     pub year_ordinal: i64,
@@ -55,7 +55,8 @@ pub(crate) struct YearInfo {
 
 impl YearInfo {
     pub fn new(year: i32, rrule: &RRule) -> Self {
-        let first_year_day = Utc.ymd(year, 1, 1).and_hms(0, 0, 0);
+        // It should never fail, since there is always a 1st of January, is there?
+        let first_year_day = Utc.with_ymd_and_hms(year, 1, 1, 0, 0, 0).unwrap();
 
         let year_len = get_year_len(year);
         let next_year_len = get_year_len(year + 1);
@@ -117,7 +118,7 @@ impl YearInfo {
 
             let i = if n > 1 {
                 let n = u16::try_from(n)
-                    .expect("We know that 1 < n < i8::MAX which is in covered by u16");
+                    .expect("We know that 1 < n < i8::MAX which is covered by u16");
                 let mut i = no1_week_start + ((n - 1) * 7);
                 if no1_week_start != first_week_start {
                     i -= 7 - first_week_start;
@@ -137,7 +138,7 @@ impl YearInfo {
         }
 
         if rrule.by_week_no.contains(&1) {
-            // Check week number 1 of next year as well
+            // Check week number 1 of next years as well
             let mut i = no1_week_start + num_weeks * 7;
             if no1_week_start != first_week_start {
                 i -= 7 - first_week_start;
@@ -165,9 +166,14 @@ impl YearInfo {
             let l_num_weeks = if rrule.by_week_no.contains(&-1) {
                 -1
             } else {
-                let l_year_weekday =
-                    u16::try_from(Utc.ymd(year - 1, 1, 1).weekday().num_days_from_monday())
-                        .expect("num_days_from_monday is between 0 and 6 which is covered by u16");
+                let l_year_weekday = u16::try_from(
+                    Utc.with_ymd_and_hms(year - 1, 1, 1, 0, 0, 0)
+                        // It should never fail, since there is always a 1st of January, is there?
+                        .unwrap()
+                        .weekday()
+                        .num_days_from_monday(),
+                )
+                .expect("num_days_from_monday is between 0 and 6 which is covered by u16");
 
                 let rrule_week_start = u16::try_from(rrule.week_start.num_days_from_monday())
                     .expect("num_days_from_monday is between 0 and 6 which is covered by u16");
@@ -180,13 +186,13 @@ impl YearInfo {
                             i32::from(l_year_weekday) - i32::from(rrule_week_start),
                             7,
                         ))
-                        .expect("7 is the modulo so range is 0-6 and u16 covers that range")
+                        .expect("7 is the modulo, so the range is 0-6, and u16 covers that range")
                 } else {
                     year_len - no1_week_start
                 };
 
                 52 + i8::try_from(pymod(week_start, 7) / 4)
-                    .expect("7 is the modulo so range is 0-6 and i8 covers that range")
+                    .expect("7 is the modulo, so the range is 0-6, and i8 covers that range")
             };
 
             if rrule.by_week_no.contains(&l_num_weeks) {

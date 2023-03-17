@@ -3,7 +3,7 @@ pub use yansi::Paint;
 
 /// An instance of the `Logger`.
 pub static LOGGER: Logger = Logger;
-/// The log collector and handler for most printed messages in terminal.
+/// The log collector and handler for the most printed messages in the terminal.
 pub struct Logger;
 
 impl log::Log for Logger {

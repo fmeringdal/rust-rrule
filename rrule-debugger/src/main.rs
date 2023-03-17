@@ -6,6 +6,7 @@ mod parser_rrule;
 mod simple_logger;
 
 use chrono::DateTime;
+use clap::ArgAction;
 use clap::Parser;
 use log::LevelFilter;
 use rrule::Tz;
@@ -28,7 +29,7 @@ struct Opts {
     debug: bool,
 
     /// Verbose mode (-v, -vv, -vvv, etc.)
-    #[clap(short, long, parse(from_occurrences))]
+    #[clap(short, long, action = ArgAction::Count)]
     verbose: u8,
 
     /// Run id
@@ -52,7 +53,7 @@ enum Commands {
     /// Parse data from raw binary RRule data
     Rrule {},
     /// Used for debugging particular parts of the code,
-    /// for example when a test fails.
+    /// for example, when a test fails.
     Debug {},
 }
 

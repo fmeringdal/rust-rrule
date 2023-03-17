@@ -217,23 +217,23 @@ mod tests {
             (
                 "19970902T090000Z",
                 None,
-                Tz::UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
+                Tz::UTC.with_ymd_and_hms(1997, 9, 2, 9, 0, 0).unwrap(),
             ),
             (
                 "19970902T090000",
                 Some(Tz::UTC),
-                Tz::UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
+                Tz::UTC.with_ymd_and_hms(1997, 9, 2, 9, 0, 0).unwrap(),
             ),
             (
                 "19970902T090000",
                 Some(US_PACIFIC),
-                US_PACIFIC.ymd(1997, 9, 2).and_hms(9, 0, 0),
+                US_PACIFIC.with_ymd_and_hms(1997, 9, 2, 9, 0, 0).unwrap(),
             ),
             (
                 "19970902T090000Z",
                 Some(US_PACIFIC),
                 // Timezone is overwritten by the zulu specified in the datetime string
-                Tz::UTC.ymd(1997, 9, 2).and_hms(9, 0, 0),
+                Tz::UTC.with_ymd_and_hms(1997, 9, 2, 9, 0, 0).unwrap(),
             ),
         ];
 
