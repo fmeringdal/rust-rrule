@@ -97,8 +97,8 @@ fn read_crash_file(id: u32) -> Option<Vec<u8>> {
             continue;
         }
         let filename = path.file_name().unwrap().to_str().unwrap();
-        if filename.starts_with(&format!("id:{:06},", id)) {
-            println!("Reading file {:?}", path);
+        if filename.starts_with(&format!("id:{id:06},")) {
+            println!("Reading file {path:?}");
             return Some(std::fs::read(path).expect("Something went wrong reading the file"));
         }
     }
@@ -116,7 +116,7 @@ fn read_all_crash_file() -> Vec<Vec<u8>> {
         }
         let filename = path.file_name().unwrap().to_str().unwrap();
         if filename.starts_with("id:") {
-            println!("Reading file {:?}", path);
+            println!("Reading file {path:?}");
             list.push(std::fs::read(path).expect("Something went wrong reading the file"));
         }
     }

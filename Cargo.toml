@@ -1,7 +1,3 @@
-[workspace.package]
-license = "MIT OR Apache-2.0"
-edition = "2021"
-
 [workspace]
 members = [
     "rrule",

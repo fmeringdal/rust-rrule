@@ -65,45 +65,42 @@ pub(crate) fn datestring_to_date(
         use chrono::offset::LocalResult;
         // Get datetime in local time or machine local time.
         // So this also takes into account daylight or standard time (summer/winter).
-        match tz {
-            Some(tz) => {
-                // Use the timezone specified in the `tz`
-                match tz.from_local_datetime(&datetime) {
-                    LocalResult::None => Err(ParseError::InvalidDateTimeInLocalTimezone {
+        if let Some(tz) = tz {
+            // Use the timezone specified in the `tz`
+            match tz.from_local_datetime(&datetime) {
+                LocalResult::None => Err(ParseError::InvalidDateTimeInLocalTimezone {
+                    value: dt.into(),
+                    property: property.into(),
+                }),
+                LocalResult::Single(date) => Ok(date),
+                LocalResult::Ambiguous(date1, date2) => {
+                    Err(ParseError::DateTimeInLocalTimezoneIsAmbiguous {
                         value: dt.into(),
                         property: property.into(),
-                    }),
-                    LocalResult::Single(date) => Ok(date),
-                    LocalResult::Ambiguous(date1, date2) => {
-                        Err(ParseError::DateTimeInLocalTimezoneIsAmbiguous {
-                            value: dt.into(),
-                            property: property.into(),
-                            date1: date1.to_rfc3339(),
-                            date2: date2.to_rfc3339(),
-                        })
-                    }
-                }?
-            }
-            None => {
-                // Use current system timezone
-                // TODO Add option to always use UTC when this is executed on a server.
-                let local = Tz::LOCAL;
-                match local.from_local_datetime(&datetime) {
-                    LocalResult::None => {
-                        return Err(ParseError::InvalidDateTimeInLocalTimezone {
-                            value: dt.into(),
-                            property: property.into(),
-                        })
-                    }
-                    LocalResult::Single(date) => date,
-                    LocalResult::Ambiguous(date1, date2) => {
-                        return Err(ParseError::DateTimeInLocalTimezoneIsAmbiguous {
-                            value: dt.into(),
-                            property: property.into(),
-                            date1: date1.to_rfc3339(),
-                            date2: date2.to_rfc3339(),
-                        })
-                    }
+                        date1: date1.to_rfc3339(),
+                        date2: date2.to_rfc3339(),
+                    })
+                }
+            }?
+        } else {
+            // Use current system timezone
+            // TODO Add option to always use UTC when this is executed on a server.
+            let local = Tz::LOCAL;
+            match local.from_local_datetime(&datetime) {
+                LocalResult::None => {
+                    return Err(ParseError::InvalidDateTimeInLocalTimezone {
+                        value: dt.into(),
+                        property: property.into(),
+                    })
+                }
+                LocalResult::Single(date) => date,
+                LocalResult::Ambiguous(date1, date2) => {
+                    return Err(ParseError::DateTimeInLocalTimezoneIsAmbiguous {
+                        value: dt.into(),
+                        property: property.into(),
+                        date1: date1.to_rfc3339(),
+                        date2: date2.to_rfc3339(),
+                    })
                 }
             }
         }

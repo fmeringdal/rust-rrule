@@ -14,7 +14,7 @@ fn test_from_string() {
     RRULE:FREQ=YEARLY;BYDAY=20MO"
         .parse()
         .unwrap();
-    println!("RRule: {:#?}", rrule);
+    println!("RRule: {rrule:#?}");
     let result = rrule.all(20);
     println!("Limited: {}", result.limited);
     crate::print_all_datetimes(&result.dates);

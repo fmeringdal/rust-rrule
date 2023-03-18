@@ -3,8 +3,8 @@ name = "rrule-debugger"
 version = "0.1.0"
 authors = ["Ralph Bisschops <ralph.bisschops.dev@gmail.com>"]
 publish = false
-license.workspace = true
-edition.workspace = true
+license = "MIT OR Apache-2.0"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

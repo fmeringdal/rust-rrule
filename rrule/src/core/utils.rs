@@ -25,20 +25,17 @@ where
     // This loop should always end because `.next()` has build in limits
     // Once a limit is tripped it will break in the `None` case.
     while limit.is_none() || matches!(limit, Some(limit) if usize::from(limit) > list.len()) {
-        match iterator.next() {
-            Some(value) => {
-                if is_in_range(&value, start, end, inclusive) {
-                    list.push(value);
-                }
-                if has_reached_the_end(&value, end, inclusive) {
-                    // Date is after end date, so can stop iterating
-                    break;
-                }
+        if let Some(value) = iterator.next() {
+            if is_in_range(&value, start, end, inclusive) {
+                list.push(value);
             }
-            None => {
-                was_limited = iterator.was_limited();
+            if has_reached_the_end(&value, end, inclusive) {
+                // Date is after end date, so can stop iterating
                 break;
             }
+        } else {
+            was_limited = iterator.was_limited();
+            break;
         }
     }
 
