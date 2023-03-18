@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `RRuleSet::all` returns an `RRuleResult` struct instead of a tuple.
 - Update `chrono-tz` version to 0.8.1
+- MSRV is bumped to `v1.64.0` from `v1.56.1`
 
 ## 0.10.0 (2022-08-08)
 

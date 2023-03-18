@@ -8,9 +8,9 @@ authors = ["Fredrik Meringdal", "Ralph Bisschops <ralph.bisschops.dev@gmail.com>
 readme = "../README.md"
 keywords = ["calendar", "rrule", "ical"]
 categories = ["date-and-time"]
-rust-version = "1.57.0"
-license = "MIT OR Apache-2.0"
-edition = "2021"
+license.workspace = true
+rust-version.workspace = true
+edition.workspace = true
 
 [dependencies]
 chrono = "0.4.19"
