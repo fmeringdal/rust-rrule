@@ -58,7 +58,7 @@ impl<'a> TryFrom<&ContentLineCaptures<'a>> for StartDateContentLine {
 
         let datetime = datestring_to_date(content_line.value, timezone, "DTSTART")?;
 
-        Ok(StartDateContentLine {
+        Ok(Self {
             datetime,
             timezone,
             value,

@@ -1,4 +1,8 @@
-#![allow(clippy::cast_possible_truncation, clippy::doc_markdown)]
+#![allow(
+    clippy::cast_possible_truncation,
+    clippy::doc_markdown,
+    clippy::unwrap_used
+)]
 
 mod debug;
 mod iter_rrule;

@@ -66,7 +66,7 @@ impl YearInfo {
 
         let base_masks = base_year_masks(year_start_weekday, year_len);
 
-        let mut result = YearInfo {
+        let mut result = Self {
             year,
             year_len,
             next_year_len,

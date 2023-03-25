@@ -43,13 +43,13 @@ pub enum Frequency {
 impl Display for Frequency {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let name = match self {
-            Frequency::Yearly => "yearly",
-            Frequency::Monthly => "monthly",
-            Frequency::Weekly => "weekly",
-            Frequency::Daily => "daily",
-            Frequency::Hourly => "hourly",
-            Frequency::Minutely => "minutely",
-            Frequency::Secondly => "secondly",
+            Self::Yearly => "yearly",
+            Self::Monthly => "monthly",
+            Self::Weekly => "weekly",
+            Self::Daily => "daily",
+            Self::Hourly => "hourly",
+            Self::Minutely => "minutely",
+            Self::Secondly => "secondly",
         };
         write!(f, "{}", name)
     }
@@ -60,13 +60,13 @@ impl FromStr for Frequency {
 
     fn from_str(value: &str) -> Result<Self, Self::Err> {
         let freq = match &value.to_uppercase()[..] {
-            "YEARLY" => Frequency::Yearly,
-            "MONTHLY" => Frequency::Monthly,
-            "WEEKLY" => Frequency::Weekly,
-            "DAILY" => Frequency::Daily,
-            "HOURLY" => Frequency::Hourly,
-            "MINUTELY" => Frequency::Minutely,
-            "SECONDLY" => Frequency::Secondly,
+            "YEARLY" => Self::Yearly,
+            "MONTHLY" => Self::Monthly,
+            "WEEKLY" => Self::Weekly,
+            "DAILY" => Self::Daily,
+            "HOURLY" => Self::Hourly,
+            "MINUTELY" => Self::Minutely,
+            "SECONDLY" => Self::Secondly,
             val => return Err(ParseError::InvalidFrequency(val.to_string())),
         };
         Ok(freq)
@@ -116,7 +116,7 @@ impl PartialOrd for NWeekday {
 }
 
 impl Ord for NWeekday {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+    fn cmp(&self, other: &Self) -> Ordering {
         n_weekday_cmp(*self, *other)
     }
 }
@@ -163,9 +163,9 @@ impl FromStr for NWeekday {
         let nth = value[..(length - 2)].parse::<i16>().unwrap_or_default();
 
         if nth == 0 {
-            Ok(NWeekday::Every(wd))
+            Ok(Self::Every(wd))
         } else {
-            Ok(NWeekday::new(Some(nth), wd))
+            Ok(Self::new(Some(nth), wd))
         }
     }
 }
@@ -183,8 +183,8 @@ impl Display for NWeekday {
     /// ```
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let weekday = match self {
-            NWeekday::Every(wd) => weekday_to_str(*wd),
-            NWeekday::Nth(number, wd) => {
+            Self::Every(wd) => weekday_to_str(*wd),
+            Self::Nth(number, wd) => {
                 let mut wd_str = weekday_to_str(*wd);
                 if *number != 1 {
                     wd_str = format!("{}{}", number, wd_str);
@@ -309,7 +309,7 @@ impl RRule<Unvalidated> {
     pub fn new(freq: Frequency) -> Self {
         Self {
             freq,
-            ..RRule::default()
+            ..Self::default()
         }
     }
 
@@ -442,7 +442,7 @@ impl RRule<Unvalidated> {
     }
 
     /// Fills in some additional fields in order to make iter work correctly.
-    pub(crate) fn finalize_parsed_rrule(mut self, dt_start: &DateTime) -> RRule<Unvalidated> {
+    pub(crate) fn finalize_parsed_rrule(mut self, dt_start: &DateTime) -> Self {
         // TEMP: move negative months to another list
         let mut by_month_day = vec![];
         let mut by_n_month_day = self.by_n_month_day;
@@ -621,7 +621,7 @@ impl FromStr for RRule<Unvalidated> {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let parts = ContentLineCaptures::new(s)?;
-        RRule::try_from(parts).map_err(From::from)
+        Self::try_from(parts).map_err(From::from)
     }
 }
 

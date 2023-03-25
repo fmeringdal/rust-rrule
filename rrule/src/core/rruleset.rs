@@ -32,6 +32,7 @@ pub struct RRuleSet {
 }
 
 /// The return result of `RRuleSet::all`.
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RRuleResult {
     /// List of recurrences.
     pub dates: Vec<DateTime>,
@@ -227,7 +228,7 @@ impl FromStr for RRuleSet {
         } = Grammar::from_str(s)?;
 
         content_lines.into_iter().try_fold(
-            RRuleSet::new(start.datetime),
+            Self::new(start.datetime),
             |rrule_set, content_line| match content_line {
                 ContentLine::RRule(rrule) => rrule
                     .validate(start.datetime)
@@ -247,10 +248,10 @@ impl FromStr for RRuleSet {
                     }
                 }
                 ContentLine::ExDate(exdates) => {
-                    Ok(exdates.into_iter().fold(rrule_set, RRuleSet::exdate))
+                    Ok(exdates.into_iter().fold(rrule_set, Self::exdate))
                 }
                 ContentLine::RDate(rdates) => {
-                    Ok(rdates.into_iter().fold(rrule_set, RRuleSet::rdate))
+                    Ok(rdates.into_iter().fold(rrule_set, Self::rdate))
                 }
             },
         )

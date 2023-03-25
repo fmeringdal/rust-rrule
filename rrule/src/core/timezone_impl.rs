@@ -75,8 +75,8 @@ impl std::fmt::Display for RRuleOffset {
 impl Offset for RRuleOffset {
     fn fix(&self) -> FixedOffset {
         match self {
-            RRuleOffset::Local(tz) => tz.fix(),
-            RRuleOffset::Tz(tz) => tz.fix(),
+            Self::Local(tz) => tz.fix(),
+            Self::Tz(tz) => tz.fix(),
         }
     }
 }

@@ -26,8 +26,8 @@ impl Tz {
     #[must_use]
     pub fn name(&self) -> &str {
         match self {
-            Tz::Local(_) => "Local",
-            Tz::Tz(tz) => tz.name(),
+            Self::Local(_) => "Local",
+            Self::Tz(tz) => tz.name(),
         }
     }
 
@@ -35,8 +35,8 @@ impl Tz {
     #[must_use]
     pub fn is_local(&self) -> bool {
         match self {
-            Tz::Local(_) => true,
-            Tz::Tz(_) => false,
+            Self::Local(_) => true,
+            Self::Tz(_) => false,
         }
     }
 
