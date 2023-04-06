@@ -13,6 +13,3 @@ rustflags = [
     # "-Wmissing_docs",
     "-Wunused_qualifications",
 ]
-
-[registries.crates-io]
-protocol = "sparse"
