@@ -19,7 +19,7 @@ pub(crate) fn easter(year: i32, offset: i16) -> i32 {
     let l = (32 + 2 * e + 2 * i - h - k) % 7;
     let m = (a + 11 * h + 22 * l) / 451;
     let month = usize::try_from((h + l - 7 * m + 114) / 31)
-        .expect("the algorithm makes sure this is between 1 - 12 which is covered by usize");
+        .expect("the algorithm makes sure this is between 1-12 which is covered by usize");
     let day = ((h + l - 7 * m + 114) % 31) + 1 + i32::from(offset);
 
     let month_range_mask = if is_leap_year(year) {

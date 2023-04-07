@@ -75,7 +75,7 @@ impl MonthInfo {
                             _ => continue,
                         };
                         let nth_last_weekday = match weekday_mask.get(index) {
-                            Some(val) => i16::try_from(*val).expect("values in weekday mask are all between 0 - 6 which is covered by i32"),
+                            Some(val) => i16::try_from(*val).expect("values in weekday mask are all between 0-6 which is covered by i32"),
                             None => continue,
                         };
 
@@ -97,7 +97,7 @@ impl MonthInfo {
                             _ => continue,
                         };
                         let nth_first_day_weekday = match weekday_mask.get(index) {
-                            Some(val) => i16::try_from(*val).expect("values in weekday mask are all between 0 - 6 which is covered by i32"),
+                            Some(val) => i16::try_from(*val).expect("values in weekday mask are all between 0-6 which is covered by i32"),
                             None => continue,
                         };
 
@@ -135,7 +135,7 @@ mod tests {
             freq: Frequency::Daily,
             ..Default::default()
         }
-        .validate(UTC.ymd(1997, 1, 1).and_hms(0, 0, 0))
+        .validate(UTC.with_ymd_and_hms(1997, 1, 1, 0, 0, 0).unwrap())
         .unwrap();
 
         let year_info = YearInfo::new(1997, &rrule);
@@ -150,7 +150,7 @@ mod tests {
             freq: Frequency::Yearly,
             ..Default::default()
         }
-        .validate(UTC.ymd(1997, 1, 1).and_hms(0, 0, 0))
+        .validate(UTC.with_ymd_and_hms(1997, 1, 1, 0, 0, 0).unwrap())
         .unwrap();
 
         let year_info = YearInfo::new(1997, &rrule);
@@ -171,7 +171,7 @@ mod tests {
             ],
             ..Default::default()
         }
-        .validate(UTC.ymd(1997, 1, 1).and_hms(0, 0, 0))
+        .validate(UTC.with_ymd_and_hms(1997, 1, 1, 0, 0, 0).unwrap())
         .unwrap();
 
         let year_info = YearInfo::new(1997, &rrule);
@@ -198,7 +198,7 @@ mod tests {
             ],
             ..Default::default()
         }
-        .validate(UTC.ymd(1997, 1, 1).and_hms(0, 0, 0))
+        .validate(UTC.with_ymd_and_hms(1997, 1, 1, 0, 0, 0).unwrap())
         .unwrap();
 
         let year_info = YearInfo::new(1997, &rrule);

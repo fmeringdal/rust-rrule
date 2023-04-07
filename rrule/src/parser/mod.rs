@@ -16,7 +16,7 @@ use crate::RRule;
 
 use self::content_line::{PropertyName, StartDateContentLine};
 
-/// Grammar represents a well formatted rrule input.
+/// Grammar represents a well-formatted rrule input.
 #[derive(Debug, PartialEq)]
 pub(crate) struct Grammar {
     pub start: StartDateContentLine,
@@ -29,7 +29,6 @@ impl FromStr for Grammar {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let content_lines_parts = s
             .lines()
-            .into_iter()
             .map(ContentLineCaptures::new)
             .collect::<Result<Vec<_>, _>>()?;
 
@@ -91,7 +90,7 @@ mod test {
         let tests = [
 (
     "DTSTART:19970902T090000Z\nRRULE:FREQ=YEARLY;COUNT=3\n", Grammar {
-    start: StartDateContentLine { datetime: UTC.ymd(1997, 9, 2).and_hms(9, 0, 0), timezone: Some(UTC), value: "DATE-TIME" },
+    start: StartDateContentLine { datetime: UTC.with_ymd_and_hms(1997, 9, 2,9, 0, 0).unwrap(), timezone: Some(UTC), value: "DATE-TIME" },
     content_lines: vec![
         ContentLine::RRule(RRule {
             freq: Frequency::Yearly,
@@ -102,19 +101,19 @@ mod test {
 }
 ),
 ("DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR", Grammar {
-    start: StartDateContentLine { datetime: UTC.ymd(2012, 2, 1).and_hms(9, 30, 0), timezone: Some(UTC), value: "DATE-TIME" },
+    start: StartDateContentLine { datetime: UTC.with_ymd_and_hms(2012, 2, 1,9, 30, 0).unwrap(), timezone: Some(UTC), value: "DATE-TIME" },
     content_lines: vec![
         ContentLine::RRule(RRule {
             freq: Frequency::Weekly,
             interval: 5,
-            until: Some(UTC.ymd(2013, 1, 30).and_hms(23, 0, 0)),
+            until: Some(UTC.with_ymd_and_hms(2013, 1, 30,23, 0, 0).unwrap()),
             by_weekday: vec![NWeekday::Every(Weekday::Mon), NWeekday::Every(Weekday::Fri)],
             ..Default::default()
         })
     ]
 }),
 ("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5\nEXDATE;TZID=Europe/Berlin:20120202T130000,20120203T130000", Grammar {
-    start: StartDateContentLine { datetime: UTC.ymd(2012, 2, 1).and_hms(12, 0, 0), timezone: Some(UTC), value: "DATE-TIME" },
+    start: StartDateContentLine { datetime: UTC.with_ymd_and_hms(2012, 2, 1,12, 0, 0).unwrap(), timezone: Some(UTC), value: "DATE-TIME" },
     content_lines: vec![
         ContentLine::RRule(RRule {
             freq: Frequency::Daily,
@@ -122,13 +121,13 @@ mod test {
             ..Default::default()
         }),
         ContentLine::ExDate(vec![
-            BERLIN.ymd(2012, 2, 2).and_hms(13, 0, 0),
-            BERLIN.ymd(2012, 2, 3).and_hms(13, 0, 0),
+            BERLIN.with_ymd_and_hms(2012, 2, 2,13, 0, 0).unwrap(),
+            BERLIN.with_ymd_and_hms(2012, 2, 3,13, 0, 0).unwrap(),
         ])
     ]
 }),
 ("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5\nEXDATE;TZID=Europe/Berlin:20120202T130000,20120203T130000\nEXRULE:FREQ=WEEKLY;COUNT=10", Grammar {
-    start: StartDateContentLine { datetime: UTC.ymd(2012, 2, 1).and_hms(12, 0, 0), timezone: Some(UTC), value: "DATE-TIME" },
+    start: StartDateContentLine { datetime: UTC.with_ymd_and_hms(2012, 2, 1,12, 0, 0).unwrap(), timezone: Some(UTC), value: "DATE-TIME" },
     content_lines: vec![
         ContentLine::RRule(RRule {
             freq: Frequency::Daily,
@@ -136,8 +135,8 @@ mod test {
             ..Default::default()
         }),
         ContentLine::ExDate(vec![
-            BERLIN.ymd(2012, 2, 2).and_hms(13, 0, 0),
-            BERLIN.ymd(2012, 2, 3).and_hms(13, 0, 0),
+            BERLIN.with_ymd_and_hms(2012, 2, 2,13, 0, 0).unwrap(),
+            BERLIN.with_ymd_and_hms(2012, 2, 3,13, 0, 0).unwrap(),
         ]),
         ContentLine::ExRule(RRule {
             freq: Frequency::Weekly,

@@ -14,7 +14,7 @@ fn test_from_string() {
     RRULE:FREQ=YEARLY;BYDAY=20MO"
         .parse()
         .unwrap();
-    println!("RRule: {:#?}", rrule);
+    println!("RRule: {rrule:#?}");
     let result = rrule.all(20);
     println!("Limited: {}", result.limited);
     crate::print_all_datetimes(&result.dates);
@@ -36,5 +36,7 @@ fn test_parsed_rrule() {
 }
 
 fn ymd_hms(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32) -> DateTime<Tz> {
-    Tz::UTC.ymd(year, month, day).and_hms(hour, minute, second)
+    Tz::UTC
+        .with_ymd_and_hms(year, month, day, hour, minute, second)
+        .unwrap()
 }

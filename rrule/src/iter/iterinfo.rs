@@ -125,8 +125,13 @@ impl<'a> IterInfo<'a> {
     pub fn weekday_set(&self, year: i32, month: u32, day: u32) -> Vec<usize> {
         let set_len = usize::from(self.year_len() + 7);
 
-        let mut date_ordinal = usize::try_from(chrono::Utc.ymd(year, month, day).ordinal0())
-            .expect("target arch should have at least 32 bits");
+        let mut date_ordinal = usize::try_from(
+            chrono::Utc
+                .with_ymd_and_hms(year, month, day, 0, 0, 0)
+                .unwrap()
+                .ordinal0(),
+        )
+        .expect("target arch should have at least 32 bits");
 
         let mut set = vec![];
 
@@ -147,7 +152,10 @@ impl<'a> IterInfo<'a> {
     }
 
     pub fn day_dayset(year: i32, month: u32, day: u32) -> Vec<usize> {
-        let date_ordinal = chrono::Utc.ymd(year, month, day).ordinal0();
+        let date_ordinal = chrono::Utc
+            .with_ymd_and_hms(year, month, day, 0, 0, 0)
+            .unwrap()
+            .ordinal0();
 
         vec![usize::try_from(date_ordinal).expect("target arch should have at least 32 bits")]
     }
@@ -164,18 +172,20 @@ impl<'a> IterInfo<'a> {
         self.rrule
             .by_second
             .iter()
-            .map(|second| {
-                NaiveTime::from_hms(u32::from(hour), u32::from(minute), u32::from(*second))
+            .filter_map(|second| {
+                NaiveTime::from_hms_opt(u32::from(hour), u32::from(minute), u32::from(*second))
             })
             .collect()
     }
 
     pub fn sec_timeset(hour: u8, minute: u8, second: u8) -> Vec<NaiveTime> {
-        vec![NaiveTime::from_hms(
-            u32::from(hour),
-            u32::from(minute),
-            u32::from(second),
-        )]
+        if let Some(time) =
+            NaiveTime::from_hms_opt(u32::from(hour), u32::from(minute), u32::from(second))
+        {
+            vec![time]
+        } else {
+            vec![]
+        }
     }
 
     pub fn get_dayset(&self, freq: Frequency, year: i32, month: u32, day: u32) -> Vec<usize> {
@@ -192,11 +202,11 @@ impl<'a> IterInfo<'a> {
         dayset
     }
 
-    /// Gets a timeset without checking if the hour, minute and second are valid according
+    /// Gets a timeset without checking if the hour, minute and second are valid, according
     /// to the `RRule`.
     ///
     /// This is usually called after calling the `increment_counter_date` where we know
-    /// that we get a valid `DateTime` back and there is no need to do any duplicate
+    /// that we get a valid `DateTime` back, and there is no need to do any duplicate
     /// validation.
     pub fn get_timeset_unchecked(&self, hour: u8, minute: u8, second: u8) -> Vec<NaiveTime> {
         match self.rrule.freq {
@@ -211,7 +221,7 @@ impl<'a> IterInfo<'a> {
 
     /// Gets a timeset.
     ///
-    /// An empty set is returned if the hour, minute and second are not valid
+    /// An empty set is returned if the hour, minute and second aren't valid,
     /// according to the `RRule`.
     pub fn get_timeset(&self, hour: u8, minute: u8, second: u8) -> Vec<NaiveTime> {
         match self.rrule.freq {
@@ -236,22 +246,23 @@ impl<'a> IterInfo<'a> {
                 self.get_timeset_unchecked(hour, minute, second)
             }
             _ => {
-                let mut timeset = Vec::with_capacity(
-                    self.rrule.by_hour.len()
-                        * self.rrule.by_minute.len()
-                        * self.rrule.by_second.len(),
-                );
-                for hour in &self.rrule.by_hour {
-                    for minute in &self.rrule.by_minute {
-                        for second in &self.rrule.by_second {
-                            timeset.push(NaiveTime::from_hms(
-                                u32::from(*hour),
-                                u32::from(*minute),
-                                u32::from(*second),
-                            ));
-                        }
-                    }
-                }
+                let timeset = self
+                    .rrule
+                    .by_hour
+                    .iter()
+                    .flat_map(|hour| {
+                        self.rrule.by_minute.iter().flat_map(move |minute| {
+                            self.rrule.by_second.iter().filter_map(move |second| {
+                                NaiveTime::from_hms_opt(
+                                    u32::from(*hour),
+                                    u32::from(*minute),
+                                    u32::from(*second),
+                                )
+                            })
+                        })
+                    })
+                    .collect();
+
                 timeset
             }
         }

@@ -58,7 +58,7 @@ impl<'a> TryFrom<&ContentLineCaptures<'a>> for StartDateContentLine {
 
         let datetime = datestring_to_date(content_line.value, timezone, "DTSTART")?;
 
-        Ok(StartDateContentLine {
+        Ok(Self {
             datetime,
             timezone,
             value,
@@ -84,7 +84,7 @@ mod tests {
                     value: "19970714T123000Z",
                 },
                 StartDateContentLine {
-                    datetime: UTC.ymd(1997, 7, 14).and_hms(12, 30, 0),
+                    datetime: UTC.with_ymd_and_hms(1997, 7, 14, 12, 30, 0).unwrap(),
                     timezone: Some(UTC),
                     value: "DATE-TIME",
                 },
@@ -96,7 +96,7 @@ mod tests {
                     value: "19970101",
                 },
                 StartDateContentLine {
-                    datetime: UTC.ymd(1997, 1, 1).and_hms(0, 0, 0),
+                    datetime: UTC.with_ymd_and_hms(1997, 1, 1, 0, 0, 0).unwrap(),
                     timezone: Some(UTC),
                     value: "DATE",
                 },
@@ -108,7 +108,7 @@ mod tests {
                     value: "19970101",
                 },
                 StartDateContentLine {
-                    datetime: UTC.ymd(1997, 1, 1).and_hms(0, 0, 0),
+                    datetime: UTC.with_ymd_and_hms(1997, 1, 1, 0, 0, 0).unwrap(),
                     timezone: Some(UTC),
                     value: "DATE",
                 },

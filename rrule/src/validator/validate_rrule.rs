@@ -206,7 +206,7 @@ fn validate_by_week_number(
 
 // By_weekday:
 // - Check if value for `Nth` is within range.
-//   Range depends on frequency and can only happen weekly, so `/7` from normal count.
+//   The Range depends on frequency and can only happen weekly, so `/7` from normal count.
 fn validate_by_weekday(
     rrule: &RRule<Unvalidated>,
     _dt_start: &DateTime,
@@ -372,16 +372,16 @@ mod tests {
             by_set_pos: vec![-1],
             ..Default::default()
         };
-        let dt_start = UTC.ymd(1970, 1, 1).and_hms(0, 0, 0);
+        let dt_start = UTC.with_ymd_and_hms(1970, 1, 1, 0, 0, 0).unwrap();
         let res = validate_rrule_forced(&rrule, &dt_start);
         assert!(res.is_err());
         let err = res.unwrap_err();
         assert_eq!(err, ValidationError::BySetPosWithoutByRule);
 
         // When creating RRule directly,
-        // if `rrule.by_set_hour` is empty then it is going to default to
-        // `dt_start.hour()`, therefore there is always a BYXXX
-        // rule and the rrule is accepted.
+        // if `rrule.by_set_hour` is empty, then it is going to default to
+        // `dt_start.hour()`, therefore, there is always a BYXXX
+        // rule, and the rrule is accepted.
         let res = rrule.build(dt_start);
         assert!(res.is_ok());
     }
@@ -419,7 +419,8 @@ mod tests {
             ),
         ];
         for (field, rrule) in tests {
-            let res = validate_rrule_forced(&rrule, &UTC.ymd(1970, 1, 1).and_hms(0, 0, 0));
+            let res =
+                validate_rrule_forced(&rrule, &UTC.with_ymd_and_hms(1970, 1, 1, 0, 0, 0).unwrap());
             assert!(res.is_err());
             let err = res.unwrap_err();
             assert_eq!(
@@ -457,7 +458,8 @@ mod tests {
             ),
         ];
         for (field, rrule, value, start_idx, end_idx) in tests {
-            let res = validate_rrule_forced(&rrule, &UTC.ymd(1970, 1, 1).and_hms(0, 0, 0));
+            let res =
+                validate_rrule_forced(&rrule, &UTC.with_ymd_and_hms(1970, 1, 1, 0, 0, 0).unwrap());
             assert!(res.is_err());
             let err = res.unwrap_err();
             assert_eq!(
@@ -499,7 +501,8 @@ mod tests {
             ),
         ];
         for (field, rrule, value, start_idx, end_idx) in tests {
-            let res = validate_rrule_forced(&rrule, &UTC.ymd(1970, 1, 1).and_hms(0, 0, 0));
+            let res =
+                validate_rrule_forced(&rrule, &UTC.with_ymd_and_hms(1970, 1, 1, 0, 0, 0).unwrap());
             assert!(res.is_err());
             let err = res.unwrap_err();
             assert_eq!(
@@ -552,7 +555,8 @@ mod tests {
             ),
         ];
         for (field, rrule) in tests {
-            let res = validate_rrule_forced(&rrule, &UTC.ymd(1970, 1, 1).and_hms(0, 0, 0));
+            let res =
+                validate_rrule_forced(&rrule, &UTC.with_ymd_and_hms(1970, 1, 1, 0, 0, 0).unwrap());
             assert!(res.is_err());
             let err = res.unwrap_err();
             assert_eq!(
@@ -568,10 +572,10 @@ mod tests {
     #[test]
     fn rejects_start_date_after_until() {
         let rrule = RRule {
-            until: Some(UTC.ymd_opt(2020, 1, 1).and_hms_opt(0, 0, 0).unwrap()),
+            until: Some(UTC.with_ymd_and_hms(2020, 1, 1, 0, 0, 0).unwrap()),
             ..Default::default()
         };
-        let dt_start = UTC.ymd_opt(2020, 1, 2).and_hms_opt(0, 0, 0).unwrap();
+        let dt_start = UTC.with_ymd_and_hms(2020, 1, 2, 0, 0, 0).unwrap();
         let res = validate_rrule_forced(&rrule, &dt_start);
         assert!(res.is_err());
         let err = res.unwrap_err();
@@ -588,8 +592,8 @@ mod tests {
     fn allows_until_with_compatible_timezone() {
         fn t(start_tz: Tz, until_tz: Tz) -> (DateTime, DateTime) {
             (
-                start_tz.ymd_opt(2020, 1, 1).and_hms_opt(0, 0, 0).unwrap(),
-                until_tz.ymd_opt(2020, 1, 1).and_hms_opt(0, 0, 0).unwrap(),
+                start_tz.with_ymd_and_hms(2020, 1, 1, 0, 0, 0).unwrap(),
+                until_tz.with_ymd_and_hms(2020, 1, 1, 0, 0, 0).unwrap(),
             )
         }
 
@@ -609,8 +613,8 @@ mod tests {
     fn rejects_until_with_incompatible_timezone() {
         fn t(start_tz: Tz, until_tz: Tz) -> (DateTime, DateTime) {
             (
-                start_tz.ymd_opt(2020, 1, 1).and_hms_opt(0, 0, 0).unwrap(),
-                until_tz.ymd_opt(2020, 1, 1).and_hms_opt(0, 0, 0).unwrap(),
+                start_tz.with_ymd_and_hms(2020, 1, 1, 0, 0, 0).unwrap(),
+                until_tz.with_ymd_and_hms(2020, 1, 1, 0, 0, 0).unwrap(),
             )
         }
 

@@ -14,7 +14,7 @@ pub(crate) struct RRuleIter<'a> {
     pub(crate) ii: IterInfo<'a>,
     pub(crate) timeset: Vec<NaiveTime>,
     pub(crate) dt_start: DateTime,
-    /// Buffer of datetimes not yet yielded
+    /// Buffer of datetimes is not yet yielded
     pub(crate) buffer: VecDeque<DateTime>,
     /// Indicate of iterator should not return more items.
     /// Once set `true` is will always return `None`.
@@ -128,13 +128,13 @@ impl<'a> RRuleIter<'a> {
                 // Loop over `start..end`
                 for current_day in &dayset {
                     let current_day = i64::try_from(*current_day).expect(
-                        "We control the dayset and we know that it will always fit within an i64",
+                        "We control the dayset, and we know that it will always fit within an i64",
                     );
                     let year_ordinal = self.ii.year_ordinal();
                     // Ordinal conversion uses UTC: if we apply local-TZ here, then
                     // just below we'll end up double-applying.
                     let date = from_ordinal(year_ordinal + current_day);
-                    // We apply the local-TZ here,
+                    // We apply the local-TZ here.
                     let date = self
                         .dt_start
                         .timezone()

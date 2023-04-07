@@ -1,0 +1,15 @@
+[target.'cfg(all())']
+rustflags = [
+    "-Funsafe_code",
+    "-Wclippy::missing_panics_doc",
+    "-Wclippy::panic_in_result_fn",
+    "-Wclippy::panic",
+    "-Wclippy::panicking_unwrap",
+    "-Wclippy::todo",
+    "-Wclippy::unimplemented",
+    "-Wclippy::unwrap_used",
+    "-Wclippy::use_self",
+    # "-Wmissing_debug_implementations",
+    # "-Wmissing_docs",
+    "-Wunused_qualifications",
+]

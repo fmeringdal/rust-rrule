@@ -75,8 +75,8 @@ impl std::fmt::Display for RRuleOffset {
 impl Offset for RRuleOffset {
     fn fix(&self) -> FixedOffset {
         match self {
-            RRuleOffset::Local(tz) => tz.fix(),
-            RRuleOffset::Tz(tz) => tz.fix(),
+            Self::Local(tz) => tz.fix(),
+            Self::Tz(tz) => tz.fix(),
         }
     }
 }
@@ -91,6 +91,7 @@ impl TimeZone for Tz {
         }
     }
 
+    #[allow(deprecated)]
     fn offset_from_local_date(
         &self,
         local: &chrono::NaiveDate,
@@ -119,6 +120,7 @@ impl TimeZone for Tz {
         }
     }
 
+    #[allow(deprecated)]
     fn offset_from_utc_date(&self, utc: &chrono::NaiveDate) -> Self::Offset {
         match self {
             Self::Local(tz) => RRuleOffset::Local(*tz.from_utc_date(utc).offset()),

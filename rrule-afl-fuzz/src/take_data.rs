@@ -128,7 +128,7 @@ pub fn take_data_i8(input: &mut &[u8]) -> i8 {
     i8::from_be_bytes(int_bytes.try_into().expect("Failed to convert to u8"))
 }
 
-/// Uses 2 byte
+/// Uses 2 bytes
 /// If no bytes left it will always return default (`0`)
 pub fn take_data_i16(input: &mut &[u8]) -> i16 {
     let byte_len = std::mem::size_of::<i16>();
@@ -140,7 +140,7 @@ pub fn take_data_i16(input: &mut &[u8]) -> i16 {
     i16::from_be_bytes(int_bytes.try_into().expect("Failed to convert to u8"))
 }
 
-/// Uses 4 byte
+/// Uses 4 bytes
 /// If no bytes left it will always return default (`0`)
 pub fn take_data_i32(input: &mut &[u8]) -> i32 {
     let byte_len = std::mem::size_of::<i32>();
@@ -152,7 +152,7 @@ pub fn take_data_i32(input: &mut &[u8]) -> i32 {
     i32::from_be_bytes(int_bytes.try_into().expect("Failed to convert to u8"))
 }
 
-/// Uses 8 byte
+/// Uses 8 bytes
 /// If no bytes left it will always return default (`0`)
 pub fn take_data_i64(input: &mut &[u8]) -> i64 {
     let byte_len = std::mem::size_of::<i64>();
@@ -164,7 +164,7 @@ pub fn take_data_i64(input: &mut &[u8]) -> i64 {
     i64::from_be_bytes(int_bytes.try_into().expect("Failed to convert to u8"))
 }
 
-/// Uses 2 byte
+/// Uses 2 bytes
 /// If no bytes left it will always return default (`0`)
 pub fn take_data_u16(input: &mut &[u8]) -> u16 {
     let byte_len = std::mem::size_of::<u16>();
@@ -176,7 +176,7 @@ pub fn take_data_u16(input: &mut &[u8]) -> u16 {
     u16::from_be_bytes(int_bytes.try_into().expect("Failed to convert to u8"))
 }
 
-/// Uses 4 byte
+/// Uses 4 bytes
 /// If no bytes left it will always return default (`0`)
 pub fn take_data_u32(input: &mut &[u8]) -> u32 {
     let byte_len = std::mem::size_of::<u32>();
@@ -188,7 +188,7 @@ pub fn take_data_u32(input: &mut &[u8]) -> u32 {
     u32::from_be_bytes(int_bytes.try_into().expect("Failed to convert to u8"))
 }
 
-/// Uses 8 byte
+/// Uses 8 bytes
 /// If no bytes left it will always return default (`0`)
 pub fn take_data_u64(input: &mut &[u8]) -> u64 {
     let byte_len = std::mem::size_of::<u64>();
@@ -200,7 +200,7 @@ pub fn take_data_u64(input: &mut &[u8]) -> u64 {
     u64::from_be_bytes(int_bytes.try_into().expect("Failed to convert to u8"))
 }
 
-/// Uses max 8 byte
+/// Uses max 8 bytes
 /// If no bytes left it will always return default (`0`)
 pub fn take_data_usize(input: &mut &[u8]) -> usize {
     let byte_len = std::mem::size_of::<usize>();
@@ -212,7 +212,7 @@ pub fn take_data_usize(input: &mut &[u8]) -> usize {
     usize::from_be_bytes(int_bytes.try_into().expect("Failed to convert to u8"))
 }
 
-/// Uses max 8 byte
+/// Uses max 8 bytes
 /// If no bytes left it will always return default (`0`)
 pub fn take_data_isize(input: &mut &[u8]) -> isize {
     let byte_len = std::mem::size_of::<isize>();

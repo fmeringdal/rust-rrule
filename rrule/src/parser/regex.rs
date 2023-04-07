@@ -9,7 +9,7 @@ use super::{content_line::PropertyName, ParseError};
 lazy_static! {
     static ref DATESTR_RE: Regex =
         Regex::new(r"(?m)^([0-9]{4})([0-9]{2})([0-9]{2})(T([0-9]{2})([0-9]{2})([0-9]{2})(Z?))?$")
-            .unwrap();
+            .expect("DATESTR_RE regex failed");
 }
 
 #[derive(Debug, PartialEq)]
@@ -85,7 +85,8 @@ impl ParsedDateString {
 }
 
 lazy_static! {
-    static ref PARSE_PROPERTY_NAME_RE: Regex = Regex::new(r"(?m)^([A-Z]+?)[:;]").unwrap();
+    static ref PARSE_PROPERTY_NAME_RE: Regex =
+        Regex::new(r"(?m)^([A-Z]+?)[:;]").expect("PARSE_PROPERTY_NAME_RE regex failed");
 }
 
 /// Get the line property name, the `RRULE:`, `EXRULE:` etc part.

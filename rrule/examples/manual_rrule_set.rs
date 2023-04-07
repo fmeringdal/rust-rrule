@@ -3,7 +3,7 @@
 //! Create an [`rrule::RRuleSet`] object manually.
 
 /// ## Construct [`rrule::RRuleSet`] from one `rrule` and `exrule`
-/// The rrule will occur weekly on Tuesday and Wednesday and the exrule
+/// The rrule will occur weekly on Tuesday and Wednesday, and the exrule
 /// will occur weekly on Wednesday, and therefore the end result will contain
 /// weekly recurrences on Wednesday only.
 fn main() {
@@ -11,7 +11,7 @@ fn main() {
     {
         use chrono::{Datelike, TimeZone};
         use rrule::{Frequency, NWeekday, RRule, Tz, Weekday};
-        // Build rrule set that occurs weekly on Tuesday and Wednesday
+        // Build an rrule set that occurs weekly on Tuesday and Wednesday
         let rrule_set = RRule::default()
             .count(4)
             .freq(Frequency::Weekly)
@@ -19,7 +19,7 @@ fn main() {
                 NWeekday::Every(Weekday::Tue),
                 NWeekday::Every(Weekday::Wed),
             ])
-            .build(Tz::UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
+            .build(Tz::UTC.with_ymd_and_hms(2020, 1, 1, 9, 0, 0).unwrap())
             .expect("RRule invalid");
 
         // Build exrule that occurs weekly on Wednesday
@@ -27,7 +27,7 @@ fn main() {
             .count(4)
             .freq(Frequency::Weekly)
             .by_weekday(vec![NWeekday::Every(Weekday::Wed)])
-            .validate(Tz::UTC.ymd(2020, 1, 1).and_hms(9, 0, 0))
+            .validate(Tz::UTC.with_ymd_and_hms(2020, 1, 1, 9, 0, 0).unwrap())
             .expect("RRule invalid");
 
         let recurrences = rrule_set.exrule(exrule).all(10).dates;

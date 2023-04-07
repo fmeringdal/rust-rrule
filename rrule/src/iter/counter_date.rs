@@ -29,9 +29,9 @@ impl DateTimeIter {
     /// Increments the datetime based on the [`RRule`] values.
     ///
     /// If `increment_day` is set to `true`, then the method will also make sure that
-    /// the day is incremented. This is useful is the case when `rrule.freq`
+    /// the day is incremented. This is useful is the case where `rrule.freq`
     /// is higher than daily (e.g. hourly) where this function might return a date with the
-    /// same day, but the iterator already knows that the current day cannot
+    /// same day, but the iterator already knows that the current day can't
     /// be part of the result.
     pub fn increment(&mut self, rrule: &RRule, increment_day: bool) -> Result<(), RRuleError> {
         let RRule {
@@ -89,7 +89,12 @@ impl DateTimeIter {
         };
         let year_day = u32::from(month_range_mask[self.month as usize - 1]) + self.day - 1;
         let year_day_mod = year_day % 7;
-        let year_start_weekday = Utc.ymd(self.year, 1, 1).weekday().num_days_from_monday();
+        let year_start_weekday = Utc
+            .with_ymd_and_hms(self.year, 1, 1, 0, 0, 0)
+            // It should never fail, since there is always a 1st of January, is there?
+            .unwrap()
+            .weekday()
+            .num_days_from_monday();
 
         (year_day_mod + year_start_weekday) % 7
     }
@@ -98,7 +103,7 @@ impl DateTimeIter {
         let weekday = self.get_weekday();
         let option_week_start = week_start.num_days_from_monday();
         let interval = u32::from(interval);
-        // Calculate amount of day to move forward.
+        // Calculate the amount of day to move forward.
         let day_delta = if option_week_start > weekday {
             // `weekday` and `option_week_start` can only be in range `0..=6`
             // `option_week_start` > `weekday` so:
@@ -158,7 +163,7 @@ impl DateTimeIter {
         increment_day: bool,
     ) -> Result<(), RRuleError> {
         if increment_day {
-            // Jump to one iteration before next day
+            // Jump to one iteration before the next day
             let temp_value = (23 - self.hour) / u32::from(interval);
             self.hour += checked_mul_u32(
                 temp_value,
@@ -174,7 +179,7 @@ impl DateTimeIter {
                 u32::from(interval),
                 Some("please decrease `INTERVAL`"),
             )?;
-            let new_hours = u8::try_from(self.hour % 24).expect("range 0 - 23 is covered by u8");
+            let new_hours = u8::try_from(self.hour % 24).expect("range 0-23 is covered by u8");
             if by_hour.is_empty() || by_hour.iter().any(|bh| *bh == new_hours) {
                 break;
             }
@@ -205,7 +210,7 @@ impl DateTimeIter {
         increment_day: bool,
     ) -> Result<(), RRuleError> {
         if increment_day {
-            // Jump to one iteration before next day
+            // Jump to one iteration before the next day
             let minutes_total = self.hour * 60 + self.minute;
             let temp_value = (MINUTES_IN_A_DAY - 1 - minutes_total) / u32::from(interval);
             self.minute += checked_mul_u32(
@@ -226,8 +231,8 @@ impl DateTimeIter {
                 self.increment_hourly(hours_div, by_hour, increment_day)?;
             }
 
-            let hours = u8::try_from(self.hour % 24).expect("range 0 - 23 is covered by u8");
-            let minutes = u8::try_from(self.minute % 60).expect("range 0 - 59 is covered by u8");
+            let hours = u8::try_from(self.hour % 24).expect("range 0-23 is covered by u8");
+            let minutes = u8::try_from(self.minute % 60).expect("range 0-59 is covered by u8");
 
             if (by_hour.is_empty() || by_hour.contains(&hours))
                 && (by_minute.is_empty() || by_minute.contains(&minutes))
@@ -255,7 +260,7 @@ impl DateTimeIter {
         increment_day: bool,
     ) -> Result<(), RRuleError> {
         if increment_day {
-            // Jump to one iteration before next day
+            // Jump to one iteration before the next day
             let total_seconds = self.hour * 3600 + self.minute * 60 + self.second;
             let temp_value = (SECONDS_IN_A_DAY - 1 - total_seconds) / u32::from(interval);
             self.second += checked_mul_u32(
@@ -276,9 +281,9 @@ impl DateTimeIter {
                 self.increment_minutely(minutes_div, by_hour, by_minute, increment_day)?;
             }
 
-            let hours = u8::try_from(self.hour % 24).expect("range 0 - 23 is covered by u8");
-            let minutes = u8::try_from(self.minute % 60).expect("range 0 - 59 is covered by u8");
-            let seconds = u8::try_from(self.second % 60).expect("range 0 - 59 is covered by u8");
+            let hours = u8::try_from(self.hour % 24).expect("range 0-23 is covered by u8");
+            let minutes = u8::try_from(self.minute % 60).expect("range 0-59 is covered by u8");
+            let seconds = u8::try_from(self.second % 60).expect("range 0-59 is covered by u8");
 
             if (by_hour.is_empty() || by_hour.contains(&hours))
                 && (by_minute.is_empty() || by_minute.contains(&minutes))
@@ -322,7 +327,9 @@ mod tests {
     const UTC: Tz = Tz::UTC;
 
     fn ymd_hms(year: i32, month: u32, day: u32, hour: u32, min: u32, sec: u32) -> DateTimeIter {
-        let dt = UTC.ymd(year, month, day).and_hms(hour, min, sec);
+        let dt = UTC
+            .with_ymd_and_hms(year, month, day, hour, min, sec)
+            .unwrap();
         DateTimeIter::from(&dt)
     }
 
@@ -356,7 +363,7 @@ mod tests {
                 freq: Frequency::Yearly,
                 ..Default::default()
             }
-            .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
+            .validate(UTC.with_ymd_and_hms(1997, 1, 1, 1, 1, 1).unwrap())
             .unwrap();
 
             let res = counter_date.increment(&rrule, false);
@@ -400,7 +407,7 @@ mod tests {
                 freq: Frequency::Monthly,
                 ..Default::default()
             }
-            .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
+            .validate(UTC.with_ymd_and_hms(1997, 1, 1, 1, 1, 1).unwrap())
             .unwrap();
 
             let res = counter_date.increment(&rrule, false);
@@ -444,7 +451,7 @@ mod tests {
                 freq: Frequency::Weekly,
                 ..Default::default()
             }
-            .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
+            .validate(UTC.with_ymd_and_hms(1997, 1, 1, 1, 1, 1).unwrap())
             .unwrap();
 
             let res = counter_date.increment(&rrule, false);
@@ -483,7 +490,7 @@ mod tests {
                 freq: Frequency::Daily,
                 ..Default::default()
             }
-            .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
+            .validate(UTC.with_ymd_and_hms(1997, 1, 1, 1, 1, 1).unwrap())
             .unwrap();
 
             let res = counter_date.increment(&rrule, false);
@@ -539,7 +546,7 @@ mod tests {
                 by_hour,
                 ..Default::default()
             }
-            .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
+            .validate(UTC.with_ymd_and_hms(1997, 1, 1, 1, 1, 1).unwrap())
             .unwrap();
 
             let res = counter_date.increment(&rrule, false);
@@ -588,7 +595,7 @@ mod tests {
                 freq: Frequency::Hourly,
                 ..Default::default()
             }
-            .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
+            .validate(UTC.with_ymd_and_hms(1997, 1, 1, 1, 1, 1).unwrap())
             .unwrap();
 
             let res = counter_date.increment(&rrule, true);
@@ -627,7 +634,7 @@ mod tests {
                 freq: Frequency::Minutely,
                 ..Default::default()
             }
-            .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
+            .validate(UTC.with_ymd_and_hms(1997, 1, 1, 1, 1, 1).unwrap())
             .unwrap();
 
             let res = counter_date.increment(&rrule, false);
@@ -661,7 +668,7 @@ mod tests {
                 freq: Frequency::Minutely,
                 ..Default::default()
             }
-            .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
+            .validate(UTC.with_ymd_and_hms(1997, 1, 1, 1, 1, 1).unwrap())
             .unwrap();
 
             let res = counter_date.increment(&rrule, true);
@@ -700,7 +707,7 @@ mod tests {
                 freq: Frequency::Secondly,
                 ..Default::default()
             }
-            .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
+            .validate(UTC.with_ymd_and_hms(1997, 1, 1, 1, 1, 1).unwrap())
             .unwrap();
 
             let res = counter_date.increment(&rrule, false);
@@ -734,7 +741,7 @@ mod tests {
                 freq: Frequency::Secondly,
                 ..Default::default()
             }
-            .validate(UTC.ymd(1997, 1, 1).and_hms(1, 1, 1))
+            .validate(UTC.with_ymd_and_hms(1997, 1, 1, 1, 1, 1).unwrap())
             .unwrap();
 
             let res = counter_date.increment(&rrule, true);

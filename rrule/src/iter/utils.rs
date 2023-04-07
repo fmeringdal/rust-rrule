@@ -10,7 +10,7 @@ const DAY_SECS: i64 = 24 * 60 * 60;
 /// Converts number of days since unix epoch back to `DataTime`
 pub(crate) fn from_ordinal(ordinal: i64) -> DateTime {
     let timestamp = ordinal * DAY_SECS;
-    UTC.timestamp(timestamp, 0)
+    UTC.timestamp_opt(timestamp, 0).unwrap()
 }
 
 /// Returns number of days since unix epoch (rounded down)
@@ -20,12 +20,12 @@ pub(crate) fn days_since_unix_epoch(date: &chrono::DateTime<Utc>) -> i64 {
 
 /// Returns true if given year is a leap year
 pub(crate) fn is_leap_year(year: i32) -> bool {
-    // Every 4 years, and every 100 years
+    // Every 4 years, and every 100 years,
     // but not if dividable by 400.
     year.trailing_zeros() >= 2 && (year % 25 != 0 || year.trailing_zeros() >= 4)
 }
 
-/// Returns amount of days in year,
+/// Returns number of days in year,
 /// So 365 or 366 depending on the year
 pub(crate) fn get_year_len(year: i32) -> u16 {
     if is_leap_year(year) {
@@ -77,7 +77,7 @@ pub(crate) fn add_time_to_date(date: Date<Tz>, time: NaiveTime) -> Option<DateTi
     if let Some(dt) = date.and_time(time) {
         return Some(dt);
     }
-    // If the day is a daylight saving time, the above code might now work and we
+    // If the day is a daylight saving time, the above code might now work, and we
     // can try to get a valid datetime by adding the `time` as a duration instead.
     let dt = date.and_hms_opt(0, 0, 0)?;
     let day_duration = duration_from_midnight(time);
@@ -144,14 +144,16 @@ mod test {
         let tests = [
             (
                 UTC.ymd(2017, 1, 1),
-                NaiveTime::from_hms(1, 15, 30),
-                Some(UTC.ymd(2017, 1, 1).and_hms(1, 15, 30)),
+                NaiveTime::from_hms_opt(1, 15, 30).unwrap(),
+                Some(UTC.with_ymd_and_hms(2017, 1, 1, 1, 15, 30).unwrap()),
             ),
             (
                 AMERICA_VANCOUVER.ymd(2021, 3, 14),
-                NaiveTime::from_hms(2, 22, 10),
+                NaiveTime::from_hms_opt(2, 22, 10).unwrap(),
                 Some(
-                    AMERICA_VANCOUVER.ymd(2021, 3, 14).and_hms(0, 0, 0)
+                    AMERICA_VANCOUVER
+                        .with_ymd_and_hms(2021, 3, 14, 0, 0, 0)
+                        .unwrap()
                         + Duration::hours(2)
                         + Duration::minutes(22)
                         + Duration::seconds(10),
@@ -159,8 +161,12 @@ mod test {
             ),
             (
                 AMERICA_NEW_YORK.ymd(1997, 10, 26),
-                NaiveTime::from_hms(9, 0, 0),
-                Some(AMERICA_NEW_YORK.ymd(1997, 10, 26).and_hms(9, 0, 0)),
+                NaiveTime::from_hms_opt(9, 0, 0).unwrap(),
+                Some(
+                    AMERICA_NEW_YORK
+                        .with_ymd_and_hms(1997, 10, 26, 9, 0, 0)
+                        .unwrap(),
+                ),
             ),
         ];
 

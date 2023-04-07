@@ -1,4 +1,8 @@
-#![allow(clippy::cast_possible_truncation, clippy::doc_markdown)]
+#![allow(
+    clippy::cast_possible_truncation,
+    clippy::doc_markdown,
+    clippy::unwrap_used
+)]
 
 mod debug;
 mod iter_rrule;
@@ -6,6 +10,7 @@ mod parser_rrule;
 mod simple_logger;
 
 use chrono::DateTime;
+use clap::ArgAction;
 use clap::Parser;
 use log::LevelFilter;
 use rrule::Tz;
@@ -28,7 +33,7 @@ struct Opts {
     debug: bool,
 
     /// Verbose mode (-v, -vv, -vvv, etc.)
-    #[clap(short, long, parse(from_occurrences))]
+    #[clap(short, long, action = ArgAction::Count)]
     verbose: u8,
 
     /// Run id
@@ -52,7 +57,7 @@ enum Commands {
     /// Parse data from raw binary RRule data
     Rrule {},
     /// Used for debugging particular parts of the code,
-    /// for example when a test fails.
+    /// for example, when a test fails.
     Debug {},
 }
 
@@ -96,8 +101,8 @@ fn read_crash_file(id: u32) -> Option<Vec<u8>> {
             continue;
         }
         let filename = path.file_name().unwrap().to_str().unwrap();
-        if filename.starts_with(&format!("id:{:06},", id)) {
-            println!("Reading file {:?}", path);
+        if filename.starts_with(&format!("id:{id:06},")) {
+            println!("Reading file {path:?}");
             return Some(std::fs::read(path).expect("Something went wrong reading the file"));
         }
     }
@@ -115,7 +120,7 @@ fn read_all_crash_file() -> Vec<Vec<u8>> {
         }
         let filename = path.file_name().unwrap().to_str().unwrap();
         if filename.starts_with("id:") {
-            println!("Reading file {:?}", path);
+            println!("Reading file {path:?}");
             list.push(std::fs::read(path).expect("Something went wrong reading the file"));
         }
     }

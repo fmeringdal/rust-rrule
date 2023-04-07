@@ -82,9 +82,9 @@ See [Chrono-Tz's limits for more info](https://github.com/chronotope/chrono-tz/#
 ### Validation Limits
 
 <a name="validation_limits"></a>
-Because the specifications does give a lot of flexibility this can be [abused very easily](#Security).
-In order to prevent most of the abuse we have imposed arbitrary limitation when on the `RRuleSet::all`
-method. The validation limits are not enforced for the `RRuleSet::all_unchecked` method or when
+Because the specifications do give a lot of flexibilities this can be [abused very easily](#Security).
+In order to prevent most of the abuse we've imposed arbitrary limitation when on the `RRuleSet::all`
+method. The validation limits aren't enforced for the `RRuleSet::all_unchecked` method or when
 using the `Iterator` api directly.
 
 Limitations:
@@ -100,7 +100,7 @@ Limitations:
 | Max interval with freq Secondly | 50_000 (~13 hours) | 65_535 (u16::MAX) |
 | Iteration limit | 100_000 | 4_294_967_295 (u32::MAX) |
 
-By default, the "Arbitrary Limit" are used. If you instead want to use the "Crate Limit".
+By default, the "Arbitrary Limit" is used. If you instead want to use the "Crate Limit".
 Make sure you [understand the risks that come with this](#safety).
 
 ## Inspired by

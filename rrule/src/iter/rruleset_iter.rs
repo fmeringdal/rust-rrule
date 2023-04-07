@@ -117,24 +117,23 @@ impl<'a> Iterator for RRuleSetIter<'a> {
 
         for (i, rrule_iter) in self.rrule_iters.iter_mut().enumerate() {
             let rrule_queue = self.queue.remove(&i);
-            let next_rrule_date = match rrule_queue {
-                Some(d) => Some(d),
-                None => {
-                    // should be method on self
-                    let (date, was_limited) = Self::generate(
-                        rrule_iter,
-                        &mut self.exrules,
-                        &mut self.exdates,
-                        self.limited,
-                    );
+            let next_rrule_date = if let Some(d) = rrule_queue {
+                Some(d)
+            } else {
+                // should be method on self
+                let (date, was_limited) = Self::generate(
+                    rrule_iter,
+                    &mut self.exrules,
+                    &mut self.exdates,
+                    self.limited,
+                );
 
-                    if was_limited {
-                        self.was_limited = true;
-                        return None;
-                    }
-
-                    date
+                if was_limited {
+                    self.was_limited = true;
+                    return None;
                 }
+
+                date
             };
 
             if let Some(next_rrule_date) = next_rrule_date {

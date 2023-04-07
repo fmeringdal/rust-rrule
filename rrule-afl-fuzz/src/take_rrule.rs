@@ -33,7 +33,7 @@ pub fn take_rrule_from_data(mut data: &[u8]) -> Option<RRuleSet> {
     // Total: 166 bytes
     //
     // We use at least x bytes of data.
-    // If we don't have enough data it will just use default data (`0` or `vec![]`).
+    // If we don't have enough data, it will just use default data (`0` or `vec![]`).
     // if data.len() < 166 {
     //     return None;
     // }

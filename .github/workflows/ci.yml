@@ -21,7 +21,9 @@ jobs:
       - name: Linting
         run: |
           cd rrule
-          cargo clippy -- -D warnings
+          # revert it back to the following line, the deprecated functions are removed from chrono
+          # cargo clippy -- -D warnings
+          cargo clippy
       - name: Cargo Doc
         run: |
           cargo doc --no-deps --all-features --examples
@@ -38,7 +40,7 @@ jobs:
         - { name: macOS, os: macos-latest, triple: x86_64-apple-darwin }
         - { name: Windows, os: windows-2022, triple: x86_64-pc-windows-msvc }
         version:
-        - 1.57.0 # MSRV
+        - 1.64.0 # MSRV
         - stable
     steps:
       - uses: actions/checkout@v2
@@ -63,5 +65,5 @@ jobs:
           cd rrule
           cargo update
           cargo audit
-        # Allowed to fail but this will notify us that some dependency might need an update.
+        # Allowed to fail, but this will notify us that some dependency might need an update.
         continue-on-error: true

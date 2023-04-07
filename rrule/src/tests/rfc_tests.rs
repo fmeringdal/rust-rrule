@@ -170,7 +170,7 @@ fn every_10_days_5_occurrences() {
 /// Every day in January, for 3 years
 #[test]
 fn every_days_in_jan_for_3_years() {
-    // To patterns that have same result
+    // To patterns that have the same result
     let dates = "DTSTART;TZID=America/New_York:19980101T090000\n\
         RRULE:FREQ=YEARLY;UNTIL=20000131T140000Z;BYMONTH=1;BYDAY=SU,MO,TU,WE,TH,FR,SA"
         .parse::<RRuleSet>()
@@ -831,7 +831,7 @@ fn every_friday_the_13th_forever() {
     );
 }
 
-/// The first Saturday that follows the first Sunday of the month, forever
+/// The first Saturday that follows the first Sunday of the month forever
 #[test]
 fn first_sat_follows_first_sunday_of_month_forever() {
     let dates = "DTSTART;TZID=America/New_York:19970913T090000\n\
@@ -1031,7 +1031,7 @@ fn every_20_min_at_time_every_day() {
     common::check_occurrences(&dates_alt, &expected);
 }
 
-/// An example where the days generated makes a difference because of `WKST` (week start)
+/// An example where the days generated make a difference because of `WKST` (week start)
 #[test]
 fn week_day_start_monday_generated_days() {
     let dates = "DTSTART;TZID=America/New_York:19970805T090000\n\

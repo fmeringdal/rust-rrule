@@ -77,7 +77,7 @@ mod tests {
                     parameters: None,
                     value: "19970714T123000Z",
                 },
-                vec![UTC.ymd(1997, 7, 14).and_hms(12, 30, 0)],
+                vec![UTC.with_ymd_and_hms(1997, 7, 14, 12, 30, 0).unwrap()],
             ),
             (
                 ContentLineCaptures {
@@ -85,7 +85,7 @@ mod tests {
                     parameters: None,
                     value: "19970714T123000",
                 },
-                vec![Tz::LOCAL.ymd(1997, 7, 14).and_hms(12, 30, 0)],
+                vec![Tz::LOCAL.with_ymd_and_hms(1997, 7, 14, 12, 30, 0).unwrap()],
             ),
             (
                 ContentLineCaptures {
@@ -94,10 +94,10 @@ mod tests {
                     value: "19970101,19970120,19970217,19970421",
                 },
                 vec![
-                    UTC.ymd(1997, 1, 1).and_hms(0, 0, 0),
-                    UTC.ymd(1997, 1, 20).and_hms(0, 0, 0),
-                    UTC.ymd(1997, 2, 17).and_hms(0, 0, 0),
-                    UTC.ymd(1997, 4, 21).and_hms(0, 0, 0),
+                    UTC.with_ymd_and_hms(1997, 1, 1, 0, 0, 0).unwrap(),
+                    UTC.with_ymd_and_hms(1997, 1, 20, 0, 0, 0).unwrap(),
+                    UTC.with_ymd_and_hms(1997, 2, 17, 0, 0, 0).unwrap(),
+                    UTC.with_ymd_and_hms(1997, 4, 21, 0, 0, 0).unwrap(),
                 ],
             ),
         ];

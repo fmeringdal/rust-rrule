@@ -4,11 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] (2022-0X-YY)
+## 0.11.0 (2023-0X-YY)
 
 ### Changed
 
 - `RRuleSet::all` returns an `RRuleResult` struct instead of a tuple.
+- Update `chrono-tz` version to 0.8
+- MSRV is bumped to `v1.64.0` from `v1.56.1`
 
 ## 0.10.0 (2022-08-08)
 
@@ -22,8 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 - `no-validation-limits` feature is removed and is replaced by arguments to `RRuleSet`.
-- `RRuleSet::just_before` was removed to keep the public API more lean. Please use the iterator API directly if you need this use-case.
-- `RRuleSet::just_after` was removed to keep the public API more lean. Please use the iterator API directly if you need this use-case.
+- `RRuleSet::just_before` was removed to keep the public API leaner. Please use the iterator API directly if you need this use-case.
+- `RRuleSet::just_after` was removed to keep the public API leaner. Please use the iterator API directly if you need this use-case.
 - `RRuleSet::all_between` was replaced by `rrule_set.before(dt).after(dt).all(limit)`.
 
 ### Added
@@ -43,7 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixes
 
 - Fixed typos in security docs 
-- Fixed an infinite loop issue in the iteration phase where the counter date increment method did not increment the counter date and it was unable to make progress. This was solved by using a custom date time implementation for the counter date.
+- Fixed an infinite loop issue in the iteration phase where the counter date increment method didn't increment the counter date, and it was unable to make progress. This was solved by using a custom date time implementation for the counter date.
 - Fixes issue where iterations that passed a daylight saving time had incorrect hour.
 
 ## 0.9.0 (2022-07-18)
@@ -62,7 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixes
 
-- The `DTSTART` and `UNTIL` values were not synced before this release. They are now synced according to the RFC.
+- The `DTSTART` and `UNTIL` values weren't synced before this release. They're now synced according to the RFC.
 - Fix #61 where `collect_with_error` would not return an error in the case where `RRuleSet` iteration had an error.
 
 ## 0.8.0 (2022-06-21)
@@ -99,7 +101,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix [#33](https://github.com/fmeringdal/rust-rrule/issues/33)
 - Fix [#34](https://github.com/fmeringdal/rust-rrule/issues/34)
-- Many tests were ignored because they were either invalid or the test didn't pass. Most ignored tests are now deleted or the code is fixed so that they pass.
+- Many tests were ignored because they were either invalid or the test didn't pass. Most ignored tests are now deleted, or the code is fixed so that they pass.
 - Better error handling
 
 ### Changed
@@ -142,7 +144,7 @@ Internal refactorings:
 - `RRule` can only be crated using `new` function with a valid `RRuleProperties`.
 - `RRule.option` is no longer public, but can be read by using `get_properties()`.
 - `RRuleIter` and `RRuleSetIter` are now part of the public API.
-- `NWeekday` has totally changed, but serves the same purpose.
+- `NWeekday` has totally changed but serves the same purpose.
 - Updated `chrono-tz` from `0.5.3` to `0.6.0`.
 - Function `all` was moved to `DateFilter` and returns a `Result` now.
 
@@ -174,4 +176,4 @@ Internal refactorings:
 ## Pre 0.6.0 (2021-07-02)
 
 All changes before 2021-07-02 where not documented.
-This is everything before and including: fa8308944a4d2ead0a6ccfa6ee53b76b399e045f
+This is everything before and including fa8308944a4d2ead0a6ccfa6ee53b76b399e045f

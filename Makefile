@@ -6,6 +6,7 @@ check:
 	@cargo clippy --fix --allow-dirty --allow-staged --all-targets --all-features
 	@cargo update --dry-run
 	@cargo outdated -wR
+	@cargo machete
 	@cargo doc --no-deps --all-features --examples --document-private-items
 	@cargo +nightly udeps --all-targets --all-features
 
