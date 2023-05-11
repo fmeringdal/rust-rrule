@@ -7,6 +7,7 @@ rust-version = "1.64.0"
 members = [
     "rrule",
     "rrule-debugger",
+    "rrule-wasm"
 ]
 
 # These are the 2 packages to mainly work on.

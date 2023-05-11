@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
+    <meta http-equiv="cache-control" content="max-age=0" />
+    <meta http-equiv="cache-control" content="no-cache" />
+  </head>
+  <body>
+
+    <script type="module">
+      import init, { get_all_date_recurrences } from './pkg/rrule_wasm.js';
+
+      async function run_wasm() {
+	  await init();
+    var data = get_all_date_recurrences("DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3", 100);
+	  console.log(data);
+	  alert(data);
+      }
+
+      run_wasm();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,20 @@
+[package]
+name = "rrule-wasm"
+version = "0.1.0"
+authors = ["Ralph Bisschops <ralph.bisschops.dev@gmail.com>"]
+publish = false
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rrule = { path = "../rrule" }
+wasm-bindgen = "0.2.63"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.13"
