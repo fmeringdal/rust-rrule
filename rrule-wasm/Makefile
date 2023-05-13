@@ -1,11 +1,17 @@
 install-wasm-pack:
 	curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
-build-web-wasm:
+build-wasm-nodejs:
+	wasm-pack build --target nodejs
+
+test-wasm-on-nodejs:
+	node example/nodejs/app.js
+
+build-wasm-web:
 	wasm-pack build --target web
 
-test-web-wasm-on-browser:
-	npx http-server
+test-wasm-on-web-browser:
+	cd example/web && npx http-server
 
-run-tests:
+run-unit-tests:
 	wasm-pack test --node
