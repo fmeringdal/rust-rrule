@@ -10,7 +10,7 @@ const server = http.createServer((req, res) => {
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/plain');
 
-  var data = get_all_date_recurrences("DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3", 100);
+  const data = get_all_date_recurrences("DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3", 100);
   console.log(data);
   res.end(data.toString());
 });

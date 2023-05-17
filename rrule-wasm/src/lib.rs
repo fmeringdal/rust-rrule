@@ -7,13 +7,20 @@ use wasm_bindgen::prelude::*;
      limit: Limit must be set in order to prevent infinite loops
 */
 #[wasm_bindgen]
-pub fn get_all_date_recurrences(rule_set_string: &str, limit: Option<u16>) -> Vec<JsValue> {
-    let rrule: RRuleSet = rule_set_string.parse().unwrap();
-    //  Set hard limit in case of infinitely recurring rules
-    let rule_set = rrule.all(limit.unwrap_or(100));
-    let result: Vec<JsValue> = rule_set.dates
-        .into_iter()
-        .map(|s| JsValue::from_str(&Some(s).unwrap().to_string()))
-        .collect();
-    return result;
+pub fn get_all_date_recurrences(rule_set: &str, limit: Option<u16>) -> Result<Vec<JsValue>, JsError> {
+    let rrule_result: Result<RRuleSet, rrule::RRuleError> = rule_set.parse();
+    match rrule_result {
+        Ok(rrule) =>  {
+            //  Set hard limit in case of infinitely recurring rules
+            let rule_set_collection = rrule.all(limit.unwrap_or(100));
+            let result: Vec<JsValue> = rule_set_collection.dates
+                .into_iter()
+                .map(|s| {
+                    JsValue::from_str(&s.to_string())
+                })
+                .collect();
+            Ok(result)      
+        },
+        Err(e) => Err(JsError::from(e))
+    }
 }
