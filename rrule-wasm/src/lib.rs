@@ -1,3 +1,9 @@
+#![allow(
+    clippy::cast_possible_truncation,
+    clippy::doc_markdown,
+    clippy::unwrap_used
+)]
+
 use rrule::RRuleSet;
 use wasm_bindgen::prelude::*;
 
