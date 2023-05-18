@@ -8,15 +8,15 @@
   <body>
 
     <script type="module">
-      import init, { get_all_date_recurrences } from '../../pkg/rrule_wasm.js';
+      import init, { get_all_date_recurrences } from '../../../pkg/rrule.js';
 
       async function run_wasm() {
-	  await init();
-    const data = get_all_date_recurrences("DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3", 100);
-	  console.log(data);
-	  alert(data);
+        await init();
+        const rule_set = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3";
+        const data = get_all_date_recurrences(rule_set, 100);
+        console.log(data);
+        alert(data);
       }
-
       run_wasm();
     </script>
   </body>

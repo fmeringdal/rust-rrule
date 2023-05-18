@@ -4,8 +4,9 @@
     clippy::unwrap_used
 )]
 
-use rrule::RRuleSet;
 use wasm_bindgen::prelude::*;
+
+use crate::{RRuleSet, RRuleError};
 
 /**
   Get all recurrences of the rrule!
@@ -14,7 +15,7 @@ use wasm_bindgen::prelude::*;
 */
 #[wasm_bindgen]
 pub fn get_all_date_recurrences(rule_set: &str, limit: Option<u16>) -> Result<Vec<JsValue>, JsError> {
-    let rrule_result: Result<RRuleSet, rrule::RRuleError> = rule_set.parse();
+    let rrule_result: Result<RRuleSet, RRuleError> = rule_set.parse();
     match rrule_result {
         Ok(rrule) =>  {
             //  Set hard limit in case of infinitely recurring rules

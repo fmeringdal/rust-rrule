@@ -1,4 +1,4 @@
-const { get_all_date_recurrences } = require('../../pkg/rrule_wasm.js');
+const { get_all_date_recurrences } = require('../../../pkg/rrule.js');
 
 const http = require('http');
 const url = require('url');
@@ -10,7 +10,8 @@ const server = http.createServer((req, res) => {
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/plain');
 
-  const data = get_all_date_recurrences("DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3", 100);
+  const rule_set = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3";
+  const data = get_all_date_recurrences(rule_set, 100);
   console.log(data);
   res.end(data.toString());
 });
