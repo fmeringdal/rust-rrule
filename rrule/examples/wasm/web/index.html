@@ -12,8 +12,8 @@
 
       async function run_wasm() {
         await init();
-        const rule_set = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3";
-        const data = get_all_date_recurrences(rule_set, 100);
+        const ruleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3";
+        const data = get_all_date_recurrences(ruleSet, 100);
         console.log(data);
         alert(data);
       }

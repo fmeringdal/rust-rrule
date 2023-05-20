@@ -1,9 +1,3 @@
-#![allow(
-    clippy::cast_possible_truncation,
-    clippy::doc_markdown,
-    clippy::unwrap_used
-)]
-
 use wasm_bindgen::prelude::*;
 
 use crate::{RRuleSet, RRuleError};
