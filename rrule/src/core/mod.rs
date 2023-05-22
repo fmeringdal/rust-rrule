@@ -1,5 +1,5 @@
 mod datetime;
-mod rrule;
+pub(crate) mod rrule;
 mod rruleset;
 mod timezone;
 mod timezone_impl;

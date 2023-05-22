@@ -22,6 +22,7 @@ clap = { version = "4.1.9", optional = true, features = ["derive"] }
 thiserror = "1.0.30"
 serde_with = { version = "2.3.1", optional = true }
 wasm-bindgen = { version="0.2.85", optional = true }
+js-sys = { version="0.3.63", optional = true }
 
 [dev-dependencies]
 serde_json = "1.0.80"
@@ -33,7 +34,7 @@ name = "rrule"
 required-features = ["cli-tool"]
 
 [features]
-default = []
+default = ["wasm"]
 
 # Allows the enabling of the `by_easter` field and `BYEASTER` parser.
 by-easter = []
@@ -48,7 +49,7 @@ serde = ["serde_with", "chrono/serde", "chrono-tz/serde"]
 exrule = []
 
 # Allows to use WASM
-wasm = ["dep:wasm-bindgen"]
+wasm = ["dep:wasm-bindgen", "dep:js-sys"]
 
 [lib]
 crate-type = ["cdylib", "rlib"] 
