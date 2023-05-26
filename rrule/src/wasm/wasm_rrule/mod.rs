@@ -208,7 +208,6 @@ impl WasmRRule {
         self.by_weekday = NWeekdayCollection::new_every(by_weekday);
     }
 
-    #[wasm_bindgen(setter)]
     pub fn set_by_weekday_nth(&mut self, nth:i16, by_weekday: Vec<u8>) {
         self.by_weekday = NWeekdayCollection::new_nth(nth, by_weekday)
     }
