@@ -247,36 +247,56 @@ impl WasmRRule {
     pub fn set_by_second(&mut self, by_second: Box<[u8]>) {
         self.by_second = by_second.into_vec();
     }
-}
 
-/**
-  Get all recurrences of the rrule!
-     rule_set_string: List of rrules
-     limit: Limit must be set in order to prevent infinite loops
-*/
-#[wasm_bindgen]
-pub fn convert_rule_options_to_string(wasm_rrule: &WasmRRule) -> String {
-    let rrule = rrule::RRule {
-        freq: wasm_rrule.freq.convert(),
-        interval: wasm_rrule.interval,
-        count: wasm_rrule.count,
-        until: convert_js_date_to_chrono_date_time(&wasm_rrule.until),
-        week_start: wasm_rrule.week_start.convert(),
-        by_set_pos: wasm_rrule.by_set_pos.clone(),
-        by_month: wasm_rrule.by_month.clone(),
-        by_month_day: wasm_rrule.by_month_day.clone(),
-        by_n_month_day: wasm_rrule.by_n_month_day.clone(),
-        by_year_day: wasm_rrule.by_year_day.clone(),
-        by_week_no: wasm_rrule.by_week_no.clone(),
-        by_weekday: nweek_day::convert_nweek_day_collection(&wasm_rrule.by_weekday),
-        by_hour: wasm_rrule.by_hour.clone(),
-        by_minute: wasm_rrule.by_minute.clone(),
-        by_second: wasm_rrule.by_second.clone(),
-        by_easter: wasm_rrule.by_easter,
-        ..Default::default()
-    };
+    fn convert_to_rrule(&self) -> rrule::RRule<crate::Unvalidated> {
+        let wasm_rrule = self;
+        let rrule = rrule::RRule {
+            freq: wasm_rrule.freq.convert(),
+            interval: wasm_rrule.interval,
+            count: wasm_rrule.count,
+            until: convert_js_date_to_chrono_date_time(&wasm_rrule.until),
+            week_start: wasm_rrule.week_start.convert(),
+            by_set_pos: wasm_rrule.by_set_pos.clone(),
+            by_month: wasm_rrule.by_month.clone(),
+            by_month_day: wasm_rrule.by_month_day.clone(),
+            by_n_month_day: wasm_rrule.by_n_month_day.clone(),
+            by_year_day: wasm_rrule.by_year_day.clone(),
+            by_week_no: wasm_rrule.by_week_no.clone(),
+            by_weekday: nweek_day::convert_nweek_day_collection(&wasm_rrule.by_weekday),
+            by_hour: wasm_rrule.by_hour.clone(),
+            by_minute: wasm_rrule.by_minute.clone(),
+            by_second: wasm_rrule.by_second.clone(),
+            by_easter: wasm_rrule.by_easter,
+            ..Default::default()
+        };
+        rrule
+    }
 
-    rrule.to_string()
+    /**
+     Get all recurrences of the rrule!
+        rule_set_string: List of rrules
+        limit: Limit must be set in order to prevent infinite loops
+    */
+    #[wasm_bindgen(getter, js_name = "toRuleString")]
+    pub fn to_string(&self) -> String {
+        let wasm_rrule = self;
+        let rrule = wasm_rrule.convert_to_rrule();
+        rrule.to_string()    
+    }
+
+    #[wasm_bindgen(js_name = "toRuleStringWith")]
+    pub fn to_string_with(&self, dt_start: Date) -> Result<String, JsError> {
+        let wasm_rrule = self;
+        let rrule = wasm_rrule.convert_to_rrule();
+        let after = crate::wasm::datetime_utils::convert_js_date_to_datetime(&dt_start).map_err(JsError::from);
+        match after {
+            Ok(after) => {
+                let rrule_set = rrule.build(after);
+                Ok(rrule_set?.to_string())    
+            },
+            Err(e) => { Err(JsError::from(e)) }
+        } 
+    }
 }
 
 fn convert_js_date_to_chrono_date_time(date: &Option<Date>) -> Option<DateTime> {
@@ -291,4 +311,13 @@ fn convert_js_date_to_chrono_date_time(date: &Option<Date>) -> Option<DateTime> 
         }
         None => None,
     }
+}
+
+#[wasm_bindgen]
+pub fn rrule_to_string(dt_start: Date) -> Result<String, JsError> {
+   let mut rrule = WasmRRule::new();
+   rrule.freq = Frequency::Weekly;
+   rrule.count = Some(10);
+   //rrule.to_string_with(Date::new_0())
+   rrule.to_string_with(dt_start)
 }

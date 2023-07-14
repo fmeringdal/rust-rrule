@@ -21,7 +21,7 @@ pub fn get_all_date_recurrences_between(rule_set: &str, limit: Option<u16>, afte
     let after = datetime_utils::convert_js_date_to_datetime(&after).map_err(JsError::from);
     let before = datetime_utils::convert_js_date_to_datetime(&before).map_err(JsError::from);
     match (parser_rule_set(rule_set), after, before) {
-        (Ok(rrule), Ok(after), Ok(before)) =>  {
+        (Ok(rrule), Ok(after), Ok(before)) => {
             let rrule = rrule.after(after).before(before);
             let result = get_all_date_recurrences_for(rrule, limit);
             Ok(result)      

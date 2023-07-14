@@ -1,5 +1,5 @@
 use wasm_bindgen::prelude::*;
-use crate::core::{rrule};
+use crate::core::rrule;
 
 #[derive(Clone, Copy)]
 #[wasm_bindgen]
