@@ -1,13 +1,14 @@
 [workspace.package]
 license = "MIT OR Apache-2.0"
 edition = "2021"
-rust-version = "1.64.0"
+rust-version = "1.70.0"
 
 [workspace]
 members = [
     "rrule",
     "rrule-debugger",
 ]
+resolver = "2"
 
 # These are the 2 packages to mainly work on.
 # So `cargo test` and `cargo run` both work.
