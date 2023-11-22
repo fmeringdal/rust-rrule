@@ -1,5 +1,7 @@
 use std::{collections::HashMap, str::FromStr};
 
+use log::warn;
+
 use crate::{
     core::DateTime,
     parser::{
@@ -38,6 +40,33 @@ impl<'a> TryFrom<ContentLineCaptures<'a>> for Vec<DateTime> {
             .map(parse_parameters)
             .transpose()?
             .unwrap_or_default();
+
+        match parameters
+            .get(&DateParameter::Value)
+            .map(|val| val.to_ascii_lowercase())
+            .as_deref()
+        {
+            Some("date") => {
+                warn!(
+                    "Parameter `DATE` is not supported for property name: `{}`. The dates will be interpreter with the `DATE-TIME` parameter instead.",
+                    value.property_name
+                );
+            }
+            Some("period") => {
+                warn!(
+                    "Parameter `PERIOD` is not supported for property name: `{}`. The dates will be interpreter with the `DATE-TIME` parameter instead.",
+                    value.property_name
+                );
+            }
+            Some("date-time") => {}
+            Some(param) => {
+                warn!(
+                    "Encountered unexpected parameter `{param}` for property name: `{}`",
+                    value.property_name
+                );
+            }
+            None => {}
+        }
 
         let timezone = parameters
             .get(&DateParameter::Timezone)

@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 0.12.0 (2023-xx-xx)
 
 - Fix to ensure freq is capitalized in the string representation
+- Fix to include `RDATE`, `EXRULE` and `EXDATE` values if used in the `Display` implementation of `RRuleSet`.
 - MSRV is bumped to `v1.70.0` from `v1.64.0`
 
 ## 0.11.0 (2023-07-18)
