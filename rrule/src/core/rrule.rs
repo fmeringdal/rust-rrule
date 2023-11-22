@@ -43,13 +43,13 @@ pub enum Frequency {
 impl Display for Frequency {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let name = match self {
-            Self::Yearly => "yearly",
-            Self::Monthly => "monthly",
-            Self::Weekly => "weekly",
-            Self::Daily => "daily",
-            Self::Hourly => "hourly",
-            Self::Minutely => "minutely",
-            Self::Secondly => "secondly",
+            Self::Yearly => "YEARLY",
+            Self::Monthly => "MONTHLY",
+            Self::Weekly => "WEEKLY",
+            Self::Daily => "DAILY",
+            Self::Hourly => "HOURLY",
+            Self::Minutely => "MINUTELY",
+            Self::Secondly => "SECONDLY",
         };
         write!(f, "{}", name)
     }
@@ -111,7 +111,7 @@ fn n_weekday_cmp(val1: NWeekday, val2: NWeekday) -> Ordering {
 
 impl PartialOrd for NWeekday {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(n_weekday_cmp(*self, *other))
+        Some(self.cmp(other))
     }
 }
 

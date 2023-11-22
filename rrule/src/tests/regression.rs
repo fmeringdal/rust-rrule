@@ -1,5 +1,7 @@
+use chrono::Month;
+
 use crate::tests::common;
-use crate::RRuleSet;
+use crate::{Frequency, RRule, RRuleSet};
 
 #[test]
 fn issue_34() {
@@ -44,4 +46,17 @@ fn issue_61() {
 
     let res = rrule_set.all(10).dates;
     assert_eq!(res.len(), 10);
+}
+
+// Frequency should be capitalized
+#[test]
+fn issue_97() {
+    let rrule = RRule::new(Frequency::Yearly)
+        .by_month_day((24..=26).collect())
+        .by_month(&[Month::December]);
+
+    assert_eq!(
+        rrule.to_string(),
+        "FREQ=YEARLY;BYMONTH=12;BYMONTHDAY=24,25,26"
+    );
 }
