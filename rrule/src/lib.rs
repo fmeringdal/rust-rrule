@@ -103,5 +103,5 @@ mod validator;
 pub use crate::core::{Frequency, NWeekday, RRule, RRuleResult, RRuleSet, Tz};
 pub use crate::core::{Unvalidated, Validated};
 pub use chrono::Weekday;
-pub use error::RRuleError;
+pub use error::{ParseError, RRuleError, ValidationError};
 pub use iter::RRuleSetIter;
