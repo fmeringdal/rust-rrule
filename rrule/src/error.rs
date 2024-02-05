@@ -2,7 +2,7 @@
 
 use thiserror::Error;
 
-use crate::{parser::ParseError, validator::ValidationError};
+pub use crate::{parser::ParseError, validator::ValidationError};
 
 #[derive(Error, Debug, Clone, PartialEq, Eq)]
 /// The error type for the rrule crate.

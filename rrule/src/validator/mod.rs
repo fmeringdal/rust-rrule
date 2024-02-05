@@ -3,6 +3,6 @@
 
 mod error;
 pub(crate) mod validate_rrule;
-pub(crate) use error::ValidationError;
+pub use error::ValidationError;
 
 pub(crate) use validate_rrule::YEAR_RANGE;
