@@ -4,15 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-
-## 0.13.0 (2024-02-05)
-
-- Make `ParseError` and `ValidationError` public
-
-## 0.12.0 (2023-xx-xx)
+## 0.12.0 (2024-xx-xx)
 
 - Fix to ensure freq is capitalized in the string representation
 - MSRV is bumped to `v1.70.0` from `v1.64.0`
+- Make `ParseError` and `ValidationError` public
 
 ## 0.11.0 (2023-07-18)
 
