@@ -76,7 +76,8 @@ impl DateTimeIter {
                 self.month = 12;
                 year_div -= 1;
             }
-            self.increment_yearly(year_div)?;
+            self.year += i32::from(year_div);
+            checks::check_year_range(self.year)?;
         }
         Ok(())
     }

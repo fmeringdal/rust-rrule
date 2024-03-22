@@ -1170,6 +1170,27 @@ fn monthly_by_nweekday_large() {
 }
 
 #[test]
+fn issue_104() {
+    let rrule = RRule {
+        freq: Frequency::Monthly,
+        interval: 2,
+        count: Some(3),
+        by_weekday: vec![NWeekday::Nth(-1, Weekday::Mon)],
+        ..Default::default()
+    };
+    test_recurring_rrule(
+        rrule,
+        true,
+        ymd_hms(2023, 10, 30, 9, 0, 0),
+        &[
+            ymd_hms(2023, 10, 30, 9, 0, 0),
+            ymd_hms(2023, 12, 25, 9, 0, 0),
+            ymd_hms(2024, 2, 26, 9, 0, 0),
+        ],
+    );
+}
+
+#[test]
 fn monthly_by_month_and_weekday() {
     let rrule = RRule {
         freq: Frequency::Monthly,
