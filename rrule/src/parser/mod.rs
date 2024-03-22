@@ -19,7 +19,7 @@ use self::content_line::{PropertyName, StartDateContentLine};
 /// Grammar represents a well-formatted rrule input.
 #[derive(Debug, PartialEq)]
 pub(crate) struct Grammar {
-    pub start: StartDateContentLine,
+    pub start: Option<StartDateContentLine>,
     pub content_lines: Vec<ContentLine>,
 }
 
@@ -36,7 +36,7 @@ impl FromStr for Grammar {
             .iter()
             .find(|parts| matches!(parts.property_name, PropertyName::DtStart))
             .map(StartDateContentLine::try_from)
-            .ok_or(ParseError::MissingStartDate)??;
+            .transpose()?;
 
         let mut content_lines = vec![];
 
@@ -90,7 +90,7 @@ mod test {
         let tests = [
 (
     "DTSTART:19970902T090000Z\nRRULE:FREQ=YEARLY;COUNT=3\n", Grammar {
-    start: StartDateContentLine { datetime: UTC.with_ymd_and_hms(1997, 9, 2,9, 0, 0).unwrap(), timezone: Some(UTC), value: "DATE-TIME" },
+    start: Some(StartDateContentLine { datetime: UTC.with_ymd_and_hms(1997, 9, 2,9, 0, 0).unwrap(), timezone: Some(UTC), value: "DATE-TIME" }),
     content_lines: vec![
         ContentLine::RRule(RRule {
             freq: Frequency::Yearly,
@@ -101,7 +101,7 @@ mod test {
 }
 ),
 ("DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR", Grammar {
-    start: StartDateContentLine { datetime: UTC.with_ymd_and_hms(2012, 2, 1,9, 30, 0).unwrap(), timezone: Some(UTC), value: "DATE-TIME" },
+    start: Some(StartDateContentLine { datetime: UTC.with_ymd_and_hms(2012, 2, 1,9, 30, 0).unwrap(), timezone: Some(UTC), value: "DATE-TIME" }),
     content_lines: vec![
         ContentLine::RRule(RRule {
             freq: Frequency::Weekly,
@@ -113,7 +113,7 @@ mod test {
     ]
 }),
 ("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5\nEXDATE;TZID=Europe/Berlin:20120202T130000,20120203T130000", Grammar {
-    start: StartDateContentLine { datetime: UTC.with_ymd_and_hms(2012, 2, 1,12, 0, 0).unwrap(), timezone: Some(UTC), value: "DATE-TIME" },
+    start: Some(StartDateContentLine { datetime: UTC.with_ymd_and_hms(2012, 2, 1,12, 0, 0).unwrap(), timezone: Some(UTC), value: "DATE-TIME" }),
     content_lines: vec![
         ContentLine::RRule(RRule {
             freq: Frequency::Daily,
@@ -127,7 +127,7 @@ mod test {
     ]
 }),
 ("DTSTART:20120201T120000Z\nRRULE:FREQ=DAILY;COUNT=5\nEXDATE;TZID=Europe/Berlin:20120202T130000,20120203T130000\nEXRULE:FREQ=WEEKLY;COUNT=10", Grammar {
-    start: StartDateContentLine { datetime: UTC.with_ymd_and_hms(2012, 2, 1,12, 0, 0).unwrap(), timezone: Some(UTC), value: "DATE-TIME" },
+    start: Some(StartDateContentLine { datetime: UTC.with_ymd_and_hms(2012, 2, 1,12, 0, 0).unwrap(), timezone: Some(UTC), value: "DATE-TIME" }),
     content_lines: vec![
         ContentLine::RRule(RRule {
             freq: Frequency::Daily,
@@ -167,7 +167,7 @@ mod test {
     }
 
     #[test]
-    fn rejects_input_without_start_date() {
+    fn allows_input_without_start_date() {
         let tests = [
             "RRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR",
             "RDATE;TZID=Europe/Berlin:20120202T130000,20120203T130000",
@@ -175,7 +175,7 @@ mod test {
         ];
         for input in tests {
             let res = Grammar::from_str(input);
-            assert_eq!(res, Err(ParseError::MissingStartDate));
+            assert!(res.is_ok());
         }
     }
 }

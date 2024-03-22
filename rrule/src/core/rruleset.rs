@@ -2,7 +2,7 @@ use crate::core::datetime::datetime_to_ical_format;
 use crate::core::utils::collect_with_error;
 use crate::core::DateTime;
 use crate::parser::{ContentLine, Grammar};
-use crate::{RRule, RRuleError};
+use crate::{ParseError, RRule, RRuleError};
 #[cfg(feature = "serde")]
 use serde_with::{serde_as, DeserializeFromStr, SerializeDisplay};
 use std::fmt::Display;
@@ -211,34 +211,22 @@ impl RRuleSet {
     pub fn all_unchecked(self) -> Vec<DateTime> {
         collect_with_error(self.into_iter(), &self.after, &self.before, true, None).dates
     }
-}
 
-impl FromStr for RRuleSet {
-    type Err = RRuleError;
-
-    /// Creates an [`RRuleSet`] from a string if input is valid.
-    ///
-    /// # Errors
-    ///
-    /// Returns [`RRuleError`], if iCalendar string contains invalid parts.
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let Grammar {
-            start,
-            content_lines,
-        } = Grammar::from_str(s)?;
+    fn set_from_content_lines(self, content_lines: Vec<ContentLine>) -> Result<Self, RRuleError> {
+        let dt_start = self.dt_start;
 
         content_lines.into_iter().try_fold(
-            Self::new(start.datetime),
+            self,
             |rrule_set, content_line| match content_line {
                 ContentLine::RRule(rrule) => rrule
-                    .validate(start.datetime)
+                    .validate(dt_start)
                     .map(|rrule| rrule_set.rrule(rrule)),
                 #[allow(unused_variables)]
                 ContentLine::ExRule(exrule) => {
                     #[cfg(feature = "exrule")]
                     {
                         exrule
-                            .validate(start.datetime)
+                            .validate(dt_start)
                             .map(|exrule| rrule_set.exrule(exrule))
                     }
                     #[cfg(not(feature = "exrule"))]
@@ -255,6 +243,40 @@ impl FromStr for RRuleSet {
                 }
             },
         )
+    }
+
+    /// Load an [`RRuleSet`] from a string.
+    pub fn set_from_string(mut self, s: &str) -> Result<Self, RRuleError> {
+        let Grammar {
+            start,
+            content_lines,
+        } = Grammar::from_str(s)?;
+
+        if let Some(dtstart) = start {
+            self.dt_start = dtstart.datetime;
+        }
+
+        self.set_from_content_lines(content_lines)
+    }
+}
+
+impl FromStr for RRuleSet {
+    type Err = RRuleError;
+
+    /// Creates an [`RRuleSet`] from a string if input is valid.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`RRuleError`], if iCalendar string contains invalid parts.
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let Grammar {
+            start,
+            content_lines,
+        } = Grammar::from_str(s)?;
+
+        let start = start.ok_or(ParseError::MissingStartDate)?;
+
+        Self::new(start.datetime).set_from_content_lines(content_lines)
     }
 }
 
