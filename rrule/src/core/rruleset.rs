@@ -239,7 +239,7 @@ impl FromStr for RRuleSet {
                     {
                         exrule
                             .validate(start.datetime)
-                            .map(|exrule| rrule_set.rrule(exrule))
+                            .map(|exrule| rrule_set.exrule(exrule))
                     }
                     #[cfg(not(feature = "exrule"))]
                     {

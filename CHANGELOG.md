@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix to ensure freq is capitalized in the string representation
 - MSRV is bumped to `v1.74.0` from `v1.64.0`
 - Make `ParseError` and `ValidationError` public
+- `EXRULE`s are now correctly added as exrules on the `RRuleSet` when parsed from a string, instead of being incorrectly added as an rrule.
 
 ## 0.11.0 (2023-07-18)
 
