@@ -245,7 +245,7 @@ impl RRuleSet {
         )
     }
 
-    /// Load an [`RRuleSet`] from a string.
+    /// Set the [`RRuleSet`] properties from a string. If a DTSTART is found, it will be used as the start datetime.
     pub fn set_from_string(mut self, s: &str) -> Result<Self, RRuleError> {
         let Grammar {
             start,
