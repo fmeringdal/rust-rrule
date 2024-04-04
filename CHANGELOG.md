@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.12.0 (2024-xx-xx)
+## 0.12.0 (2024-04-04)
 
 - Fix to ensure freq is capitalized in the string representation
 - MSRV is bumped to `v1.74.0` from `v1.64.0`
@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `EXRULE`s are now correctly added as exrules on the `RRuleSet` when parsed from a string, instead of being incorrectly added as an rrule.
 - Add a `RRuleSet::set_from_string` method to support loading rules without DTSTART. This is useful particularly when working with the Google Calendar API.
 - Fix to include `RDATE`, `EXRULE` and `EXDATE` values if used in the `Display` implementation of `RRuleSet`.
+- Fix #104 which had invalid occurrences for "every 2 months on the last Monday"
 
 ## 0.11.0 (2023-07-18)
 
