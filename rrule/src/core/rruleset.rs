@@ -284,14 +284,107 @@ impl Display for RRuleSet {
     /// Prints a valid set of iCalendar properties which can be used to create a new [`RRuleSet`] later.
     /// You may use the generated string to create a new iCalendar component, like VEVENT.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let properties = self
+        let start_datetime = format!("DTSTART{}", datetime_to_ical_format(&self.dt_start));
+
+        let mut rrules = self
             .rrule
             .iter()
-            .map(ToString::to_string)
+            .map(|rrule| format!("RRULE:{rrule}"))
             .collect::<Vec<_>>()
             .join("\n");
-        let datetime = datetime_to_ical_format(&self.dt_start);
+        if !rrules.is_empty() {
+            rrules = format!("\n{rrules}");
+        }
 
-        write!(f, "DTSTART{}\n{}", datetime, properties)
+        let mut rdates = self
+            .rdate
+            .iter()
+            .map(|dt| dt.format("%Y%m%dT%H%M%SZ").to_string())
+            .collect::<Vec<_>>()
+            .join(",");
+        if !rdates.is_empty() {
+            // TODO: check if original VALUE prop was DATE or PERIOD
+            rdates = format!("\nRDATE;VALUE=DATE-TIME:{rdates}");
+        }
+
+        let mut exrules = self
+            .exrule
+            .iter()
+            .map(|exrule| format!("EXRULE:{exrule}"))
+            .collect::<Vec<_>>()
+            .join("\n");
+        if !exrules.is_empty() {
+            exrules = format!("\n{exrules}");
+        }
+
+        let mut exdates = self
+            .exdate
+            .iter()
+            .map(|dt| dt.format("%Y%m%dT%H%M%SZ").to_string())
+            .collect::<Vec<_>>()
+            .join(",");
+        if !exdates.is_empty() {
+            // TODO: check if original VALUE prop was DATE or PERIOD
+            exdates = format!("\nEXDATE;VALUE=DATE-TIME:{exdates}");
+        }
+
+        write!(f, "{start_datetime}{rrules}{rdates}{exrules}{exdates}")
+    }
+}
+
+#[cfg(feature = "exrule")]
+#[cfg(test)]
+mod tests {
+    use std::str::FromStr;
+
+    use chrono::{Month, TimeZone};
+
+    use crate::{Frequency, RRule, RRuleSet, Tz};
+
+    #[test]
+    fn rruleset_string_roundtrip() {
+        let rruleset_str = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3;BYHOUR=9;BYMINUTE=30;BYSECOND=0\nRDATE;VALUE=DATE-TIME:19970101T000000Z,19970120T000000Z\nEXRULE:FREQ=YEARLY;COUNT=8;BYMONTH=6,7;BYMONTHDAY=1;BYHOUR=9;BYMINUTE=30;BYSECOND=0\nEXDATE;VALUE=DATE-TIME:19970121T000000Z";
+        let rruleset = RRuleSet::from_str(rruleset_str).unwrap();
+
+        // Check start date
+        let dt_start = Tz::UTC.with_ymd_and_hms(2012, 2, 1, 9, 30, 0).unwrap();
+        assert_eq!(rruleset.dt_start, dt_start);
+
+        // Check rrule
+        assert_eq!(
+            rruleset.rrule,
+            vec![RRule::new(Frequency::Daily)
+                .count(3)
+                .validate(dt_start)
+                .unwrap()]
+        );
+
+        // Check rdate
+        assert_eq!(
+            rruleset.rdate,
+            vec![
+                Tz::UTC.with_ymd_and_hms(1997, 1, 1, 0, 0, 0).unwrap(),
+                Tz::UTC.with_ymd_and_hms(1997, 1, 20, 0, 0, 0).unwrap()
+            ]
+        );
+
+        // Check exrule
+        assert_eq!(
+            rruleset.exrule,
+            vec![RRule::new(Frequency::Yearly)
+                .count(8)
+                .by_month(&[Month::June, Month::July])
+                .validate(dt_start)
+                .unwrap()]
+        );
+
+        // Check exdate
+        assert_eq!(
+            rruleset.exdate,
+            vec![Tz::UTC.with_ymd_and_hms(1997, 1, 21, 0, 0, 0).unwrap()]
+        );
+
+        // Serialize to string again
+        assert_eq!(rruleset.to_string(), rruleset_str);
     }
 }
