@@ -1,7 +1,7 @@
 use chrono::Month;
 
 use crate::tests::common;
-use crate::{Frequency, RRule, RRuleSet};
+use crate::{Frequency, RRule, RRuleSet, Unvalidated};
 
 #[test]
 fn issue_34() {
@@ -59,4 +59,13 @@ fn issue_97() {
         rrule.to_string(),
         "FREQ=YEARLY;BYMONTH=12;BYMONTHDAY=24,25,26"
     );
+}
+
+#[test]
+fn issue_111() {
+    let rrule = "RRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=TU;WKST=SU".parse::<RRule<Unvalidated>>();
+
+    // Convert to string...
+    let rrule_str = format!("{}", rrule.unwrap());
+    assert!(rrule_str.contains("WKST=SU"));
 }

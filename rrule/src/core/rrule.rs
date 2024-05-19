@@ -656,7 +656,7 @@ impl<S> Display for RRule<S> {
 
         // Monday is the default, no need to expose it.
         if self.week_start != Weekday::Mon {
-            res.push(format!("WKST={}", &self.week_start));
+            res.push(format!("WKST={}", weekday_to_str(self.week_start)));
         }
 
         if !self.by_set_pos.is_empty() {
