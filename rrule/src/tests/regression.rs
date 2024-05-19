@@ -63,10 +63,9 @@ fn issue_97() {
 
 #[test]
 fn issue_111() {
-    let rrule = "RRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=TU;WKST=SU"
-        .parse::<RRule<Unvalidated>>();
+    let rrule = "RRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=TU;WKST=SU".parse::<RRule<Unvalidated>>();
 
-        // Convert to string...
+    // Convert to string...
     let rrule_str = format!("{}", rrule.unwrap());
     assert!(rrule_str.contains("WKST=SU"));
 }
