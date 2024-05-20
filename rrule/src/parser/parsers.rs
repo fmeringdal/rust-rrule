@@ -1,16 +1,7 @@
-//! Utility functions around the regexes we use for parsing rrule strings.
+//! Utility functions around the parsing rrule strings.
 use std::str::FromStr;
 
-use lazy_static::lazy_static;
-use regex::{Captures, Regex};
-
-use super::{content_line::PropertyName, ParseError};
-
-lazy_static! {
-    static ref DATESTR_RE: Regex =
-        Regex::new(r"(?m)^([0-9]{4})([0-9]{2})([0-9]{2})(T([0-9]{2})([0-9]{2})([0-9]{2})(Z?))?$")
-            .expect("DATESTR_RE regex failed");
-}
+use crate::{parser::content_line::PropertyName, ParseError};
 
 #[derive(Debug, PartialEq)]
 pub(crate) struct ParsedDateString {
@@ -33,44 +24,56 @@ pub(crate) struct ParsedDateStringTime {
     pub sec: u32,
 }
 
-fn get_datetime_captures<T: FromStr>(
-    captures: &Captures,
-    idx: usize,
-    val: &str,
-) -> Result<T, ParseError> {
-    captures
-        .get(idx)
-        .ok_or_else(|| ParseError::InvalidDateTimeFormat(val.into()))?
-        .as_str()
-        .parse()
-        .map_err(|_| ParseError::InvalidDateTimeFormat(val.into()))
-}
-
 impl ParsedDateString {
     /// Parses a date string with format `YYYYMMDD(THHMMSSZ)` where the part in parentheses
     /// is optional. It returns [`ParsedDateString`].
     pub(crate) fn from_ical_datetime(val: &str) -> Result<Self, ParseError> {
-        let captures = DATESTR_RE
-            .captures(val)
-            .ok_or_else(|| ParseError::InvalidDateTimeFormat(val.into()))?;
+        if !val.is_ascii() {
+            // String should only contain valid ascii characters (0-9TZ), eg. no
+            // multi-byte characters.
+            return Err(ParseError::InvalidDateTimeFormat(val.into()));
+        }
+        let len = val.find(|c| c == '\n' || c == '\r').unwrap_or(val.len());
+        if len < 8 {
+            // Not a valid YYYYMMDD date.
+            return Err(ParseError::InvalidDateTimeFormat(val.into()));
+        }
 
-        let year = get_datetime_captures(&captures, 1, val)?;
-        let month = get_datetime_captures(&captures, 2, val)?;
-        let day = get_datetime_captures(&captures, 3, val)?;
+        // Parse date (YYYYMMDD).
+        let year = val[0..4]
+            .parse::<u32>()
+            .map_err(|_err| ParseError::InvalidDateTimeFormat(val.into()))?
+            .try_into()
+            .map_err(|_err| ParseError::InvalidDateTimeFormat(val.into()))?;
+        let month = val[4..6]
+            .parse()
+            .map_err(|_err| ParseError::InvalidDateTimeFormat(val.into()))?;
+        let day = val[6..8]
+            .parse()
+            .map_err(|_err| ParseError::InvalidDateTimeFormat(val.into()))?;
 
-        // Check if time part is captured
-        let time = if captures.get(4).is_some() {
-            let hour = get_datetime_captures(&captures, 5, val)?;
-            let min = get_datetime_captures(&captures, 6, val)?;
-            let sec = get_datetime_captures(&captures, 7, val)?;
-            Some(ParsedDateStringTime { hour, min, sec })
+        // Parse optional time (THHMMSS(Z)).
+        let (time, zulu_timezone_set) = if (15..=16).contains(&len) && &val[8..9] == "T" {
+            let hour = val[9..11]
+                .parse()
+                .map_err(|_err| ParseError::InvalidDateTimeFormat(val.into()))?;
+            let min = val[11..13]
+                .parse()
+                .map_err(|_err| ParseError::InvalidDateTimeFormat(val.into()))?;
+            let sec = val[13..15]
+                .parse()
+                .map_err(|_err| ParseError::InvalidDateTimeFormat(val.into()))?;
+
+            let time = ParsedDateStringTime { hour, min, sec };
+            let zulu_timezone_set = val.get(15..16) == Some("Z");
+
+            (Some(time), zulu_timezone_set)
+        } else if len > 8 {
+            // Value is longer than date but either not long enough to fit time or missing 'T'.
+            return Err(ParseError::InvalidDateTimeFormat(val.into()));
         } else {
-            None
-        };
-
-        let zulu_timezone_set = match captures.get(8) {
-            Some(part) => part.as_str() == "Z",
-            None => false,
+            // No time provided.
+            (None, false)
         };
         let flags = ParsedDateStringFlags { zulu_timezone_set };
 
@@ -84,25 +87,21 @@ impl ParsedDateString {
     }
 }
 
-lazy_static! {
-    static ref PARSE_PROPERTY_NAME_RE: Regex =
-        Regex::new(r"(?m)^([A-Z]+?)[:;]").expect("PARSE_PROPERTY_NAME_RE regex failed");
-}
-
 /// Get the line property name, the `RRULE:`, `EXRULE:` etc part.
 pub(crate) fn get_property_name(val: &str) -> Result<Option<PropertyName>, ParseError> {
-    PARSE_PROPERTY_NAME_RE
-        .captures(val)
-        .and_then(|captures| captures.get(1))
-        .map(|name| PropertyName::from_str(name.as_str()))
-        .transpose()
+    let Some(end) = val.find(|c| c == ':' || c == ';') else {
+        return Ok(None);
+    };
+    if val[..end].chars().all(|c| c.is_ascii_uppercase()) {
+        PropertyName::from_str(&val[..end]).map(Some)
+    } else {
+        Ok(None)
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::{content_line::PropertyName, regex::get_property_name, ParseError};
-
-    use super::{ParsedDateString, ParsedDateStringFlags, ParsedDateStringTime};
+    use super::*;
 
     const GARBAGE_INPUTS: [&str; 4] = ["", "  ", "fasfa!2414", "-20101017T120000Z"];
 
@@ -182,13 +181,18 @@ mod tests {
                 "201010177",
                 "20101017T1200",
                 "210101017T1200",
+                "202💥0123T023000Z",
+                "20210💥23T023000Z",
+                "202101💥3T023000Z",
+                "20210123T02💥000Z",
+                "20210123T023💥00Z",
             ]
             .to_vec(),
         ]
         .concat();
         for input in tests {
             let res = ParsedDateString::from_ical_datetime(input);
-            assert!(res.is_err());
+            assert!(res.is_err(), "{}", input);
         }
     }
 

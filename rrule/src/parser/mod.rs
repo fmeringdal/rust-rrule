@@ -3,7 +3,7 @@
 mod content_line;
 mod datetime;
 mod error;
-mod regex;
+mod parsers;
 mod utils;
 
 use std::str::FromStr;
