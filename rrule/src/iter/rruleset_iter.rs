@@ -1,23 +1,25 @@
 use super::rrule_iter::WasLimited;
 use super::{rrule_iter::RRuleIter, MAX_ITER_LOOP};
+use crate::RRuleError;
 use crate::{core::DateTime, RRuleSet};
 use std::collections::BTreeSet;
+use std::str::FromStr;
 use std::{collections::HashMap, iter::Iterator};
 
 #[derive(Debug, Clone)]
 /// Iterator over all the dates in an [`RRuleSet`].
-pub struct RRuleSetIter<'a> {
+pub struct RRuleSetIter {
     queue: HashMap<usize, DateTime>,
     limited: bool,
-    rrule_iters: Vec<RRuleIter<'a>>,
-    exrules: Vec<RRuleIter<'a>>,
+    rrule_iters: Vec<RRuleIter>,
+    exrules: Vec<RRuleIter>,
     exdates: BTreeSet<i64>,
     /// Sorted additional dates in descending order
     rdates: Vec<DateTime>,
     was_limited: bool,
 }
 
-impl<'a> RRuleSetIter<'a> {
+impl RRuleSetIter {
     fn generate_date(
         dates: &mut Vec<DateTime>,
         exrules: &mut [RRuleIter],
@@ -104,7 +106,7 @@ impl<'a> RRuleSetIter<'a> {
     }
 }
 
-impl<'a> Iterator for RRuleSetIter<'a> {
+impl Iterator for RRuleSetIter {
     type Item = DateTime;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -191,10 +193,10 @@ impl<'a> Iterator for RRuleSetIter<'a> {
     }
 }
 
-impl<'a> IntoIterator for &'a RRuleSet {
+impl IntoIterator for &RRuleSet {
     type Item = DateTime;
 
-    type IntoIter = RRuleSetIter<'a>;
+    type IntoIter = RRuleSetIter;
 
     fn into_iter(self) -> Self::IntoIter {
         // Sort in decreasing order
@@ -224,8 +226,16 @@ impl<'a> IntoIterator for &'a RRuleSet {
     }
 }
 
-impl<'a> WasLimited for RRuleSetIter<'a> {
+impl WasLimited for RRuleSetIter {
     fn was_limited(&self) -> bool {
         self.was_limited
+    }
+}
+
+impl FromStr for RRuleSetIter {
+    type Err = RRuleError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(RRuleSet::from_str(s)?.into_iter())
     }
 }
