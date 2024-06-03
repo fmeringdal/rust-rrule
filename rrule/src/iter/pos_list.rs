@@ -1,4 +1,4 @@
-use super::utils::{add_time_to_date, from_ordinal, pymod};
+use super::utils::{add_time_to_date, date_from_ordinal, pymod};
 use crate::core::{DateTime, Tz};
 use chrono::NaiveTime;
 
@@ -44,13 +44,12 @@ pub(crate) fn build_pos_list(
         let day = i64::try_from(*day)
             .expect("dayset is controlled by us and all elements are within range of i64");
 
-        // Get ordinal which is UTC and apply timezone
-        let date = from_ordinal(year_ordinal + day).date().with_timezone(&tz);
+        // Get ordinal which is UTC
+        let date = date_from_ordinal(year_ordinal + day);
         // Create new Date + Time combination
-        // Use Date and Timezone from `date`
         // Use Time from `timeset`.
         let time = timeset[time_pos];
-        let res = match add_time_to_date(date, time) {
+        let res = match add_time_to_date(tz, date, time) {
             Some(date) => date,
             None => continue,
         };

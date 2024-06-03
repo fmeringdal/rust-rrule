@@ -59,7 +59,8 @@ pub(crate) fn datestring_to_date(
     // For more info https://icalendar.org/iCalendar-RFC-5545/3-3-5-date-time.html
     let datetime: chrono::DateTime<Tz> = if flags.zulu_timezone_set {
         // If a `Z` is present, UTC should be used.
-        chrono::DateTime::<chrono::Utc>::from_utc(datetime, chrono::Utc).with_timezone(&Tz::UTC)
+        chrono::DateTime::<chrono::Utc>::from_naive_utc_and_offset(datetime, chrono::Utc)
+            .with_timezone(&Tz::UTC)
     } else {
         // If no `Z` is present, local time should be used.
         use chrono::offset::LocalResult;
