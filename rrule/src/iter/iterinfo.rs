@@ -7,21 +7,21 @@ use crate::{Frequency, NWeekday, RRule};
 use chrono::{Datelike, NaiveTime, TimeZone};
 
 #[derive(Debug, Clone)]
-pub(crate) struct IterInfo<'a> {
+pub(crate) struct IterInfo {
     year_info: YearInfo,
     month_info: Option<MonthInfo>,
     easter_mask: Option<Vec<i32>>,
-    rrule: &'a RRule,
+    rrule: RRule,
 }
 
-impl<'a> IterInfo<'a> {
-    pub fn new(rrule: &'a RRule, dt_start: &DateTime) -> Self {
+impl IterInfo {
+    pub fn new(rrule: &RRule, dt_start: &DateTime) -> Self {
         let year = dt_start.year();
         let month = get_month(dt_start);
 
         let year_info = YearInfo::new(year, rrule);
         let mut ii = Self {
-            rrule,
+            rrule: rrule.clone(),
             year_info,
             month_info: None,
             easter_mask: None,
@@ -35,7 +35,7 @@ impl<'a> IterInfo<'a> {
         if !skip_year_info
             && !matches!(&self.month_info, Some(month_info) if month_info.last_year == year)
         {
-            self.year_info = YearInfo::new(year, self.rrule);
+            self.year_info = YearInfo::new(year, &self.rrule);
         }
 
         let contains_nth_by_weekday = self
@@ -47,7 +47,7 @@ impl<'a> IterInfo<'a> {
         if contains_nth_by_weekday
             && !(matches!(&self.month_info, Some(month_info) if month_info.last_month == month && month_info.last_year == year))
         {
-            let new_month_info = MonthInfo::new(&self.year_info, month, self.rrule);
+            let new_month_info = MonthInfo::new(&self.year_info, month, &self.rrule);
             self.month_info = Some(new_month_info);
         }
 
@@ -269,6 +269,6 @@ impl<'a> IterInfo<'a> {
     }
 
     pub fn rrule(&self) -> &RRule {
-        self.rrule
+        &self.rrule
     }
 }

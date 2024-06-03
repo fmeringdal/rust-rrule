@@ -8,10 +8,10 @@ use chrono::{NaiveTime, TimeZone};
 use std::collections::VecDeque;
 
 #[derive(Debug, Clone)]
-pub(crate) struct RRuleIter<'a> {
+pub(crate) struct RRuleIter {
     /// Date the iterator is currently at.
     pub(crate) counter_date: DateTimeIter,
-    pub(crate) ii: IterInfo<'a>,
+    pub(crate) ii: IterInfo,
     pub(crate) timeset: Vec<NaiveTime>,
     pub(crate) dt_start: DateTime,
     /// Buffer of datetimes is not yet yielded
@@ -28,8 +28,8 @@ pub(crate) struct RRuleIter<'a> {
     pub(crate) was_limited: bool,
 }
 
-impl<'a> RRuleIter<'a> {
-    pub(crate) fn new(rrule: &'a RRule, dt_start: &DateTime, limited: bool) -> Self {
+impl RRuleIter {
+    pub(crate) fn new(rrule: &RRule, dt_start: &DateTime, limited: bool) -> Self {
         let ii = IterInfo::new(rrule, dt_start);
 
         let hour = get_hour(dt_start);
@@ -204,7 +204,7 @@ impl<'a> RRuleIter<'a> {
     }
 }
 
-impl<'a> Iterator for RRuleIter<'a> {
+impl Iterator for RRuleIter {
     type Item = DateTime;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -229,7 +229,7 @@ pub(crate) trait WasLimited {
     fn was_limited(&self) -> bool;
 }
 
-impl<'a> WasLimited for RRuleIter<'a> {
+impl WasLimited for RRuleIter {
     fn was_limited(&self) -> bool {
         self.was_limited
     }
