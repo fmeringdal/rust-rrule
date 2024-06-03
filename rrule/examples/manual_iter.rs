@@ -21,7 +21,6 @@ fn main() {
     //      .expect("The RRule is not valid");
     //
 
-
     for next in iter.take(50) {
         if next.year() == 2021 {
             println!("These are all the weeks before 2021.");
@@ -29,5 +28,4 @@ fn main() {
         }
         println!("Date: {}", next.to_rfc3339());
     }
-
 }
