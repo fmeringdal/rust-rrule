@@ -99,6 +99,8 @@ mod iter;
 mod parser;
 mod tests;
 mod validator;
+#[cfg(feature = "wasm")]
+mod wasm;
 
 pub use crate::core::{Frequency, NWeekday, RRule, RRuleResult, RRuleSet, Tz};
 pub use crate::core::{Unvalidated, Validated};
