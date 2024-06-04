@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
+    <meta http-equiv="cache-control" content="max-age=0" />
+    <meta http-equiv="cache-control" content="no-cache" />
+    <script type="module" src="./node_modules/rrule/dist/es5/rrule.js"></script> 
+    <script type="module" src="./benchmarking.js"></script> 
+  </head>
+  <body>
+    <h1>rust-rrule x rrule</h1>
+          
+    <label for="ruleSet">RuleSet:</label>
+    <input type="text" id="ruleSet" name="ruleSet" value="DTSTART;TZID=Europe/Brussels:20210324T110000\nRRULE:INTERVAL=1;FREQ=WEEKLY;BYDAY=WE,TH" size="150"><br><br>
+
+    <label for="after">After:</label>
+    <input type="text" id="after" name="after" value="2022-04-04T10:00"><br><br>
+
+    <label for="before">Before:</label>
+    <input type="text" id="before" name="before" value="2023-04-04T11:00"><br><br>
+
+    <label for="limit">Date Recurrences Limit:</label>
+    <input type="text" id="limit" name="limit" value="500"><br><br>
+
+    <button id="performanceButton">Calculate Performance</button>
+
+    <br><br><br>
+    <label>Result:</label>
+    <div id="rustRRuleResult" name="rustRRuleResult">No rust-rrule results yet</div>
+    <div id="rruleResult" name="rruleResult">No rrule results yet</div>
+  </body>
+</html>

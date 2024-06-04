@@ -6,7 +6,7 @@ rust-version = "1.74.0"
 [workspace]
 members = [
     "rrule",
-    "rrule-debugger",
+    "rrule-debugger"
 ]
 resolver = "2"
 
