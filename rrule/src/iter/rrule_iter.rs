@@ -1,10 +1,9 @@
 use super::counter_date::DateTimeIter;
 use super::utils::add_time_to_date;
-use super::{build_pos_list, utils::from_ordinal, IterInfo, MAX_ITER_LOOP};
+use super::{build_pos_list, utils::date_from_ordinal, IterInfo, MAX_ITER_LOOP};
 use crate::core::{get_hour, get_minute, get_second};
 use crate::{core::DateTime, Frequency, RRule};
-use chrono::Datelike;
-use chrono::{NaiveTime, TimeZone};
+use chrono::NaiveTime;
 use std::collections::VecDeque;
 
 #[derive(Debug, Clone)]
@@ -124,6 +123,8 @@ impl RRuleIter {
                 self.counter_date.day,
             );
 
+            let tz = self.dt_start.timezone();
+
             if rrule.by_set_pos.is_empty() {
                 // Loop over `start..end`
                 for current_day in &dayset {
@@ -133,17 +134,10 @@ impl RRuleIter {
                     let year_ordinal = self.ii.year_ordinal();
                     // Ordinal conversion uses UTC: if we apply local-TZ here, then
                     // just below we'll end up double-applying.
-                    let date = from_ordinal(year_ordinal + current_day);
-                    // We apply the local-TZ here.
-                    let date = self
-                        .dt_start
-                        .timezone()
-                        .ymd(date.year(), date.month(), date.day());
-
+                    let date = date_from_ordinal(year_ordinal + current_day);
                     for time in &self.timeset {
-                        let dt = match add_time_to_date(date, *time) {
-                            Some(dt) => dt,
-                            None => continue,
+                        let Some(dt) = add_time_to_date(tz, date, *time) else {
+                            continue;
                         };
                         if Self::try_add_datetime(
                             dt,
