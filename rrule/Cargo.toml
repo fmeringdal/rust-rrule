@@ -15,9 +15,7 @@ edition.workspace = true
 [dependencies]
 chrono = "0.4.19"
 chrono-tz = "0.9.0"
-lazy_static = "1.4.0"
 log = "0.4.16"
-regex = { version = "1.5.5", default-features = false, features = ["perf", "std"] }
 clap = { version = "4.1.9", optional = true, features = ["derive"] }
 thiserror = "1.0.30"
 serde_with = { version = "3.8.1", optional = true }
