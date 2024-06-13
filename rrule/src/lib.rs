@@ -25,7 +25,7 @@
 //!     RDATE:20120701T023000Z,20120702T023000Z\n\
 //!     EXDATE:20120601T023000Z".parse().unwrap();
 //!
-//! assert_eq!(*rrule_set.get_dt_start(), Tz::UTC.with_ymd_and_hms(2012, 2, 1,2, 30, 0).unwrap());
+//! assert_eq!(*rrule_set.get_dt_start(), chrono_tz::Tz::UTC.with_ymd_and_hms(2012, 2, 1,2, 30, 0).unwrap());
 //! assert_eq!(rrule_set.get_rrule().len(), 1);
 //! assert_eq!(rrule_set.get_rdate().len(), 2);
 //! assert_eq!(rrule_set.get_exdate().len(), 1);
@@ -70,8 +70,8 @@
 //! let rrule: RRuleSet = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3".parse().unwrap();
 //!
 //! // Between two dates
-//! let after = Tz::UTC.with_ymd_and_hms(2012, 2, 1,10, 0, 0).unwrap();
-//! let before = Tz::UTC.with_ymd_and_hms(2012, 4, 1,9, 0, 0).unwrap();
+//! let after = Tz::from(chrono_tz::Tz::UTC).with_ymd_and_hms(2012, 2, 1,10, 0, 0).unwrap();
+//! let before = Tz::from(chrono_tz::Tz::UTC).with_ymd_and_hms(2012, 4, 1,9, 0, 0).unwrap();
 //!
 //! let rrule = rrule.after(after).before(before);
 //! let result = rrule.all(100);
