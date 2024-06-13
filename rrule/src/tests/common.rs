@@ -13,7 +13,7 @@ pub fn ymd_hms(
     minute: u32,
     second: u32,
 ) -> DateTime<Tz> {
-    Tz::UTC
+    Tz::Tz(chrono_tz::Tz::UTC)
         .with_ymd_and_hms(year, month, day, hour, minute, second)
         .unwrap()
 }

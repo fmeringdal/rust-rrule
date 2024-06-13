@@ -349,13 +349,15 @@ mod tests {
 
     use crate::{Frequency, RRule, RRuleSet, Tz};
 
+    const UTC: Tz = Tz::Tz(chrono_tz::UTC);
+
     #[test]
     fn rruleset_string_roundtrip() {
         let rruleset_str = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3;BYHOUR=9;BYMINUTE=30;BYSECOND=0\nRDATE;VALUE=DATE-TIME:19970101T000000Z,19970120T000000Z\nEXRULE:FREQ=YEARLY;COUNT=8;BYMONTH=6,7;BYMONTHDAY=1;BYHOUR=9;BYMINUTE=30;BYSECOND=0\nEXDATE;VALUE=DATE-TIME:19970121T000000Z";
         let rruleset = RRuleSet::from_str(rruleset_str).unwrap();
 
         // Check start date
-        let dt_start = Tz::UTC.with_ymd_and_hms(2012, 2, 1, 9, 30, 0).unwrap();
+        let dt_start = UTC.with_ymd_and_hms(2012, 2, 1, 9, 30, 0).unwrap();
         assert_eq!(rruleset.dt_start, dt_start);
 
         // Check rrule
@@ -371,8 +373,8 @@ mod tests {
         assert_eq!(
             rruleset.rdate,
             vec![
-                Tz::UTC.with_ymd_and_hms(1997, 1, 1, 0, 0, 0).unwrap(),
-                Tz::UTC.with_ymd_and_hms(1997, 1, 20, 0, 0, 0).unwrap()
+                UTC.with_ymd_and_hms(1997, 1, 1, 0, 0, 0).unwrap(),
+                UTC.with_ymd_and_hms(1997, 1, 20, 0, 0, 0).unwrap()
             ]
         );
 
@@ -389,7 +391,7 @@ mod tests {
         // Check exdate
         assert_eq!(
             rruleset.exdate,
-            vec![Tz::UTC.with_ymd_and_hms(1997, 1, 21, 0, 0, 0).unwrap()]
+            vec![UTC.with_ymd_and_hms(1997, 1, 21, 0, 0, 0).unwrap()]
         );
 
         // Serialize to string again

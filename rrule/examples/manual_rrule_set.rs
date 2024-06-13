@@ -19,7 +19,11 @@ fn main() {
                 NWeekday::Every(Weekday::Tue),
                 NWeekday::Every(Weekday::Wed),
             ])
-            .build(Tz::UTC.with_ymd_and_hms(2020, 1, 1, 9, 0, 0).unwrap())
+            .build(
+                Tz::Tz(chrono_tz::UTC)
+                    .with_ymd_and_hms(2020, 1, 1, 9, 0, 0)
+                    .unwrap(),
+            )
             .expect("RRule invalid");
 
         // Build exrule that occurs weekly on Wednesday
@@ -27,7 +31,11 @@ fn main() {
             .count(4)
             .freq(Frequency::Weekly)
             .by_weekday(vec![NWeekday::Every(Weekday::Wed)])
-            .validate(Tz::UTC.with_ymd_and_hms(2020, 1, 1, 9, 0, 0).unwrap())
+            .validate(
+                Tz::Tz(chrono_tz::UTC)
+                    .with_ymd_and_hms(2020, 1, 1, 9, 0, 0)
+                    .unwrap(),
+            )
             .expect("RRule invalid");
 
         let recurrences = rrule_set.exrule(exrule).all(10).dates;

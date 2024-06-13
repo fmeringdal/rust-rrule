@@ -127,7 +127,7 @@ mod tests {
 
     use super::*;
 
-    const UTC: Tz = Tz::UTC;
+    const UTC: Tz = Tz::Tz(chrono_tz::UTC);
 
     #[test]
     fn get_neg_weekday_mask_with_daily_freq() {

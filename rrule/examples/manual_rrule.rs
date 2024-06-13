@@ -7,7 +7,9 @@ use rrule::{Frequency, RRule, Tz};
 
 fn main() {
     // Build an RRuleSet that starts the first day in 2020 at 9:00AM and occurs daily 5 times
-    let start_date = Tz::UTC.with_ymd_and_hms(2020, 1, 1, 9, 0, 0).unwrap();
+    let start_date = Tz::Tz(chrono_tz::Tz::UTC)
+        .with_ymd_and_hms(2020, 1, 1, 9, 0, 0)
+        .unwrap();
     let rrule_set = RRule::default()
         .count(5)
         .freq(Frequency::Daily)
