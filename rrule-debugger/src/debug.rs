@@ -36,7 +36,7 @@ fn test_parsed_rrule() {
 }
 
 fn ymd_hms(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32) -> DateTime<Tz> {
-    Tz::UTC
+    Tz::Tz(chrono_tz::Tz::UTC)
         .with_ymd_and_hms(year, month, day, hour, minute, second)
         .unwrap()
 }
