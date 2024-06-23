@@ -326,6 +326,98 @@ fn between() {
 }
 
 #[test]
+#[cfg(feature = "exrule")]
+fn multiple_rrules_and_exclude_1st() {
+    let dt_start = ymd_hms(1997, 9, 2, 9, 0, 0);
+
+    let rrule1 = RRule {
+        freq: Frequency::Yearly,
+        by_month: vec![9],
+        by_hour: vec![9],
+        by_minute: vec![0],
+        by_second: vec![0],
+        by_month_day: vec![2],
+        ..Default::default()
+    };
+
+    let rrule2 = RRule {
+        by_month_day: vec![1],
+        ..rrule1.clone()
+    }
+    .validate(dt_start)
+    .unwrap();
+
+    let rrule1 = rrule1.validate(dt_start).unwrap();
+
+    let set_exluding_rrule1 = RRuleSet::new(dt_start)
+        .rrule(rrule1.clone())
+        .rrule(rrule2.clone())
+        .exrule(rrule1.clone());
+
+    check_occurrences(
+        &set_exluding_rrule1.all(10).dates,
+        &[
+            "1998-09-01T09:00:00+00:00",
+            "1999-09-01T09:00:00+00:00",
+            "2000-09-01T09:00:00+00:00",
+            "2001-09-01T09:00:00+00:00",
+            "2002-09-01T09:00:00+00:00",
+            "2003-09-01T09:00:00+00:00",
+            "2004-09-01T09:00:00+00:00",
+            "2005-09-01T09:00:00+00:00",
+            "2006-09-01T09:00:00+00:00",
+            "2007-09-01T09:00:00+00:00",
+        ],
+    );
+}
+
+#[test]
+#[cfg(feature = "exrule")]
+fn multiple_rrules_and_exclude_2nd() {
+    let dt_start = ymd_hms(1997, 9, 2, 9, 0, 0);
+
+    let rrule1 = RRule {
+        freq: Frequency::Yearly,
+        by_month: vec![9],
+        by_hour: vec![9],
+        by_minute: vec![0],
+        by_second: vec![0],
+        by_month_day: vec![2],
+        ..Default::default()
+    };
+
+    let rrule2 = RRule {
+        by_month_day: vec![1],
+        ..rrule1.clone()
+    }
+    .validate(dt_start)
+    .unwrap();
+
+    let rrule1 = rrule1.validate(dt_start).unwrap();
+
+    let set_exluding_rrule2 = RRuleSet::new(dt_start)
+        .rrule(rrule1)
+        .rrule(rrule2.clone())
+        .exrule(rrule2);
+
+    check_occurrences(
+        &set_exluding_rrule2.all(10).dates,
+        &[
+            "1997-09-02T09:00:00+00:00",
+            "1998-09-02T09:00:00+00:00",
+            "1999-09-02T09:00:00+00:00",
+            "2000-09-02T09:00:00+00:00",
+            "2001-09-02T09:00:00+00:00",
+            "2002-09-02T09:00:00+00:00",
+            "2003-09-02T09:00:00+00:00",
+            "2004-09-02T09:00:00+00:00",
+            "2005-09-02T09:00:00+00:00",
+            "2006-09-02T09:00:00+00:00",
+        ],
+    );
+}
+
+#[test]
 fn before_70s() {
     let dt_start = ymd_hms(1960, 1, 1, 9, 0, 0);
 
