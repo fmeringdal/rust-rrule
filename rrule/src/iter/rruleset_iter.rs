@@ -2,107 +2,59 @@ use super::rrule_iter::WasLimited;
 use super::{rrule_iter::RRuleIter, MAX_ITER_LOOP};
 use crate::RRuleError;
 use crate::{core::DateTime, RRuleSet};
-use std::collections::BTreeSet;
-use std::str::FromStr;
-use std::{collections::HashMap, iter::Iterator};
+use std::cmp::Ordering;
+use std::{iter::Peekable, str::FromStr};
 
 #[derive(Debug, Clone)]
 /// Iterator over all the dates in an [`RRuleSet`].
 pub struct RRuleSetIter {
-    queue: HashMap<usize, DateTime>,
     limited: bool,
-    rrule_iters: Vec<RRuleIter>,
-    exrules: Vec<RRuleIter>,
-    exdates: BTreeSet<i64>,
+    rrule_iters: Vec<Peekable<RRuleIter>>,
+    exrules: Vec<Peekable<RRuleIter>>,
+    exdates: Vec<DateTime>,
     /// Sorted additional dates in descending order
     rdates: Vec<DateTime>,
     was_limited: bool,
 }
 
 impl RRuleSetIter {
-    fn generate_date(
-        dates: &mut Vec<DateTime>,
-        exrules: &mut [RRuleIter],
-        exdates: &mut BTreeSet<i64>,
-        limited: bool,
-    ) -> (Option<DateTime>, bool) {
-        if dates.is_empty() {
-            return (None, false);
-        }
-
-        let mut date = dates.remove(dates.len() - 1);
-        let mut loop_counter: u32 = 0;
-        while Self::is_date_excluded(&date, exrules, exdates) {
-            if dates.is_empty() {
-                return (None, false);
-            }
-            // Prevent infinite loops
-            if limited {
-                loop_counter += 1;
-                if loop_counter >= MAX_ITER_LOOP {
-                    log::warn!(
-                        "Reached max loop counter (`{}`). \
-                See 'validator limits' in docs for more info.",
-                        MAX_ITER_LOOP
-                    );
-                    return (None, true);
+    /// Check if a date is excluded according to exdates or exrules.
+    ///
+    /// Must never be called with a lesser date than the last call.
+    fn is_date_excluded(&mut self, date: &DateTime) -> bool {
+        fn check_exdates(exdates: &mut Vec<DateTime>, date: &DateTime) -> bool {
+            while let Some(exdate) = exdates.last() {
+                match exdate.cmp(date) {
+                    Ordering::Less => drop(exdates.pop()),
+                    Ordering::Equal => return true,
+                    Ordering::Greater => return false,
                 }
             }
-            date = dates.remove(dates.len() - 1);
+            false
         }
 
-        (Some(date), false)
-    }
-
-    fn generate(
-        rrule_iter: &mut RRuleIter,
-        exrules: &mut [RRuleIter],
-        exdates: &mut BTreeSet<i64>,
-        limited: bool,
-    ) -> (Option<DateTime>, bool) {
-        let mut date = match rrule_iter.next() {
-            Some(d) => d,
-            None => return (None, false),
-        };
-        let mut loop_counter: u32 = 0;
-        while Self::is_date_excluded(&date, exrules, exdates) {
-            // Prevent infinite loops
-            if limited {
-                loop_counter += 1;
-                if loop_counter >= MAX_ITER_LOOP {
-                    log::warn!(
-                        "Reached max loop counter (`{}`). \
-                    See 'validator limits' in docs for more info.",
-                        MAX_ITER_LOOP
-                    );
-                    return (None, true);
-                }
+        fn check_exrules(exrules: &mut [Peekable<RRuleIter>], date: &DateTime) -> bool {
+            if exrules.is_empty() {
+                return false;
             }
-
-            date = match rrule_iter.next() {
-                Some(d) => d,
-                None => return (None, false),
-            };
-        }
-
-        (Some(date), false)
-    }
-
-    fn is_date_excluded(
-        date: &DateTime,
-        exrules: &mut [RRuleIter],
-        exdates: &mut BTreeSet<i64>,
-    ) -> bool {
-        for exrule in exrules {
-            for exdate in exrule {
-                exdates.insert(exdate.timestamp());
-                if exdate > *date {
-                    break;
+            loop {
+                let Some((iter_i, exdate)) = exrules
+                    .iter_mut()
+                    .enumerate()
+                    .filter_map(|(i, iter)| iter.peek().map(|date| (i, date)))
+                    .min_by_key(|(_, date)| *date)
+                else {
+                    return false;
+                };
+                match exdate.cmp(date) {
+                    Ordering::Less => drop(exrules[iter_i].next()),
+                    Ordering::Equal => return true,
+                    Ordering::Greater => return false,
                 }
             }
         }
 
-        exdates.contains(&date.timestamp())
+        check_exdates(&mut self.exdates, date) || check_exrules(&mut self.exrules, date)
     }
 }
 
@@ -110,85 +62,69 @@ impl Iterator for RRuleSetIter {
     type Item = DateTime;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let mut next_date: Option<(usize, DateTime)> = None;
-
         // If there already was an error, return the error again.
         if self.was_limited {
             return None;
         }
 
-        for (i, rrule_iter) in self.rrule_iters.iter_mut().enumerate() {
-            let rrule_queue = self.queue.remove(&i);
-            let next_rrule_date = if let Some(d) = rrule_queue {
-                Some(d)
-            } else {
-                // should be method on self
-                let (date, was_limited) = Self::generate(
-                    rrule_iter,
-                    &mut self.exrules,
-                    &mut self.exdates,
-                    self.limited,
-                );
+        let mut exdate_limit_counter: u32 = 0;
+        loop {
+            // Peek all rrule iterators and find the one holding the earliest date.
+            let rrule_date = self
+                .rrule_iters
+                .iter_mut()
+                .enumerate()
+                .filter_map(|(i, iter)| iter.peek().copied().map(|date| (i, date)))
+                .min_by_key(|(_, date)| *date);
 
-                if was_limited {
+            // Peek next rdate.
+            let rdate = self.rdates.last().copied();
+
+            let next_date = match (rrule_date, rdate) {
+                (None, None) => {
+                    // No rrule date and no rdate. End of iterator.
+                    return None;
+                }
+                (None, Some(rdate)) => {
+                    // No rrule date, only rdate. Pop it of the list and use it.
+                    self.rdates.pop();
+                    rdate
+                }
+                (Some((iter_i, rrule_date)), None) => {
+                    // No rdate, only rrule. Step the corresponding rrule
+                    // iterator and use the date.
+                    self.rrule_iters[iter_i].next();
+                    rrule_date
+                }
+                (Some((iter_i, rrule_date)), Some(next_rdate)) => {
+                    // Both rrule and rdate available. Check which one of
+                    // them is the earliest and use it.
+                    if rrule_date < next_rdate {
+                        self.rrule_iters[iter_i].next();
+                        rrule_date
+                    } else {
+                        self.rdates.pop();
+                        next_rdate
+                    }
+                }
+            };
+
+            // Check if the date should be excluded.
+            // If the date is excluded then we just loop another round find
+            // the next earliest date from rrules and rdates.
+            if !self.is_date_excluded(&next_date) {
+                return Some(next_date);
+            } else if self.limited {
+                exdate_limit_counter += 1;
+                if exdate_limit_counter >= MAX_ITER_LOOP {
+                    log::warn!(
+                        "Reached max loop counter (`{MAX_ITER_LOOP}`). \
+                        See 'validator limits' in docs for more info.",
+                    );
                     self.was_limited = true;
                     return None;
                 }
-
-                date
-            };
-
-            if let Some(next_rrule_date) = next_rrule_date {
-                match next_date {
-                    None => next_date = Some((i, next_rrule_date)),
-                    Some((idx, date)) => {
-                        if date >= next_rrule_date {
-                            // Add previous date to its rrule queue
-                            self.queue.insert(idx, date);
-
-                            // Update next_date
-                            next_date = Some((i, next_rrule_date));
-                        } else {
-                            // Store for next iterations
-                            self.queue.insert(i, next_rrule_date);
-                        }
-                    }
-                }
             }
-        }
-
-        let (generated_date, was_limited) = Self::generate_date(
-            &mut self.rdates,
-            &mut self.exrules,
-            &mut self.exdates,
-            self.limited,
-        );
-        if was_limited {
-            self.was_limited = true;
-            return None;
-        }
-
-        match generated_date {
-            Some(first_rdate) => {
-                let next_date = match next_date {
-                    Some(next_date) => {
-                        if next_date.1 >= first_rdate {
-                            // Add previous date to its rrule queue
-                            self.queue.insert(next_date.0, next_date.1);
-
-                            first_rdate
-                        } else {
-                            // add rdate back
-                            self.rdates.push(first_rdate);
-
-                            next_date.1
-                        }
-                    }
-                    None => first_rdate,
-                };
-                Some(next_date)
-            }
-            None => next_date.map(|d| d.1),
         }
     }
 }
@@ -199,28 +135,28 @@ impl IntoIterator for &RRuleSet {
     type IntoIter = RRuleSetIter;
 
     fn into_iter(self) -> Self::IntoIter {
-        // Sort in decreasing order
+        // Sort rdates in descending order.
         let mut rdates_sorted = self.rdate.clone();
-        rdates_sorted
-            .sort_by(|d1, d2| d2.partial_cmp(d1).expect("Could not order dates correctly"));
+        rdates_sorted.sort_by(|d1, d2| d2.cmp(d1));
 
-        let limited = self.limited;
+        // Sort exdates in descending order.
+        let mut exdates_sorted = self.exdate.clone();
+        exdates_sorted.sort_by(|d1, d2| d2.cmp(d1));
 
         RRuleSetIter {
-            queue: HashMap::new(),
-            limited,
+            limited: self.limited,
             rrule_iters: self
                 .rrule
                 .iter()
-                .map(|rrule| rrule.iter_with_ctx(self.dt_start, limited))
+                .map(|rrule| rrule.iter_with_ctx(self.dt_start, self.limited).peekable())
                 .collect(),
             rdates: rdates_sorted,
             exrules: self
                 .exrule
                 .iter()
-                .map(|exrule| exrule.iter_with_ctx(self.dt_start, limited))
+                .map(|exrule| exrule.iter_with_ctx(self.dt_start, self.limited).peekable())
                 .collect(),
-            exdates: self.exdate.iter().map(DateTime::timestamp).collect(),
+            exdates: exdates_sorted,
             was_limited: false,
         }
     }
