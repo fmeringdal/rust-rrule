@@ -1,39 +1,62 @@
 use chrono::DateTime;
 
-use super::rrule_iter::WasLimited;
-use super::{rrule_iter::RRuleIter, MAX_ITER_LOOP};
-use crate::RRuleSet;
-use crate::{RRuleError, Tz};
-use std::{collections::BTreeSet, iter::Peekable, str::FromStr};
+use super::{
+    rrule_iter::{RRuleIter, WasLimited},
+    MAX_ITER_LOOP,
+};
+use crate::{RRuleError, RRuleSet, Tz};
+use std::{cmp::Ordering, iter::Peekable, str::FromStr};
 
 #[derive(Debug, Clone)]
 /// Iterator over all the dates in an [`RRuleSet`].
 pub struct RRuleSetIter {
     limited: bool,
     rrule_iters: Vec<Peekable<RRuleIter>>,
-    exrules: Vec<RRuleIter>,
-    exdates: BTreeSet<i64>,
+    exrules: Vec<Peekable<RRuleIter>>,
+    exdates: Vec<DateTime<Tz>>,
     /// Sorted additional dates in descending order
     rdates: Vec<DateTime<Tz>>,
     was_limited: bool,
 }
 
 impl RRuleSetIter {
-    fn is_date_excluded(
-        date: &DateTime<Tz>,
-        exrules: &mut [RRuleIter],
-        exdates: &mut BTreeSet<i64>,
-    ) -> bool {
-        for exrule in exrules {
-            for exdate in exrule {
-                exdates.insert(exdate.timestamp());
-                if exdate > *date {
-                    break;
+    /// Check if a date is excluded according to exdates or exrules.
+    ///
+    /// Must never be called with a lesser date than the last call.
+    fn is_date_excluded(&mut self, date: &DateTime<Tz>) -> bool {
+        fn check_exdates(exdates: &mut Vec<DateTime<Tz>>, date: &DateTime<Tz>) -> bool {
+            while let Some(exdate) = exdates.last() {
+                match exdate.cmp(date) {
+                    Ordering::Less => drop(exdates.pop()),
+                    Ordering::Equal => return true,
+                    Ordering::Greater => return false,
+                }
+            }
+            false
+        }
+
+        fn check_exrules(exrules: &mut [Peekable<RRuleIter>], date: &DateTime<Tz>) -> bool {
+            if exrules.is_empty() {
+                return false;
+            }
+            loop {
+                let Some((iter_i, exdate)) = exrules
+                    .iter_mut()
+                    .enumerate()
+                    .filter_map(|(i, iter)| iter.peek().map(|date| (i, date)))
+                    .min_by_key(|(_, date)| *date)
+                else {
+                    return false;
+                };
+                match exdate.cmp(date) {
+                    Ordering::Less => drop(exrules[iter_i].next()),
+                    Ordering::Equal => return true,
+                    Ordering::Greater => return false,
                 }
             }
         }
 
-        exdates.contains(&date.timestamp())
+        check_exdates(&mut self.exdates, date) || check_exrules(&mut self.exrules, date)
     }
 }
 
@@ -91,7 +114,7 @@ impl Iterator for RRuleSetIter {
             // Check if the date should be excluded.
             // If the date is excluded then we just loop another round find
             // the next earliest date from rrules and rdates.
-            if !Self::is_date_excluded(&next_date, &mut self.exrules, &mut self.exdates) {
+            if !self.is_date_excluded(&next_date) {
                 return Some(next_date);
             } else if self.limited {
                 exdate_limit_counter += 1;
@@ -114,10 +137,13 @@ impl IntoIterator for &RRuleSet {
     type IntoIter = RRuleSetIter;
 
     fn into_iter(self) -> Self::IntoIter {
-        let mut rdates_sorted = self.rdate.clone();
-
         // Sort rdates in descending order.
+        let mut rdates_sorted = self.rdate.clone();
         rdates_sorted.sort_by(|d1, d2| d2.cmp(d1));
+
+        // Sort exdates in descending order.
+        let mut exdates_sorted = self.exdate.clone();
+        exdates_sorted.sort_by(|d1, d2| d2.cmp(d1));
 
         RRuleSetIter {
             limited: self.limited,
@@ -130,9 +156,9 @@ impl IntoIterator for &RRuleSet {
             exrules: self
                 .exrule
                 .iter()
-                .map(|exrule| exrule.iter_with_ctx(self.dt_start, self.limited))
+                .map(|exrule| exrule.iter_with_ctx(self.dt_start, self.limited).peekable())
                 .collect(),
-            exdates: self.exdate.iter().map(DateTime::timestamp).collect(),
+            exdates: exdates_sorted,
             was_limited: false,
         }
     }
