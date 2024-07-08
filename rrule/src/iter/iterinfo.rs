@@ -26,18 +26,12 @@ impl IterInfo {
             month_info: None,
             easter_mask: None,
         };
-        ii.rebuild_inner(year, month, true);
+        ii.rebuild_inner(year, month);
 
         ii
     }
 
-    fn rebuild_inner(&mut self, year: i32, month: u8, skip_year_info: bool) {
-        if !skip_year_info
-            && !matches!(&self.month_info, Some(month_info) if month_info.last_year == year)
-        {
-            self.year_info = YearInfo::new(year, &self.rrule);
-        }
-
+    fn rebuild_inner(&mut self, year: i32, month: u8) {
         let contains_nth_by_weekday = self
             .rrule
             .by_weekday
@@ -62,7 +56,12 @@ impl IterInfo {
 
     pub fn rebuild(&mut self, counter_date: &DateTimeIter) {
         let month = u8::try_from(counter_date.month).expect("range 1-12 is covered by u8");
-        self.rebuild_inner(counter_date.year, month, false);
+
+        if self.year_info.year != counter_date.year {
+            self.year_info = YearInfo::new(counter_date.year, &self.rrule);
+        }
+
+        self.rebuild_inner(counter_date.year, month);
     }
 
     pub fn year_len(&self) -> u16 {
