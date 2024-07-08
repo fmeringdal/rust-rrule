@@ -1,6 +1,6 @@
 use std::ops;
 
-use crate::core::{duration_from_midnight, DateTime, Tz};
+use crate::core::{duration_from_midnight, Tz};
 use chrono::{NaiveDate, NaiveTime, Utc};
 
 const DAY_SECS: i64 = 24 * 60 * 60;
@@ -72,7 +72,11 @@ where
     }
 }
 
-pub(crate) fn add_time_to_date(tz: Tz, date: NaiveDate, time: NaiveTime) -> Option<DateTime> {
+pub(crate) fn add_time_to_date(
+    tz: Tz,
+    date: NaiveDate,
+    time: NaiveTime,
+) -> Option<chrono::DateTime<Tz>> {
     if let Some(dt) = date.and_time(time).and_local_timezone(tz).single() {
         return Some(dt);
     }

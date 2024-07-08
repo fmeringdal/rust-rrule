@@ -1,4 +1,3 @@
-use super::datetime::DateTime;
 use crate::core::get_day;
 use crate::core::get_hour;
 use crate::core::get_minute;
@@ -10,7 +9,9 @@ use crate::parser::ContentLineCaptures;
 use crate::parser::ParseError;
 use crate::validator::validate_rrule;
 use crate::validator::ValidationError;
+use crate::Tz;
 use crate::{RRuleError, RRuleSet, Unvalidated, Validated};
+use chrono::DateTime;
 use chrono::{Datelike, Month, Weekday};
 #[cfg(feature = "serde")]
 use serde_with::{serde_as, DeserializeFromStr, SerializeDisplay};
@@ -230,7 +231,7 @@ pub struct RRule<Stage = Validated> {
     /// The end date after which new events will no longer be generated.
     /// If the `DateTime` is equal to an instance of the event, it will be the last event.
     #[cfg_attr(feature = "serde", serde_as(as = "DisplayFromStr"))]
-    pub(crate) until: Option<DateTime>,
+    pub(crate) until: Option<DateTime<Tz>>,
     /// The start day of the week.
     /// This will affect recurrences based on weekly periods.
     pub(crate) week_start: Weekday,
@@ -337,7 +338,7 @@ impl RRule<Unvalidated> {
     /// If given, this must be a datetime instance specifying the
     /// upper-bound limit of the recurrence.
     #[must_use]
-    pub fn until(mut self, until: DateTime) -> Self {
+    pub fn until(mut self, until: DateTime<Tz>) -> Self {
         self.until = Some(until);
         self
     }
@@ -442,7 +443,7 @@ impl RRule<Unvalidated> {
     }
 
     /// Fills in some additional fields in order to make iter work correctly.
-    pub(crate) fn finalize_parsed_rrule(mut self, dt_start: &DateTime) -> Self {
+    pub(crate) fn finalize_parsed_rrule(mut self, dt_start: &DateTime<Tz>) -> Self {
         // TEMP: move negative months to another list
         let mut by_month_day = vec![];
         let mut by_n_month_day = self.by_n_month_day;
@@ -548,7 +549,7 @@ impl RRule<Unvalidated> {
     /// # Errors
     ///
     /// If the properties aren't valid, it will return [`RRuleError`].
-    pub fn validate(self, dt_start: DateTime) -> Result<RRule<Validated>, RRuleError> {
+    pub fn validate(self, dt_start: DateTime<Tz>) -> Result<RRule<Validated>, RRuleError> {
         let rrule = self.finalize_parsed_rrule(&dt_start);
 
         // Validate required checks (defined by RFC 5545)
@@ -603,7 +604,7 @@ impl RRule<Unvalidated> {
     /// # Errors
     ///
     /// Returns [`RRuleError::ValidationError`] in case the rrule is invalid.
-    pub fn build(self, dt_start: DateTime) -> Result<RRuleSet, RRuleError> {
+    pub fn build(self, dt_start: DateTime<Tz>) -> Result<RRuleSet, RRuleError> {
         let rrule = self.validate(dt_start)?;
         let rrule_set = RRuleSet::new(dt_start).rrule(rrule);
         Ok(rrule_set)
@@ -611,7 +612,7 @@ impl RRule<Unvalidated> {
 }
 
 impl RRule {
-    pub(crate) fn iter_with_ctx(&self, dt_start: DateTime, limited: bool) -> RRuleIter {
+    pub(crate) fn iter_with_ctx(&self, dt_start: DateTime<Tz>, limited: bool) -> RRuleIter {
         RRuleIter::new(self, &dt_start, limited)
     }
 }
@@ -788,7 +789,7 @@ impl<S> RRule<S> {
 
     /// Get the until of the recurrence.
     #[must_use]
-    pub fn get_until(&self) -> Option<&DateTime> {
+    pub fn get_until(&self) -> Option<&DateTime<Tz>> {
         self.until.as_ref()
     }
 
