@@ -3,11 +3,11 @@ use std::{collections::HashMap, str::FromStr};
 use log::warn;
 
 use crate::{
-    core::DateTime,
     parser::{
         datetime::{datestring_to_date, parse_timezone},
         ParseError,
     },
+    Tz,
 };
 
 use super::{content_line_parts::ContentLineCaptures, parameters::parse_parameters};
@@ -31,7 +31,7 @@ impl FromStr for DateParameter {
     }
 }
 
-impl<'a> TryFrom<ContentLineCaptures<'a>> for Vec<DateTime> {
+impl<'a> TryFrom<ContentLineCaptures<'a>> for Vec<chrono::DateTime<Tz>> {
     type Error = ParseError;
 
     fn try_from(value: ContentLineCaptures) -> Result<Self, Self::Error> {

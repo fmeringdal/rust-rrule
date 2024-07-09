@@ -1,10 +1,7 @@
 use std::str::FromStr;
 
 use super::{regex::ParsedDateString, ParseError};
-use crate::{
-    core::{DateTime, Tz},
-    NWeekday,
-};
+use crate::{core::Tz, NWeekday};
 use chrono::{NaiveDate, TimeZone, Weekday};
 
 /// Attempts to convert a `str` to a `chrono_tz::Tz`.
@@ -21,7 +18,7 @@ pub(crate) fn datestring_to_date(
     dt: &str,
     tz: Option<Tz>,
     property: &str,
-) -> Result<DateTime, ParseError> {
+) -> Result<chrono::DateTime<Tz>, ParseError> {
     let ParsedDateString {
         year,
         month,

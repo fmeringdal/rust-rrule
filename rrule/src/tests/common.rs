@@ -78,7 +78,7 @@ pub fn check_occurrences<S: AsRef<str> + Debug>(occurrences: &[DateTime<Tz>], ex
     );
     assert_eq!(occurrences.len(), expected.len(), "List sizes don't match");
     for (given, expected) in occurrences.iter().zip(expected.iter()) {
-        let exp_datetime = chrono::DateTime::parse_from_rfc3339(expected.as_ref()).unwrap();
+        let exp_datetime = DateTime::parse_from_rfc3339(expected.as_ref()).unwrap();
         // Compare items and check if in the same offset/timezone
         assert_eq!(
             given.to_rfc3339(),

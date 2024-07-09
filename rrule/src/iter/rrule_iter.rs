@@ -2,7 +2,7 @@ use super::counter_date::DateTimeIter;
 use super::utils::add_time_to_date;
 use super::{build_pos_list, utils::date_from_ordinal, IterInfo, MAX_ITER_LOOP};
 use crate::core::{get_hour, get_minute, get_second};
-use crate::{core::DateTime, Frequency, RRule};
+use crate::{Frequency, RRule, Tz};
 use chrono::NaiveTime;
 use std::collections::VecDeque;
 
@@ -12,9 +12,9 @@ pub(crate) struct RRuleIter {
     pub(crate) counter_date: DateTimeIter,
     pub(crate) ii: IterInfo,
     pub(crate) timeset: Vec<NaiveTime>,
-    pub(crate) dt_start: DateTime,
+    pub(crate) dt_start: chrono::DateTime<Tz>,
     /// Buffer of datetimes is not yet yielded
-    pub(crate) buffer: VecDeque<DateTime>,
+    pub(crate) buffer: VecDeque<chrono::DateTime<Tz>>,
     /// Indicate of iterator should not return more items.
     /// Once set `true` is will always return `None`.
     pub(crate) finished: bool,
@@ -28,7 +28,7 @@ pub(crate) struct RRuleIter {
 }
 
 impl RRuleIter {
-    pub(crate) fn new(rrule: &RRule, dt_start: &DateTime, limited: bool) -> Self {
+    pub(crate) fn new(rrule: &RRule, dt_start: &chrono::DateTime<Tz>, limited: bool) -> Self {
         let ii = IterInfo::new(rrule, dt_start);
 
         let hour = get_hour(dt_start);
@@ -37,7 +37,7 @@ impl RRuleIter {
         let timeset = ii.get_timeset(hour, minute, second);
         let count = ii.rrule().count;
 
-        RRuleIter {
+        Self {
             counter_date: dt_start.into(),
             ii,
             timeset,
@@ -53,11 +53,11 @@ impl RRuleIter {
     /// Attempts to add a date to the result. Returns `true` if we should
     /// terminate the iteration.
     fn try_add_datetime(
-        dt: DateTime,
+        dt: chrono::DateTime<Tz>,
         rrule: &RRule,
         count: &mut Option<u32>,
-        buffer: &mut VecDeque<DateTime>,
-        dt_start: &DateTime,
+        buffer: &mut VecDeque<chrono::DateTime<Tz>>,
+        dt_start: &chrono::DateTime<Tz>,
     ) -> bool {
         if matches!(rrule.until, Some(until) if dt > until) {
             // We can break because `pos_list` is sorted and
@@ -199,7 +199,7 @@ impl RRuleIter {
 }
 
 impl Iterator for RRuleIter {
-    type Item = DateTime;
+    type Item = chrono::DateTime<Tz>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if !self.buffer.is_empty() {

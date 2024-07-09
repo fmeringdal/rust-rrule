@@ -1,6 +1,5 @@
-use super::DateTime;
-use crate::iter::rrule_iter::WasLimited;
 use crate::RRuleResult;
+use crate::{iter::rrule_iter::WasLimited, Tz};
 use std::ops::{
     Bound::{Excluded, Unbounded},
     RangeBounds,
@@ -12,13 +11,13 @@ use std::ops::{
 /// otherwise the second value of the return tuple will be `None`.
 pub(super) fn collect_with_error<T>(
     mut iterator: T,
-    start: &Option<DateTime>,
-    end: &Option<DateTime>,
+    start: &Option<chrono::DateTime<Tz>>,
+    end: &Option<chrono::DateTime<Tz>>,
     inclusive: bool,
     limit: Option<u16>,
 ) -> RRuleResult
 where
-    T: Iterator<Item = DateTime> + WasLimited,
+    T: Iterator<Item = chrono::DateTime<Tz>> + WasLimited,
 {
     let mut list = vec![];
     let mut was_limited = false;
@@ -48,7 +47,11 @@ where
 }
 
 /// Checks if `date` is after `end`.
-fn has_reached_the_end(date: &DateTime, end: &Option<DateTime>, inclusive: bool) -> bool {
+fn has_reached_the_end(
+    date: &chrono::DateTime<Tz>,
+    end: &Option<chrono::DateTime<Tz>>,
+    inclusive: bool,
+) -> bool {
     if inclusive {
         match end {
             Some(end) => !(..=end).contains(&date),
@@ -64,9 +67,9 @@ fn has_reached_the_end(date: &DateTime, end: &Option<DateTime>, inclusive: bool)
 
 /// Helper function to determine if a date is within a given range.
 pub(super) fn is_in_range(
-    date: &DateTime,
-    start: &Option<DateTime>,
-    end: &Option<DateTime>,
+    date: &chrono::DateTime<Tz>,
+    start: &Option<chrono::DateTime<Tz>>,
+    end: &Option<chrono::DateTime<Tz>>,
     inclusive: bool,
 ) -> bool {
     // Should it include or not include the start and/or end date?

@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use chrono::{Datelike, TimeZone, Timelike, Utc, Weekday};
 
-use crate::{core::DateTime, Frequency, RRule, RRuleError};
+use crate::{Frequency, RRule, RRuleError, Tz};
 
 use super::{
     checks,
@@ -305,8 +305,8 @@ impl DateTimeIter {
     }
 }
 
-impl From<&DateTime> for DateTimeIter {
-    fn from(dt: &DateTime) -> Self {
+impl From<&chrono::DateTime<Tz>> for DateTimeIter {
+    fn from(dt: &chrono::DateTime<Tz>) -> Self {
         Self {
             year: dt.year(),
             month: dt.month(),

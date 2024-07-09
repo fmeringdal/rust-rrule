@@ -1,7 +1,9 @@
+use chrono::DateTime;
+
 use super::rrule_iter::WasLimited;
 use super::{rrule_iter::RRuleIter, MAX_ITER_LOOP};
-use crate::RRuleError;
-use crate::{core::DateTime, RRuleSet};
+use crate::RRuleSet;
+use crate::{RRuleError, Tz};
 use std::collections::BTreeSet;
 use std::str::FromStr;
 use std::{collections::HashMap, iter::Iterator};
@@ -9,23 +11,23 @@ use std::{collections::HashMap, iter::Iterator};
 #[derive(Debug, Clone)]
 /// Iterator over all the dates in an [`RRuleSet`].
 pub struct RRuleSetIter {
-    queue: HashMap<usize, DateTime>,
+    queue: HashMap<usize, DateTime<Tz>>,
     limited: bool,
     rrule_iters: Vec<RRuleIter>,
     exrules: Vec<RRuleIter>,
     exdates: BTreeSet<i64>,
     /// Sorted additional dates in descending order
-    rdates: Vec<DateTime>,
+    rdates: Vec<DateTime<Tz>>,
     was_limited: bool,
 }
 
 impl RRuleSetIter {
     fn generate_date(
-        dates: &mut Vec<DateTime>,
+        dates: &mut Vec<DateTime<Tz>>,
         exrules: &mut [RRuleIter],
         exdates: &mut BTreeSet<i64>,
         limited: bool,
-    ) -> (Option<DateTime>, bool) {
+    ) -> (Option<DateTime<Tz>>, bool) {
         if dates.is_empty() {
             return (None, false);
         }
@@ -59,7 +61,7 @@ impl RRuleSetIter {
         exrules: &mut [RRuleIter],
         exdates: &mut BTreeSet<i64>,
         limited: bool,
-    ) -> (Option<DateTime>, bool) {
+    ) -> (Option<DateTime<Tz>>, bool) {
         let mut date = match rrule_iter.next() {
             Some(d) => d,
             None => return (None, false),
@@ -89,7 +91,7 @@ impl RRuleSetIter {
     }
 
     fn is_date_excluded(
-        date: &DateTime,
+        date: &DateTime<Tz>,
         exrules: &mut [RRuleIter],
         exdates: &mut BTreeSet<i64>,
     ) -> bool {
@@ -107,10 +109,10 @@ impl RRuleSetIter {
 }
 
 impl Iterator for RRuleSetIter {
-    type Item = DateTime;
+    type Item = DateTime<Tz>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let mut next_date: Option<(usize, DateTime)> = None;
+        let mut next_date: Option<(usize, DateTime<Tz>)> = None;
 
         // If there already was an error, return the error again.
         if self.was_limited {
@@ -194,7 +196,7 @@ impl Iterator for RRuleSetIter {
 }
 
 impl IntoIterator for &RRuleSet {
-    type Item = DateTime;
+    type Item = DateTime<Tz>;
 
     type IntoIter = RRuleSetIter;
 
