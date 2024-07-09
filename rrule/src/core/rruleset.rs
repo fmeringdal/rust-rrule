@@ -299,7 +299,11 @@ impl Display for RRuleSet {
         let mut rdates = self
             .rdate
             .iter()
-            .map(|dt| dt.format("%Y%m%dT%H%M%SZ").to_string())
+            .map(|dt| {
+                let maybe_zulu = if dt.timezone().is_local() { "" } else { "Z" };
+
+                format!("{}{}", dt.format("%Y%m%dT%H%M%S"), maybe_zulu)
+            })
             .collect::<Vec<_>>()
             .join(",");
         if !rdates.is_empty() {
@@ -320,7 +324,11 @@ impl Display for RRuleSet {
         let mut exdates = self
             .exdate
             .iter()
-            .map(|dt| dt.format("%Y%m%dT%H%M%SZ").to_string())
+            .map(|dt| {
+                let maybe_zulu = if dt.timezone().is_local() { "" } else { "Z" };
+
+                format!("{}{}", dt.format("%Y%m%dT%H%M%S"), maybe_zulu)
+            })
             .collect::<Vec<_>>()
             .join(",");
         if !exdates.is_empty() {
@@ -383,6 +391,23 @@ mod tests {
             rruleset.exdate,
             vec![Tz::UTC.with_ymd_and_hms(1997, 1, 21, 0, 0, 0).unwrap()]
         );
+
+        // Serialize to string again
+        assert_eq!(rruleset.to_string(), rruleset_str);
+    }
+
+    #[test]
+    fn respect_local_timezone_in_exdates_rdates() {
+        let rruleset_str = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3;BYHOUR=9;BYMINUTE=30;BYSECOND=0\nRDATE;VALUE=DATE-TIME:19970101T000000,19970120T000000\nEXRULE:FREQ=YEARLY;COUNT=8;BYMONTH=6,7;BYMONTHDAY=1;BYHOUR=9;BYMINUTE=30;BYSECOND=0\nEXDATE;VALUE=DATE-TIME:19970121T000000";
+        let rruleset = RRuleSet::from_str(rruleset_str).unwrap();
+
+        // Serialize to string again
+        assert_eq!(rruleset.to_string(), rruleset_str);
+    }
+
+    fn respect_utc_timezone_in_exdates_rdates() {
+        let rruleset_str = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3;BYHOUR=9;BYMINUTE=30;BYSECOND=0\nRDATE;VALUE=DATE-TIME:19970101T000000Z,19970120T000000Z\nEXRULE:FREQ=YEARLY;COUNT=8;BYMONTH=6,7;BYMONTHDAY=1;BYHOUR=9;BYMINUTE=30;BYSECOND=0\nEXDATE;VALUE=DATE-TIME:19970121T000000Z";
+        let rruleset = RRuleSet::from_str(rruleset_str).unwrap();
 
         // Serialize to string again
         assert_eq!(rruleset.to_string(), rruleset_str);
