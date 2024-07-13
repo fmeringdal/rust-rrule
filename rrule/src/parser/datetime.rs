@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use super::{regex::ParsedDateString, ParseError};
+use super::{parsers::ParsedDateString, ParseError};
 use crate::{core::Tz, NWeekday};
 use chrono::{NaiveDate, TimeZone, Weekday};
 
