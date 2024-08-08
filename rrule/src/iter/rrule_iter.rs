@@ -128,8 +128,8 @@ impl RRuleIter {
             if rrule.by_set_pos.is_empty() {
                 // Loop over `start..end`
                 for current_day in &dayset {
-                    let current_day = i64::try_from(*current_day).expect(
-                        "We control the dayset, and we know that it will always fit within an i64",
+                    let current_day = i32::try_from(*current_day).expect(
+                        "We control the dayset, and we know that it will always fit within i32",
                     );
                     let year_ordinal = self.ii.year_ordinal();
                     // Ordinal conversion uses UTC: if we apply local-TZ here, then

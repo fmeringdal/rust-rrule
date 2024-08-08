@@ -1,20 +1,18 @@
 use std::ops;
 
 use crate::core::{duration_from_midnight, Tz};
-use chrono::{NaiveDate, NaiveTime, Utc};
+use chrono::{Datelike, NaiveDate, NaiveTime};
 
-const DAY_SECS: i64 = 24 * 60 * 60;
+const UNIX_EPOCH_DAY: i32 = 719_163;
 
 /// Converts number of days since unix epoch to a (naive) date.
-pub(crate) fn date_from_ordinal(ordinal: i64) -> NaiveDate {
-    chrono::DateTime::<Utc>::from_timestamp(ordinal * DAY_SECS, 0)
-        .unwrap()
-        .date_naive()
+pub(crate) fn date_from_ordinal(ordinal: i32) -> NaiveDate {
+    NaiveDate::from_num_days_from_ce_opt(UNIX_EPOCH_DAY + ordinal).unwrap()
 }
 
 /// Returns number of days since unix epoch (rounded down)
-pub(crate) fn days_since_unix_epoch(date: &chrono::DateTime<Utc>) -> i64 {
-    date.timestamp() / DAY_SECS
+pub(crate) fn days_since_unix_epoch(date: &NaiveDate) -> i32 {
+    date.num_days_from_ce() - UNIX_EPOCH_DAY
 }
 
 /// Returns true if given year is a leap year

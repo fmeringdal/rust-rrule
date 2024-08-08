@@ -6,7 +6,7 @@ pub(crate) fn build_pos_list(
     by_set_pos: &[i32],
     dayset: &[usize],
     timeset: &[NaiveTime],
-    year_ordinal: i64,
+    year_ordinal: i32,
     tz: Tz,
 ) -> Vec<chrono::DateTime<Tz>> {
     let mut pos_list = vec![];
@@ -41,8 +41,8 @@ pub(crate) fn build_pos_list(
             Some(day) => day,
             None => continue,
         };
-        let day = i64::try_from(*day)
-            .expect("dayset is controlled by us and all elements are within range of i64");
+        let day = i32::try_from(*day)
+            .expect("dayset is controlled by us and all elements are within range of i32");
 
         // Get ordinal which is UTC
         let date = date_from_ordinal(year_ordinal + day);

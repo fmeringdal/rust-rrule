@@ -3,7 +3,7 @@ use super::{
     utils::{days_since_unix_epoch, get_year_len, pymod},
 };
 use crate::RRule;
-use chrono::{Datelike, TimeZone, Utc};
+use chrono::{Datelike, NaiveDate};
 
 #[derive(Debug)]
 pub(crate) struct BaseMasks {
@@ -43,7 +43,7 @@ pub(crate) struct YearInfo {
     /// Number of days in the next year (365 or 366)
     pub next_year_len: u16,
     /// Number of days since Unix epoch
-    pub year_ordinal: i64,
+    pub year_ordinal: i32,
     pub month_mask: &'static [u8],
     pub month_day_mask: &'static [i8],
     pub neg_month_day_mask: &'static [i8],
@@ -56,7 +56,7 @@ pub(crate) struct YearInfo {
 impl YearInfo {
     pub fn new(year: i32, rrule: &RRule) -> Self {
         // It should never fail, since there is always a 1st of January, is there?
-        let first_year_day = Utc.with_ymd_and_hms(year, 1, 1, 0, 0, 0).unwrap();
+        let first_year_day = NaiveDate::from_ymd_opt(year, 1, 1).unwrap();
 
         let year_len = get_year_len(year);
         let next_year_len = get_year_len(year + 1);
@@ -167,7 +167,7 @@ impl YearInfo {
                 -1
             } else {
                 let l_year_weekday = u16::try_from(
-                    Utc.with_ymd_and_hms(year - 1, 1, 1, 0, 0, 0)
+                    NaiveDate::from_ymd_opt(year - 1, 1, 1)
                         // It should never fail, since there is always a 1st of January, is there?
                         .unwrap()
                         .weekday()

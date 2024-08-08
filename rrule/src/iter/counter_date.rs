@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use chrono::{Datelike, TimeZone, Timelike, Utc, Weekday};
+use chrono::{Datelike, NaiveDate, Timelike, Weekday};
 
 use crate::{Frequency, RRule, RRuleError, Tz};
 
@@ -90,8 +90,7 @@ impl DateTimeIter {
         };
         let year_day = u32::from(month_range_mask[self.month as usize - 1]) + self.day - 1;
         let year_day_mod = year_day % 7;
-        let year_start_weekday = Utc
-            .with_ymd_and_hms(self.year, 1, 1, 0, 0, 0)
+        let year_start_weekday = NaiveDate::from_ymd_opt(self.year, 1, 1)
             // It should never fail, since there is always a 1st of January, is there?
             .unwrap()
             .weekday()

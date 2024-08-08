@@ -4,7 +4,7 @@ use super::easter::easter;
 use super::{monthinfo::MonthInfo, yearinfo::YearInfo};
 use crate::core::get_month;
 use crate::{Frequency, NWeekday, RRule, Tz};
-use chrono::{Datelike, NaiveTime, TimeZone};
+use chrono::{Datelike, NaiveDate, NaiveTime};
 
 #[derive(Debug, Clone)]
 pub(crate) struct IterInfo {
@@ -69,7 +69,7 @@ impl IterInfo {
         self.year_info.year_len
     }
 
-    pub fn year_ordinal(&self) -> i64 {
+    pub fn year_ordinal(&self) -> i32 {
         self.year_info.year_ordinal
     }
 
@@ -126,8 +126,7 @@ impl IterInfo {
         let set_len = usize::from(self.year_len() + 7);
 
         let mut date_ordinal = usize::try_from(
-            chrono::Utc
-                .with_ymd_and_hms(year, month, day, 0, 0, 0)
+            NaiveDate::from_ymd_opt(year, month, day)
                 .unwrap()
                 .ordinal0(),
         )
@@ -152,11 +151,9 @@ impl IterInfo {
     }
 
     pub fn day_dayset(year: i32, month: u32, day: u32) -> Vec<usize> {
-        let date_ordinal = chrono::Utc
-            .with_ymd_and_hms(year, month, day, 0, 0, 0)
+        let date_ordinal = NaiveDate::from_ymd_opt(year, month, day)
             .unwrap()
             .ordinal0();
-
         vec![usize::try_from(date_ordinal).expect("target arch should have at least 32 bits")]
     }
 
