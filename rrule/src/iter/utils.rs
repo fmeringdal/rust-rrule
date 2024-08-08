@@ -159,17 +159,21 @@ mod test {
     fn adds_time_to_date() {
         let tests = [
             (
-                Tz::UTC,
+                Tz::Tz(chrono_tz::UTC),
                 NaiveDate::from_ymd_opt(2017, 1, 1).unwrap(),
                 NaiveTime::from_hms_opt(1, 15, 30).unwrap(),
-                Some(Tz::UTC.with_ymd_and_hms(2017, 1, 1, 1, 15, 30).unwrap()),
+                Some(
+                    Tz::Tz(chrono_tz::UTC)
+                        .with_ymd_and_hms(2017, 1, 1, 1, 15, 30)
+                        .unwrap(),
+                ),
             ),
             (
-                Tz::America__Vancouver,
+                Tz::Tz(chrono_tz::Tz::America__Vancouver),
                 NaiveDate::from_ymd_opt(2021, 3, 14).unwrap(),
                 NaiveTime::from_hms_opt(2, 22, 10).unwrap(),
                 Some(
-                    Tz::America__Vancouver
+                    Tz::Tz(chrono_tz::Tz::America__Vancouver)
                         .with_ymd_and_hms(2021, 3, 14, 0, 0, 0)
                         .unwrap()
                         + Duration::hours(2)
@@ -178,11 +182,11 @@ mod test {
                 ),
             ),
             (
-                Tz::America__New_York,
+                Tz::Tz(chrono_tz::Tz::America__New_York),
                 NaiveDate::from_ymd_opt(1997, 10, 26).unwrap(),
                 NaiveTime::from_hms_opt(9, 0, 0).unwrap(),
                 Some(
-                    Tz::America__New_York
+                    Tz::Tz(chrono_tz::Tz::America__New_York)
                         .with_ymd_and_hms(1997, 10, 26, 9, 0, 0)
                         .unwrap(),
                 ),

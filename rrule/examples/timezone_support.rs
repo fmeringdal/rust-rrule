@@ -8,9 +8,11 @@ use chrono::{DateTime, TimeZone};
 use rrule::{Frequency, RRule, Tz};
 
 fn main() {
-    let tz = Tz::Europe__Berlin;
+    let tz = Tz::Tz(chrono_tz::Tz::Europe__Berlin);
     let start_date = tz.with_ymd_and_hms(2020, 1, 1, 9, 0, 0).unwrap();
-    let exdate = Tz::UTC.with_ymd_and_hms(2020, 1, 2, 8, 0, 0).unwrap();
+    let exdate = Tz::Tz(chrono_tz::Tz::UTC)
+        .with_ymd_and_hms(2020, 1, 2, 8, 0, 0)
+        .unwrap();
 
     // Build an rrule set that occurs daily at 9:00 for 4 times
     let rrule_set = RRule::default()

@@ -325,7 +325,7 @@ mod tests {
     use super::*;
     use chrono::TimeZone;
 
-    const UTC: Tz = Tz::UTC;
+    const UTC: Tz = Tz::Tz(chrono_tz::UTC);
 
     fn ymd_hms(year: i32, month: u32, day: u32, hour: u32, min: u32, sec: u32) -> DateTimeIter {
         let dt = UTC
