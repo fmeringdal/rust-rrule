@@ -37,7 +37,7 @@ impl log::Log for Logger {
                     Level::Debug => Paint::green("DEBUG"),
                     Level::Trace => Paint::magenta("TRACE"),
                 },
-                Paint::new(record.target()).dimmed(),
+                Paint::new(record.target()).dim(),
                 record.args()
             );
         }

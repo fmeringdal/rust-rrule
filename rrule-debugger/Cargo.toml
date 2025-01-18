@@ -11,11 +11,11 @@ rust-version.workspace = true
 
 [dependencies]
 rrule = { path = "../rrule" }
-chrono = "0.4.19"
-clap = { version = "4.1.9", features = ["derive"] }
+chrono = "0.4.39"
+clap = { version = "4.5.26", features = ["derive"] }
 rrule-afl-fuzz = { version = "0.1.0", path = "../rrule-afl-fuzz" }
-log = "0.4.16"
-yansi = "0.5.1"
+log = "0.4.25"
+yansi = "1.0.1"
 
 [features]
 default = []

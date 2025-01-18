@@ -11,8 +11,8 @@ rust-version.workspace = true
 
 [dependencies]
 afl = "*"
-chrono = "0.4.19"
-num-traits = "0.2.15"
+chrono = "0.4.39"
+num-traits = "0.2.19"
 
 [dependencies.rrule]
 path = "../rrule"
