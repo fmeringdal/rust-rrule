@@ -92,7 +92,7 @@ pub fn take_weekday(input: &mut &[u8]) -> Weekday {
 /// Uses 1 byte
 /// If no bytes left it will always return default (`0`)
 pub fn take_byte(input: &mut &[u8]) -> u8 {
-    let byte_len = std::mem::size_of::<u8>();
+    let byte_len = size_of::<u8>();
     if input.len() < byte_len {
         return u8::default();
     }
@@ -119,7 +119,7 @@ pub fn take_data_u8(input: &mut &[u8]) -> u8 {
 /// Uses 1 byte
 /// If no bytes left it will always return default (`0`)
 pub fn take_data_i8(input: &mut &[u8]) -> i8 {
-    let byte_len = std::mem::size_of::<i8>();
+    let byte_len = size_of::<i8>();
     if input.len() < byte_len {
         return i8::default();
     }
@@ -131,7 +131,7 @@ pub fn take_data_i8(input: &mut &[u8]) -> i8 {
 /// Uses 2 bytes
 /// If no bytes left it will always return default (`0`)
 pub fn take_data_i16(input: &mut &[u8]) -> i16 {
-    let byte_len = std::mem::size_of::<i16>();
+    let byte_len = size_of::<i16>();
     if input.len() < byte_len {
         return i16::default();
     }
@@ -143,7 +143,7 @@ pub fn take_data_i16(input: &mut &[u8]) -> i16 {
 /// Uses 4 bytes
 /// If no bytes left it will always return default (`0`)
 pub fn take_data_i32(input: &mut &[u8]) -> i32 {
-    let byte_len = std::mem::size_of::<i32>();
+    let byte_len = size_of::<i32>();
     if input.len() < byte_len {
         return i32::default();
     }
@@ -155,7 +155,7 @@ pub fn take_data_i32(input: &mut &[u8]) -> i32 {
 /// Uses 8 bytes
 /// If no bytes left it will always return default (`0`)
 pub fn take_data_i64(input: &mut &[u8]) -> i64 {
-    let byte_len = std::mem::size_of::<i64>();
+    let byte_len = size_of::<i64>();
     if input.len() < byte_len {
         return i64::default();
     }
@@ -167,7 +167,7 @@ pub fn take_data_i64(input: &mut &[u8]) -> i64 {
 /// Uses 2 bytes
 /// If no bytes left it will always return default (`0`)
 pub fn take_data_u16(input: &mut &[u8]) -> u16 {
-    let byte_len = std::mem::size_of::<u16>();
+    let byte_len = size_of::<u16>();
     if input.len() < byte_len {
         return u16::default();
     }
@@ -179,7 +179,7 @@ pub fn take_data_u16(input: &mut &[u8]) -> u16 {
 /// Uses 4 bytes
 /// If no bytes left it will always return default (`0`)
 pub fn take_data_u32(input: &mut &[u8]) -> u32 {
-    let byte_len = std::mem::size_of::<u32>();
+    let byte_len = size_of::<u32>();
     if input.len() < byte_len {
         return u32::default();
     }
@@ -191,7 +191,7 @@ pub fn take_data_u32(input: &mut &[u8]) -> u32 {
 /// Uses 8 bytes
 /// If no bytes left it will always return default (`0`)
 pub fn take_data_u64(input: &mut &[u8]) -> u64 {
-    let byte_len = std::mem::size_of::<u64>();
+    let byte_len = size_of::<u64>();
     if input.len() < byte_len {
         return u64::default();
     }
@@ -203,7 +203,7 @@ pub fn take_data_u64(input: &mut &[u8]) -> u64 {
 /// Uses max 8 bytes
 /// If no bytes left it will always return default (`0`)
 pub fn take_data_usize(input: &mut &[u8]) -> usize {
-    let byte_len = std::mem::size_of::<usize>();
+    let byte_len = size_of::<usize>();
     if input.len() < byte_len {
         return usize::default();
     }
@@ -215,7 +215,7 @@ pub fn take_data_usize(input: &mut &[u8]) -> usize {
 /// Uses max 8 bytes
 /// If no bytes left it will always return default (`0`)
 pub fn take_data_isize(input: &mut &[u8]) -> isize {
-    let byte_len = std::mem::size_of::<isize>();
+    let byte_len = size_of::<isize>();
     if input.len() < byte_len {
         return isize::default();
     }

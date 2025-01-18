@@ -62,7 +62,7 @@ impl FromStr for RRuleProperty {
     }
 }
 
-impl<'a> TryFrom<ContentLineCaptures<'a>> for RRule<Unvalidated> {
+impl TryFrom<ContentLineCaptures<'_>> for RRule<Unvalidated> {
     type Error = ParseError;
 
     fn try_from(value: ContentLineCaptures) -> Result<Self, Self::Error> {
