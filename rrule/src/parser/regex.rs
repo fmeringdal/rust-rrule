@@ -1,16 +1,10 @@
 //! Utility functions around the regexes we use for parsing rrule strings.
-use std::str::FromStr;
 
-use lazy_static::lazy_static;
+use std::{str::FromStr, sync::OnceLock};
+
 use regex::{Captures, Regex};
 
 use super::{content_line::PropertyName, ParseError};
-
-lazy_static! {
-    static ref DATESTR_RE: Regex =
-        Regex::new(r"(?m)^([0-9]{4})([0-9]{2})([0-9]{2})(T([0-9]{2})([0-9]{2})([0-9]{2})(Z?))?$")
-            .expect("DATESTR_RE regex failed");
-}
 
 #[derive(Debug, PartialEq)]
 pub(crate) struct ParsedDateString {
@@ -50,7 +44,15 @@ impl ParsedDateString {
     /// Parses a date string with format `YYYYMMDD(THHMMSSZ)` where the part in parentheses
     /// is optional. It returns [`ParsedDateString`].
     pub(crate) fn from_ical_datetime(val: &str) -> Result<Self, ParseError> {
+        static DATESTR_RE: OnceLock<Regex> = OnceLock::new();
+
         let captures = DATESTR_RE
+            .get_or_init(|| {
+                Regex::new(
+                    r"(?m)^([0-9]{4})([0-9]{2})([0-9]{2})(T([0-9]{2})([0-9]{2})([0-9]{2})(Z?))?$",
+                )
+                .expect("DATESTR_RE regex failed")
+            })
             .captures(val)
             .ok_or_else(|| ParseError::InvalidDateTimeFormat(val.into()))?;
 
@@ -84,14 +86,14 @@ impl ParsedDateString {
     }
 }
 
-lazy_static! {
-    static ref PARSE_PROPERTY_NAME_RE: Regex =
-        Regex::new(r"(?m)^([A-Z]+?)[:;]").expect("PARSE_PROPERTY_NAME_RE regex failed");
-}
-
 /// Get the line property name, the `RRULE:`, `EXRULE:` etc part.
 pub(crate) fn get_property_name(val: &str) -> Result<Option<PropertyName>, ParseError> {
+    static PARSE_PROPERTY_NAME_RE: OnceLock<Regex> = OnceLock::new();
+
     PARSE_PROPERTY_NAME_RE
+        .get_or_init(|| {
+            Regex::new(r"(?m)^([A-Z]+?)[:;]").expect("PARSE_PROPERTY_NAME_RE regex failed")
+        })
         .captures(val)
         .and_then(|captures| captures.get(1))
         .map(|name| PropertyName::from_str(name.as_str()))
