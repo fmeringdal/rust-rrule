@@ -405,6 +405,7 @@ mod tests {
         assert_eq!(rruleset.to_string(), rruleset_str);
     }
 
+    #[test]
     fn respect_utc_timezone_in_exdates_rdates() {
         let rruleset_str = "DTSTART:20120201T093000Z\nRRULE:FREQ=DAILY;COUNT=3;BYHOUR=9;BYMINUTE=30;BYSECOND=0\nRDATE;VALUE=DATE-TIME:19970101T000000Z,19970120T000000Z\nEXRULE:FREQ=YEARLY;COUNT=8;BYMONTH=6,7;BYMONTHDAY=1;BYHOUR=9;BYMINUTE=30;BYSECOND=0\nEXDATE;VALUE=DATE-TIME:19970121T000000Z";
         let rruleset = RRuleSet::from_str(rruleset_str).unwrap();
