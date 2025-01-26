@@ -21,7 +21,7 @@ pub(crate) struct StartDateContentLine {
     pub value: &'static str,
 }
 
-impl<'a> TryFrom<&ContentLineCaptures<'a>> for StartDateContentLine {
+impl TryFrom<&ContentLineCaptures<'_>> for StartDateContentLine {
     type Error = ParseError;
 
     fn try_from(content_line: &ContentLineCaptures) -> Result<Self, Self::Error> {
