@@ -92,7 +92,7 @@ pub(crate) fn get_property_name(val: &str) -> Result<Option<PropertyName>, Parse
 
     PARSE_PROPERTY_NAME_RE
         .get_or_init(|| {
-            Regex::new(r"(?m)^([A-Z]+?)[:;]").expect("PARSE_PROPERTY_NAME_RE regex failed")
+            Regex::new(r"(?m)^([A-Z]+?)[:;]").expect("PARSE_PROPERTY_NAME_RE regex must compile")
         })
         .captures(val)
         .and_then(|captures| captures.get(1))
