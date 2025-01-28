@@ -51,7 +51,7 @@ impl ParsedDateString {
                 Regex::new(
                     r"(?m)^([0-9]{4})([0-9]{2})([0-9]{2})(T([0-9]{2})([0-9]{2})([0-9]{2})(Z?))?$",
                 )
-                .expect("DATESTR_RE regex failed")
+                .expect("DATESTR_RE must compile")
             })
             .captures(val)
             .ok_or_else(|| ParseError::InvalidDateTimeFormat(val.into()))?;
